@@ -857,17 +857,16 @@ button {
 
 /* ── News: Split Pane（左リスト + 右固定画像） ── */
 
-/* 右カラムに固定画像（目の星 KEY VISUALと同じ配置） */
+/* 右カラムに固定画像（目の星 KEY VISUALと同じ配置）
+   space-betweenグリッドの右カラム = 右端揃え、幅は残りスペース(max 920px) */
 .news-fixed-image {
   position: fixed;
-  /* 目の星と同じ: 左カラム420px + gap40px + pad-x52px = 512px */
-  left: calc(420px + var(--space-10) + var(--pad-x));
   right: var(--pad-x);
   top: var(--pad-y);
   bottom: var(--pad-y);
+  width: min(920px, calc(100vw - var(--pad-x) * 2 - 420px));
   z-index: 0;
   pointer-events: none;
-  max-width: 920px;
 }
 
 /* 左側リスト（目の星の左カラムと同じ幅） */
