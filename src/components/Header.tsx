@@ -8,15 +8,15 @@ import { CATEGORY_MENU, type Category } from "@/lib/categories";
 type Section = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
 type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
 
-/* ナビゲーション項目の定義 */
-const NAV_ITEMS: { label: string; href: string; section: Section }[] = [
-  { label: "Works", href: "/works", section: "Works" },
-  { label: "Text", href: "/text", section: "Text" },
-  { label: "目の星", href: "/me-no-hoshi", section: "目の星" },
-  { label: "Time Line", href: "/timeline", section: "Time Line" },
-  { label: "News", href: "/news", section: "News" },
-  { label: "About", href: "/about", section: "About" },
-  { label: "Contact", href: "/contact", section: "Contact" },
+/* ナビゲーション項目（ナンバリング付き） */
+const NAV_ITEMS: { num: string; label: string; href: string; section: Section }[] = [
+  { num: "01", label: "Works", href: "/works", section: "Works" },
+  { num: "02", label: "Text", href: "/text", section: "Text" },
+  { num: "03", label: "目の星", href: "/me-no-hoshi", section: "目の星" },
+  { num: "04", label: "Time Line", href: "/timeline", section: "Time Line" },
+  { num: "05", label: "News", href: "/news", section: "News" },
+  { num: "06", label: "About", href: "/about", section: "About" },
+  { num: "07", label: "Contact", href: "/contact", section: "Contact" },
 ];
 
 export function Header({
@@ -57,70 +57,73 @@ export function Header({
   }, [pathname]);
 
   return (
-    <header>
-      <div className="site-brand-row">
-        {/* 左: ブランド + サブテキスト */}
-        <div className="site-brand-group">
-          <Link
-            href={brandHref}
-            className="site-brand"
-            style={{ color: "var(--fg)" }}
-          >
-            {brandLabel}
+    <header className="header-root">
+      {/* ── メインヘッダーバー ── */}
+      <div className="header-bar">
+        {/* 左: モノグラム + フルネーム */}
+        <div className="header-brand-block">
+          <Link href={brandHref} className="header-monogram">
+            HK
           </Link>
-          <span className="site-brand-sub">Photographer</span>
+          <div className="header-brand-info">
+            <Link href={brandHref} className="header-fullname">
+              {brandLabel}
+            </Link>
+            <span className="header-role">Photographer</span>
+          </div>
         </div>
 
         {/* モバイルメニューボタン */}
         <button
           type="button"
-          className="action-link mobile-menu-button"
+          className="mobile-menu-button"
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-main-menu"
           onClick={() => setMobileMenuOpen((open) => !open)}
-          style={{ fontSize: "var(--font-body)", lineHeight: 1, fontWeight: 700, border: 0, background: "transparent", padding: 0 }}
+          style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer" }}
         >
-          {mobileMenuOpen ? "close" : "menu"}
+          <span className="mobile-menu-label">
+            {mobileMenuOpen ? "Close" : "Menu"}
+          </span>
         </button>
 
-        {/* デスクトップナビ */}
+        {/* デスクトップナビ: ナンバリング付き */}
         <nav className="desktop-main-nav">
-          {NAV_ITEMS.map(({ label, href, section }) => (
+          {NAV_ITEMS.map(({ num, label, href, section }) => (
             <Link
               key={section}
               href={href}
-              className={`header-nav-link ${active === section ? "is-active" : ""}`.trim()}
+              className={`header-nav-item ${active === section ? "is-active" : ""}`}
             >
-              {label}
+              <span className="header-nav-num">{num}</span>
+              <span className="header-nav-label">{label}</span>
             </Link>
           ))}
         </nav>
       </div>
 
-      {/* モバイルメニュー */}
+      {/* ヘッダー下部のセパレーター */}
+      <div className="header-separator" />
+
+      {/* ── モバイルフルスクリーンメニュー ── */}
       {mobileMenuOpen ? (
-        <nav
-          id="mobile-main-menu"
-          className="mobile-main-menu"
-          style={{
-            marginTop: "var(--space-6)",
-            display: "grid",
-            justifyItems: "end",
-            gap: "var(--space-4)",
-          }}
-        >
-          {NAV_ITEMS.map(({ label, href, section }) => (
-            <Link
-              key={section}
-              href={href}
-              className={`header-nav-link ${active === section ? "is-active" : ""}`.trim()}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <div className="mobile-overlay">
+          <nav id="mobile-main-menu" className="mobile-overlay-nav">
+            {NAV_ITEMS.map(({ num, label, href, section }) => (
+              <Link
+                key={section}
+                href={href}
+                className={`mobile-nav-item ${active === section ? "is-active" : ""}`}
+              >
+                <span className="mobile-nav-num">{num}</span>
+                <span className="mobile-nav-label">{label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
       ) : null}
 
+      {/* ── タイトル行 ── */}
       {showTitleRow ? (
         <div className="header-title-row flex items-center justify-between" style={{ marginTop: "var(--space-13)", minHeight: "var(--space-10)" }}>
           <div className="header-title-left flex items-center" style={{ gap: "var(--space-7)" }}>
@@ -171,6 +174,7 @@ export function Header({
         ) : null
       )}
 
+      {/* ── カテゴリ行 ── */}
       {showCategoryRow ? (
         <div className="header-category-row flex items-end justify-between" style={{ marginTop: "var(--space-9)", minHeight: "var(--space-8)" }}>
           <div className="header-category-links flex items-center" style={{ gap: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
