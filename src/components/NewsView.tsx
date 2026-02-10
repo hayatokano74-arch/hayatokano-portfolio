@@ -11,30 +11,8 @@ export function NewsView({ items }: { items: NewsItem[] }) {
   const allImages = items.filter((n) => n.image).map((n) => n.image!);
 
   return (
-    <>
-      {/* ── デスクトップ: 右半分に固定画像 ── */}
-      <div className="news-fixed-image">
-        {allImages.map((img) => (
-          <Image
-            key={img.src}
-            src={img.src}
-            alt=""
-            fill
-            sizes="50vw"
-            placeholder="blur"
-            blurDataURL={blurDataURL(img.width, img.height)}
-            className="news-fixed-img"
-            style={{
-              objectFit: "contain",
-              objectPosition: "center",
-              opacity: img.src === activeSrc ? 1 : 0,
-              transition: "opacity 400ms ease",
-            }}
-          />
-        ))}
-      </div>
-
-      {/* ── ニュースリスト（左半分、通常スクロール） ── */}
+    <div className="news-layout">
+      {/* ── ニュースリスト（左カラム、通常スクロール） ── */}
       <div className="news-list">
         {items.map((item, i) => (
           <div key={item.id}>
@@ -95,6 +73,27 @@ export function NewsView({ items }: { items: NewsItem[] }) {
           </div>
         ))}
       </div>
-    </>
+
+      {/* ── 右カラム: sticky 画像 ── */}
+      <div className="news-fixed-image">
+        {allImages.map((img) => (
+          <Image
+            key={img.src}
+            src={img.src}
+            alt=""
+            fill
+            sizes="50vw"
+            placeholder="blur"
+            blurDataURL={blurDataURL(img.width, img.height)}
+            style={{
+              objectFit: "contain",
+              objectPosition: "center",
+              opacity: img.src === activeSrc ? 1 : 0,
+              transition: "opacity 400ms ease",
+            }}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

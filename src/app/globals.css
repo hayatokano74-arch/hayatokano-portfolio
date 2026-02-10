@@ -59,6 +59,9 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
+  font-family: var(--font-inter), var(--font-noto), "Hiragino Sans", "Noto Sans JP", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -734,13 +737,13 @@ button {
   }
 
   /* News モバイル */
-  .news-fixed-image {
-    display: none;
+  .news-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: var(--space-6) !important;
   }
 
-  .news-list {
-    width: 100% !important;
-    margin-top: var(--space-8) !important;
+  .news-fixed-image {
+    display: none;
   }
 
   .news-list:hover .news-item {
@@ -766,15 +769,10 @@ button {
   .about-layout {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: var(--space-6) !important;
-    height: auto !important;
-  }
-
-  .about-text {
-    overflow-y: visible !important;
-    height: auto !important;
   }
 
   .about-slideshow {
+    position: static !important;
     height: auto !important;
     display: block !important;
   }
@@ -823,58 +821,52 @@ button {
   }
 }
 
-/* ── About: 2カラム（左スクロール、右固定） ── */
+/* ── About: 2カラム（通常スクロール + 右カラム sticky） ── */
 .about-layout {
   margin-top: var(--space-12);
   display: grid;
   grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
   gap: var(--space-10);
   justify-content: space-between;
-  align-items: stretch;
-  height: calc(100vh - var(--pad-y) * 2 - var(--space-11) - var(--space-12));
+  align-items: start;
 }
 
 .about-text {
-  overflow-y: auto;
-  height: 100%;
   min-width: 0;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.about-text::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
 }
 
 .about-slideshow {
-  height: 100%;
+  position: sticky;
+  top: var(--pad-y);
+  height: calc(100vh - var(--pad-y) * 2);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* ── News: Split Pane（左リスト + 右固定画像） ── */
+/* ── News: 2カラム（通常スクロール + 右カラム sticky） ── */
+.news-layout {
+  margin-top: var(--space-12);
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
+  gap: var(--space-10);
+  justify-content: space-between;
+  align-items: start;
+}
 
-/* 右カラムに固定画像（目の星 KEY VISUALと同じ配置）
-   space-betweenグリッドの右カラム = 右端揃え、幅は残りスペース(max 920px) */
+/* 右カラムに sticky 画像（目の星 KEY VISUALと同じ配置） */
 .news-fixed-image {
-  position: fixed;
-  right: var(--pad-x);
+  position: sticky;
   top: var(--pad-y);
-  bottom: var(--pad-y);
-  width: min(920px, calc(100vw - var(--pad-x) * 2 - 420px));
-  z-index: 0;
+  height: calc(100vh - var(--pad-y) * 2);
   pointer-events: none;
 }
 
-/* 左側リスト（目の星の左カラムと同じ幅） */
+/* 左側リスト */
 .news-list {
   position: relative;
   z-index: 1;
-  width: min(420px, 100%);
-  margin-top: var(--space-12);
+  min-width: 0;
 }
 
 .news-item {
@@ -900,6 +892,80 @@ button {
 /* モバイル背景画像はデスクトップで非表示 */
 .news-item-bg {
   display: none;
+}
+
+/* ── Contact フォーム ── */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.contact-label {
+  font-size: var(--font-meta);
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  line-height: var(--lh-normal);
+}
+
+.contact-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  color: var(--fg);
+  padding: var(--space-2) 0;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 160ms ease;
+}
+
+.contact-input:focus {
+  border-color: var(--fg);
+}
+
+.contact-input::placeholder {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.contact-textarea {
+  resize: vertical;
+  min-height: 120px;
+  border: 1px solid var(--line);
+  padding: var(--space-3);
+  line-height: var(--lh-relaxed);
+}
+
+.contact-textarea:focus {
+  border-color: var(--fg);
+}
+
+.contact-submit {
+  align-self: flex-start;
+  border: 1px solid var(--fg);
+  background: transparent;
+  color: var(--fg);
+  font-size: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: var(--space-2) var(--space-8);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.contact-submit:hover {
+  background: var(--fg);
+  color: var(--bg);
 }
 
 /* ── ページ遷移フェードイン ── */

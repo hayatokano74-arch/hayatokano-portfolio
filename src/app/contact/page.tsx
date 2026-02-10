@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
+import { ContactForm } from "@/components/ContactForm";
 
 export const metadata: Metadata = { title: "Contact" };
 
@@ -22,48 +23,54 @@ export default function ContactPage() {
             marginBottom: "var(--space-11)",
           }}
         >
-          お仕事のご依頼・お問い合わせは下記よりお願いいたします。
+          お仕事のご依頼・お問い合わせは下記フォームまたはメールよりお願いいたします。
         </div>
 
-        <div className="hrline" />
-        {links.map((item) => (
-          <div key={item.label}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "112px minmax(0, 1fr)",
-                columnGap: "var(--space-6)",
-                paddingTop: "var(--space-3)",
-                paddingBottom: "var(--space-3)",
-              }}
-            >
+        {/* フォーム */}
+        <ContactForm />
+
+        {/* リンク */}
+        <div style={{ marginTop: "var(--space-11)" }}>
+          <div className="hrline" />
+          {links.map((item) => (
+            <div key={item.label}>
               <div
                 style={{
-                  fontSize: "var(--font-meta)",
-                  letterSpacing: "0.16em",
-                  lineHeight: "var(--lh-normal)",
-                  color: "var(--muted)",
+                  display: "grid",
+                  gridTemplateColumns: "112px minmax(0, 1fr)",
+                  columnGap: "var(--space-6)",
+                  paddingTop: "var(--space-3)",
+                  paddingBottom: "var(--space-3)",
                 }}
               >
-                {item.label}
+                <div
+                  style={{
+                    fontSize: "var(--font-meta)",
+                    letterSpacing: "0.16em",
+                    lineHeight: "var(--lh-normal)",
+                    color: "var(--muted)",
+                  }}
+                >
+                  {item.label}
+                </div>
+                <a
+                  href={item.href}
+                  target={item.href.startsWith("mailto") ? undefined : "_blank"}
+                  rel={item.href.startsWith("mailto") ? undefined : "noopener noreferrer"}
+                  className="action-link"
+                  style={{
+                    fontSize: "var(--font-body)",
+                    lineHeight: "var(--lh-normal)",
+                    fontWeight: 700,
+                  }}
+                >
+                  {item.value}
+                </a>
               </div>
-              <a
-                href={item.href}
-                target={item.href.startsWith("mailto") ? undefined : "_blank"}
-                rel={item.href.startsWith("mailto") ? undefined : "noopener noreferrer"}
-                className="action-link"
-                style={{
-                  fontSize: "var(--font-body)",
-                  lineHeight: "var(--lh-normal)",
-                  fontWeight: 700,
-                }}
-              >
-                {item.value}
-              </a>
+              <div className="hrline" />
             </div>
-            <div className="hrline" />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </CanvasShell>
   );

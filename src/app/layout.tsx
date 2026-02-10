@@ -1,5 +1,21 @@
 import type { Metadata } from "next";
+import { Inter, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
+
+/* 欧文: Inter（クリーン、モダン） */
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+/* 和文: Noto Sans JP */
+const notoSansJP = Noto_Sans_JP({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-noto",
+  weight: ["400", "500", "600", "700", "900"],
+});
 
 const siteName = "Hayato Kano";
 const siteDescription = "Hayato Kano — Photographer / Visual Artist";
@@ -26,15 +42,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja">
-      <body
-        style={{
-          fontFamily:
-            '"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif',
-        }}
-      >
-        {children}
-      </body>
+    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

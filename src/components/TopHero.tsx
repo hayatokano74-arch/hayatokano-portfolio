@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 /* ナビ項目（ヘッダーと統一） */
 const NAV_ITEMS = [
@@ -14,11 +14,32 @@ const NAV_ITEMS = [
   { num: "07", label: "Contact", href: "/contact" },
 ];
 
+/* 現在時刻をJST表示 */
+function useCurrentTime() {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      setTime(
+        now.toLocaleTimeString("en-GB", {
+          timeZone: "Asia/Tokyo",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+    };
+    update();
+    const id = setInterval(update, 30_000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
+}
+
 export function TopHero({ candidates }: { candidates: string[] }) {
   const [index, setIndex] = useState(0);
   const src = useMemo(() => candidates[index] ?? null, [candidates, index]);
   const [loaded, setLoaded] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
+  const time = useCurrentTime();
 
   /* 画像読み込み完了でフェードイン */
   useEffect(() => {
@@ -29,59 +50,45 @@ export function TopHero({ candidates }: { candidates: string[] }) {
     img.onerror = () => setIndex((i) => i + 1);
   }, [src]);
 
-  /* スクロールダウンインジケーターのアニメーション */
-  const [scrollHidden, setScrollHidden] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setScrollHidden(window.scrollY > 80);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <>
-      {/* ── ヒーローセクション: フルスクリーン ── */}
-      <section ref={heroRef} className="top-hero">
-        {/* 背景画像 */}
-        {src ? (
-          <div
-            className="top-hero-bg"
-            style={{
-              backgroundImage: `url(${src})`,
-              opacity: loaded ? 1 : 0,
-            }}
-          />
-        ) : (
-          <div className="top-hero-placeholder">
-            /public/images/top-hero.(jpg|jpeg|png|webp) を配置してください
-          </div>
-        )}
-
-        {/* オーバーレイグラデーション（下部を暗く） */}
-        <div className="top-hero-overlay" />
-
-        {/* 左下: ブランド名 */}
-        <div className="top-hero-brand">
-          <div className="top-hero-brand-name">HAYATO KANO</div>
-        </div>
-
-        {/* 右下: ナビゲーション（縦並び） */}
-        <nav className="top-hero-nav">
-          {NAV_ITEMS.map(({ num, label, href }) => (
-            <Link key={href} href={href} className="top-hero-nav-item">
-              <span className="top-hero-nav-num">{num}</span>
-              <span className="top-hero-nav-label">{label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        {/* スクロールダウンインジケーター */}
+    <main className="top-hero" style={{ overflow: "hidden" }}>
+      {/* 背景画像 */}
+      {src ? (
         <div
-          className="top-hero-scroll"
-          style={{ opacity: scrollHidden ? 0 : 1 }}
-        >
-          <div className="top-hero-scroll-line" />
+          className="top-hero-bg"
+          style={{
+            backgroundImage: `url(${src})`,
+            opacity: loaded ? 1 : 0,
+          }}
+        />
+      ) : (
+        <div className="top-hero-placeholder">
+          /public/images/top-hero.(jpg|jpeg|png|webp) を配置してください
         </div>
-      </section>
-    </>
+      )}
+
+      {/* オーバーレイグラデーション */}
+      <div className="top-hero-overlay" />
+
+      {/* 左下: ブランド名 + 時刻・場所 */}
+      <div className="top-hero-brand">
+        <div className="top-hero-brand-name">HAYATO KANO</div>
+        {time ? (
+          <div className="top-hero-brand-meta">
+            Ishinomaki, JP — {time} JST
+          </div>
+        ) : null}
+      </div>
+
+      {/* 右下: ナビゲーション（縦並び） */}
+      <nav className="top-hero-nav">
+        {NAV_ITEMS.map(({ num, label, href }) => (
+          <Link key={href} href={href} className="top-hero-nav-item">
+            <span className="top-hero-nav-num">{num}</span>
+            <span className="top-hero-nav-label">{label}</span>
+          </Link>
+        ))}
+      </nav>
+    </main>
   );
 }
