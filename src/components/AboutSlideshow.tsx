@@ -34,6 +34,10 @@ export function AboutSlideshow({ photos }: { photos: Photo[] }) {
       className="about-slideshow"
       style={{
         width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
       }}
     >
       {/* 画像コンテナ — 高さ固定で縦横切替時にドット位置が動かない */}
