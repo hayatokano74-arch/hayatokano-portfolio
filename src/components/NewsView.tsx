@@ -1,67 +1,49 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { type NewsItem } from "@/lib/mock";
 import { blurDataURL } from "@/lib/blur";
 
 export function NewsView({ items }: { items: NewsItem[] }) {
-  /* 画像付きニュースをすべて収集 */
-  const imagesWithIndex = items
-    .map((item, i) => ({ item, i }))
-    .filter(({ item }) => !!item.image);
-
-  const firstImage = imagesWithIndex[0]?.item.image ?? null;
+  const firstImage = items.find((n) => n.image)?.image ?? null;
   const [activeSrc, setActiveSrc] = useState(firstImage?.src ?? "");
-  const prevSrc = useRef(activeSrc);
-
-  /* 画像切替 */
-  const handleHover = (item: NewsItem) => {
-    if (item.image && item.image.src !== activeSrc) {
-      prevSrc.current = activeSrc;
-      setActiveSrc(item.image.src);
-    }
-  };
-
-  /* 全画像をプリレンダリングしてフェードで切替 */
   const allImages = items.filter((n) => n.image).map((n) => n.image!);
 
   return (
-    <div className="news-container">
-      {/* 背景画像レイヤー: 画面中央に固定 */}
-      <div className="news-bg-layer">
+    <>
+      {/* ── デスクトップ: 右半分に固定画像 ── */}
+      <div className="news-fixed-image">
         {allImages.map((img) => (
-          <div
+          <Image
             key={img.src}
-            className="news-bg-image"
+            src={img.src}
+            alt=""
+            fill
+            sizes="50vw"
+            placeholder="blur"
+            blurDataURL={blurDataURL(img.width, img.height)}
+            className="news-fixed-img"
             style={{
+              objectFit: "contain",
+              objectPosition: "center",
               opacity: img.src === activeSrc ? 1 : 0,
+              transition: "opacity 400ms ease",
             }}
-          >
-            <Image
-              src={img.src}
-              alt=""
-              fill
-              sizes="100vw"
-              placeholder="blur"
-              blurDataURL={blurDataURL(img.width, img.height)}
-              style={{
-                objectFit: "contain",
-                objectPosition: "center",
-              }}
-            />
-          </div>
+          />
         ))}
       </div>
 
-      {/* 前面: ニュースリスト（スクロール可能） */}
-      <div className="news-panel">
+      {/* ── ニュースリスト（左半分、通常スクロール） ── */}
+      <div className="news-list">
         {items.map((item, i) => (
           <div key={item.id}>
             {i > 0 ? <div className="hrline" /> : null}
             <article
               className={`news-item ${item.image ? "has-image" : ""}`}
-              onMouseEnter={() => handleHover(item)}
+              onMouseEnter={() => {
+                if (item.image) setActiveSrc(item.image.src);
+              }}
             >
               {/* モバイル用: 背景画像 */}
               {item.image ? (
@@ -113,6 +95,6 @@ export function NewsView({ items }: { items: NewsItem[] }) {
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }

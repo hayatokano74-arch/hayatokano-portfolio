@@ -734,22 +734,16 @@ button {
   }
 
   /* News モバイル */
-  .news-container {
-    height: auto !important;
-  }
-
-  .news-bg-layer {
+  .news-fixed-image {
     display: none;
   }
 
-  .news-panel {
+  .news-list {
     width: 100% !important;
-    height: auto !important;
-    overflow-y: visible !important;
-    padding-right: 0 !important;
+    margin-top: var(--space-8) !important;
   }
 
-  .news-panel:hover .news-item {
+  .news-list:hover .news-item {
     opacity: 1;
   }
 
@@ -861,42 +855,27 @@ button {
   justify-content: center;
 }
 
-/* ── News: 背景画像 + 前面パネル ── */
-.news-container {
-  position: relative;
-  height: calc(100vh - var(--pad-y) * 2 - var(--space-11) - var(--space-12));
-}
+/* ── News: Split Pane（左リスト + 右固定画像） ── */
 
-/* 背景画像レイヤー: 画面中央に固定 */
-.news-bg-layer {
-  position: absolute;
-  inset: 0;
+/* 右半分に固定画像（ビューポート基準で中央配置） */
+.news-fixed-image {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 50vw;
+  height: 100vh;
+  z-index: 0;
   pointer-events: none;
+  /* 画像表示エリアにpadding確保 */
+  padding: var(--space-14) var(--pad-x) var(--pad-y) var(--space-10);
 }
 
-.news-bg-image {
-  position: absolute;
-  inset: 0;
-  transition: opacity 400ms ease;
-}
-
-/* 前面パネル: 左側に固定幅、背景色付き */
-.news-panel {
+/* 左側リスト */
+.news-list {
   position: relative;
   z-index: 1;
-  width: min(420px, 40%);
-  height: 100%;
-  overflow-y: auto;
-  background: var(--bg);
-  padding-right: var(--space-10);
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.news-panel::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
+  width: min(420px, 45%);
+  margin-top: var(--space-12);
 }
 
 .news-item {
@@ -906,11 +885,11 @@ button {
 }
 
 /* ホバー時、他のアイテムを薄くする */
-.news-panel:hover .news-item {
+.news-list:hover .news-item {
   opacity: 0.45;
 }
 
-.news-panel:hover .news-item:hover {
+.news-list:hover .news-item:hover {
   opacity: 1;
 }
 

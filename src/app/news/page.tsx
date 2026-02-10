@@ -10,9 +10,7 @@ export default function NewsPage() {
   return (
     <CanvasShell>
       <Header active="News" title="News" showCategoryRow={false} />
-      <div style={{ marginTop: "var(--space-12)" }}>
-        <NewsView items={news} />
-      </div>
+      <NewsView items={news} />
     </CanvasShell>
   );
 }
