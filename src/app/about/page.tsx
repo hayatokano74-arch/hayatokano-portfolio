@@ -10,19 +10,9 @@ export default function AboutPage() {
   return (
     <CanvasShell>
       <Header active="About" title="About" showCategoryRow={false} />
-      <div
-        className="about-layout"
-        style={{
-          marginTop: "var(--space-12)",
-          display: "grid",
-          gridTemplateColumns: "minmax(280px, 420px) minmax(0, 920px)",
-          gap: "var(--space-10)",
-          justifyContent: "space-between",
-          alignItems: "start",
-        }}
-      >
-        {/* 左: テキスト */}
-        <div className="about-text" style={{ minWidth: 0 }}>
+      <div className="about-layout">
+        {/* 左: テキスト（スクロール） */}
+        <div className="about-text">
           {/* ステートメント */}
           <div
             style={{

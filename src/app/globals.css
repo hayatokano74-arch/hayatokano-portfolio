@@ -737,6 +737,12 @@ button {
   .news-layout {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 0 !important;
+    height: auto !important;
+  }
+
+  .news-list {
+    overflow-y: visible !important;
+    height: auto !important;
   }
 
   .news-image-column {
@@ -756,10 +762,17 @@ button {
   .about-layout {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: var(--space-6) !important;
+    height: auto !important;
+  }
+
+  .about-text {
+    overflow-y: visible !important;
+    height: auto !important;
   }
 
   .about-slideshow {
-    position: static !important;
+    height: auto !important;
+    display: block !important;
   }
 
   .timeline-row {
@@ -806,13 +819,59 @@ button {
   }
 }
 
-/* ── News: 2カラム + ホバー画像 ── */
+/* ── About: 2カラム（左スクロール、右固定） ── */
+.about-layout {
+  margin-top: var(--space-12);
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
+  gap: var(--space-10);
+  justify-content: space-between;
+  align-items: start;
+  height: calc(100vh - var(--pad-y) * 2 - var(--space-11) - var(--space-12));
+}
+
+.about-text {
+  overflow-y: auto;
+  height: 100%;
+  min-width: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.about-text::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.about-slideshow {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* ── News: 2カラム + ホバー画像（左スクロール、右固定） ── */
 .news-layout {
   display: grid;
   grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
   gap: var(--space-10);
   justify-content: space-between;
   align-items: start;
+  height: calc(100vh - var(--pad-y) * 2 - var(--space-11) - var(--space-12));
+}
+
+.news-list {
+  overflow-y: auto;
+  height: 100%;
+  min-width: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.news-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .news-item {
@@ -833,12 +892,13 @@ button {
 .news-image-column {
   min-width: 0;
   width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .news-image-sticky {
-  position: sticky;
-  top: var(--space-7);
-  align-self: flex-start;
+  width: 100%;
 }
 
 /* モバイル用インライン画像はデスクトップで非表示 */

@@ -33,9 +33,6 @@ export function AboutSlideshow({ photos }: { photos: Photo[] }) {
     <div
       className="about-slideshow"
       style={{
-        position: "sticky",
-        top: "var(--space-7)",
-        alignSelf: "flex-start",
         width: "100%",
       }}
     >
