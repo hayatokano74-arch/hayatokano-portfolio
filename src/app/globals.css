@@ -155,51 +155,14 @@ button {
   min-height: var(--space-11);
 }
 
-/* ブランドブロック: モノグラム + 情報 */
-.header-brand-block {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.header-monogram {
+/* ブランド名 */
+.header-brand-name {
   font-size: 28px;
   font-weight: 900;
   line-height: 1;
   color: var(--fg);
   text-decoration: none;
-  letter-spacing: -0.04em;
-}
-
-.header-brand-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.header-fullname {
-  font-size: var(--font-meta);
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--fg);
-  text-decoration: none;
-  letter-spacing: 0.08em;
-}
-
-.header-role {
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 1.2;
-  color: var(--muted);
-  letter-spacing: 0.12em;
-}
-
-/* セパレーター */
-.header-separator {
-  height: 1px;
-  background: var(--line);
-  margin-top: var(--space-2);
-  opacity: 0.4;
+  letter-spacing: -0.02em;
 }
 
 /* デスクトップナビ: ナンバリング付き */
@@ -417,14 +380,6 @@ button {
     display: none !important;
   }
 
-  .header-brand-info {
-    display: none;
-  }
-
-  .header-separator {
-    display: none;
-  }
-
   .mobile-menu-button {
     display: inline-flex;
     align-items: center;
@@ -432,7 +387,7 @@ button {
     z-index: 101;
   }
 
-  .header-monogram {
+  .header-brand-name {
     position: relative;
     z-index: 101;
   }

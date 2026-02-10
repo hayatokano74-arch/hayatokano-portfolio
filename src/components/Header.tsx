@@ -60,18 +60,10 @@ export function Header({
     <header className="header-root">
       {/* ── メインヘッダーバー ── */}
       <div className="header-bar">
-        {/* 左: モノグラム + フルネーム */}
-        <div className="header-brand-block">
-          <Link href={brandHref} className="header-monogram">
-            HK
-          </Link>
-          <div className="header-brand-info">
-            <Link href={brandHref} className="header-fullname">
-              {brandLabel}
-            </Link>
-            <span className="header-role">Photographer</span>
-          </div>
-        </div>
+        {/* 左: ブランド名 */}
+        <Link href={brandHref} className="header-brand-name">
+          HAYATO KANO
+        </Link>
 
         {/* モバイルメニューボタン */}
         <button
@@ -102,8 +94,6 @@ export function Header({
         </nav>
       </div>
 
-      {/* ヘッダー下部のセパレーター */}
-      <div className="header-separator" />
 
       {/* ── モバイルフルスクリーンメニュー ── */}
       {mobileMenuOpen ? (
