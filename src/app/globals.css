@@ -734,12 +734,22 @@ button {
   }
 
   /* News モバイル */
-  .news-row {
-    grid-template-columns: 1fr !important;
+  .news-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
   }
 
-  .news-row-image {
-    margin-top: var(--space-3);
+  .news-image-column {
+    display: none;
+  }
+
+  .news-inline-image {
+    display: block;
+    margin-top: var(--space-4);
+  }
+
+  .news-list:hover .news-item {
+    opacity: 1;
   }
 
   /* About モバイル */
@@ -794,6 +804,51 @@ button {
   .timeline-mobile-archive {
     display: block;
   }
+}
+
+/* ── News: 2カラム + ホバー画像 ── */
+.news-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
+  gap: var(--space-10);
+  justify-content: space-between;
+  align-items: start;
+}
+
+.news-item {
+  padding: var(--space-5) 0;
+  cursor: default;
+  transition: opacity 160ms ease;
+}
+
+/* ホバー時、他のアイテムを薄くする */
+.news-list:hover .news-item {
+  opacity: 0.45;
+}
+
+.news-list:hover .news-item:hover {
+  opacity: 1;
+}
+
+.news-image-column {
+  min-width: 0;
+  width: 100%;
+}
+
+.news-image-sticky {
+  position: sticky;
+  top: var(--space-7);
+  align-self: flex-start;
+}
+
+/* モバイル用インライン画像はデスクトップで非表示 */
+.news-inline-image {
+  display: none;
+}
+
+@keyframes news-image-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* ── ページ遷移フェードイン ── */
