@@ -149,9 +149,51 @@ button {
   min-height: var(--space-11);
 }
 
+.site-brand-group {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
 .site-brand {
   font-size: var(--font-brand);
   line-height: 1;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-brand-sub {
+  font-size: var(--font-meta);
+  line-height: 1;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+/* デスクトップナビ */
+.desktop-main-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-9);
+}
+
+.header-nav-link {
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 140ms linear;
+  letter-spacing: 0.04em;
+}
+
+.header-nav-link:hover,
+.header-nav-link:focus-visible {
+  color: var(--fg);
+}
+
+.header-nav-link.is-active {
+  color: var(--fg);
   font-weight: 700;
 }
 
@@ -240,6 +282,10 @@ button {
   }
 
   .header-search {
+    display: none;
+  }
+
+  .site-brand-sub {
     display: none;
   }
 

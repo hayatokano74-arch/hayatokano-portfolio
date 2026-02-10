@@ -8,6 +8,17 @@ import { CATEGORY_MENU, type Category } from "@/lib/categories";
 type Section = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
 type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
 
+/* ナビゲーション項目の定義 */
+const NAV_ITEMS: { label: string; href: string; section: Section }[] = [
+  { label: "Works", href: "/works", section: "Works" },
+  { label: "Text", href: "/text", section: "Text" },
+  { label: "目の星", href: "/me-no-hoshi", section: "目の星" },
+  { label: "Time Line", href: "/timeline", section: "Time Line" },
+  { label: "News", href: "/news", section: "News" },
+  { label: "About", href: "/about", section: "About" },
+  { label: "Contact", href: "/contact", section: "Contact" },
+];
+
 export function Header({
   active,
   title,
@@ -45,24 +56,22 @@ export function Header({
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  const navStyle = {
-    gap: "var(--space-11)",
-    fontSize: "var(--font-body)",
-    lineHeight: "var(--lh-normal)",
-    fontWeight: 500,
-  } as const;
-
   return (
     <header>
       <div className="site-brand-row">
-        <Link
-          href={brandHref}
-          className="site-brand action-link"
-          style={{ color: "var(--fg)" }}
-        >
-          {brandLabel}
-        </Link>
+        {/* 左: ブランド + サブテキスト */}
+        <div className="site-brand-group">
+          <Link
+            href={brandHref}
+            className="site-brand"
+            style={{ color: "var(--fg)" }}
+          >
+            {brandLabel}
+          </Link>
+          <span className="site-brand-sub">Photographer</span>
+        </div>
 
+        {/* モバイルメニューボタン */}
         <button
           type="button"
           className="action-link mobile-menu-button"
@@ -71,125 +80,44 @@ export function Header({
           onClick={() => setMobileMenuOpen((open) => !open)}
           style={{ fontSize: "var(--font-body)", lineHeight: 1, fontWeight: 700, border: 0, background: "transparent", padding: 0 }}
         >
-          menu
+          {mobileMenuOpen ? "close" : "menu"}
         </button>
 
-        <nav className="desktop-main-nav" style={{ display: "flex", alignItems: "center", ...navStyle }}>
-          <Link
-            href="/works"
-            className={`${active === "Works" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "Works" ? "var(--fg)" : "var(--muted)" }}
-          >
-            Works
-          </Link>
-          <Link
-            href="/text"
-            className={`${active === "Text" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "Text" ? "var(--fg)" : "var(--muted)" }}
-          >
-            Text
-          </Link>
-          <Link
-            href="/me-no-hoshi"
-            className={`${active === "目の星" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "目の星" ? "var(--fg)" : "var(--muted)" }}
-          >
-            目の星
-          </Link>
-          <Link
-            href="/timeline"
-            className={`${active === "Time Line" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "Time Line" ? "var(--fg)" : "var(--muted)" }}
-          >
-            Time Line
-          </Link>
-          <Link
-            href="/news"
-            className={`${active === "News" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "News" ? "var(--fg)" : "var(--muted)" }}
-          >
-            News
-          </Link>
-          <Link
-            href="/about"
-            className={`${active === "About" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "About" ? "var(--fg)" : "var(--muted)" }}
-          >
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className={`${active === "Contact" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "Contact" ? "var(--fg)" : "var(--muted)" }}
-          >
-            Contact
-          </Link>
+        {/* デスクトップナビ */}
+        <nav className="desktop-main-nav">
+          {NAV_ITEMS.map(({ label, href, section }) => (
+            <Link
+              key={section}
+              href={href}
+              className={`header-nav-link ${active === section ? "is-active" : ""}`.trim()}
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
       </div>
 
+      {/* モバイルメニュー */}
       {mobileMenuOpen ? (
         <nav
           id="mobile-main-menu"
           className="mobile-main-menu"
           style={{
-            marginTop: "var(--space-4)",
+            marginTop: "var(--space-6)",
             display: "grid",
             justifyItems: "end",
-            gap: "var(--space-3)",
-            fontSize: "var(--font-body)",
-            lineHeight: "var(--lh-tight)",
-            fontWeight: 600,
+            gap: "var(--space-4)",
           }}
         >
-          <Link
-            href="/works"
-            className={`${active === "Works" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "Works" ? "var(--fg)" : "var(--muted)" }}
-          >
-            Works
-          </Link>
-          <Link
-            href="/text"
-            className={`${active === "Text" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "Text" ? "var(--fg)" : "var(--muted)" }}
-          >
-            Text
-          </Link>
-          <Link
-            href="/me-no-hoshi"
-            className={`${active === "目の星" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "目の星" ? "var(--fg)" : "var(--muted)" }}
-          >
-            目の星
-          </Link>
-          <Link
-            href="/timeline"
-            className={`${active === "Time Line" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "Time Line" ? "var(--fg)" : "var(--muted)" }}
-          >
-            Time Line
-          </Link>
-          <Link
-            href="/news"
-            className={`${active === "News" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "News" ? "var(--fg)" : "var(--muted)" }}
-          >
-            News
-          </Link>
-          <Link
-            href="/about"
-            className={`${active === "About" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "About" ? "var(--fg)" : "var(--muted)" }}
-          >
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className={`${active === "Contact" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: active === "Contact" ? "var(--fg)" : "var(--muted)" }}
-          >
-            Contact
-          </Link>
+          {NAV_ITEMS.map(({ label, href, section }) => (
+            <Link
+              key={section}
+              href={href}
+              className={`header-nav-link ${active === section ? "is-active" : ""}`.trim()}
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
       ) : null}
 
