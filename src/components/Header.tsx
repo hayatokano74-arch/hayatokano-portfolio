@@ -62,7 +62,7 @@ export function Header({
       <div className="header-bar">
         {/* 左: ブランド名 */}
         <Link href={brandHref} className="header-brand-name">
-          HAYATO KANO
+          {brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel}
         </Link>
 
         {/* モバイルメニューボタン */}
