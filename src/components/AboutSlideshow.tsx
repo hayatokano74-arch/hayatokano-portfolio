@@ -38,37 +38,31 @@ export function AboutSlideshow({ photos }: { photos: Photo[] }) {
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
+        alignItems: "center",
       }}
     >
-      {/* 画像コンテナ — 高さ固定で縦横切替時にドット位置が動かない */}
-      <div
+      {/* 画像: 自然なサイズで表示、高さのみ制限 */}
+      <Image
+        key={photo.src}
+        src={photo.src}
+        alt=""
+        width={photo.width}
+        height={photo.height}
+        sizes="(max-width: 900px) 100vw, 920px"
+        priority={current === 0}
+        placeholder="blur"
+        blurDataURL={blurDataURL(photo.width, photo.height)}
         style={{
-          position: "relative",
-          width: "100%",
-          maxWidth: 920,
-          aspectRatio: "3 / 4",
-          maxHeight: "min(72vh, 820px)",
-          background: "var(--bg)",
-          overflow: "hidden",
+          width: "auto",
+          height: "auto",
+          maxWidth: "100%",
+          maxHeight: "calc(100% - 24px)",
+          objectFit: "contain",
+          display: "block",
+          opacity: fade ? 1 : 0,
+          transition: "opacity 300ms ease",
         }}
-      >
-        <Image
-          key={photo.src}
-          src={photo.src}
-          alt=""
-          fill
-          sizes="(max-width: 900px) 100vw, 920px"
-          priority={current === 0}
-          placeholder="blur"
-          blurDataURL={blurDataURL(photo.width, photo.height)}
-          style={{
-            objectFit: "contain",
-            objectPosition: "center",
-            opacity: fade ? 1 : 0,
-            transition: "opacity 300ms ease",
-          }}
-        />
-      </div>
+      />
 
       {/* インジケータ */}
       <div
@@ -76,6 +70,7 @@ export function AboutSlideshow({ photos }: { photos: Photo[] }) {
           display: "flex",
           gap: 6,
           marginTop: "var(--space-2)",
+          flexShrink: 0,
         }}
       >
         {photos.map((_, i) => (
