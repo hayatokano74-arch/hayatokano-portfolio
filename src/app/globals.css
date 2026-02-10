@@ -288,8 +288,151 @@ button {
   font-weight: 900;
 }
 
-.top-hero-menu {
-  flex-direction: row;
+/* ── トップヒーロー: Cinematic Split ── */
+.top-hero {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.top-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.top-hero-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #555;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+
+/* 下部を暗くするグラデーション */
+.top-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 30%,
+    rgba(0, 0, 0, 0.15) 60%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* 左下: ブランド */
+.top-hero-brand {
+  position: absolute;
+  left: var(--pad-x);
+  bottom: var(--pad-y);
+  z-index: 2;
+}
+
+.top-hero-brand-name {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.top-hero-brand-year {
+  font-size: clamp(10px, 1.2vw, 13px);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.18em;
+  margin-top: 8px;
+}
+
+/* 右下: ナビ（縦並び） */
+.top-hero-nav {
+  position: absolute;
+  right: var(--pad-x);
+  bottom: var(--pad-y);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.top-hero-nav-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.top-hero-nav-item:hover,
+.top-hero-nav-item:focus-visible {
+  color: #fff;
+  transform: translateX(-4px);
+}
+
+.top-hero-nav-num {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.top-hero-nav-label {
+  font-size: clamp(13px, 1.4vw, 16px);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* スクロールインジケーター（中央下） */
+.top-hero-scroll {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  transition: opacity 400ms ease;
+}
+
+.top-hero-scroll-line {
+  width: 1px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.4);
+  animation: scroll-pulse 2s ease-in-out infinite;
+}
+
+@keyframes scroll-pulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(0.5); transform-origin: top; }
+  50% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+}
+
+/* ヒーロー全体のフェードイン */
+.top-hero-bg,
+.top-hero-brand,
+.top-hero-nav,
+.top-hero-scroll {
+  animation: hero-element-in 1s ease-out both;
+}
+
+.top-hero-brand { animation-delay: 0.3s; }
+.top-hero-nav { animation-delay: 0.5s; }
+.top-hero-scroll { animation-delay: 0.8s; }
+
+@keyframes hero-element-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .me-no-hoshi-detail {
@@ -408,9 +551,21 @@ button {
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .top-hero-menu {
-    flex-direction: column;
-    font-size: var(--font-brand) !important;
+  /* トップヒーローモバイル */
+  .top-hero-brand-name {
+    font-size: 24px !important;
+  }
+
+  .top-hero-nav {
+    gap: 4px;
+  }
+
+  .top-hero-nav-label {
+    font-size: 12px !important;
+  }
+
+  .top-hero-scroll-line {
+    height: 32px;
   }
 
   .works-list-summary {
