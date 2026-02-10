@@ -749,13 +749,28 @@ button {
     display: none;
   }
 
-  .news-inline-image {
-    display: block;
-    margin-top: var(--space-4);
-  }
-
   .news-list:hover .news-item {
     opacity: 1;
+  }
+
+  /* モバイル: 画像付きニュースは背景に写真を表示 */
+  .news-item.has-image {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .news-item-bg {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.12;
+    pointer-events: none;
+  }
+
+  .news-item-content {
+    position: relative;
+    z-index: 1;
   }
 
   /* About モバイル */
@@ -890,26 +905,27 @@ button {
   opacity: 1;
 }
 
+.news-item-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* モバイル背景画像はデスクトップで非表示 */
+.news-item-bg {
+  display: none;
+}
+
 .news-image-column {
   min-width: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.news-image-sticky {
+/* 固定コンテナ: 位置が動かない */
+.news-image-fixed {
+  position: relative;
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* モバイル用インライン画像はデスクトップで非表示 */
-.news-inline-image {
-  display: none;
 }
 
 @keyframes news-image-fade {

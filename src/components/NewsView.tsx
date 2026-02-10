@@ -18,91 +18,81 @@ export function NewsView({ items }: { items: NewsItem[] }) {
           <div key={item.id}>
             {i > 0 ? <div className="hrline" /> : null}
             <article
-              className="news-item"
+              className={`news-item ${item.image ? "has-image" : ""}`}
               onMouseEnter={() => {
                 if (item.image) setActiveImage(item.image);
               }}
             >
-              <div
-                style={{
-                  fontSize: "var(--font-meta)",
-                  lineHeight: "var(--lh-normal)",
-                  letterSpacing: "0.08em",
-                  color: "var(--muted)",
-                  marginBottom: "var(--space-1)",
-                }}
-              >
-                {item.date}
-              </div>
-              <div
-                style={{
-                  fontSize: "var(--font-body)",
-                  lineHeight: "var(--lh-normal)",
-                  fontWeight: 700,
-                  marginBottom: "var(--space-2)",
-                }}
-              >
-                {item.title}
-              </div>
-              <div
-                style={{
-                  fontSize: "var(--font-body)",
-                  lineHeight: "var(--lh-relaxed)",
-                  fontWeight: 500,
-                }}
-              >
-                {item.body}
-              </div>
-
-              {/* モバイル用: インライン画像 */}
+              {/* モバイル用: 背景画像 */}
               {item.image ? (
-                <div className="news-inline-image">
+                <div className="news-item-bg">
                   <Image
                     src={item.image.src}
-                    alt={item.title}
-                    width={item.image.width}
-                    height={item.image.height}
-                    placeholder="blur"
-                    blurDataURL={blurDataURL(item.image.width, item.image.height)}
+                    alt=""
+                    fill
+                    sizes="100vw"
                     loading="lazy"
-                    style={{ width: "100%", height: "auto", display: "block" }}
+                    style={{ objectFit: "cover", objectPosition: "center" }}
                   />
                 </div>
               ) : null}
+
+              <div className="news-item-content">
+                <div
+                  style={{
+                    fontSize: "var(--font-meta)",
+                    lineHeight: "var(--lh-normal)",
+                    letterSpacing: "0.08em",
+                    color: "var(--muted)",
+                    marginBottom: "var(--space-1)",
+                  }}
+                >
+                  {item.date}
+                </div>
+                <div
+                  style={{
+                    fontSize: "var(--font-body)",
+                    lineHeight: "var(--lh-normal)",
+                    fontWeight: 700,
+                    marginBottom: "var(--space-2)",
+                  }}
+                >
+                  {item.title}
+                </div>
+                <div
+                  style={{
+                    fontSize: "var(--font-body)",
+                    lineHeight: "var(--lh-relaxed)",
+                    fontWeight: 500,
+                  }}
+                >
+                  {item.body}
+                </div>
+              </div>
             </article>
           </div>
         ))}
       </div>
 
-      {/* 右カラム: ホバー連動画像（デスクトップのみ） */}
+      {/* 右カラム: ホバー連動画像（デスクトップのみ、固定コンテナ） */}
       <div className="news-image-column">
-        <div className="news-image-sticky">
+        <div className="news-image-fixed">
           {activeImage ? (
             <Image
               key={activeImage.src}
               src={activeImage.src}
               alt=""
-              width={activeImage.width}
-              height={activeImage.height}
+              fill
+              sizes="(max-width: 900px) 0px, 920px"
               placeholder="blur"
               blurDataURL={blurDataURL(activeImage.width, activeImage.height)}
               style={{
-                width: "100%",
-                height: "auto",
-                display: "block",
-                opacity: 1,
+                objectFit: "contain",
+                objectPosition: "center",
                 animation: "news-image-fade 300ms ease-out",
               }}
             />
-          ) : (
-            <div
-              style={{
-                aspectRatio: "8 / 5",
-                background: "var(--line)",
-                opacity: 0.15,
-              }}
-            />
-          )}
+          ) : null}
         </div>
       </div>
     </div>
