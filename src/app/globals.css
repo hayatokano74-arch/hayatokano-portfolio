@@ -848,6 +848,7 @@ button {
   height: 100%;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 /* ── News: 2カラム + ホバー画像（左スクロール、右固定） ── */
@@ -895,6 +896,7 @@ button {
   height: 100%;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .news-image-sticky {
