@@ -734,26 +734,26 @@ button {
   }
 
   /* News モバイル */
-  .news-layout {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 0 !important;
+  .news-container {
     height: auto !important;
   }
 
-  .news-list {
-    overflow-y: visible !important;
-    height: auto !important;
-  }
-
-  .news-image-column {
+  .news-bg-layer {
     display: none;
   }
 
-  .news-list:hover .news-item {
+  .news-panel {
+    width: 100% !important;
+    height: auto !important;
+    overflow-y: visible !important;
+    padding-right: 0 !important;
+  }
+
+  .news-panel:hover .news-item {
     opacity: 1;
   }
 
-  /* モバイル: 画像付きニュースは背景に写真を表示 */
+  /* モバイル: 画像付きニュースは背景に写真を薄く表示 */
   .news-item.has-image {
     position: relative;
     overflow: hidden;
@@ -764,13 +764,8 @@ button {
     position: absolute;
     inset: 0;
     z-index: 0;
-    opacity: 0.12;
+    opacity: 0.1;
     pointer-events: none;
-  }
-
-  .news-item-content {
-    position: relative;
-    z-index: 1;
   }
 
   /* About モバイル */
@@ -866,25 +861,39 @@ button {
   justify-content: center;
 }
 
-/* ── News: 2カラム + ホバー画像（左スクロール、右固定） ── */
-.news-layout {
-  display: grid;
-  grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
-  gap: var(--space-10);
-  justify-content: space-between;
-  align-items: stretch;
+/* ── News: 背景画像 + 前面パネル ── */
+.news-container {
+  position: relative;
   height: calc(100vh - var(--pad-y) * 2 - var(--space-11) - var(--space-12));
 }
 
-.news-list {
-  overflow-y: auto;
+/* 背景画像レイヤー: 画面中央に固定 */
+.news-bg-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.news-bg-image {
+  position: absolute;
+  inset: 0;
+  transition: opacity 400ms ease;
+}
+
+/* 前面パネル: 左側に固定幅、背景色付き */
+.news-panel {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 40%);
   height: 100%;
-  min-width: 0;
+  overflow-y: auto;
+  background: var(--bg);
+  padding-right: var(--space-10);
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.news-list::-webkit-scrollbar {
+.news-panel::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
@@ -897,11 +906,11 @@ button {
 }
 
 /* ホバー時、他のアイテムを薄くする */
-.news-list:hover .news-item {
+.news-panel:hover .news-item {
   opacity: 0.45;
 }
 
-.news-list:hover .news-item:hover {
+.news-panel:hover .news-item:hover {
   opacity: 1;
 }
 
@@ -913,24 +922,6 @@ button {
 /* モバイル背景画像はデスクトップで非表示 */
 .news-item-bg {
   display: none;
-}
-
-.news-image-column {
-  min-width: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* 固定コンテナ: 位置が動かない */
-.news-image-fixed {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-@keyframes news-image-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
 }
 
 /* ── ページ遷移フェードイン ── */

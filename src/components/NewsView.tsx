@@ -1,27 +1,67 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { type NewsItem } from "@/lib/mock";
 import { blurDataURL } from "@/lib/blur";
 
 export function NewsView({ items }: { items: NewsItem[] }) {
-  /* 画像付きニュースの最初のものをデフォルトに */
-  const firstWithImage = items.find((n) => n.image) ?? null;
-  const [activeImage, setActiveImage] = useState(firstWithImage?.image ?? null);
+  /* 画像付きニュースをすべて収集 */
+  const imagesWithIndex = items
+    .map((item, i) => ({ item, i }))
+    .filter(({ item }) => !!item.image);
+
+  const firstImage = imagesWithIndex[0]?.item.image ?? null;
+  const [activeSrc, setActiveSrc] = useState(firstImage?.src ?? "");
+  const prevSrc = useRef(activeSrc);
+
+  /* 画像切替 */
+  const handleHover = (item: NewsItem) => {
+    if (item.image && item.image.src !== activeSrc) {
+      prevSrc.current = activeSrc;
+      setActiveSrc(item.image.src);
+    }
+  };
+
+  /* 全画像をプリレンダリングしてフェードで切替 */
+  const allImages = items.filter((n) => n.image).map((n) => n.image!);
 
   return (
-    <div className="news-layout">
-      {/* 左カラム: ニュースリスト */}
-      <div className="news-list" style={{ minWidth: 0 }}>
+    <div className="news-container">
+      {/* 背景画像レイヤー: 画面中央に固定 */}
+      <div className="news-bg-layer">
+        {allImages.map((img) => (
+          <div
+            key={img.src}
+            className="news-bg-image"
+            style={{
+              opacity: img.src === activeSrc ? 1 : 0,
+            }}
+          >
+            <Image
+              src={img.src}
+              alt=""
+              fill
+              sizes="100vw"
+              placeholder="blur"
+              blurDataURL={blurDataURL(img.width, img.height)}
+              style={{
+                objectFit: "contain",
+                objectPosition: "center",
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* 前面: ニュースリスト（スクロール可能） */}
+      <div className="news-panel">
         {items.map((item, i) => (
           <div key={item.id}>
             {i > 0 ? <div className="hrline" /> : null}
             <article
               className={`news-item ${item.image ? "has-image" : ""}`}
-              onMouseEnter={() => {
-                if (item.image) setActiveImage(item.image);
-              }}
+              onMouseEnter={() => handleHover(item)}
             >
               {/* モバイル用: 背景画像 */}
               {item.image ? (
@@ -72,28 +112,6 @@ export function NewsView({ items }: { items: NewsItem[] }) {
             </article>
           </div>
         ))}
-      </div>
-
-      {/* 右カラム: ホバー連動画像（デスクトップのみ、固定コンテナ） */}
-      <div className="news-image-column">
-        <div className="news-image-fixed">
-          {activeImage ? (
-            <Image
-              key={activeImage.src}
-              src={activeImage.src}
-              alt=""
-              fill
-              sizes="(max-width: 900px) 0px, 920px"
-              placeholder="blur"
-              blurDataURL={blurDataURL(activeImage.width, activeImage.height)}
-              style={{
-                objectFit: "contain",
-                objectPosition: "center",
-                animation: "news-image-fade 300ms ease-out",
-              }}
-            />
-          ) : null}
-        </div>
       </div>
     </div>
   );
