@@ -59,10 +59,9 @@ export function TopHero({ candidates }: { candidates: string[] }) {
         {/* オーバーレイグラデーション（下部を暗く） */}
         <div className="top-hero-overlay" />
 
-        {/* 左下: ブランド + 年号 */}
+        {/* 左下: ブランド名 */}
         <div className="top-hero-brand">
           <div className="top-hero-brand-name">HAYATO KANO</div>
-          <div className="top-hero-brand-year">2025 —</div>
         </div>
 
         {/* 右下: ナビゲーション（縦並び） */}
