@@ -522,19 +522,21 @@ button {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── 12カラムグリッド: 左4列 + 1列gap + 右7列 ── */
 .me-no-hoshi-detail {
   display: grid;
-  grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
-  gap: var(--space-10);
-  justify-content: space-between;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
   align-items: start;
 }
 
 .me-no-hoshi-meta-column {
+  grid-column: 1 / span 4;
   min-width: 0;
 }
 
 .me-no-hoshi-visual-column {
+  grid-column: 6 / -1;
   min-width: 0;
   width: 100%;
   max-width: 920px;
@@ -836,10 +838,15 @@ button {
     padding-bottom: var(--space-5) !important;
   }
 
-  /* About モバイル */
+  /* About モバイル: 12カラム → 1カラム */
   .about-layout {
-    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-columns: 1fr !important;
     gap: var(--space-6) !important;
+  }
+
+  .about-text,
+  .about-photos {
+    grid-column: 1 / -1 !important;
   }
 
   .timeline-row {
@@ -861,10 +868,16 @@ button {
     gap: var(--space-3);
   }
 
+  /* 目の星モバイル: 12カラム → 1カラム */
   .me-no-hoshi-detail {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: 1fr !important;
     gap: var(--space-6);
     margin-top: var(--space-7) !important;
+  }
+
+  .me-no-hoshi-meta-column,
+  .me-no-hoshi-visual-column {
+    grid-column: 1 / -1 !important;
   }
 
   .me-no-hoshi-past-grid {
@@ -886,31 +899,30 @@ button {
   }
 }
 
-/* ═══ 2カラムレイアウト共通ルール ═══
-   基準: 目の星 (.me-no-hoshi-detail)
-   左カラム: minmax(280px, 420px) — テキスト・メタ情報
-   右カラム: minmax(0, 920px)     — 画像・ビジュアル
-   gap: var(--space-10)
-   justify-content: space-between
+/* ═══ 2カラムレイアウト共通ルール（12カラムグリッド） ═══
+   左カラム: columns 1-4（4列）— テキスト・メタ情報
+   gap列: column 5 — 視覚的な余白
+   右カラム: columns 6-12（7列）— 画像・ビジュアル
+   column-gap: var(--grid-gutter) = 1.5rem
    右カラム画像: maxWidth 920px, maxHeight min(72vh, 820px), objectFit contain
-   右カラム sticky: top var(--pad-y), height calc(100vh - var(--pad-y) * 2)
 */
 
-/* ── About: 2カラム ── */
+/* ── About: 12カラムグリッド ── */
 .about-layout {
   margin-top: var(--space-12);
   display: grid;
-  grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
-  gap: var(--space-10);
-  justify-content: space-between;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
   align-items: start;
 }
 
 .about-text {
+  grid-column: 1 / span 4;
   min-width: 0;
 }
 
 .about-photos {
+  grid-column: 6 / -1;
   min-width: 0;
   width: 100%;
   max-width: 920px;
