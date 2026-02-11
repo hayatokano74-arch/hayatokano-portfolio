@@ -82,14 +82,14 @@ function MeNoHoshiListDetails({ post }: { post: MeNoHoshiPost }) {
   return (
     <section>
       <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)", marginBottom: "var(--space-2)" }}>DETAILS</div>
-      <div style={{ borderTop: "1px solid #d2d2d2" }}>
+      <div style={{ borderTop: "1px solid var(--line-light)" }}>
         {rows.map((row) => (
           <div
             key={row.label}
             style={{
               display: "grid",
               gridTemplateColumns: "112px minmax(0,1fr)",
-              borderBottom: "1px solid #d2d2d2",
+              borderBottom: "1px solid var(--line-light)",
               gap: "var(--space-2)",
               paddingTop: "var(--space-2)",
               paddingBottom: "var(--space-2)",

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
+import { ThemeScript, ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
 
 /* 欧文: Inter（クリーン、モダン） */
@@ -42,8 +43,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
-      <body>{children}</body>
+    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`} suppressHydrationWarning>
+      <head><ThemeScript /></head>
+      <body>
+        {children}
+        <div className="theme-switch-wrap"><ThemeToggle /></div>
+      </body>
     </html>
   );
 }

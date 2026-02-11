@@ -1,9 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 
-/* ナビ項目（ヘッダーと統一） */
+/* ── 型定義 ── */
+type LatestWork = {
+  title: string;
+  year: string;
+  href: string;
+  image: string | null;
+};
+
+type Props = {
+  candidates: string[];
+  latestWorks: LatestWork[];
+};
+
+/* ── ナビ項目 ── */
 const NAV_ITEMS = [
   { num: "01", label: "Works", href: "/works" },
   { num: "02", label: "Text", href: "/text" },
@@ -14,50 +27,44 @@ const NAV_ITEMS = [
   { num: "07", label: "Contact", href: "/contact" },
 ];
 
-/* 現在時刻をJST表示 */
-function useCurrentTime() {
-  const [time, setTime] = useState("");
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      setTime(
-        now.toLocaleTimeString("en-GB", {
-          timeZone: "Asia/Tokyo",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      );
-    };
-    update();
-    const id = setInterval(update, 30_000);
-    return () => clearInterval(id);
-  }, []);
-  return time;
-}
-
-export function TopHero({ candidates }: { candidates: string[] }) {
+export function TopHero({ candidates, latestWorks }: Props) {
   const [index, setIndex] = useState(0);
-  const src = useMemo(() => candidates[index] ?? null, [candidates, index]);
+  const defaultSrc = useMemo(() => candidates[index] ?? null, [candidates, index]);
   const [loaded, setLoaded] = useState(false);
-  const time = useCurrentTime();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  /* 画像読み込み完了でフェードイン */
+  /* ── Works ホバーで背景切替 ── */
+  const [hoverSrc, setHoverSrc] = useState<string | null>(null);
+  const [hoverVisible, setHoverVisible] = useState(false);
+
+  const handleWorkHover = useCallback((image: string | null) => {
+    if (image) {
+      setHoverSrc(image);
+      setHoverVisible(true);
+    }
+  }, []);
+
+  const handleWorkLeave = useCallback(() => {
+    setHoverVisible(false);
+  }, []);
+
+  /* ── ヒーロー画像読み込み ── */
   useEffect(() => {
-    if (!src) return;
+    if (!defaultSrc) return;
     const img = new Image();
-    img.src = src;
+    img.src = defaultSrc;
     img.onload = () => setLoaded(true);
     img.onerror = () => setIndex((i) => i + 1);
-  }, [src]);
+  }, [defaultSrc]);
 
   return (
     <main className="top-hero" style={{ overflow: "hidden" }}>
-      {/* 背景画像 */}
-      {src ? (
+      {/* デフォルト背景画像 */}
+      {defaultSrc ? (
         <div
           className="top-hero-bg"
           style={{
-            backgroundImage: `url(${src})`,
+            backgroundImage: `url(${defaultSrc})`,
             opacity: loaded ? 1 : 0,
           }}
         />
@@ -67,17 +74,77 @@ export function TopHero({ candidates }: { candidates: string[] }) {
         </div>
       )}
 
+      {/* ホバー時の背景画像 */}
+      {hoverSrc ? (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url(${hoverSrc})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: hoverVisible ? 1 : 0,
+            zIndex: 1,
+            transition: "opacity 500ms ease",
+          }}
+        />
+      ) : null}
+
       {/* オーバーレイグラデーション */}
       <div className="top-hero-overlay" />
 
-      {/* 左下: ブランド名 + 時刻・場所 */}
-      <div className="top-hero-brand">
+      {/* 左上: ブランド名 + モバイルメニューボタン */}
+      <div className="top-hero-brand-top">
         <div className="top-hero-brand-name">HAYATO KANO</div>
-        {time ? (
-          <div className="top-hero-brand-meta">
-            Ishinomaki, JP — {time} JST
-          </div>
-        ) : null}
+        <button
+          type="button"
+          className="mobile-menu-button top-hero-mobile-menu"
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((o) => !o)}
+          style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer" }}
+        >
+          <span className="mobile-menu-label" style={{ color: "#fff" }}>
+            {mobileMenuOpen ? "Close" : "Menu"}
+          </span>
+        </button>
+      </div>
+
+      {/* モバイルフルスクリーンメニュー（ヘッダーと同じ） */}
+      {mobileMenuOpen ? (
+        <div className="mobile-overlay">
+          <nav className="mobile-overlay-nav">
+            {NAV_ITEMS.map(({ num, label, href }) => (
+              <Link
+                key={href}
+                href={href}
+                className="mobile-nav-item"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="mobile-nav-num">{num}</span>
+                <span className="mobile-nav-label">{label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+      ) : null}
+
+      {/* 左下: 最新 Works リスト */}
+      <div className="top-hero-brand">
+        <div className="top-hero-works" onMouseLeave={handleWorkLeave}>
+          {latestWorks.map((work) => (
+            <Link
+              key={work.href}
+              href={work.href}
+              className="top-hero-works-item"
+              onMouseEnter={() => handleWorkHover(work.image)}
+            >
+              {work.title}（{work.year}）
+            </Link>
+          ))}
+          <Link href="/works" className="top-hero-works-more">
+            More
+          </Link>
+        </div>
       </div>
 
       {/* 右下: ナビゲーション（縦並び） */}

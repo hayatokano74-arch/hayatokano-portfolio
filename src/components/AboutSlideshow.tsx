@@ -30,39 +30,34 @@ export function AboutSlideshow({ photos }: { photos: Photo[] }) {
   const photo = photos[current];
 
   return (
-    <div
-      className="about-slideshow"
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      {/* 画像: 自然なサイズで表示、高さのみ制限 */}
-      <Image
-        key={photo.src}
-        src={photo.src}
-        alt=""
-        width={photo.width}
-        height={photo.height}
-        sizes="(max-width: 900px) 100vw, 920px"
-        priority={current === 0}
-        placeholder="blur"
-        blurDataURL={blurDataURL(photo.width, photo.height)}
+    <div className="about-slideshow">
+      {/* 画像コンテナ: 目の星 KEY VISUALと同じサイズルール */}
+      <div
         style={{
-          width: "auto",
-          height: "auto",
-          maxWidth: "100%",
-          maxHeight: "calc(100% - 24px)",
-          objectFit: "contain",
-          display: "block",
-          opacity: fade ? 1 : 0,
-          transition: "opacity 300ms ease",
+          position: "relative",
+          width: "100%",
+          maxWidth: 920,
+          aspectRatio: `${photo.width} / ${photo.height}`,
+          maxHeight: "min(72vh, 820px)",
         }}
-      />
+      >
+        <Image
+          key={photo.src}
+          src={photo.src}
+          alt=""
+          fill
+          sizes="(max-width: 900px) 100vw, 920px"
+          priority={current === 0}
+          placeholder="blur"
+          blurDataURL={blurDataURL(photo.width, photo.height)}
+          style={{
+            objectFit: "contain",
+            objectPosition: "center",
+            opacity: fade ? 1 : 0,
+            transition: "opacity 300ms ease",
+          }}
+        />
+      </div>
 
       {/* インジケータ */}
       <div

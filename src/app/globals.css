@@ -38,6 +38,60 @@
   /* ページシェル余白 */
   --pad-x: var(--space-12);
   --pad-y: var(--space-9);
+
+  /* 罫線（コンポーネント用） */
+  --line-light: #d2d2d2;
+}
+
+/* ── ダークモード ── */
+[data-theme="dark"] {
+  --bg: #1a1a1a;
+  --fg: #e8e8e8;
+  --muted: #888;
+  --line: #3a3a3a;
+  --line-light: #3a3a3a;
+}
+
+/* テーマ切り替えスイッチ（フッター右端） */
+.theme-switch-wrap {
+  position: fixed;
+  bottom: var(--pad-y);
+  right: var(--pad-x);
+  z-index: 90;
+}
+.theme-switch {
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  opacity: 0.35;
+  transition: opacity 200ms ease;
+}
+.theme-switch:hover {
+  opacity: 0.8;
+}
+.theme-switch-track {
+  display: block;
+  width: 20px;
+  height: 10px;
+  border-radius: 5px;
+  border: 1px solid var(--muted);
+  background: transparent;
+  position: relative;
+}
+.theme-switch-thumb {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  transition: transform 200ms ease;
 }
 
 html,
@@ -332,28 +386,32 @@ button {
 }
 
 /* 左下: ブランド */
+/* 左上: ブランド名（ヘッダーと同じ位置・サイズ） */
+.top-hero-brand-top {
+  position: absolute;
+  left: var(--pad-x);
+  top: var(--pad-y);
+  z-index: 2;
+}
+
+.top-hero-mobile-menu {
+  display: none;
+}
+
+.top-hero-brand-name {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 左下: Works リスト */
 .top-hero-brand {
   position: absolute;
   left: var(--pad-x);
   bottom: var(--pad-y);
   z-index: 2;
-}
-
-.top-hero-brand-name {
-  font-size: clamp(28px, 4vw, 48px);
-  font-weight: 900;
-  line-height: 1;
-  color: #fff;
-  letter-spacing: -0.02em;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-.top-hero-brand-year {
-  font-size: clamp(10px, 1.2vw, 13px);
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 0.18em;
-  margin-top: 8px;
 }
 
 /* 右下: ナビ（縦並び） */
@@ -399,39 +457,55 @@ button {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 }
 
-/* スクロールインジケーター（中央下） */
-.top-hero-scroll {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  transition: opacity 400ms ease;
+/* ── 左下: 最新 Works リスト ── */
+.top-hero-works {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--space-4);
 }
 
-.top-hero-scroll-line {
-  width: 1px;
-  height: 48px;
-  background: rgba(255, 255, 255, 0.4);
-  animation: scroll-pulse 2s ease-in-out infinite;
+.top-hero-works-item {
+  font-size: clamp(12px, 1.3vw, 15px);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  line-height: 1.6;
+  transition: color 180ms ease, text-decoration-color 180ms ease;
 }
 
-@keyframes scroll-pulse {
-  0%, 100% { opacity: 0.3; transform: scaleY(0.5); transform-origin: top; }
-  50% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+.top-hero-works-item:hover {
+  color: #fff;
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.7);
 }
 
-/* ヒーロー全体のフェードイン */
+.top-hero-works-more {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 180ms ease;
+}
+
+.top-hero-works-more:hover {
+  color: #fff;
+}
+
+/* ── ヒーロー全体のフェードイン ── */
 .top-hero-bg,
+.top-hero-brand-top,
 .top-hero-brand,
-.top-hero-nav,
-.top-hero-scroll {
+.top-hero-nav {
   animation: hero-element-in 1s ease-out both;
 }
 
-.top-hero-brand { animation-delay: 0.3s; }
+.top-hero-brand-top { animation-delay: 0.2s; }
+.top-hero-brand { animation-delay: 0.4s; }
 .top-hero-nav { animation-delay: 0.5s; }
-.top-hero-scroll { animation-delay: 0.8s; }
 
 @keyframes hero-element-in {
   from { opacity: 0; transform: translateY(12px); }
@@ -467,7 +541,7 @@ button {
 .me-no-hoshi-section {
   margin-top: var(--space-9);
   padding-top: var(--space-6);
-  border-top: 1px solid #d2d2d2;
+  border-top: 1px solid var(--line-light);
 }
 
 .me-no-hoshi-section.is-first {
@@ -555,20 +629,23 @@ button {
   }
 
   /* トップヒーローモバイル */
+  .top-hero-brand-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - var(--pad-x) * 2);
+  }
+
   .top-hero-brand-name {
-    font-size: 24px !important;
+    font-size: 22px !important;
+  }
+
+  .top-hero-mobile-menu {
+    display: block !important;
   }
 
   .top-hero-nav {
-    gap: 4px;
-  }
-
-  .top-hero-nav-label {
-    font-size: 12px !important;
-  }
-
-  .top-hero-scroll-line {
-    height: 32px;
+    display: none !important;
   }
 
   .works-list-summary {
@@ -737,44 +814,22 @@ button {
   }
 
   /* News モバイル */
-  .news-layout {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: var(--space-6) !important;
+  .news-accord-summary {
+    grid-template-columns: 80px minmax(0, 1fr) 30px !important;
+    column-gap: var(--space-3) !important;
   }
 
-  .news-fixed-image {
-    display: none;
-  }
-
-  .news-list:hover .news-item {
-    opacity: 1;
-  }
-
-  /* モバイル: 画像付きニュースは背景に写真を薄く表示 */
-  .news-item.has-image {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .news-item-bg {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    opacity: 0.1;
-    pointer-events: none;
+  .news-accord-detail {
+    grid-template-columns: 1fr !important;
+    row-gap: var(--space-4);
+    padding-top: var(--space-4) !important;
+    padding-bottom: var(--space-5) !important;
   }
 
   /* About モバイル */
   .about-layout {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: var(--space-6) !important;
-  }
-
-  .about-slideshow {
-    position: static !important;
-    height: auto !important;
-    display: block !important;
   }
 
   .timeline-row {
@@ -821,7 +876,17 @@ button {
   }
 }
 
-/* ── About: 2カラム（通常スクロール + 右カラム sticky） ── */
+/* ═══ 2カラムレイアウト共通ルール ═══
+   基準: 目の星 (.me-no-hoshi-detail)
+   左カラム: minmax(280px, 420px) — テキスト・メタ情報
+   右カラム: minmax(0, 920px)     — 画像・ビジュアル
+   gap: var(--space-10)
+   justify-content: space-between
+   右カラム画像: maxWidth 920px, maxHeight min(72vh, 820px), objectFit contain
+   右カラム sticky: top var(--pad-y), height calc(100vh - var(--pad-y) * 2)
+*/
+
+/* ── About: 2カラム ── */
 .about-layout {
   margin-top: var(--space-12);
   display: grid;
@@ -835,63 +900,38 @@ button {
   min-width: 0;
 }
 
-.about-slideshow {
-  position: sticky;
-  top: var(--pad-y);
-  height: calc(100vh - var(--pad-y) * 2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ── News: 2カラム（通常スクロール + 右カラム sticky） ── */
-.news-layout {
-  margin-top: var(--space-12);
-  display: grid;
-  grid-template-columns: minmax(280px, 420px) minmax(0, 920px);
-  gap: var(--space-10);
-  justify-content: space-between;
-  align-items: start;
-}
-
-/* 右カラムに sticky 画像（目の星 KEY VISUALと同じ配置） */
-.news-fixed-image {
-  position: sticky;
-  top: var(--pad-y);
-  height: calc(100vh - var(--pad-y) * 2);
-  pointer-events: none;
-}
-
-/* 左側リスト */
-.news-list {
-  position: relative;
-  z-index: 1;
+.about-photos {
   min-width: 0;
+  width: 100%;
+  max-width: 920px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
 }
 
-.news-item {
-  padding: var(--space-5) 0;
-  cursor: default;
-  transition: opacity 160ms ease;
+/* ── News: アコーディオン（Works リスト表示と統一） ── */
+.news-accordion {
+  margin-top: var(--space-12);
 }
 
-/* ホバー時、他のアイテムを薄くする */
-.news-list:hover .news-item {
-  opacity: 0.45;
+.news-accord-item {
+  border-top: 1px solid var(--line);
 }
 
-.news-list:hover .news-item:hover {
-  opacity: 1;
+.news-accord-item:last-child {
+  border-bottom: 1px solid var(--line);
 }
 
-.news-item-content {
-  position: relative;
-  z-index: 1;
+.news-accord-summary {
+  padding: var(--space-2) 0;
 }
 
-/* モバイル背景画像はデスクトップで非表示 */
-.news-item-bg {
+.news-accord-summary::-webkit-details-marker {
   display: none;
+}
+
+.news-accord-summary::marker {
+  content: "";
 }
 
 /* ── Contact フォーム ── */

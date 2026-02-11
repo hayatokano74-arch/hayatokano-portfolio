@@ -37,14 +37,14 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
 
         <div style={{ marginTop: "var(--space-10)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", letterSpacing: "0.2em" }}>DETAILS</div>
 
-        <div style={{ marginTop: "var(--space-2)", borderTop: "1px solid #d2d2d2" }}>
+        <div style={{ marginTop: "var(--space-2)", borderTop: "1px solid var(--line-light)" }}>
           {tableRows.map((row) => (
             <div
               key={row.label}
               style={{
                 display: "grid",
                 gridTemplateColumns: "112px minmax(0,1fr)",
-                borderBottom: "1px solid #d2d2d2",
+                borderBottom: "1px solid var(--line-light)",
                 gap: "var(--space-2)",
                 paddingTop: "var(--space-2)",
                 paddingBottom: "var(--space-2)",
@@ -62,7 +62,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
               marginTop: "var(--space-6)",
               paddingTop: "var(--space-4)",
               paddingBottom: "var(--space-4)",
-              borderBottom: "1px solid #d2d2d2",
+              borderBottom: "1px solid var(--line-light)",
             }}
           >
             <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>

@@ -228,12 +228,13 @@ function ArchiveSidebar({
       className="timeline-sidebar"
       style={{
         width: 180,
-        paddingTop: "var(--space-2)",
-        position: "sticky",
-        top: "var(--space-7)",
-        alignSelf: "flex-start",
+        position: "absolute",
+        right: 0,
+        top: 0,
+        bottom: 0,
       }}
     >
+      <div style={{ position: "sticky", top: "var(--space-7)", paddingTop: "var(--space-2)" }}>
       {tree.map((yearNode) => {
         const yearOpen = openKeys.has(yearNode.year);
         return (
@@ -317,6 +318,7 @@ function ArchiveSidebar({
           </div>
         );
       })}
+      </div>
     </aside>
   );
 }
@@ -407,10 +409,10 @@ export function TimelineView({
 
   return (
     <div style={{ marginTop: "var(--space-11)" }}>
-      {/* メインレイアウト: コンテンツ + サイドバー */}
-      <div className="timeline-layout" style={{ display: "flex", gap: "var(--space-10)" }}>
-        {/* コンテンツ（中央配置） */}
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", minWidth: 0 }}>
+      {/* メインレイアウト: コンテンツ中央 + サイドバー右端固定 */}
+      <div className="timeline-layout" style={{ position: "relative" }}>
+        {/* コンテンツ（ページ全幅で中央配置） */}
+        <div style={{ display: "flex", justifyContent: "center" }}>
           <div style={{ width: "min(100%, 640px)" }}>
             {/* フィルタ行 + モバイルアーカイブ */}
             <div style={{ display: "flex", alignItems: "center", gap: "var(--space-8)", flexWrap: "wrap", marginBottom: "var(--space-9)" }}>
@@ -443,7 +445,7 @@ export function TimelineView({
           </div>
         </div>
 
-        {/* サイドバー（デスクトップのみ、CSSで制御） */}
+        {/* サイドバー（デスクトップのみ、右端に固定配置） */}
         <ArchiveSidebar allDates={allDates} activeMonth={activeMonth} activeType={activeType} />
       </div>
     </div>

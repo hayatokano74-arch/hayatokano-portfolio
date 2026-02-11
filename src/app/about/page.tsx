@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
-import { AboutSlideshow } from "@/components/AboutSlideshow";
 import { about } from "@/lib/mock";
+import { blurDataURL } from "@/lib/blur";
 
 export const metadata: Metadata = { title: "About" };
 
@@ -11,9 +12,8 @@ export default function AboutPage() {
     <CanvasShell>
       <Header active="About" title="About" showCategoryRow={false} />
       <div className="about-layout">
-        {/* 左: テキスト（スクロール） */}
+        {/* 左カラム: テキスト */}
         <div className="about-text">
-          {/* ステートメント */}
           <div
             style={{
               fontSize: "var(--font-body)",
@@ -26,7 +26,6 @@ export default function AboutPage() {
             {about.statement}
           </div>
 
-          {/* CV */}
           <div
             style={{
               fontSize: "var(--font-meta)",
@@ -74,8 +73,36 @@ export default function AboutPage() {
           ))}
         </div>
 
-        {/* 右: スライドショー */}
-        <AboutSlideshow photos={about.photos} />
+        {/* 右カラム: 写真（縦一列） */}
+        <div className="about-photos">
+          {about.photos.map((photo, idx) => (
+            <div
+              key={idx}
+              style={{
+                position: "relative",
+                width: "100%",
+                maxWidth: 920,
+                aspectRatio: `${photo.width} / ${photo.height}`,
+                maxHeight: "min(72vh, 820px)",
+                marginInline: "auto",
+                overflow: "hidden",
+                display: "grid",
+                placeItems: "center",
+              }}
+            >
+              <Image
+                src={photo.src}
+                alt=""
+                fill
+                priority={idx === 0}
+                sizes="(max-width: 900px) 100vw, 920px"
+                placeholder="blur"
+                blurDataURL={blurDataURL(photo.width, photo.height)}
+                style={{ objectFit: "contain", objectPosition: "center" }}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </CanvasShell>
   );
