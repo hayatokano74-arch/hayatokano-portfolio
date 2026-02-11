@@ -3,53 +3,63 @@
 @tailwind utilities;
 
 :root {
+  /* ── 色（ライトモード） ── */
   --bg: #ececec;
+  --bg-subtle: #e0e0e0;
   --fg: #141414;
   --muted: #9a9a9a;
   --line: #2d2d2d;
+  --line-light: #d2d2d2;
+  --accent: #0066cc;
 
-  /* スペーシング（4px刻み） */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 28px;
-  --space-8: 32px;
-  --space-9: 36px;
-  --space-10: 40px;
-  --space-11: 48px;
-  --space-12: 52px;
-  --space-13: 76px;
-  --space-14: 88px;
+  /* ── Fluid スペーシング（8pxグリッド基準、clampでスケール） ──
+     最小値 = モバイル（360px）、最大値 = デスクトップ（1440px） */
+  --space-1: clamp(4px, 0.18rem + 0.18vw, 6px);
+  --space-2: clamp(8px, 0.36rem + 0.36vw, 12px);
+  --space-3: clamp(12px, 0.57rem + 0.36vw, 16px);
+  --space-4: clamp(16px, 0.71rem + 0.54vw, 20px);
+  --space-5: clamp(20px, 0.89rem + 0.54vw, 24px);
+  --space-6: clamp(24px, 1.07rem + 0.71vw, 32px);
+  --space-7: clamp(28px, 1.25rem + 0.71vw, 36px);
+  --space-8: clamp(32px, 1.43rem + 0.89vw, 40px);
+  --space-9: clamp(36px, 1.61rem + 0.89vw, 48px);
+  --space-10: clamp(40px, 1.79rem + 1.07vw, 52px);
+  --space-11: clamp(48px, 2.14rem + 1.43vw, 64px);
+  --space-12: clamp(52px, 2.32rem + 1.79vw, 72px);
+  --space-13: clamp(64px, 2.86rem + 2.86vw, 96px);
+  --space-14: clamp(76px, 3.39rem + 3.21vw, 112px);
 
-  /* フォントサイズ（4段階） */
-  --font-meta: 12px;
-  --font-body: 15px;
-  --font-heading: 18px;
-  --font-brand: 22px;
+  /* ── Fluid フォントサイズ ── */
+  --font-meta: clamp(11px, 0.63rem + 0.18vw, 13px);
+  --font-body: clamp(14px, 0.8rem + 0.27vw, 16px);
+  --font-heading: clamp(17px, 0.96rem + 0.36vw, 20px);
+  --font-brand: clamp(20px, 1.14rem + 0.54vw, 26px);
 
-  /* line-height（3段階） */
+  /* ── line-height（CJK対応） ── */
   --lh-tight: 1.4;
   --lh-normal: 1.7;
   --lh-relaxed: 1.95;
 
-  /* ページシェル余白 */
+  /* ── グリッドシステム ── */
+  --grid-columns: 12;
+  --grid-gutter: 1.5rem;
+  --grid-margin: clamp(1rem, 4vw, 4rem);
+  --grid-max-width: 1200px;
+
+  /* ── ページシェル余白（Fluid） ── */
   --pad-x: var(--space-12);
   --pad-y: var(--space-9);
-
-  /* 罫線（コンポーネント用） */
-  --line-light: #d2d2d2;
 }
 
 /* ── ダークモード ── */
 [data-theme="dark"] {
   --bg: #1a1a1a;
+  --bg-subtle: #242424;
   --fg: #e8e8e8;
   --muted: #888;
   --line: #3a3a3a;
   --line-light: #3a3a3a;
+  --accent: #4d9fff;
 }
 
 /* テーマ切り替えスイッチ（フッター右端） */
