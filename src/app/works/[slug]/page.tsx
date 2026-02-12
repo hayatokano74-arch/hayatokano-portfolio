@@ -4,6 +4,10 @@ import { WorkDetailClient } from "@/components/WorkDetailClient";
 import { works } from "@/lib/mock";
 import { notFound } from "next/navigation";
 
+export function generateStaticParams() {
+  return works.map((w) => ({ slug: w.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {

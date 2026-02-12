@@ -3,29 +3,27 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { works, type Work } from "@/lib/mock";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 import { blurDataURL } from "@/lib/blur";
 
-function setQuery(
-  router: ReturnType<typeof useRouter>,
-  pathname: string,
-  params: URLSearchParams,
-) {
-  const qs = params.toString();
-  router.push(qs ? `${pathname}?${qs}` : pathname);
-}
-
 export function WorkDetailClient({ work }: { work: Work }) {
-  const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
   const [detailOpen, setDetailOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
-  const mode = sp.get("mode") === "index" ? "index" : "gallery";
-  const img = Math.max(1, Math.min(work.media.length, Number(sp.get("img") ?? "1") || 1));
+  /* URLパラメータから初期値を読み取り、以降はローカルステートで管理 */
+  const [localMode, setLocalMode] = useState<"gallery" | "index">(
+    () => (sp.get("mode") === "index" ? "index" : "gallery"),
+  );
+  const [localImg, setLocalImg] = useState(
+    () => Math.max(1, Math.min(work.media.length, Number(sp.get("img") ?? "1") || 1)),
+  );
+
+  const mode = localMode;
+  const img = localImg;
   const currentWorkIndex = Math.max(
     0,
     works.findIndex((w) => w.slug === work.slug),
@@ -36,17 +34,29 @@ export function WorkDetailClient({ work }: { work: Work }) {
   const nextImage = Math.min(work.media.length, img + 1);
   const currentMedia = work.media[img - 1];
   const galleryStageWidth = "min(100%, clamp(680px, 64vw, 1120px))";
-  const galleryStageHeight = "min(100%, clamp(420px, 68vh, 820px))";
+  const galleryStageHeight = "min(100%, clamp(280px, 56dvh, 820px))";
 
   const goToImage = useCallback(
     (nextImg: number) => {
-      const p = new URLSearchParams(sp.toString());
-      p.set("mode", "gallery");
-      p.set("img", String(nextImg));
-      setQuery(router, pathname, p);
+      setLocalImg(nextImg);
+      setLocalMode("gallery");
+      window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${nextImg}`);
     },
-    [router, pathname, sp],
+    [pathname],
   );
+
+  /* ブラウザバック/フォワード対応 */
+  useEffect(() => {
+    const onPopState = () => {
+      const url = new URL(window.location.href);
+      setLocalMode(url.searchParams.get("mode") === "index" ? "index" : "gallery");
+      setLocalImg(
+        Math.max(1, Math.min(work.media.length, Number(url.searchParams.get("img") ?? "1") || 1)),
+      );
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [work.media.length]);
 
   useEffect(() => {
     if (mode !== "gallery") return;
@@ -120,17 +130,18 @@ export function WorkDetailClient({ work }: { work: Work }) {
     <div
       className="work-detail-shell"
       style={{
-        height: "calc(100vh - 76px)",
+        height: "100%",
         display: "grid",
         gridTemplateRows: "auto minmax(0, 1fr) auto",
       }}
     >
-      <div className="work-detail-top flex items-start justify-between" style={{ marginBottom: "var(--space-7)" }}>
-        <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
+      {/* トップバー: 12カラムグリッドで配置 */}
+      <div className="work-detail-top" style={{ marginBottom: "var(--space-7)", display: "grid", gridTemplateColumns: "repeat(12, 1fr)", columnGap: "var(--grid-gutter)", alignItems: "center" }}>
+        <div style={{ gridColumn: "1 / span 4", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, minWidth: 0 }}>
           <Link
             href="/works"
             className="action-link action-link-muted"
-            style={{ display: "inline-flex", alignItems: "center", gap: 4, lineHeight: 1 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, lineHeight: 1 }}
           >
             <span
               aria-hidden="true"
@@ -144,9 +155,10 @@ export function WorkDetailClient({ work }: { work: Work }) {
           </Link>
         </div>
 
-        <div className="flex items-center" style={{ gap: "var(--space-7)", fontSize: "var(--space-7)", lineHeight: 1 }}>
+        <div style={{ gridColumn: "5 / -1", justifySelf: "end", display: "flex", alignItems: "center", gap: "var(--space-7)", fontSize: "var(--space-7)", lineHeight: 1, minWidth: 0 }}>
           <Link
             href={`/works/${prevWork.slug}?mode=gallery&img=1`}
+            prefetch={true}
             aria-label="previous work"
             className="action-link action-link-muted"
           >
@@ -154,6 +166,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
           </Link>
           <Link
             href={`/works/${nextWork.slug}?mode=gallery&img=1`}
+            prefetch={true}
             aria-label="next work"
             className="action-link action-link-muted"
           >
@@ -162,9 +175,9 @@ export function WorkDetailClient({ work }: { work: Work }) {
         </div>
       </div>
 
-      <div style={{ position: "relative", minHeight: 0 }}>
+      <div style={{ position: "relative", minHeight: 0, overflow: "hidden" }}>
         {mode === "gallery" ? (
-          <div style={{ position: "relative", height: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
             <button
               type="button"
               aria-label="previous image area"
@@ -202,8 +215,8 @@ export function WorkDetailClient({ work }: { work: Work }) {
             <div
               style={{
                 width: galleryStageWidth,
-                height: galleryStageHeight,
-                margin: "0 auto",
+                maxHeight: galleryStageHeight,
+                height: "100%",
                 position: "relative",
                 display: "grid",
                 placeItems: "center",
@@ -230,8 +243,8 @@ export function WorkDetailClient({ work }: { work: Work }) {
                     src={currentMedia.src}
                     alt={currentMedia.alt}
                     fill
-                    priority
-                    sizes="(max-width: 1200px) 100vw, 1040px"
+                    priority={img === 1}
+                    sizes="(max-width: 900px) 100vw, min(64vw, 1120px)"
                     placeholder="blur"
                     blurDataURL={blurDataURL(currentMedia.width, currentMedia.height)}
                     style={{
@@ -247,25 +260,25 @@ export function WorkDetailClient({ work }: { work: Work }) {
           </div>
         ) : (
           <div style={{ height: "100%", overflow: "hidden" }}>
-            <IndexGrid work={work} current={img} />
+            <IndexGrid work={work} current={img} onSelect={goToImage} />
           </div>
         )}
       </div>
 
-      <div className="work-detail-bottom flex items-end justify-between" style={{ paddingTop: "var(--space-6)" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)", alignItems: "flex-start" }}>
+      {/* ボトムバー: 12カラムグリッドで配置 */}
+      <div className="work-detail-bottom" style={{ paddingTop: "var(--space-6)", display: "grid", gridTemplateColumns: "repeat(12, 1fr)", columnGap: "var(--grid-gutter)", alignItems: "end" }}>
+        <div style={{ gridColumn: "1 / span 11", display: "flex", flexDirection: "column", gap: "var(--space-2)", alignItems: "flex-start", minWidth: 0 }}>
         <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
           {work.title} | {work.year}
         </div>
-        <div className="flex items-center" style={{ gap: "var(--space-5)", alignItems: "center", minHeight: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: 1.1, fontWeight: 700 }}>
+        <div className="work-detail-controls" style={{ display: "flex", alignItems: "center", gap: "var(--space-5)", minHeight: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: 1.1, fontWeight: 700, width: "100%" }}>
           <button
             type="button"
             className={`${mode === "gallery" ? "underline-active" : ""} action-link`.trim()}
             style={{ color: mode === "gallery" ? "var(--fg)" : "var(--muted)", transition: "color 140ms linear", display: "inline-flex", alignItems: "center", lineHeight: 1.1 }}
             onClick={() => {
-              const p = new URLSearchParams(sp.toString());
-              p.set("mode", "gallery");
-              setQuery(router, pathname, p);
+              setLocalMode("gallery");
+              window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
             }}
           >
             gallery
@@ -275,9 +288,8 @@ export function WorkDetailClient({ work }: { work: Work }) {
             className={`${mode === "index" ? "underline-active" : ""} action-link`.trim()}
             style={{ color: mode === "index" ? "var(--fg)" : "var(--muted)", transition: "color 140ms linear", display: "inline-flex", alignItems: "center", lineHeight: 1.1 }}
             onClick={() => {
-              const p = new URLSearchParams(sp.toString());
-              p.set("mode", "index");
-              setQuery(router, pathname, p);
+              setLocalMode("index");
+              window.history.replaceState(null, "", `${pathname}?mode=index`);
             }}
           >
             index
@@ -295,7 +307,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
               background: "transparent",
               display: "inline-flex",
               alignItems: "center",
-              gap: 4,
+              gap: 8,
             }}
             onClick={() => setDetailOpen(true)}
           >
@@ -304,42 +316,38 @@ export function WorkDetailClient({ work }: { work: Work }) {
               ↗
             </span>
           </button>
+          {/* カウンター: 詳細と同じ行の右端 */}
+          <span className="work-detail-counter" style={{ marginLeft: "auto", fontSize: "var(--font-body)", fontWeight: 700 }}>
+            {mode === "gallery" ? `${img} / ${work.media.length}` : null}
+          </span>
         </div>
-        </div>
-
-        <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
-          {mode === "gallery" ? `${img} / ${work.media.length}` : null}
         </div>
       </div>
 
       {detailOpen ? (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "var(--bg)",
-            zIndex: 1000,
-          }}
-        >
-          <button
-            type="button"
-            className="action-link"
-            onClick={() => setDetailOpen(false)}
-            style={{ position: "absolute", right: "var(--space-7)", top: "var(--space-5)", fontSize: "var(--font-body)" }}
-          >
-            Close
-          </button>
+        <div className="work-detail-overlay">
+          {/* Closeボタン + コンテンツ: 同一グリッド */}
+          <div className="work-detail-overlay-grid">
+            <div className="work-detail-overlay-close">
+              <button
+                type="button"
+                className="action-link"
+                onClick={() => setDetailOpen(false)}
+                style={{ fontSize: "var(--font-body)" }}
+              >
+                Close
+              </button>
+            </div>
 
-          <div style={{ height: "100%", display: "grid", placeItems: "center", paddingInline: "var(--space-5)", overflowY: "auto" }}>
-            <div style={{ width: "min(100%, 760px)", margin: "0 auto" }}>
+            <div className="work-detail-overlay-content">
               <WorkDetailsTable details={work.details} />
               {work.details.bio ? (
                 <div style={{ marginTop: "var(--space-6)", paddingTop: "var(--space-4)" }}>
                   <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
-                  <div style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)", maxWidth: 640 }}>{work.details.bio}</div>
+                  <div style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
                 </div>
               ) : null}
-              <div style={{ marginTop: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", maxWidth: 640 }}>{work.excerpt}</div>
+              <div style={{ marginTop: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}>{work.excerpt}</div>
               <div style={{ marginTop: "var(--space-5)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
                 {work.tags.map((tag, idx) => (
                   <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
@@ -355,10 +363,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
   );
 }
 
-function IndexGrid({ work, current }: { work: Work; current: number }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const sp = useSearchParams();
+function IndexGrid({ work, current, onSelect }: { work: Work; current: number; onSelect: (n: number) => void }) {
   const thumbs = useMemo(() => work.media, [work.media]);
 
   return (
@@ -383,12 +388,7 @@ function IndexGrid({ work, current }: { work: Work; current: number }) {
           <button
             type="button"
             key={image.id}
-            onClick={() => {
-              const p = new URLSearchParams(sp.toString());
-              p.set("mode", "gallery");
-              p.set("img", String(n));
-              setQuery(router, pathname, p);
-            }}
+            onClick={() => onSelect(n)}
             style={{
               width: "100%",
               display: "inline-block",
@@ -418,7 +418,7 @@ function IndexGrid({ work, current }: { work: Work; current: number }) {
                   alt={image.alt}
                   fill
                   loading="lazy"
-                  sizes="(max-width: 720px) 100vw, (max-width: 1024px) 50vw, (max-width: 1440px) 33vw, 25vw"
+                  sizes="(max-width: 720px) 100vw, (max-width: 1024px) 50vw, 320px"
                   placeholder="blur"
                   blurDataURL={blurDataURL(image.width, image.height)}
                   style={{ objectFit: "cover", objectPosition: "center" }}
@@ -431,8 +431,8 @@ function IndexGrid({ work, current }: { work: Work; current: number }) {
                     position: "absolute",
                     right: 8,
                     bottom: 8,
-                    width: 18,
-                    height: 14,
+                    width: 16,
+                    height: 16,
                     background: "rgba(0,0,0,0.65)",
                     display: "grid",
                     placeItems: "center",

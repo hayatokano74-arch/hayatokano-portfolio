@@ -19,7 +19,7 @@ export function WorksClient<T extends Work>({
 }) {
   const detailHref = (slug: string) => `${basePath}/${slug}${detailQuery}`;
   return (
-    <div style={{ marginTop: "var(--space-12)" }}>
+    <div style={{ marginTop: "var(--space-6)" }}>
       {view === "grid" ? (
         <WorksGrid works={works} detailHref={detailHref} />
       ) : (
@@ -71,6 +71,7 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
           <Link
             key={w.slug}
             href={detailHref(w.slug)}
+            prefetch={true}
             className="work-grid-item"
             style={{ display: "block" }}
           >
@@ -128,53 +129,37 @@ function WorksList<T extends Work>({
             const isPortraitLead = (lead?.height ?? 0) > (lead?.width ?? 0);
             return (
           <details className="works-row">
-            <summary
-              className="works-list-summary"
-              style={{
-                minHeight: "var(--space-10)",
-                display: "grid",
-                gridTemplateColumns: "170px minmax(180px, 1fr) minmax(180px, 320px) 34px",
-                alignItems: "center",
-                columnGap: "var(--space-4)",
-                cursor: "pointer",
-                listStyle: "none",
-              }}
-            >
-              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.date}</div>
-              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.title}</div>
-              <div className="works-list-summary-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", textAlign: "right", fontWeight: 600 }}>
+            {/* サマリー行: 12カラムグリッド */}
+            <summary className="works-list-summary">
+              <div className="works-list-summary-date" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.date}</div>
+              <div className="works-list-summary-title" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.title}</div>
+              <div className="works-list-summary-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 600 }}>
                 {w.tags.join("    ")}
               </div>
-              {thumbSrc ? (
-                <Image
-                  src={thumbSrc}
-                  alt={lead?.alt ?? ""}
-                  width={30}
-                  height={30}
-                  loading="lazy"
-                  style={{ width: 30, height: 30, objectFit: "cover", justifySelf: "end", display: "block", background: "#000" }}
-                />
-              ) : (
-                <div style={{ width: 30, height: 30, background: "#000", justifySelf: "end" }} />
-              )}
+              <div className="works-list-summary-thumb">
+                {thumbSrc ? (
+                  <Image
+                    src={thumbSrc}
+                    alt={lead?.alt ?? ""}
+                    width={32}
+                    height={32}
+                    loading="lazy"
+                    style={{ width: 32, height: 32, objectFit: "cover", display: "block", background: "#000" }}
+                  />
+                ) : (
+                  <div style={{ width: 32, height: 32, background: "#000" }} />
+                )}
+              </div>
             </summary>
 
-            <div
-              className="works-list-detail"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "170px minmax(240px, 1fr) minmax(180px, 520px)",
-                columnGap: "var(--space-4)",
-                paddingTop: "var(--space-5)",
-                paddingBottom: "var(--space-6)",
-              }}
-            >
+            {/* ディテール行: 12カラムグリッド */}
+            <div className="works-list-detail">
               <div className="works-list-spacer" />
-              <div className="works-list-body" style={{ maxWidth: 760 }}>
+              <div className="works-list-body">
                 <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)" }}>
                   {w.tags.join("    ")}
                 </div>
-                {renderListDetail ? <div style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
+                {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
                 <div className="works-list-excerpt" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap" }}>{w.excerpt}</div>
                 <div
                   className="works-list-view"

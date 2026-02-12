@@ -4,6 +4,10 @@ import { texts } from "@/lib/mock";
 import { notFound } from "next/navigation";
 import { TextToc } from "@/components/TextToc";
 
+export function generateStaticParams() {
+  return texts.map((t) => ({ slug: t.slug }));
+}
+
 export default async function ReadingMode({
   params,
 }: {

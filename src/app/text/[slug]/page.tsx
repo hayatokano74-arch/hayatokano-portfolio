@@ -6,6 +6,10 @@ import { texts } from "@/lib/mock";
 import { notFound } from "next/navigation";
 import { TextToc } from "@/components/TextToc";
 
+export function generateStaticParams() {
+  return texts.map((t) => ({ slug: t.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -32,41 +36,44 @@ export default async function TextDetail({
   return (
     <CanvasShell>
       <Header active="Text" title="Text" showCategoryRow={false} />
-      <div className="text-detail-layout flex" style={{ marginTop: "var(--space-14)", justifyContent: "space-between", gap: "var(--space-8)" }}>
-        <div className="text-detail-rail" style={{ width: 280 }}>
+      <div className="text-detail-layout">
+        {/* 左: Reading リンク（列1-2） */}
+        <div className="text-detail-rail">
           <Link
             href={`/text/${post.slug}/reading`}
             className="action-link"
-            style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4 }}
+            style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8 }}
           >
             <span>Reading</span>
-            <span aria-hidden="true" style={{ fontSize: "0.95em", transform: "translateY(-0.5px)" }}>↗</span>
+            <span aria-hidden="true" style={{ fontSize: "0.95em" }}>↗</span>
           </Link>
         </div>
 
-        <div className="text-detail-main" style={{ width: "min(100%, 640px)", marginLeft: "auto", marginRight: "auto" }}>
-          <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-5)", textAlign: "left" }}>{post.title}</div>
+        {/* 中央: 本文（列4-9、6列分 ≈ 従来の640px） */}
+        <div className="text-detail-main">
+          <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-5)" }}>{post.title}</div>
           {post.sections?.length ? (
             <div>
               {post.sections.map((section) => (
                 <section key={section.id} id={section.id} style={{ scrollMarginTop: "var(--space-10)", marginBottom: "var(--space-9)" }}>
-                  <h2 style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, margin: "0 0 var(--space-3)", textAlign: "left" }}>
+                  <h2 style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, margin: "0 0 var(--space-3)" }}>
                     {section.heading}
                   </h2>
-                  <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap", fontWeight: 500, textAlign: "left" }}>
+                  <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap", fontWeight: 500 }}>
                     {section.body}
                   </div>
                 </section>
               ))}
             </div>
           ) : (
-            <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap", fontWeight: 500, textAlign: "left" }}>
+            <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap", fontWeight: 500 }}>
               {post.body}
             </div>
           )}
         </div>
 
-        {post.toc ? <TextToc toc={post.toc} /> : <div className="text-detail-toc-gap" style={{ width: 230 }} />}
+        {/* 右: 目次（列11-12） */}
+        {post.toc ? <TextToc toc={post.toc} /> : null}
       </div>
     </CanvasShell>
   );

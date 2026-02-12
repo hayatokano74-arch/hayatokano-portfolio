@@ -5,6 +5,11 @@ import { Header } from "@/components/Header";
 import { MeNoHoshiDetail } from "@/components/MeNoHoshiDetail";
 import { getMeNoHoshiPosts } from "@/lib/meNoHoshi";
 
+export async function generateStaticParams() {
+  const posts = await getMeNoHoshiPosts();
+  return posts.map((p) => ({ slug: p.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -41,7 +46,7 @@ export default async function MeNoHoshiDetailPage({
       <Header
         active="目の星"
         title="目の星"
-        brandLabel="目の星 — menohoshi"
+        brandLabel="目の星 menohoshi"
         brandHref="/me-no-hoshi"
         showTitleRow={false}
         showCategoryRow={false}
