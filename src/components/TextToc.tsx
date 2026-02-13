@@ -10,12 +10,7 @@ export function TextToc({ toc }: { toc: { id: string; label: string }[] }) {
     <aside
       className="text-toc"
       style={{
-        width: 230,
         paddingTop: "var(--space-2)",
-        paddingLeft: "var(--space-1)",
-        position: "sticky",
-        top: "var(--space-7)",
-        alignSelf: "flex-start",
       }}
     >
       <button
@@ -48,12 +43,12 @@ export function TextToc({ toc }: { toc: { id: string; label: string }[] }) {
             lineHeight: "var(--lh-relaxed)",
             fontWeight: 400,
             display: "flex",
-            gap: 6,
+            gap: 8,
             alignItems: "baseline",
-            marginBottom: i === toc.length - 1 ? 0 : 2,
+            marginBottom: 0,
           }}
         >
-          <span style={{ width: 10, color: "var(--muted)" }}>・</span>
+          <span style={{ width: 8, color: "var(--muted)" }}>・</span>
           <span>{t.label}</span>
         </Link>
       ))}

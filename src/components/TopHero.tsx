@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 /* ── 型定義 ── */
 type LatestWork = {
@@ -93,20 +94,30 @@ export function TopHero({ candidates, latestWorks }: Props) {
       {/* オーバーレイグラデーション */}
       <div className="top-hero-overlay" />
 
-      {/* 左上: ブランド名 + モバイルメニューボタン */}
-      <div className="top-hero-brand-top">
+      {/* 上部: ヘッダーバー（他ページと同じレイアウト） */}
+      <div className={`top-hero-header ${mobileMenuOpen ? "menu-open" : ""}`}>
         <div className="top-hero-brand-name">HAYATO KANO</div>
+
+        {/* モバイルメニューボタン */}
         <button
           type="button"
-          className="mobile-menu-button top-hero-mobile-menu"
+          className={`mobile-menu-button top-hero-mobile-menu ${mobileMenuOpen ? "is-open" : ""}`}
           aria-expanded={mobileMenuOpen}
+          aria-label={mobileMenuOpen ? "メニューを閉じる" : "メニューを開く"}
           onClick={() => setMobileMenuOpen((o) => !o)}
-          style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer" }}
         >
-          <span className="mobile-menu-label" style={{ color: "#fff" }}>
-            {mobileMenuOpen ? "Close" : "Menu"}
-          </span>
+          <span className="mobile-menu-icon" style={{ "--icon-color": "#fff" } as React.CSSProperties} />
         </button>
+
+        {/* デスクトップナビ（ヘッダーと同位置） */}
+        <nav className="top-hero-nav">
+          {NAV_ITEMS.map(({ num, label, href }) => (
+            <Link key={href} href={href} className="top-hero-nav-item">
+              <span className="top-hero-nav-num">{num}</span>
+              <span className="top-hero-nav-label">{label}</span>
+            </Link>
+          ))}
+        </nav>
       </div>
 
       {/* モバイルフルスクリーンメニュー（ヘッダーと同じ） */}
@@ -124,38 +135,33 @@ export function TopHero({ candidates, latestWorks }: Props) {
                 <span className="mobile-nav-label">{label}</span>
               </Link>
             ))}
+            <div className="theme-switch-in-menu" style={{ marginTop: "var(--space-7)" }}>
+              <ThemeToggle forceShow />
+            </div>
           </nav>
         </div>
       ) : null}
 
-      {/* 左下: 最新 Works リスト */}
-      <div className="top-hero-brand">
-        <div className="top-hero-works" onMouseLeave={handleWorkLeave}>
-          {latestWorks.map((work) => (
-            <Link
-              key={work.href}
-              href={work.href}
-              className="top-hero-works-item"
-              onMouseEnter={() => handleWorkHover(work.image)}
-            >
-              {work.title}（{work.year}）
+      {/* 下部: 最新 Works リスト */}
+      <div className="top-hero-bottom">
+        <div className="top-hero-brand">
+          <div className="top-hero-works" onMouseLeave={handleWorkLeave}>
+            {latestWorks.map((work) => (
+              <Link
+                key={work.href}
+                href={work.href}
+                className="top-hero-works-item"
+                onMouseEnter={() => handleWorkHover(work.image)}
+              >
+                {work.title}（{work.year}）
+              </Link>
+            ))}
+            <Link href="/works" className="top-hero-works-more">
+              More
             </Link>
-          ))}
-          <Link href="/works" className="top-hero-works-more">
-            More
-          </Link>
+          </div>
         </div>
       </div>
-
-      {/* 右下: ナビゲーション（縦並び） */}
-      <nav className="top-hero-nav">
-        {NAV_ITEMS.map(({ num, label, href }) => (
-          <Link key={href} href={href} className="top-hero-nav-item">
-            <span className="top-hero-nav-num">{num}</span>
-            <span className="top-hero-nav-label">{label}</span>
-          </Link>
-        ))}
-      </nav>
     </main>
   );
 }

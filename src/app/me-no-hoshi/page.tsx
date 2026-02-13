@@ -44,7 +44,7 @@ export default async function MeNoHoshiPage({
       <Header
         active="目の星"
         title="目の星"
-        brandLabel="目の星 — menohoshi"
+        brandLabel="目の星 menohoshi"
         brandHref="/me-no-hoshi"
         showTitleRow={false}
         showWorksToggle

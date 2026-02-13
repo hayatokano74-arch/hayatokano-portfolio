@@ -4,18 +4,22 @@ import { useCallback, useEffect, useState } from "react";
 
 /**
  * グリッドデバッグオーバーレイ
- * - Ctrl+G で表示/非表示を切替
- * - 12カラムグリッドの半透明オーバーレイ
- * - 現在のブレークポイント名を右下に表示
- * - 開発環境でのみ使用
+ * - Ctrl+G: 12カラムグリッド（列）の表示/非表示
+ * - Ctrl+H: 8px ベースライングリッド（行）の表示/非表示
+ * - 現在のブレークポイント名を左下に表示
  */
 export function GridDebugOverlay() {
-  const [visible, setVisible] = useState(false);
+  const [showColumns, setShowColumns] = useState(false);
+  const [showBaseline, setShowBaseline] = useState(false);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.ctrlKey && e.key === "g") {
+    if ((e.ctrlKey || e.metaKey) && e.key === "g") {
       e.preventDefault();
-      setVisible((v) => !v);
+      setShowColumns((v) => !v);
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === "h") {
+      e.preventDefault();
+      setShowBaseline((v) => !v);
     }
   }, []);
 
@@ -24,39 +28,58 @@ export function GridDebugOverlay() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  const visible = showColumns || showBaseline;
   if (!visible) return null;
 
   return (
     <>
-      {/* 12カラムグリッドオーバーレイ */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "fixed",
-          inset: 0,
-          pointerEvents: "none",
-          zIndex: 99999,
-          display: "grid",
-          gridTemplateColumns: "repeat(12, 1fr)",
-          gap: "var(--grid-gutter, 1.5rem)",
-          paddingInline: "var(--pad-x, 52px)",
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-      >
-        {Array.from({ length: 12 }, (_, i) => (
-          <div
-            key={i}
-            style={{
-              background: "rgba(255, 0, 0, 0.06)",
-              borderInline: "1px solid rgba(255, 0, 0, 0.12)",
-              height: "100vh",
-            }}
-          />
-        ))}
-      </div>
+      {/* 12カラムグリッドオーバーレイ（列） */}
+      {showColumns ? (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 99999,
+            display: "grid",
+            gridTemplateColumns: "repeat(12, 1fr)",
+            gap: "var(--grid-gutter, 1.5rem)",
+            paddingInline: "var(--pad-x, 52px)",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          {Array.from({ length: 12 }, (_, i) => (
+            <div
+              key={i}
+              style={{
+                background: "rgba(255, 0, 0, 0.06)",
+                borderInline: "1px solid rgba(255, 0, 0, 0.12)",
+                height: "100vh",
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
 
-      {/* ブレークポイントインジケーター */}
+      {/* 8px ベースライングリッドオーバーレイ（行） */}
+      {showBaseline ? (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 99998,
+            backgroundImage:
+              "repeating-linear-gradient(to bottom, transparent, transparent 7px, rgba(0, 120, 255, 0.12) 7px, rgba(0, 120, 255, 0.12) 8px)",
+            backgroundSize: "100% 8px",
+          }}
+        />
+      ) : null}
+
+      {/* ブレークポイント + グリッド状態インジケーター */}
       <div
         aria-hidden="true"
         style={{
@@ -75,9 +98,16 @@ export function GridDebugOverlay() {
           borderRadius: 4,
           lineHeight: 1,
           backdropFilter: "blur(4px)",
+          display: "flex",
+          gap: 8,
         }}
       >
         <BreakpointLabel />
+        <span style={{ opacity: 0.5 }}>
+          {showColumns ? "COL" : ""}
+          {showColumns && showBaseline ? " + " : ""}
+          {showBaseline ? "BASE" : ""}
+        </span>
       </div>
 
       {/* 操作ヒント */}
@@ -95,11 +125,11 @@ export function GridDebugOverlay() {
           background: "rgba(255, 255, 255, 0.85)",
           padding: "3px 8px",
           borderRadius: 4,
-          lineHeight: 1,
+          lineHeight: 1.6,
           backdropFilter: "blur(4px)",
         }}
       >
-        Ctrl+G to hide
+        ⌘G 列グリッド &nbsp;|&nbsp; ⌘H ベースライン
       </div>
     </>
   );

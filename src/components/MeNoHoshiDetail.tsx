@@ -84,10 +84,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                   style={{
                     position: "relative",
                     width: "100%",
-                    maxWidth: 920,
                     aspectRatio: `${visual.image.width} / ${visual.image.height}`,
                     maxHeight: "min(72vh, 820px)",
-                    marginInline: "auto",
                     background: "var(--bg)",
                     overflow: "hidden",
                     display: "grid",
@@ -126,8 +124,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             }}
           >
             {post.pastWorks.map((work) => (
-              <article key={work.id} style={{ textAlign: "center" }}>
-                <figure style={{ display: "inline-block", margin: 0, maxWidth: "100%" }}>
+              <article key={work.id}>
+                <figure style={{ margin: 0 }}>
                   <Image
                     src={work.image.src}
                     alt={work.image.alt}
@@ -139,13 +137,14 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                     blurDataURL={blurDataURL(work.image.width, work.image.height)}
                     style={{
                       display: "block",
-                      width: "auto",
+                      width: "100%",
                       height: "auto",
-                      maxWidth: "100%",
-                      maxHeight: "min(56vh, 620px)",
+                      maxHeight: "min(72vh, 820px)",
+                      objectFit: "contain",
+                      objectPosition: "left top",
                     }}
                   />
-                  <figcaption style={{ marginTop: "var(--space-2)", width: "100%", textAlign: "left", fontSize: "var(--font-body)", color: "var(--muted)" }}>
+                  <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
                     {work.title}
                     {work.year ? ` | ${work.year}` : ""}
                   </figcaption>
@@ -167,8 +166,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             }}
           >
             {post.archiveWorks.map((work) => (
-              <article key={work.id} style={{ textAlign: "center" }}>
-                <figure style={{ display: "inline-block", margin: 0, maxWidth: "100%" }}>
+              <article key={work.id}>
+                <figure style={{ margin: 0 }}>
                   <Image
                     src={work.image.src}
                     alt={work.image.alt}
@@ -180,13 +179,14 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                     blurDataURL={blurDataURL(work.image.width, work.image.height)}
                     style={{
                       display: "block",
-                      width: "auto",
+                      width: "100%",
                       height: "auto",
-                      maxWidth: "100%",
-                      maxHeight: "min(56vh, 620px)",
+                      maxHeight: "min(72vh, 820px)",
+                      objectFit: "contain",
+                      objectPosition: "left top",
                     }}
                   />
-                  <figcaption style={{ marginTop: "var(--space-2)", width: "100%", textAlign: "left", fontSize: "var(--font-body)", color: "var(--muted)" }}>
+                  <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
                     {work.title}
                     {work.year ? ` | ${work.year}` : ""}
                   </figcaption>

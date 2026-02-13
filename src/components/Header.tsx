@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CATEGORY_MENU, type Category } from "@/lib/categories";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type Section = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
 type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
@@ -65,18 +66,16 @@ export function Header({
           {brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel}
         </Link>
 
-        {/* モバイルメニューボタン */}
+        {/* モバイルメニューボタン: ＋ → × 回転 */}
         <button
           type="button"
-          className="mobile-menu-button"
+          className={`mobile-menu-button ${mobileMenuOpen ? "is-open" : ""}`}
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-main-menu"
+          aria-label={mobileMenuOpen ? "メニューを閉じる" : "メニューを開く"}
           onClick={() => setMobileMenuOpen((open) => !open)}
-          style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer" }}
         >
-          <span className="mobile-menu-label">
-            {mobileMenuOpen ? "Close" : "Menu"}
-          </span>
+          <span className="mobile-menu-icon" />
         </button>
 
         {/* デスクトップナビ: ナンバリング付き */}
@@ -109,14 +108,17 @@ export function Header({
                 <span className="mobile-nav-label">{label}</span>
               </Link>
             ))}
+            <div className="theme-switch-in-menu" style={{ marginTop: "var(--space-7)" }}>
+              <ThemeToggle forceShow />
+            </div>
           </nav>
         </div>
       ) : null}
 
-      {/* ── タイトル行 ── */}
+      {/* ── タイトル行（12カラムグリッド） ── */}
       {showTitleRow ? (
-        <div className="header-title-row flex items-center justify-between" style={{ marginTop: "var(--space-13)", minHeight: "var(--space-10)" }}>
-          <div className="header-title-left flex items-center" style={{ gap: "var(--space-7)" }}>
+        <div className="header-title-row">
+          <div className="header-title-left" style={{ gap: "var(--space-7)" }}>
             <div style={{ fontSize: "var(--font-heading)", lineHeight: 1, fontWeight: 700 }}>{title}</div>
 
             {showWorksToggle ? (
@@ -141,8 +143,8 @@ export function Header({
         </div>
       ) : (
         showWorksToggle ? (
-          <div className="header-title-row flex items-center justify-between" style={{ marginTop: "var(--space-13)", minHeight: "var(--space-10)" }}>
-            <div className="header-title-left flex items-center" style={{ gap: "var(--space-7)" }}>
+          <div className="header-title-row">
+            <div className="header-title-left" style={{ gap: "var(--space-7)" }}>
               <div className="flex items-center" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
                 <Link
                   href={worksGridHref}
@@ -164,10 +166,10 @@ export function Header({
         ) : null
       )}
 
-      {/* ── カテゴリ行 ── */}
+      {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (
-        <div className="header-category-row flex items-end justify-between" style={{ marginTop: "var(--space-9)", minHeight: "var(--space-8)" }}>
-          <div className="header-category-links flex items-center" style={{ gap: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
+        <div className="header-category-row">
+          <div className="header-category-links" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
             {CATEGORY_MENU.map((item) => {
               const className = item === activeCategory ? "underline-active" : "";
               const style = { color: item === activeCategory ? "var(--fg)" : "var(--muted)" } as const;
@@ -206,7 +208,7 @@ const searchInputStyle = {
   fontSize: "var(--font-meta)",
   lineHeight: "var(--lh-normal)",
   color: "var(--fg)",
-  padding: "0 0 2px 0",
+  padding: 0,
   outline: "none",
   fontFamily: "inherit",
 } as const;

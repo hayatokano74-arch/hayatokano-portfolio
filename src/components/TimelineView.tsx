@@ -128,13 +128,14 @@ function TimelinePost({ item }: { item: TimelineItem }) {
         </div>
       ) : null}
 
-      <Link
-        href={`/timeline/${item.id}`}
+      {/* 時刻表示（アンカーリンク） */}
+      <a
+        href={`#${item.id}`}
         className="action-link action-link-muted"
         style={{ display: "inline-block", marginTop: "var(--space-3)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.04em" }}
       >
         {time}
-      </Link>
+      </a>
     </article>
   );
 }
@@ -143,9 +144,11 @@ function TimelinePost({ item }: { item: TimelineItem }) {
 function FilterTabs({
   activeType,
   activeMonth,
+  activeDate,
 }: {
   activeType?: string;
   activeMonth?: string;
+  activeDate?: string;
 }) {
   const tabs = [
     { label: "すべて", value: undefined },
@@ -157,12 +160,13 @@ function FilterTabs({
     const params = new URLSearchParams();
     if (type) params.set("type", type);
     if (activeMonth) params.set("month", activeMonth);
+    if (activeDate) params.set("date", activeDate);
     const qs = params.toString();
     return qs ? `/timeline?${qs}` : "/timeline";
   }
 
   return (
-    <div style={{ display: "flex", gap: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
+    <nav className="timeline-filter-tabs">
       {tabs.map((tab) => {
         const isActive = activeType === tab.value || (!activeType && !tab.value);
         return (
@@ -176,7 +180,7 @@ function FilterTabs({
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }
 
@@ -184,16 +188,17 @@ function FilterTabs({
 function ArchiveSidebar({
   allDates,
   activeMonth,
+  activeDate,
   activeType,
 }: {
   allDates: string[];
   activeMonth?: string;
+  activeDate?: string;
   activeType?: string;
 }) {
   const tree = useMemo(() => buildArchiveTree(allDates), [allDates]);
   /* 開閉状態: "2026" や "2026-02" をキーとして管理 */
   const [openKeys, setOpenKeys] = useState<Set<string>>(() => {
-    /* 最初の年だけ開いた状態にする */
     const initial = new Set<string>();
     if (tree.length > 0) initial.add(tree[0].year);
     return initial;
@@ -208,10 +213,20 @@ function ArchiveSidebar({
     });
   }, []);
 
+  /* 月リンク: クリックで月フィルタ（トグル動作） */
   function buildMonthHref(monthKey: string) {
     const params = new URLSearchParams();
     if (activeType) params.set("type", activeType);
     if (activeMonth !== monthKey) params.set("month", monthKey);
+    const qs = params.toString();
+    return qs ? `/timeline?${qs}` : "/timeline";
+  }
+
+  /* 日付リンク: クリックでその日だけ表示（トグル動作） */
+  function buildDateHref(date: string) {
+    const params = new URLSearchParams();
+    if (activeType) params.set("type", activeType);
+    if (activeDate !== date) params.set("date", date);
     const qs = params.toString();
     return qs ? `/timeline?${qs}` : "/timeline";
   }
@@ -224,17 +239,8 @@ function ArchiveSidebar({
   } as const;
 
   return (
-    <aside
-      className="timeline-sidebar"
-      style={{
-        width: 180,
-        position: "absolute",
-        right: 0,
-        top: 0,
-        bottom: 0,
-      }}
-    >
-      <div style={{ position: "sticky", top: "var(--space-7)", paddingTop: "var(--space-2)" }}>
+    <aside className="timeline-sidebar">
+      <div style={{ paddingTop: "var(--space-2)" }}>
       {tree.map((yearNode) => {
         const yearOpen = openKeys.has(yearNode.year);
         return (
@@ -247,7 +253,7 @@ function ArchiveSidebar({
                 ...btnStyle,
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
+                gap: 8,
                 fontSize: "var(--font-body)",
                 lineHeight: "var(--lh-normal)",
                 fontWeight: 700,
@@ -263,14 +269,14 @@ function ArchiveSidebar({
 
             {/* 月一覧 */}
             {yearOpen ? (
-              <div style={{ paddingLeft: 14, marginTop: "var(--space-1)" }}>
+              <div style={{ paddingLeft: 16, marginTop: "var(--space-1)" }}>
                 {yearNode.months.map((monthNode) => {
                   const monthOpen = openKeys.has(monthNode.key);
-                  const isActive = activeMonth === monthNode.key;
+                  const isMonthActive = activeMonth === monthNode.key;
                   return (
                     <div key={monthNode.key} style={{ marginBottom: "var(--space-1)" }}>
                       {/* 月ラベル: ▶ はトグル、月名はフィルタリンク */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>
                         <button
                           type="button"
                           onClick={() => toggle(monthNode.key)}
@@ -280,10 +286,10 @@ function ArchiveSidebar({
                         </button>
                         <Link
                           href={buildMonthHref(monthNode.key)}
-                          className={`${isActive ? "underline-active" : ""} action-link`.trim()}
+                          className={`${isMonthActive ? "underline-active" : ""} action-link`.trim()}
                           style={{
-                            fontWeight: isActive ? 700 : 500,
-                            color: isActive ? "var(--fg)" : "var(--muted)",
+                            fontWeight: isMonthActive ? 700 : 500,
+                            color: isMonthActive ? "var(--fg)" : "var(--muted)",
                           }}
                         >
                           {Number(monthNode.month)}月
@@ -293,21 +299,28 @@ function ArchiveSidebar({
                         </span>
                       </div>
 
-                      {/* 日付一覧 */}
+                      {/* 日付一覧: クリックでその日の投稿だけ表示 */}
                       {monthOpen ? (
-                        <div style={{ paddingLeft: 14, marginTop: 2 }}>
-                          {monthNode.dates.map((d) => (
-                            <div
-                              key={d}
-                              style={{
-                                fontSize: "var(--font-meta)",
-                                lineHeight: "var(--lh-normal)",
-                                color: "var(--muted)",
-                              }}
-                            >
-                              {d}
-                            </div>
-                          ))}
+                        <div style={{ paddingLeft: 16, marginTop: 0 }}>
+                          {monthNode.dates.map((d) => {
+                            const isDateActive = activeDate === d;
+                            return (
+                              <Link
+                                key={d}
+                                href={buildDateHref(d)}
+                                className={`${isDateActive ? "underline-active" : ""} action-link`.trim()}
+                                style={{
+                                  display: "block",
+                                  fontSize: "var(--font-meta)",
+                                  lineHeight: "var(--lh-normal)",
+                                  fontWeight: isDateActive ? 700 : 400,
+                                  color: isDateActive ? "var(--fg)" : "var(--muted)",
+                                }}
+                              >
+                                {d}
+                              </Link>
+                            );
+                          })}
                         </div>
                       ) : null}
                     </div>
@@ -327,10 +340,12 @@ function ArchiveSidebar({
 function MobileArchive({
   allDates,
   activeMonth,
+  activeDate,
   activeType,
 }: {
   allDates: string[];
   activeMonth?: string;
+  activeDate?: string;
   activeType?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -391,34 +406,67 @@ function MobileArchive({
   );
 }
 
+/* ─── アクティブフィルタ表示 ─── */
+function ActiveFilter({ activeDate, activeMonth, activeType }: { activeDate?: string; activeMonth?: string; activeType?: string }) {
+  if (!activeDate && !activeMonth) return null;
+
+  const label = activeDate ?? (activeMonth ? `${activeMonth.replace("-", "年")}月` : "");
+
+  /* フィルタ解除リンク: type は維持、date/month だけ解除 */
+  const params = new URLSearchParams();
+  if (activeType) params.set("type", activeType);
+  const qs = params.toString();
+  const clearHref = qs ? `/timeline?${qs}` : "/timeline";
+
+  return (
+    <div style={{ marginBottom: "var(--space-6)", display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+      <span style={{ fontSize: "var(--font-body)", fontWeight: 700, lineHeight: "var(--lh-normal)" }}>
+        {label}
+      </span>
+      <Link
+        href={clearHref}
+        className="action-link action-link-muted"
+        style={{ fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)" }}
+      >
+        ✕ 解除
+      </Link>
+    </div>
+  );
+}
+
 /* ─── メインビュー ─── */
 export function TimelineView({
   items,
   activeType,
   activeMonth,
+  activeDate,
   availableMonths,
   allDates,
 }: {
   items: TimelineItem[];
   activeType?: string;
   activeMonth?: string;
+  activeDate?: string;
   availableMonths: string[];
   allDates: string[];
 }) {
   const groups = groupByDate(items);
 
   return (
-    <div style={{ marginTop: "var(--space-11)" }}>
-      {/* メインレイアウト: コンテンツ中央 + サイドバー右端固定 */}
-      <div className="timeline-layout" style={{ position: "relative" }}>
-        {/* コンテンツ（ページ全幅で中央配置） */}
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <div style={{ width: "min(100%, 640px)" }}>
-            {/* フィルタ行 + モバイルアーカイブ */}
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-8)", flexWrap: "wrap", marginBottom: "var(--space-9)" }}>
-              <FilterTabs activeType={activeType} activeMonth={activeMonth} />
-              <MobileArchive allDates={allDates} activeMonth={activeMonth} activeType={activeType} />
-            </div>
+    <div style={{ marginTop: "var(--space-6)" }}>
+      {/* フィルタタブ: 12カラムグリッドに直接配置 */}
+      <div className="timeline-layout">
+        <div className="timeline-filter-tabs-wrap">
+          <FilterTabs activeType={activeType} activeMonth={activeMonth} activeDate={activeDate} />
+        </div>
+      </div>
+
+      {/* メインレイアウト: 12カラムグリッド */}
+      <div className="timeline-layout" style={{ marginTop: "var(--space-6)" }}>
+        {/* コンテンツ */}
+        <div className="timeline-content">
+            <MobileArchive allDates={allDates} activeMonth={activeMonth} activeDate={activeDate} activeType={activeType} />
+            <ActiveFilter activeDate={activeDate} activeMonth={activeMonth} activeType={activeType} />
             {groups.length === 0 ? (
               <div style={{ fontSize: "var(--font-body)", fontWeight: 500, color: "var(--muted)" }}>
                 投稿がありません
@@ -443,10 +491,9 @@ export function TimelineView({
               </div>
             ))}
           </div>
-        </div>
 
-        {/* サイドバー（デスクトップのみ、右端に固定配置） */}
-        <ArchiveSidebar allDates={allDates} activeMonth={activeMonth} activeType={activeType} />
+        {/* サイドバー（デスクトップのみ） */}
+        <ArchiveSidebar allDates={allDates} activeMonth={activeMonth} activeDate={activeDate} activeType={activeType} />
       </div>
     </div>
   );

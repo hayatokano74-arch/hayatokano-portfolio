@@ -36,8 +36,8 @@ function setGlobalTheme(theme: Theme) {
   listeners.forEach((fn) => fn(theme));
 }
 
-/* フッター右端の小さなスイッチ（トップページでは非表示） */
-export function ThemeToggle() {
+/* フッター右端の小さなスイッチ */
+export function ThemeToggle({ forceShow = false }: { forceShow?: boolean } = {}) {
   const pathname = usePathname();
   const [theme, setTheme] = useState<Theme>("light");
 
@@ -54,7 +54,8 @@ export function ThemeToggle() {
     setGlobalTheme(next);
   }, [theme]);
 
-  if (pathname === "/") return null;
+  /* 固定表示（layout.tsx）ではトップページ非表示、メニュー内(forceShow)は常に表示 */
+  if (!forceShow && pathname === "/") return null;
 
   const isDark = theme === "dark";
 
@@ -70,7 +71,7 @@ export function ThemeToggle() {
         {/* つまみ */}
         <span
           className="theme-switch-thumb"
-          style={{ transform: isDark ? "translateX(10px)" : "translateX(0)" }}
+          style={{ transform: isDark ? "translateX(12px)" : "translateX(0)" }}
         />
       </span>
     </button>

@@ -63,7 +63,7 @@ export function AboutSlideshow({ photos }: { photos: Photo[] }) {
       <div
         style={{
           display: "flex",
-          gap: 6,
+          gap: 8,
           marginTop: "var(--space-2)",
           flexShrink: 0,
         }}
@@ -75,8 +75,8 @@ export function AboutSlideshow({ photos }: { photos: Photo[] }) {
             onClick={() => goTo(i)}
             aria-label={`写真 ${i + 1}`}
             style={{
-              width: 6,
-              height: 6,
+              width: 8,
+              height: 8,
               borderRadius: "50%",
               border: 0,
               padding: 0,

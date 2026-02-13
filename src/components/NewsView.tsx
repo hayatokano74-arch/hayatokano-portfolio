@@ -27,54 +27,36 @@ export function NewsView({ items }: { items: NewsItem[] }) {
     <div className="news-accordion">
       {items.map((item) => (
         <details key={item.id} className="news-accord-item" name="news">
-          <summary
-            className="news-accord-summary"
-            style={{
-              minHeight: "var(--space-10)",
-              display: "grid",
-              gridTemplateColumns: "170px minmax(180px, 1fr) 34px",
-              alignItems: "center",
-              columnGap: "var(--space-4)",
-              cursor: "pointer",
-              listStyle: "none",
-            }}
-          >
-            <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, color: "var(--muted)" }}>
+          {/* サマリー行: 12カラムグリッド */}
+          <summary className="news-accord-summary">
+            <div className="news-accord-date" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, color: "var(--muted)" }}>
               {item.date}
             </div>
-            <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
+            <div className="news-accord-title" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
               {item.title}
             </div>
-            {item.image ? (
-              <Image
-                src={item.image.src}
-                alt=""
-                width={30}
-                height={30}
-                loading="lazy"
-                style={{ width: 30, height: 30, objectFit: "cover", justifySelf: "end", display: "block" }}
-              />
-            ) : (
-              <div style={{ justifySelf: "end" }}>
+            <div className="news-accord-thumb">
+              {item.image ? (
+                <Image
+                  src={item.image.src}
+                  alt=""
+                  width={32}
+                  height={32}
+                  loading="lazy"
+                  style={{ width: 32, height: 32, objectFit: "cover", display: "block" }}
+                />
+              ) : (
                 <NoImagePlaceholder />
-              </div>
-            )}
+              )}
+            </div>
           </summary>
 
-          <div
-            className="news-accord-detail"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "170px minmax(240px, 1fr) minmax(180px, 520px)",
-              columnGap: "var(--space-4)",
-              paddingTop: "var(--space-5)",
-              paddingBottom: "var(--space-6)",
-            }}
-          >
+          {/* ディテール行: 12カラムグリッド */}
+          <div className="news-accord-detail">
             {/* 左スペーサー（Works と同じ） */}
-            <div />
+            <div className="news-accord-spacer" />
             {/* 中央: 本文 */}
-            <div style={{ maxWidth: 760 }}>
+            <div className="news-accord-body">
               <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}>
                 {item.body}
               </div>
