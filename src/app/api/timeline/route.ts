@@ -47,7 +47,11 @@ export async function GET(request: NextRequest) {
       { next: { revalidate: 0 } },
     );
     if (!res.ok) {
-      return NextResponse.json({ error: "WP取得失敗" }, { status: 502 });
+      const errBody = await res.text().catch(() => "");
+      return NextResponse.json(
+        { error: "WP取得失敗", status: res.status, detail: errBody.slice(0, 200) },
+        { status: 502 },
+      );
     }
     const data = await res.json();
     const items = Array.isArray(data) ? data.slice(0, limit) : [];
@@ -156,7 +160,7 @@ export async function POST(request: NextRequest) {
         const errText = await postRes.text();
         console.error("WP投稿作成失敗:", postRes.status, errText);
         return NextResponse.json(
-          { error: "投稿の作成に失敗しました" },
+          { error: "投稿の作成に失敗しました", status: postRes.status, detail: errText.slice(0, 200) },
           { status: 502 },
         );
       }
