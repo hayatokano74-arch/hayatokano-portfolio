@@ -18,7 +18,10 @@ const VALID_TAGS: WorkTag[] = [
 ];
 
 function normalizeTag(value: string): WorkTag | null {
-  return VALID_TAGS.includes(value as WorkTag) ? (value as WorkTag) : null;
+  const found = VALID_TAGS.find(
+    (t) => t.toLowerCase() === value.toLowerCase(),
+  );
+  return found ?? null;
 }
 
 function normalizeWork(raw: WpWorkResponse): Work | null {
