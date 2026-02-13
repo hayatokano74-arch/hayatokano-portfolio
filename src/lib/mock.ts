@@ -8,14 +8,32 @@ export type Work = {
   year: string;
   excerpt: string;
   details: {
+    /* 展示情報 */
     artist: string;
     period: string;
     venue: string;
+    address: string;
+    access: string;
     hours: string;
     closed: string;
     admission: string;
-    address: string;
-    access: string;
+    organizer?: string;
+    curator?: string;
+    /* 作品情報 */
+    medium?: string;
+    dimensions?: string;
+    edition?: string;
+    series?: string;
+    /* 出版情報 */
+    publisher?: string;
+    pages?: string;
+    binding?: string;
+    price?: string;
+    /* クレジット */
+    credit_photo?: string;
+    credit_design?: string;
+    credit_cooperation?: string;
+    /* その他 */
     bio?: string;
   };
   media: {

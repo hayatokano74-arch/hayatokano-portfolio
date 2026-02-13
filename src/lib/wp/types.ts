@@ -16,11 +16,24 @@ export type WpWorkResponse = {
     artist?: string;
     period?: string;
     venue?: string;
+    address?: string;
+    access?: string;
     hours?: string;
     closed?: string;
     admission?: string;
-    address?: string;
-    access?: string;
+    organizer?: string;
+    curator?: string;
+    medium?: string;
+    dimensions?: string;
+    edition?: string;
+    series?: string;
+    publisher?: string;
+    pages?: string;
+    binding?: string;
+    price?: string;
+    credit_photo?: string;
+    credit_design?: string;
+    credit_cooperation?: string;
     bio?: string;
   };
   media?: {
