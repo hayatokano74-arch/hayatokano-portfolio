@@ -114,10 +114,25 @@ function TimelinePost({ item }: { item: TimelineItem }) {
         </div>
       ) : null}
 
-      {item.text ? (
+      {/* タイトル（任意ラベル） */}
+      {item.title && (
         <div
           style={{
             marginTop: item.type === "photo" ? "var(--space-3)" : 0,
+            fontSize: "var(--font-body)",
+            lineHeight: "var(--lh-normal)",
+            fontWeight: 700,
+            letterSpacing: "0.02em",
+          }}
+        >
+          {item.title}
+        </div>
+      )}
+
+      {item.text ? (
+        <div
+          style={{
+            marginTop: item.title ? "var(--space-2)" : (item.type === "photo" ? "var(--space-3)" : 0),
             fontSize: "var(--font-body)",
             lineHeight: "var(--lh-relaxed)",
             fontWeight: 500,

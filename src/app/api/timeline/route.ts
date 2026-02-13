@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const pin = formData.get("pin") as string;
+    const title = (formData.get("title") as string | null)?.trim() ?? "";
     const text = formData.get("text") as string;
     const type = formData.get("type") as string;
     const date = formData.get("date") as string;
@@ -155,6 +156,9 @@ export async function POST(request: NextRequest) {
         type: type === "photo" ? "photo" : "text",
         date: date || "",
       };
+      if (title) {
+        payload.title = title;
+      }
       if (tags.length > 0) {
         payload.tags = tags;
       }

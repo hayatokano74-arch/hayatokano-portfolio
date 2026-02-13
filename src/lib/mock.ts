@@ -51,6 +51,7 @@ export type TimelineItem = {
   id: string;
   date: string;
   type: "photo" | "text";
+  title?: string;
   text: string;
   tags?: string[];
   images?: {

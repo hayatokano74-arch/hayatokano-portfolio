@@ -42,6 +42,7 @@ export default function PostPage() {
 
   /* 投稿フォーム */
   const [postType, setPostType] = useState<"text" | "photo">("text");
+  const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -147,6 +148,7 @@ export default function PostPage() {
     const pin = localStorage.getItem("tl-pin") ?? "";
     const fd = new FormData();
     fd.append("pin", pin);
+    if (title.trim()) fd.append("title", title.trim());
     fd.append("text", cleanText);
     fd.append("type", postType);
     fd.append("date", formatNow());
@@ -162,6 +164,7 @@ export default function PostPage() {
       });
       if (res.ok) {
         setSuccess(true);
+        setTitle("");
         setText("");
         setImage(null);
         setImagePreview(null);
@@ -247,6 +250,15 @@ export default function PostPage() {
           写真
         </button>
       </div>
+
+      {/* タイトル（任意） */}
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="post-title-input"
+        placeholder="タイトル（任意）"
+      />
 
       {/* 選択中のタグ */}
       {selectedTags.length > 0 && (

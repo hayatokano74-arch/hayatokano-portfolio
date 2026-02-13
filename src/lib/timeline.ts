@@ -30,10 +30,13 @@ function normalizeTimelineItem(raw: WpTimelineResponse): TimelineItem | null {
     .filter((t) => typeof t === "string" && t.trim())
     .map((t) => t.trim());
 
+  const title = (raw.title ?? "").trim();
+
   return {
     id,
     date,
     type: itemType,
+    ...(title ? { title } : {}),
     text: (raw.text ?? "").trim(),
     ...(tags.length > 0 ? { tags } : {}),
     ...(images.length > 0 ? { images } : {}),

@@ -1870,6 +1870,31 @@ button {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* タイトル入力（任意） */
+.post-title-input {
+  width: 100%;
+  padding: var(--space-2) 0;
+  font-family: inherit;
+  font-size: var(--font-body);
+  font-weight: 700;
+  line-height: var(--lh-normal);
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 15%, transparent);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.post-title-input:focus {
+  border-color: var(--fg);
+}
+
+.post-title-input::placeholder {
+  color: var(--muted);
+  font-weight: 400;
+}
+
 /* タイプ切替 */
 .post-type-toggle {
   display: flex;

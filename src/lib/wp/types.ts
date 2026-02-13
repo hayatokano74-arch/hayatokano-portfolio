@@ -76,6 +76,7 @@ export type WpTimelineResponse = {
   id?: string;
   date?: string;
   type?: string;
+  title?: string;
   text?: string;
   tags?: string[];
   images?: {
