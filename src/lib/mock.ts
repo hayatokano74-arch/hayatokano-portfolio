@@ -52,6 +52,7 @@ export type TimelineItem = {
   date: string;
   type: "photo" | "text";
   text: string;
+  tags?: string[];
   images?: {
     src: string;
     alt: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 /* ── 型定義 ── */
 type RecentPost = {
@@ -8,6 +8,7 @@ type RecentPost = {
   date: string;
   type: string;
   text: string;
+  tags?: string[];
 };
 
 /* ── 日時フォーマット: "2026.02.13 18:22" ── */
@@ -15,6 +16,18 @@ function formatNow(): string {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* ── テキストからタグを抽出 ── */
+function extractTags(text: string): { cleanText: string; tags: string[] } {
+  const tagRegex = /#([^\s#]+)/g;
+  const tags: string[] = [];
+  let match;
+  while ((match = tagRegex.exec(text)) !== null) {
+    tags.push(match[1]);
+  }
+  const cleanText = text.replace(tagRegex, "").replace(/\s+/g, " ").trim();
+  return { cleanText, tags };
 }
 
 /* ============================
@@ -35,16 +48,25 @@ export default function PostPage() {
   const [posting, setPosting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  /* タグ */
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
   /* 最近の投稿 */
   const [recent, setRecent] = useState<RecentPost[]>([]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /* ── 過去に使ったタグ一覧（重複排除） ── */
+  const pastTags = useMemo(() => {
+    const all = recent.flatMap((item) => item.tags ?? []);
+    return [...new Set(all)];
+  }, [recent]);
+
   /* ── 最近の投稿を読み込み ── */
   const loadRecent = useCallback(async () => {
     try {
-      const res = await fetch("/api/timeline?limit=5");
+      const res = await fetch("/api/timeline?limit=20");
       if (res.ok) {
         const data = await res.json();
         setRecent(Array.isArray(data) ? data : []);
@@ -106,17 +128,31 @@ export default function PostPage() {
     }
   }
 
+  /* ── タグのトグル ── */
+  function toggleTag(tag: string) {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  }
+
   /* ── 投稿送信 ── */
   async function handleSubmit() {
     if (!text.trim()) return;
     setPosting(true);
 
+    /* テキストから #タグ を抽出し、選択タグとマージ */
+    const { cleanText, tags: inlineTags } = extractTags(text);
+    const allTags = [...new Set([...selectedTags, ...inlineTags])];
+
     const pin = localStorage.getItem("tl-pin") ?? "";
     const fd = new FormData();
     fd.append("pin", pin);
-    fd.append("text", text.trim());
+    fd.append("text", cleanText);
     fd.append("type", postType);
     fd.append("date", formatNow());
+    if (allTags.length > 0) {
+      fd.append("tags", JSON.stringify(allTags));
+    }
     if (image) fd.append("image", image);
 
     try {
@@ -130,6 +166,7 @@ export default function PostPage() {
         setImage(null);
         setImagePreview(null);
         setPostType("text");
+        setSelectedTags([]);
         if (fileInputRef.current) fileInputRef.current.value = "";
         loadRecent();
         setTimeout(() => setSuccess(false), 2000);
@@ -211,6 +248,22 @@ export default function PostPage() {
         </button>
       </div>
 
+      {/* 選択中のタグ */}
+      {selectedTags.length > 0 && (
+        <div className="post-selected-tags">
+          {selectedTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              className="post-tag-pill active"
+              onClick={() => toggleTag(tag)}
+            >
+              #{tag} ×
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* テキストエリア */}
       <textarea
         ref={textareaRef}
@@ -220,9 +273,28 @@ export default function PostPage() {
           autoResize();
         }}
         className="post-textarea"
-        placeholder={postType === "photo" ? "キャプションを入力…" : "いま何してる？"}
+        placeholder={postType === "photo" ? "キャプションを入力… #タグで分類" : "いま何してる？ #タグで分類"}
         rows={3}
       />
+
+      {/* 過去に使ったタグ */}
+      {pastTags.length > 0 && (
+        <div className="post-past-tags">
+          <span className="post-past-tags-label">タグ</span>
+          <div className="post-past-tags-list">
+            {pastTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                className={`post-tag-pill ${selectedTags.includes(tag) ? "active" : ""}`}
+                onClick={() => toggleTag(tag)}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 写真選択 */}
       {postType === "photo" && (
@@ -274,6 +346,11 @@ export default function PostPage() {
               <li key={item.id} className="post-recent-item">
                 <span className="post-recent-date">{item.date}</span>
                 <span className="post-recent-type">{item.type}</span>
+                {item.tags && item.tags.length > 0 && (
+                  <span className="post-recent-tags">
+                    {item.tags.map((t) => `#${t}`).join(" ")}
+                  </span>
+                )}
                 <p className="post-recent-text">{item.text}</p>
               </li>
             ))}

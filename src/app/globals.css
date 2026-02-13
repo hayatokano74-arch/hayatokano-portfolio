@@ -1504,6 +1504,37 @@ button {
   font-weight: 500;
 }
 
+/* フィルタタブ: タグとの区切り */
+.timeline-filter-separator {
+  color: var(--muted);
+  opacity: 0.5;
+  user-select: none;
+}
+
+/* フィルタタブ: タグアイテム */
+.timeline-filter-tag {
+  white-space: nowrap;
+}
+
+/* 投稿内タグ表示 */
+.timeline-post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.timeline-post-tag {
+  font-size: var(--font-meta);
+  line-height: var(--lh-normal);
+  color: var(--muted);
+  transition: color 140ms linear;
+}
+
+.timeline-post-tag:hover {
+  color: var(--fg);
+}
+
 /* アーカイブサイドバー: 列10-12（コンテンツとの間に列9が空白） */
 .timeline-sidebar {
   grid-column: 10 / -1;
@@ -1947,6 +1978,69 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* 選択中のタグ */
+.post-selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* 過去に使ったタグ */
+.post-past-tags {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.post-past-tags-label {
+  font-size: var(--font-meta);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.post-past-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* タグピルボタン */
+.post-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: var(--font-meta);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border: 1px solid color-mix(in srgb, var(--fg) 20%, transparent);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.post-tag-pill:hover {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+
+.post-tag-pill.active {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+/* 最近の投稿内タグ表示 */
+.post-recent-tags {
+  font-size: var(--font-meta);
+  color: var(--muted);
+  letter-spacing: 0.02em;
 }
 
 /* 投稿ボタン */

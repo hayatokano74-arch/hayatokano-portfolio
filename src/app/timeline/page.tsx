@@ -21,12 +21,13 @@ function dateOnly(date: string) {
 export default async function TimelinePage({
   searchParams,
 }: {
-  searchParams?: Promise<{ type?: string; month?: string; date?: string; q?: string }>;
+  searchParams?: Promise<{ type?: string; month?: string; date?: string; q?: string; tag?: string }>;
 }) {
   const sp = searchParams ? await searchParams : undefined;
   const activeType = sp?.type === "photo" || sp?.type === "text" ? sp.type : undefined;
   const activeMonth = sp?.month;
   const activeDate = sp?.date;
+  const activeTag = sp?.tag;
   const q = sp?.q?.toLowerCase() ?? "";
   const timeline = await getTimeline();
 
@@ -36,10 +37,16 @@ export default async function TimelinePage({
   /* アーカイブ用: 全投稿の日付一覧（重複排除） */
   const allDates = [...new Set(timeline.map((item) => dateOnly(item.date)))];
 
+  /* 全投稿から利用可能なタグ一覧を取得（重複排除） */
+  const availableTags = [...new Set(timeline.flatMap((item) => item.tags ?? []))];
+
   /* フィルタリング */
   let filtered = timeline;
   if (activeType) {
     filtered = filtered.filter((item) => item.type === activeType);
+  }
+  if (activeTag) {
+    filtered = filtered.filter((item) => item.tags?.includes(activeTag));
   }
   if (activeDate) {
     /* 特定の日付でフィルタ（月フィルタより優先） */
@@ -59,7 +66,9 @@ export default async function TimelinePage({
         activeType={activeType}
         activeMonth={activeMonth}
         activeDate={activeDate}
+        activeTag={activeTag}
         availableMonths={availableMonths}
+        availableTags={availableTags}
         allDates={allDates}
       />
     </CanvasShell>

@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
     const type = formData.get("type") as string;
     const date = formData.get("date") as string;
     const image = formData.get("image") as File | null;
+    const tagsRaw = formData.get("tags") as string | null;
 
     /* PIN検証 */
     if (!verifyPin(pin ?? "")) {
@@ -138,11 +139,25 @@ export async function POST(request: NextRequest) {
 
     /* WP に投稿作成 */
     try {
+      /* タグをパース */
+      let tags: string[] = [];
+      if (tagsRaw) {
+        try {
+          const parsed = JSON.parse(tagsRaw);
+          if (Array.isArray(parsed)) {
+            tags = parsed.filter((t: unknown) => typeof t === "string" && (t as string).trim()).map((t: string) => t.trim());
+          }
+        } catch { /* JSON パース失敗は無視 */ }
+      }
+
       const payload: Record<string, unknown> = {
         text: text.trim(),
         type: type === "photo" ? "photo" : "text",
         date: date || "",
       };
+      if (tags.length > 0) {
+        payload.tags = tags;
+      }
       if (imageId > 0) {
         payload.image_id = imageId;
       }

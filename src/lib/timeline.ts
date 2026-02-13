@@ -26,11 +26,16 @@ function normalizeTimelineItem(raw: WpTimelineResponse): TimelineItem | null {
       height: img.height ?? 800,
     }));
 
+  const tags = (raw.tags ?? [])
+    .filter((t) => typeof t === "string" && t.trim())
+    .map((t) => t.trim());
+
   return {
     id,
     date,
     type: itemType,
     text: (raw.text ?? "").trim(),
+    ...(tags.length > 0 ? { tags } : {}),
     ...(images.length > 0 ? { images } : {}),
   };
 }
