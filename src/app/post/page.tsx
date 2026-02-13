@@ -63,7 +63,7 @@ export default function PostPage() {
         body: JSON.stringify({ action: "verify-pin", pin }),
       });
       if (res.ok) {
-        sessionStorage.setItem("tl-pin", pin);
+        localStorage.setItem("tl-pin", pin);
         setAuthed(true);
         loadRecent();
       } else if (!silent) {
@@ -76,9 +76,9 @@ export default function PostPage() {
     }
   }, [loadRecent]);
 
-  /* ── sessionStorage からPIN復元 ── */
+  /* ── localStorage からPIN復元 ── */
   useEffect(() => {
-    const saved = sessionStorage.getItem("tl-pin");
+    const saved = localStorage.getItem("tl-pin");
     if (saved) {
       verifyPin(saved, true);
     }
@@ -111,7 +111,7 @@ export default function PostPage() {
     if (!text.trim()) return;
     setPosting(true);
 
-    const pin = sessionStorage.getItem("tl-pin") ?? "";
+    const pin = localStorage.getItem("tl-pin") ?? "";
     const fd = new FormData();
     fd.append("pin", pin);
     fd.append("text", text.trim());
