@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { CanvasShell } from "@/components/CanvasShell";
-import { texts } from "@/lib/mock";
+import { getTexts, getTextBySlug } from "@/lib/text";
 import { notFound } from "next/navigation";
 import { TextToc } from "@/components/TextToc";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const texts = await getTexts();
   return texts.map((t) => ({ slug: t.slug }));
 }
 
@@ -14,7 +15,7 @@ export default async function ReadingMode({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = texts.find((t) => t.slug === slug);
+  const post = await getTextBySlug(slug);
   if (!post) return notFound();
 
   return (

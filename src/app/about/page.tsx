@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
-import { about } from "@/lib/mock";
+import { getAbout } from "@/lib/about";
 import { blurDataURL } from "@/lib/blur";
 
 export const metadata: Metadata = { title: "About" };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const about = await getAbout();
   return (
     <CanvasShell>
       <Header active="About" title="About" showCategoryRow={false} />
@@ -81,13 +82,12 @@ export default function AboutPage() {
               style={{
                 position: "relative",
                 width: "100%",
-                maxWidth: 920,
                 aspectRatio: `${photo.width} / ${photo.height}`,
                 maxHeight: "min(72vh, 820px)",
-                marginInline: "auto",
                 overflow: "hidden",
                 display: "grid",
                 placeItems: "center",
+                marginLeft: "auto",
               }}
             >
               <Image

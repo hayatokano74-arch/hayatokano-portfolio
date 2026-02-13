@@ -1,4 +1,5 @@
 import { type Work, type WorkTag } from "@/lib/mock";
+import { fetchWpApi } from "@/lib/wp/client";
 
 type MeNoHoshiDetails = {
   artist: string;
@@ -192,25 +193,13 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
 }
 
 async function fetchWpMeNoHoshiPosts(): Promise<MeNoHoshiPost[] | null> {
-  const base =
-    (process.env.WP_BASE_URL ?? "").trim() ||
-    (process.env.NEXT_PUBLIC_WP_BASE_URL ?? "").trim();
-  if (!base) return null;
+  const data = await fetchWpApi<unknown>("hayato/v1/me-no-hoshi");
+  if (!data || !Array.isArray(data)) return null;
 
-  try {
-    const res = await fetch(`${base.replace(/\/$/, "")}/wp-json/hayato/v1/me-no-hoshi`, {
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as unknown;
-    if (!Array.isArray(data)) return null;
-    const normalized = data
-      .map((item) => normalizePost(item as WpMeNoHoshiResponse))
-      .filter((item): item is MeNoHoshiPost => Boolean(item));
-    return normalized.length > 0 ? normalized : null;
-  } catch {
-    return null;
-  }
+  const normalized = data
+    .map((item) => normalizePost(item as WpMeNoHoshiResponse))
+    .filter((item): item is MeNoHoshiPost => Boolean(item));
+  return normalized.length > 0 ? normalized : null;
 }
 
 export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [

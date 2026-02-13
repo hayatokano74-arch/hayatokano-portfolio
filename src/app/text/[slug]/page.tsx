@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
-import { texts } from "@/lib/mock";
+import { getTexts, getTextBySlug } from "@/lib/text";
 import { notFound } from "next/navigation";
 import { TextToc } from "@/components/TextToc";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const texts = await getTexts();
   return texts.map((t) => ({ slug: t.slug }));
 }
 
@@ -16,7 +17,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = texts.find((t) => t.slug === slug);
+  const post = await getTextBySlug(slug);
   if (!post) return {};
   return {
     title: post.title,
@@ -30,7 +31,7 @@ export default async function TextDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = texts.find((t) => t.slug === slug);
+  const post = await getTextBySlug(slug);
   if (!post) return notFound();
 
   return (

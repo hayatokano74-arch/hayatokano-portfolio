@@ -1,3 +1,5 @@
+import { fetchWpApi } from "@/lib/wp/client";
+
 type WpSiteSettings = {
   topHeroImageUrl?: string | null;
 };
@@ -13,21 +15,8 @@ function asArray(values: Array<string | null | undefined>) {
 }
 
 async function fetchWpTopHeroImageUrl() {
-  const base =
-    (process.env.WP_BASE_URL ?? "").trim() ||
-    (process.env.NEXT_PUBLIC_WP_BASE_URL ?? "").trim();
-  if (!base) return null;
-
-  try {
-    const res = await fetch(`${base.replace(/\/$/, "")}/wp-json/hayato/v1/site-settings`, {
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as WpSiteSettings;
-    return (data.topHeroImageUrl ?? "").trim() || null;
-  } catch {
-    return null;
-  }
+  const data = await fetchWpApi<WpSiteSettings>("hayato/v1/site-settings");
+  return (data?.topHeroImageUrl ?? "").trim() || null;
 }
 
 export async function getTopHeroImageCandidates() {

@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = { title: "Works" };
 import { WorksClient } from "@/components/WorksClient";
-import { works } from "@/lib/mock";
+import { getWorks } from "@/lib/works";
 import { CATEGORY_MENU, parseCategory } from "@/lib/categories";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 
@@ -17,6 +17,7 @@ export default async function WorksPage({
   const view = sp?.view === "list" ? "list" : "grid";
   const activeCategory = parseCategory(sp?.tag);
   const q = sp?.q?.toLowerCase() ?? "";
+  const works = await getWorks();
   let filteredWorks =
     activeCategory === "All" ? works : works.filter((work) => work.tags.includes(activeCategory));
   if (q) {

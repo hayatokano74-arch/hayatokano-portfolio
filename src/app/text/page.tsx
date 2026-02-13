@@ -4,7 +4,7 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 
 export const metadata: Metadata = { title: "Text" };
-import { texts } from "@/lib/mock";
+import { getTexts } from "@/lib/text";
 import { CATEGORY_MENU, parseCategory } from "@/lib/categories";
 
 export default async function TextListPage({
@@ -15,6 +15,7 @@ export default async function TextListPage({
   const sp = searchParams ? await searchParams : undefined;
   const activeCategory = parseCategory(sp?.tag);
   const q = sp?.q?.toLowerCase() ?? "";
+  const texts = await getTexts();
   let filteredTexts =
     activeCategory === "All"
       ? texts
@@ -37,25 +38,17 @@ export default async function TextListPage({
   return (
     <CanvasShell>
       <Header active="Text" title="Text" activeCategory={activeCategory} categoryHrefs={categoryHrefs} />
-      <div style={{ marginTop: "var(--space-12)" }}>
+      <div style={{ marginTop: "var(--space-6)" }}>
         <div className="hrline" />
         {filteredTexts.map((t) => (
           <div key={t.slug}>
             <Link
               href={`/text/${t.slug}`}
               className="action-link text-list-row"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "64px minmax(0, 1fr) minmax(0, auto)",
-                alignItems: "baseline",
-                columnGap: "var(--space-6)",
-                paddingTop: "var(--space-3)",
-                paddingBottom: "var(--space-3)",
-              }}
             >
-              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, color: "var(--muted)" }}>{t.year}</div>
-              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{t.title}</div>
-              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", color: "var(--muted)", textAlign: "right", fontWeight: 600 }}>
+              <div className="text-list-year" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, color: "var(--muted)" }}>{t.year}</div>
+              <div className="text-list-title" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{t.title}</div>
+              <div className="text-list-categories" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", color: "var(--muted)", fontWeight: 600 }}>
                 {t.categories.join("    ")}
               </div>
             </Link>
