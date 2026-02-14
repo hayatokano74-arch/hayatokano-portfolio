@@ -1619,18 +1619,6 @@ button {
   font-weight: 500;
 }
 
-/* フィルタタブ: タグとの区切り */
-.timeline-filter-separator {
-  color: var(--muted);
-  opacity: 0.5;
-  user-select: none;
-}
-
-/* フィルタタブ: タグアイテム */
-.timeline-filter-tag {
-  white-space: nowrap;
-}
-
 /* 投稿内タグ表示 */
 .timeline-post-tags {
   display: flex;
@@ -2247,6 +2235,151 @@ button {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* 投稿一覧ヘッダー行 */
+.post-recent-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* 投稿アイテムのタイトル */
+.post-recent-item-title {
+  font-size: var(--font-body);
+  font-weight: 700;
+  margin: var(--space-1) 0 0;
+}
+
+/* 編集中バナー */
+.post-editing-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-body);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  border-radius: 4px;
+}
+
+/* 送信ボタン群 */
+.post-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* セカンダリボタン */
+.post-btn-secondary {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+}
+.post-btn-secondary:hover:not(:disabled) {
+  border-color: var(--fg);
+}
+
+/* キャンセルボタン */
+.post-btn-cancel {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid color-mix(in srgb, var(--fg) 15%, transparent);
+  font-size: var(--font-meta);
+  padding: 2px 10px;
+}
+
+/* 投稿アイテム操作ボタン群 */
+.post-item-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* 小さいボタン */
+.post-btn-small {
+  font-size: var(--font-meta);
+  padding: 2px 10px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid color-mix(in srgb, var(--fg) 15%, transparent);
+}
+.post-btn-small:hover:not(:disabled) {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
+/* 削除ボタン */
+.post-btn-danger {
+  color: #c44;
+  border-color: color-mix(in srgb, #c44 30%, transparent);
+}
+.post-btn-danger:hover:not(:disabled) {
+  color: #fff;
+  background: #c44;
+  border-color: #c44;
+}
+
+/* 公開ボタン */
+.post-btn-publish {
+  color: #2a7;
+  border-color: color-mix(in srgb, #2a7 30%, transparent);
+}
+.post-btn-publish:hover:not(:disabled) {
+  color: #fff;
+  background: #2a7;
+  border-color: #2a7;
+}
+
+/* 投稿一覧タブ */
+.post-list-tabs {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  padding-bottom: var(--space-2);
+}
+
+.post-list-tab {
+  border: 0;
+  background: transparent;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-body);
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 120ms, border-color 120ms;
+}
+.post-list-tab.active {
+  color: var(--fg);
+  font-weight: 700;
+  border-bottom-color: var(--fg);
+}
+.post-list-tab:hover {
+  color: var(--fg);
+}
+
+/* 下書きバッジ */
+.post-recent-draft-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border: 1px solid color-mix(in srgb, #f90 40%, transparent);
+  border-radius: 3px;
+  color: #f90;
+}
+
+/* 空メッセージ */
+.post-empty-message {
+  font-size: var(--font-body);
+  color: var(--muted);
+  padding: var(--space-4) 0;
 }
 
 /* ── スキップナビゲーション ── */

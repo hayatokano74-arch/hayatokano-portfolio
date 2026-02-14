@@ -1,8 +1,10 @@
 /**
  * Timeline 投稿 API Route
  *
- * POST: PIN検証 → 画像アップ（任意）→ WP投稿作成
- * GET:  最近の投稿を取得（WPプロキシ）
+ * GET:    最近の投稿を取得（WPプロキシ）
+ * POST:   PIN検証 / 下書き一覧取得 / 画像アップ → WP投稿作成
+ * PUT:    投稿の編集（テキスト・タイトル・タグ・ステータス）
+ * DELETE: 投稿の削除
  *
  * WP認証情報はサーバーサイドに隠蔽し、クライアントにはPINのみ要求
  */
@@ -83,7 +85,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const contentType = request.headers.get("content-type") ?? "";
 
-  /* JSON リクエスト: PIN検証のみ */
+  /* JSON リクエスト: PIN検証 or 下書き一覧取得 */
   if (contentType.includes("application/json")) {
     const body = await request.json();
     if (body.action === "verify-pin") {
@@ -91,6 +93,32 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true });
       }
       return NextResponse.json({ error: "PINが正しくありません" }, { status: 401 });
+    }
+    if (body.action === "get-drafts") {
+      if (!verifyPin(body.pin ?? "")) {
+        return NextResponse.json({ error: "PINが正しくありません" }, { status: 401 });
+      }
+      const { wpBase, wpUser, wpPass } = getEnv();
+      if (!wpBase || !wpUser || !wpPass) {
+        return NextResponse.json({ error: "WP認証未設定" }, { status: 500 });
+      }
+      try {
+        const res = await fetch(`${wpBase}/wp-json/hayato/v1/timeline/drafts`, {
+          headers: { Authorization: wpAuthHeader(wpUser, wpPass) },
+          next: { revalidate: 0 },
+        });
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => "");
+          return NextResponse.json(
+            { error: "下書き取得失敗", status: res.status, detail: errBody.slice(0, 200) },
+            { status: 502 },
+          );
+        }
+        const data = await res.json();
+        return NextResponse.json(Array.isArray(data) ? data : []);
+      } catch {
+        return NextResponse.json({ error: "WP接続エラー" }, { status: 502 });
+      }
     }
     return NextResponse.json({ error: "不明なアクション" }, { status: 400 });
   }
@@ -108,6 +136,7 @@ export async function POST(request: NextRequest) {
     const text = formData.get("text") as string;
     const type = formData.get("type") as string;
     const date = formData.get("date") as string;
+    const statusField = formData.get("status") as string | null;
     const images = formData.getAll("image") as File[];
     const tagsRaw = formData.get("tags") as string | null;
 
@@ -225,6 +254,9 @@ export async function POST(request: NextRequest) {
       if (imageIds.length > 0) {
         payload.image_ids = imageIds;
       }
+      if (statusField === "draft") {
+        payload.status = "draft";
+      }
 
       const postRes = await fetch(`${wpBase}/wp-json/hayato/v1/timeline`, {
         method: "POST",
@@ -256,4 +288,123 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ error: "不正なリクエスト形式" }, { status: 400 });
+}
+
+/* ── 投稿IDからWP数値IDを抽出（"t123" → "123"） ── */
+function extractWpId(id: string): string {
+  return id.replace(/^t/, "");
+}
+
+/* ── PUT: 投稿の編集 ── */
+export async function PUT(request: NextRequest) {
+  const { wpBase, wpUser, wpPass } = getEnv();
+  if (!wpBase || !wpUser || !wpPass) {
+    return NextResponse.json({ error: "WP認証未設定" }, { status: 500 });
+  }
+
+  const body = await request.json();
+  if (!verifyPin(body.pin ?? "")) {
+    return NextResponse.json({ error: "PINが正しくありません" }, { status: 401 });
+  }
+
+  const postId = body.id;
+  if (!postId) {
+    return NextResponse.json({ error: "投稿IDが必要です" }, { status: 400 });
+  }
+
+  const wpId = extractWpId(postId);
+
+  /* ペイロード構築 */
+  const payload: Record<string, unknown> = {};
+  if (body.title !== undefined) payload.title = String(body.title).trim();
+  if (body.text !== undefined) payload.text = String(body.text).trim();
+  if (body.type !== undefined) {
+    if (!ALLOWED_TYPES.includes(body.type as typeof ALLOWED_TYPES[number])) {
+      return NextResponse.json({ error: "不正な投稿タイプです" }, { status: 400 });
+    }
+    payload.type = body.type;
+  }
+  if (body.tags !== undefined) {
+    if (Array.isArray(body.tags)) {
+      payload.tags = body.tags
+        .filter((t: unknown) => typeof t === "string" && (t as string).trim())
+        .map((t: string) => t.trim().slice(0, MAX_TAG_LENGTH))
+        .slice(0, MAX_TAG_COUNT);
+    }
+  }
+  if (body.status !== undefined) {
+    if (!["publish", "draft"].includes(body.status)) {
+      return NextResponse.json({ error: "不正なステータスです" }, { status: 400 });
+    }
+    payload.status = body.status;
+  }
+
+  try {
+    const res = await fetch(`${wpBase}/wp-json/hayato/v1/timeline/${wpId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: wpAuthHeader(wpUser, wpPass),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("WP投稿更新失敗:", res.status, errText);
+      return NextResponse.json(
+        { error: "投稿の更新に失敗しました", status: res.status, detail: errText.slice(0, 200) },
+        { status: 502 },
+      );
+    }
+
+    const updated = await res.json();
+    return NextResponse.json({ ok: true, post: updated });
+  } catch (e) {
+    console.error("WP投稿更新エラー:", e);
+    return NextResponse.json({ error: "投稿更新中にエラーが発生しました" }, { status: 502 });
+  }
+}
+
+/* ── DELETE: 投稿の削除 ── */
+export async function DELETE(request: NextRequest) {
+  const { wpBase, wpUser, wpPass } = getEnv();
+  if (!wpBase || !wpUser || !wpPass) {
+    return NextResponse.json({ error: "WP認証未設定" }, { status: 500 });
+  }
+
+  const body = await request.json();
+  if (!verifyPin(body.pin ?? "")) {
+    return NextResponse.json({ error: "PINが正しくありません" }, { status: 401 });
+  }
+
+  const postId = body.id;
+  if (!postId) {
+    return NextResponse.json({ error: "投稿IDが必要です" }, { status: 400 });
+  }
+
+  const wpId = extractWpId(postId);
+
+  try {
+    const res = await fetch(`${wpBase}/wp-json/hayato/v1/timeline/${wpId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: wpAuthHeader(wpUser, wpPass),
+      },
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("WP投稿削除失敗:", res.status, errText);
+      return NextResponse.json(
+        { error: "投稿の削除に失敗しました", status: res.status, detail: errText.slice(0, 200) },
+        { status: 502 },
+      );
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    console.error("WP投稿削除エラー:", e);
+    return NextResponse.json({ error: "投稿削除中にエラーが発生しました" }, { status: 502 });
+  }
 }

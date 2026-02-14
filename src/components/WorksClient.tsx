@@ -84,7 +84,8 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
         {works.map((w) => (
           (() => {
             const lead = w.media[0];
-            const thumbSrc = lead?.type === "video" ? lead.poster : lead?.src;
+            const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
+            const thumbAlt = w.thumbnail?.alt ?? lead?.alt;
             return (
           <Link
             key={w.slug}
@@ -93,7 +94,7 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
             className="work-grid-item"
             style={{ display: "block" }}
           >
-            <ThumbRect src={thumbSrc} alt={lead?.alt} />
+            <ThumbRect src={thumbSrc} alt={thumbAlt} />
             <div
               style={{
                 marginTop: "var(--space-2)",
@@ -156,7 +157,8 @@ function WorksList<T extends Work>({
         <div key={w.slug}>
           {(() => {
             const lead = w.media[0];
-            const thumbSrc = lead?.type === "video" ? lead.poster : lead?.src;
+            const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
+            const thumbAlt = w.thumbnail?.alt ?? lead?.alt;
             const isPortraitLead = (lead?.height ?? 0) > (lead?.width ?? 0);
             return (
           <details className="works-row">
@@ -171,7 +173,7 @@ function WorksList<T extends Work>({
                 {thumbSrc ? (
                   <Image
                     src={thumbSrc}
-                    alt={lead?.alt ?? ""}
+                    alt={thumbAlt ?? ""}
                     width={32}
                     height={32}
                     loading="lazy"
@@ -214,7 +216,7 @@ function WorksList<T extends Work>({
                   {thumbSrc ? (
                     <Image
                       src={thumbSrc}
-                      alt={lead?.alt ?? ""}
+                      alt={thumbAlt ?? ""}
                       width={lead?.width ?? 1280}
                       height={lead?.height ?? 720}
                       loading="lazy"

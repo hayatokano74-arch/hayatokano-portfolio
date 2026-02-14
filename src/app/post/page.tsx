@@ -7,8 +7,10 @@ type RecentPost = {
   id: string;
   date: string;
   type: string;
+  title?: string;
   text: string;
   tags?: string[];
+  status?: string;
 };
 
 /* ── 日時フォーマット: "2026.02.13 18:22" ── */
@@ -48,21 +50,27 @@ export default function PostPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [posting, setPosting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("投稿しました");
 
   /* タグ */
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  /* 最近の投稿 */
+  /* 最近の投稿 / 下書き */
   const [recent, setRecent] = useState<RecentPost[]>([]);
+  const [drafts, setDrafts] = useState<RecentPost[]>([]);
+  const [listTab, setListTab] = useState<"recent" | "drafts">("recent");
+
+  /* 編集モード */
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ── 過去に使ったタグ一覧（重複排除） ── */
   const pastTags = useMemo(() => {
-    const all = recent.flatMap((item) => item.tags ?? []);
+    const all = [...recent, ...drafts].flatMap((item) => item.tags ?? []);
     return [...new Set(all)];
-  }, [recent]);
+  }, [recent, drafts]);
 
   /* ── 最近の投稿を読み込み ── */
   const loadRecent = useCallback(async () => {
@@ -71,6 +79,22 @@ export default function PostPage() {
       if (res.ok) {
         const data = await res.json();
         setRecent(Array.isArray(data) ? data : []);
+      }
+    } catch { /* 無視 */ }
+  }, []);
+
+  /* ── 下書きを読み込み ── */
+  const loadDrafts = useCallback(async () => {
+    const pin = localStorage.getItem("tl-pin") ?? "";
+    try {
+      const res = await fetch("/api/timeline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get-drafts", pin }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDrafts(Array.isArray(data) ? data : []);
       }
     } catch { /* 無視 */ }
   }, []);
@@ -89,6 +113,7 @@ export default function PostPage() {
         localStorage.setItem("tl-pin", pin);
         setAuthed(true);
         loadRecent();
+        loadDrafts();
       } else if (!silent) {
         setPinError("PINが正しくありません");
       }
@@ -97,7 +122,7 @@ export default function PostPage() {
     } finally {
       setPinLoading(false);
     }
-  }, [loadRecent]);
+  }, [loadRecent, loadDrafts]);
 
   /* ── localStorage からPIN復元 ── */
   useEffect(() => {
@@ -143,56 +168,171 @@ export default function PostPage() {
     );
   }
 
-  /* ── 投稿送信 ── */
-  async function handleSubmit() {
-    /* photo タイプはテキスト任意、text タイプはテキスト必須 */
+  /* ── フォームリセット ── */
+  function resetForm() {
+    setTitle("");
+    setText("");
+    setImages([]);
+    setImagePreviews([]);
+    setPostType("text");
+    setSelectedTags([]);
+    setEditingId(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  /* ── 編集モード開始 ── */
+  function startEdit(item: RecentPost) {
+    setEditingId(item.id);
+    setTitle(item.title ?? "");
+    setText(item.text);
+    setPostType(item.type === "photo" ? "photo" : "text");
+    setSelectedTags(item.tags ?? []);
+    setImages([]);
+    setImagePreviews([]);
+    /* フォームトップにスクロール */
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* ── 編集キャンセル ── */
+  function cancelEdit() {
+    resetForm();
+  }
+
+  /* ── 成功表示ヘルパー ── */
+  function showSuccess(msg: string) {
+    setSuccessMessage(msg);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 2000);
+  }
+
+  /* ── 投稿送信（新規 or 編集） ── */
+  async function handleSubmit(asDraft = false) {
     const isPhoto = postType === "photo";
-    if (!isPhoto && !text.trim()) return;
-    if (isPhoto && images.length === 0 && !text.trim()) return;
+    if (!editingId) {
+      /* 新規投稿のバリデーション */
+      if (!isPhoto && !text.trim()) return;
+      if (isPhoto && images.length === 0 && !text.trim()) return;
+    } else {
+      /* 編集のバリデーション */
+      if (!isPhoto && !text.trim()) return;
+    }
     setPosting(true);
 
-    /* テキストから #タグ を抽出し、選択タグとマージ */
     const { cleanText, tags: inlineTags } = extractTags(text);
     const allTags = [...new Set([...selectedTags, ...inlineTags])];
-
     const pin = localStorage.getItem("tl-pin") ?? "";
-    const fd = new FormData();
-    fd.append("pin", pin);
-    if (title.trim()) fd.append("title", title.trim());
-    fd.append("text", cleanText);
-    fd.append("type", postType);
-    fd.append("date", formatNow());
-    if (allTags.length > 0) {
-      fd.append("tags", JSON.stringify(allTags));
-    }
-    for (const img of images) {
-      fd.append("image", img);
-    }
 
     try {
-      const res = await fetch("/api/timeline", {
-        method: "POST",
-        body: fd,
-      });
-      if (res.ok) {
-        setSuccess(true);
-        setTitle("");
-        setText("");
-        setImages([]);
-        setImagePreviews([]);
-        setPostType("text");
-        setSelectedTags([]);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        loadRecent();
-        setTimeout(() => setSuccess(false), 2000);
+      if (editingId) {
+        /* ── PUT: 編集 ── */
+        const payload: Record<string, unknown> = {
+          pin,
+          id: editingId,
+          title: title.trim(),
+          text: cleanText,
+          type: postType,
+          tags: allTags,
+        };
+        if (asDraft) {
+          payload.status = "draft";
+        } else {
+          payload.status = "publish";
+        }
+
+        const res = await fetch("/api/timeline", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          resetForm();
+          loadRecent();
+          loadDrafts();
+          showSuccess(asDraft ? "下書きに保存しました" : "更新しました");
+        } else {
+          const err = await res.json();
+          alert(err.error ?? "更新に失敗しました");
+        }
       } else {
-        const err = await res.json();
-        alert(err.error ?? "投稿に失敗しました");
+        /* ── POST: 新規投稿 ── */
+        const fd = new FormData();
+        fd.append("pin", pin);
+        if (title.trim()) fd.append("title", title.trim());
+        fd.append("text", cleanText);
+        fd.append("type", postType);
+        fd.append("date", formatNow());
+        if (asDraft) fd.append("status", "draft");
+        if (allTags.length > 0) {
+          fd.append("tags", JSON.stringify(allTags));
+        }
+        for (const img of images) {
+          fd.append("image", img);
+        }
+
+        const res = await fetch("/api/timeline", {
+          method: "POST",
+          body: fd,
+        });
+        if (res.ok) {
+          resetForm();
+          loadRecent();
+          loadDrafts();
+          showSuccess(asDraft ? "下書きに保存しました" : "投稿しました");
+        } else {
+          const err = await res.json();
+          alert(err.error ?? "投稿に失敗しました");
+        }
       }
     } catch {
       alert("接続エラーが発生しました");
     } finally {
       setPosting(false);
+    }
+  }
+
+  /* ── 投稿を削除 ── */
+  async function handleDelete(id: string) {
+    if (!confirm("この投稿を削除しますか？")) return;
+    const pin = localStorage.getItem("tl-pin") ?? "";
+    try {
+      const res = await fetch("/api/timeline", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, id }),
+      });
+      if (res.ok) {
+        loadRecent();
+        loadDrafts();
+        showSuccess("削除しました");
+        if (editingId === id) resetForm();
+      } else {
+        const err = await res.json();
+        alert(err.error ?? "削除に失敗しました");
+      }
+    } catch {
+      alert("接続エラーが発生しました");
+    }
+  }
+
+  /* ── 下書きを公開 ── */
+  async function handlePublish(item: RecentPost) {
+    const pin = localStorage.getItem("tl-pin") ?? "";
+    try {
+      const res = await fetch("/api/timeline", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, id: item.id, status: "publish" }),
+      });
+      if (res.ok) {
+        loadRecent();
+        loadDrafts();
+        showSuccess("公開しました");
+      } else {
+        const err = await res.json();
+        alert(err.error ?? "公開に失敗しました");
+      }
+    } catch {
+      alert("接続エラーが発生しました");
     }
   }
 
@@ -245,7 +385,21 @@ export default function PostPage() {
 
       {/* 成功フィードバック */}
       {success && (
-        <div className="post-success">投稿しました</div>
+        <div className="post-success">{successMessage}</div>
+      )}
+
+      {/* 編集中ラベル */}
+      {editingId && (
+        <div className="post-editing-banner">
+          編集中: {editingId}
+          <button
+            type="button"
+            className="post-btn post-btn-cancel"
+            onClick={cancelEdit}
+          >
+            キャンセル
+          </button>
+        </div>
       )}
 
       {/* タイプ切替 */}
@@ -322,8 +476,8 @@ export default function PostPage() {
         </div>
       )}
 
-      {/* 写真選択（複数対応） */}
-      {postType === "photo" && (
+      {/* 写真選択（新規投稿時のみ） */}
+      {postType === "photo" && !editingId && (
         <div className="post-image-area">
           {imagePreviews.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
@@ -359,34 +513,137 @@ export default function PostPage() {
         </div>
       )}
 
-      {/* 投稿ボタン */}
-      <button
-        className="post-btn post-btn-primary post-submit"
-        onClick={handleSubmit}
-        disabled={posting || (postType === "text" ? !text.trim() : (images.length === 0 && !text.trim()))}
-      >
-        {posting ? "投稿中…" : "投稿する"}
-      </button>
+      {/* 送信ボタン群 */}
+      <div className="post-actions">
+        <button
+          className="post-btn post-btn-primary post-submit"
+          onClick={() => handleSubmit(false)}
+          disabled={posting || (editingId
+            ? (postType === "text" ? !text.trim() : !text.trim())
+            : (postType === "text" ? !text.trim() : (images.length === 0 && !text.trim()))
+          )}
+        >
+          {posting ? "送信中…" : editingId ? "更新する" : "投稿する"}
+        </button>
+        <button
+          className="post-btn post-btn-secondary"
+          onClick={() => handleSubmit(true)}
+          disabled={posting || (!text.trim() && !title.trim())}
+        >
+          下書き保存
+        </button>
+      </div>
 
-      {/* 最近の投稿 */}
-      {recent.length > 0 && (
+      {/* ── 投稿一覧タブ ── */}
+      <div className="post-list-tabs">
+        <button
+          className={`post-list-tab ${listTab === "recent" ? "active" : ""}`}
+          onClick={() => setListTab("recent")}
+        >
+          最近の投稿
+        </button>
+        <button
+          className={`post-list-tab ${listTab === "drafts" ? "active" : ""}`}
+          onClick={() => { setListTab("drafts"); loadDrafts(); }}
+        >
+          下書き
+        </button>
+      </div>
+
+      {/* ── 最近の投稿一覧 ── */}
+      {listTab === "recent" && recent.length > 0 && (
         <div className="post-recent">
-          <h2 className="post-recent-title">最近の投稿</h2>
           <ul className="post-recent-list">
             {recent.map((item) => (
               <li key={item.id} className="post-recent-item">
-                <span className="post-recent-date">{item.date}</span>
-                <span className="post-recent-type">{item.type}</span>
-                {item.tags && item.tags.length > 0 && (
-                  <span className="post-recent-tags">
-                    {item.tags.map((t) => `#${t}`).join(" ")}
-                  </span>
+                <div className="post-recent-header">
+                  <span className="post-recent-date">{item.date}</span>
+                  <span className="post-recent-type">{item.type}</span>
+                  {item.tags && item.tags.length > 0 && (
+                    <span className="post-recent-tags">
+                      {item.tags.map((t) => `#${t}`).join(" ")}
+                    </span>
+                  )}
+                </div>
+                {item.title && (
+                  <p className="post-recent-item-title">{item.title}</p>
                 )}
                 <p className="post-recent-text">{item.text}</p>
+                <div className="post-item-actions">
+                  <button
+                    type="button"
+                    className="post-btn post-btn-small"
+                    onClick={() => startEdit(item)}
+                  >
+                    編集
+                  </button>
+                  <button
+                    type="button"
+                    className="post-btn post-btn-small post-btn-danger"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    削除
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         </div>
+      )}
+      {listTab === "recent" && recent.length === 0 && (
+        <p className="post-empty-message">投稿がありません</p>
+      )}
+
+      {/* ── 下書き一覧 ── */}
+      {listTab === "drafts" && drafts.length > 0 && (
+        <div className="post-recent">
+          <ul className="post-recent-list">
+            {drafts.map((item) => (
+              <li key={item.id} className="post-recent-item">
+                <div className="post-recent-header">
+                  <span className="post-recent-date">{item.date}</span>
+                  <span className="post-recent-type">{item.type}</span>
+                  <span className="post-recent-draft-badge">下書き</span>
+                  {item.tags && item.tags.length > 0 && (
+                    <span className="post-recent-tags">
+                      {item.tags.map((t) => `#${t}`).join(" ")}
+                    </span>
+                  )}
+                </div>
+                {item.title && (
+                  <p className="post-recent-item-title">{item.title}</p>
+                )}
+                <p className="post-recent-text">{item.text}</p>
+                <div className="post-item-actions">
+                  <button
+                    type="button"
+                    className="post-btn post-btn-small post-btn-publish"
+                    onClick={() => handlePublish(item)}
+                  >
+                    公開
+                  </button>
+                  <button
+                    type="button"
+                    className="post-btn post-btn-small"
+                    onClick={() => startEdit(item)}
+                  >
+                    編集
+                  </button>
+                  <button
+                    type="button"
+                    className="post-btn post-btn-small post-btn-danger"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    削除
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {listTab === "drafts" && drafts.length === 0 && (
+        <p className="post-empty-message">下書きがありません</p>
       )}
     </div>
   );

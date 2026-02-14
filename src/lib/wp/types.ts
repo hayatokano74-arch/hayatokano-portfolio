@@ -12,6 +12,12 @@ export type WpWorkResponse = {
   tags?: string[];
   year?: string;
   excerpt?: string;
+  thumbnail?: {
+    src?: string;
+    alt?: string;
+    width?: number;
+    height?: number;
+  };
   details?: {
     artist?: string;
     period?: string;

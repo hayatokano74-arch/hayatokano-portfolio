@@ -13,7 +13,7 @@ export default async function Home() {
     title: w.title,
     year: w.year,
     href: `/works/${w.slug}`,
-    image: w.media[0]?.src ?? null,
+    image: w.thumbnail?.src ?? w.media[0]?.src ?? null,
   }));
 
   return <TopHero candidates={candidates} latestWorks={latestWorks} />;

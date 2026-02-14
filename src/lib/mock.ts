@@ -36,6 +36,12 @@ export type Work = {
     /* その他 */
     bio?: string;
   };
+  thumbnail?: {
+    src: string;
+    alt: string;
+    width: number;
+    height: number;
+  };
   media: {
     id: string;
     type: "image" | "video";

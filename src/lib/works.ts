@@ -75,6 +75,17 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
 
   if (media.length === 0) return null;
 
+  /* アイキャッチ画像 */
+  const thumb = raw.thumbnail;
+  const thumbnail = thumb?.src
+    ? {
+        src: fixBrokenUnicodeUrl(thumb.src),
+        alt: thumb.alt ?? "",
+        width: thumb.width ?? 1280,
+        height: thumb.height ?? 800,
+      }
+    : undefined;
+
   const d = raw.details ?? {};
   return {
     slug,
@@ -83,6 +94,7 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
     tags: tags.length > 0 ? tags : ["Photography"],
     year: (raw.year ?? "").trim(),
     excerpt: (raw.excerpt ?? "").trim(),
+    ...(thumbnail ? { thumbnail } : {}),
     details: {
       artist: (d.artist ?? "").trim(),
       period: (d.period ?? "").trim(),
