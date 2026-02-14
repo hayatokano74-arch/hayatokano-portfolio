@@ -800,7 +800,6 @@ button {
 
   .top-hero-brand-name {
     grid-column: unset;
-    font-size: 22px !important;
     transition: color 200ms ease, text-shadow 200ms ease;
   }
 
