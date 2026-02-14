@@ -11,6 +11,7 @@
   --line: #2d2d2d;
   --line-light: #d2d2d2;
   --accent: #0066cc;
+  --media-bg: #000;
 
   /* ── ベースライングリッド ──
      全ての垂直方向の寸法（余白・行高・コンポーネント高）は
@@ -71,6 +72,7 @@
   --line: #3a3a3a;
   --line-light: #3a3a3a;
   --accent: #4d9fff;
+  --media-bg: #000;
 }
 
 /* テーマ切り替えドット（ヘッダー: ブランド名とナビの間） */
@@ -806,21 +808,32 @@ button {
   }
 
   .header-title-row {
-    grid-template-columns: 1fr !important;
-    margin-top: var(--space-10) !important;
-    min-height: 0 !important;
+    grid-template-columns: 1fr auto;
+    margin-top: var(--space-10);
+    min-height: 0;
   }
 
   .header-title-left {
-    grid-column: 1 / -1;
+    grid-column: 1 / 2;
     width: 100%;
     justify-content: space-between;
-    gap: var(--space-4) !important;
+    gap: var(--space-4);
+  }
+
+  .header-title-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    grid-column: 2 / 3;
+  }
+
+  .works-view-toggle {
+    font-size: 16px !important;
   }
 
   .header-category-row {
-    grid-template-columns: 1fr !important;
-    margin-top: var(--space-6) !important;
+    grid-template-columns: 1fr;
+    margin-top: var(--space-6);
     row-gap: var(--space-4);
   }
 
@@ -926,12 +939,17 @@ button {
     font-size: 11px;
   }
 
+  /* Works グリッド: モバイルは1カラム */
+  .works-grid {
+    grid-template-columns: 1fr !important;
+  }
+
   /* Works サマリー: モバイルは3カラム簡易グリッド */
   .works-list-summary {
-    grid-template-columns: 104px minmax(0, 1fr) 32px !important;
-    column-gap: var(--space-3) !important;
+    grid-template-columns: 104px minmax(0, 1fr) 32px;
+    column-gap: var(--space-3);
     row-gap: 0;
-    align-items: start !important;
+    align-items: start;
     padding-top: var(--space-2);
     padding-bottom: var(--space-2);
   }
@@ -947,7 +965,7 @@ button {
     white-space: normal;
     overflow-wrap: anywhere;
     min-width: 0;
-    line-height: var(--lh-tight) !important;
+    line-height: var(--lh-tight);
   }
 
   .works-list-summary-tags {
@@ -962,10 +980,10 @@ button {
 
   /* Works ディテール: モバイルは1カラム */
   .works-list-detail {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     row-gap: var(--space-4);
-    padding-top: var(--space-4) !important;
-    padding-bottom: var(--space-5) !important;
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-5);
   }
 
   .works-list-spacer {
@@ -974,13 +992,12 @@ button {
 
   .works-list-body {
     grid-column: 1;
-    display: block !important;
-    max-width: none !important;
+    display: block;
   }
 
   .works-list-body .work-details-row {
-    grid-template-columns: 96px minmax(0, 1fr) !important;
-    gap: var(--space-2) !important;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--space-2);
   }
 
   .works-list-open-tags {
@@ -1019,36 +1036,28 @@ button {
 
   .works-list-media img,
   .works-list-media > div {
-    max-width: 100% !important;
-    height: auto !important;
-    margin-left: 0 !important;
+    max-width: 100%;
+    height: auto;
+    margin-left: 0;
   }
 
   .text-detail-layout {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "toc rail"
-      "main main";
-    column-gap: var(--space-3);
-    row-gap: var(--space-3);
+    grid-template-columns: 1fr;
     margin-top: var(--space-9);
   }
 
   .text-detail-rail {
-    grid-area: rail;
-    grid-column: auto;
+    grid-column: 1 / -1;
     justify-self: end;
     text-align: right;
   }
 
   .text-detail-main {
-    grid-area: main;
-    grid-column: auto;
+    grid-column: 1 / -1;
   }
 
   .text-toc {
-    grid-area: toc;
-    grid-column: auto;
+    grid-column: 1 / -1;
     width: auto;
     position: static;
     top: auto;
@@ -1086,7 +1095,7 @@ button {
 
   /* Text リスト: モバイルは2カラム */
   .text-list-row {
-    grid-template-columns: 48px minmax(0, 1fr) !important;
+    grid-template-columns: 48px minmax(0, 1fr);
     grid-template-rows: auto auto;
   }
 
@@ -1103,13 +1112,12 @@ button {
   .text-list-categories {
     grid-column: 2;
     grid-row: 2;
-    text-align: left !important;
   }
 
   /* News モバイル: サマリーは3カラム簡易グリッド */
   .news-accord-summary {
-    grid-template-columns: 80px minmax(0, 1fr) 32px !important;
-    column-gap: var(--space-3) !important;
+    grid-template-columns: 80px minmax(0, 1fr) 32px;
+    column-gap: var(--space-3);
   }
 
   .news-accord-date {
@@ -1126,10 +1134,10 @@ button {
 
   /* News ディテール: モバイルは1カラム */
   .news-accord-detail {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     row-gap: var(--space-4);
-    padding-top: var(--space-4) !important;
-    padding-bottom: var(--space-5) !important;
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-5);
   }
 
   .news-accord-spacer {
@@ -1146,18 +1154,18 @@ button {
 
   /* About モバイル: 12カラム → 1カラム */
   .about-layout {
-    grid-template-columns: 1fr !important;
-    gap: var(--space-6) !important;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
   }
 
   .about-text,
   .about-photos {
-    grid-column: 1 / -1 !important;
+    grid-column: 1 / -1;
   }
 
   .timeline-row {
-    grid-template-columns: 32px minmax(0, 1fr) !important;
-    column-gap: var(--space-2) !important;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: var(--space-2);
   }
 
   .work-detail-shell {
@@ -1189,34 +1197,34 @@ button {
 
   /* Works 詳細オーバーレイ: モバイルは全幅 */
   .work-detail-overlay-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .work-detail-overlay-close {
-    grid-column: 1 / -1 !important;
+    grid-column: 1 / -1;
     justify-self: end;
   }
 
   .work-detail-overlay-content {
-    grid-column: 1 / -1 !important;
-    display: block !important;
+    grid-column: 1 / -1;
+    display: block;
   }
 
   .work-detail-overlay-content .work-details-row {
-    grid-template-columns: 96px minmax(0, 1fr) !important;
-    gap: var(--space-2) !important;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--space-2);
   }
 
   /* 目の星モバイル: 12カラム → 1カラム */
   .me-no-hoshi-detail {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     gap: var(--space-6);
-    margin-top: var(--space-7) !important;
+    margin-top: var(--space-7);
   }
 
   .me-no-hoshi-meta-column,
   .me-no-hoshi-visual-column {
-    grid-column: 1 / -1 !important;
+    grid-column: 1 / -1;
   }
 
   /* モバイル: 画像を画面幅に収める（右揃え・margin-left: auto を解除） */
@@ -1268,7 +1276,7 @@ button {
 
   /* Contact: モバイルで1カラム */
   .contact-layout {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .contact-content {
@@ -2239,311 +2247,6 @@ button {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-/* ═══ モバイルオーバーライド（デスクトップルールの後に配置して確実に上書き） ═══ */
-@media (max-width: 900px) {
-  /* ── Works グリッド: モバイルは1カラム ── */
-  .works-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* ── ヘッダー ── */
-  .header-title-row {
-    grid-template-columns: 1fr auto;
-    margin-top: var(--space-10);
-    min-height: 0;
-  }
-
-  .header-title-left {
-    grid-column: 1 / 2;
-    width: 100%;
-    justify-content: space-between;
-    gap: var(--space-4);
-  }
-
-  .header-title-right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    grid-column: 2 / 3;
-  }
-
-  .works-view-toggle {
-    font-size: 16px !important;
-  }
-
-  .header-category-row {
-    grid-template-columns: 1fr;
-    margin-top: var(--space-6);
-    row-gap: var(--space-4);
-  }
-
-  .header-category-links {
-    grid-column: 1 / -1;
-    flex-wrap: wrap;
-    row-gap: var(--space-2);
-    column-gap: var(--space-4);
-    justify-content: flex-start;
-  }
-
-  .header-search {
-    display: none;
-  }
-
-  /* ── Works リスト ── */
-  .works-list-summary {
-    grid-template-columns: 104px minmax(0, 1fr) 32px;
-    column-gap: var(--space-3);
-    align-items: start;
-  }
-
-  .works-list-summary-date {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .works-list-summary-title {
-    grid-column: 2;
-    grid-row: 1;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    min-width: 0;
-    line-height: var(--lh-tight);
-  }
-
-  .works-list-summary-tags {
-    display: none;
-  }
-
-  .works-list-summary-thumb {
-    grid-column: 3;
-    grid-row: 1;
-    align-self: start;
-  }
-
-  .works-list-detail {
-    grid-template-columns: 1fr;
-    row-gap: var(--space-4);
-    padding-top: var(--space-4);
-    padding-bottom: var(--space-5);
-  }
-
-  .works-list-spacer {
-    display: none;
-  }
-
-  .works-list-body {
-    grid-column: 1;
-    display: block;
-  }
-
-  /* モバイルではテーブルのデフォルト2カラムレイアウトを使用 */
-  .works-list-body .work-details-row {
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: var(--space-2);
-  }
-
-  .works-list-media {
-    grid-column: 1;
-    align-self: start;
-    justify-self: stretch;
-    width: 100%;
-  }
-
-  .works-list-media img,
-  .works-list-media > div {
-    max-width: 100%;
-    height: auto;
-    margin-left: 0;
-  }
-
-  /* ── Text リスト ── */
-  .text-list-row {
-    grid-template-columns: 48px minmax(0, 1fr);
-    grid-template-rows: auto auto;
-  }
-
-  .text-list-year {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .text-list-title {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .text-list-categories {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  /* ── Text 詳細 ── */
-  .text-detail-layout {
-    grid-template-columns: 1fr;
-    margin-top: var(--space-9);
-  }
-
-  .text-detail-rail {
-    grid-column: 1 / -1;
-  }
-
-  .text-detail-main {
-    grid-column: 1 / -1;
-  }
-
-  .text-toc {
-    grid-column: 1 / -1;
-    width: auto;
-    position: static;
-  }
-
-  /* ── News ── */
-  .news-accord-summary {
-    grid-template-columns: 80px minmax(0, 1fr) 32px;
-    column-gap: var(--space-3);
-  }
-
-  .news-accord-date {
-    grid-column: 1;
-  }
-
-  .news-accord-title {
-    grid-column: 2;
-  }
-
-  .news-accord-thumb {
-    grid-column: 3;
-  }
-
-  .news-accord-detail {
-    grid-template-columns: 1fr;
-    row-gap: var(--space-4);
-    padding-top: var(--space-4);
-    padding-bottom: var(--space-5);
-  }
-
-  .news-accord-spacer {
-    display: none;
-  }
-
-  .news-accord-body {
-    grid-column: 1;
-  }
-
-  .news-accord-media {
-    grid-column: 1;
-  }
-
-  /* ── Timeline ── */
-  .timeline-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .timeline-filter-tabs-wrap {
-    grid-column: 1 / -1;
-  }
-
-  .timeline-content {
-    grid-column: 1 / -1;
-  }
-
-  .timeline-sidebar {
-    display: none;
-  }
-
-  /* ── Contact ── */
-  .contact-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .contact-content {
-    grid-column: 1 / -1;
-  }
-
-  /* ── About ── */
-  .about-layout {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
-
-  .about-text,
-  .about-photos {
-    grid-column: 1 / -1;
-  }
-
-  /* ── 目の星: 画像左揃えに戻す ── */
-  .me-no-hoshi-visual-column {
-    grid-column: 1 / -1;
-  }
-
-  .me-no-hoshi-visual-column article {
-    text-align: left !important;
-  }
-
-  .me-no-hoshi-visual-column article > div,
-  .me-no-hoshi-visual-column article figure {
-    margin-left: 0 !important;
-    max-width: 100% !important;
-  }
-
-  .me-no-hoshi-visual-column article figure img {
-    max-width: 100% !important;
-    height: auto !important;
-  }
-
-  /* ── トップヒーロー下部: グリッド解除 ── */
-  .top-hero-bottom {
-    display: block;
-  }
-
-  .top-hero-brand {
-    grid-column: unset;
-  }
-
-  /* ── Works 詳細: トップ/ボトムバーのグリッド解除 ── */
-  .work-detail-top {
-    display: flex !important;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .work-detail-top > * {
-    grid-column: unset !important;
-  }
-
-  .work-detail-bottom {
-    display: flex !important;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-  }
-
-  .work-detail-bottom > * {
-    grid-column: unset !important;
-  }
-
-  /* ── Works 詳細オーバーレイ: モバイルは全幅 ── */
-  .work-detail-overlay-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .work-detail-overlay-close {
-    grid-column: 1 / -1;
-    justify-self: end;
-  }
-
-  .work-detail-overlay-content {
-    grid-column: 1 / -1;
-    display: block;
-  }
-
-  /* モバイルではテーブルのデフォルト2カラムレイアウトを使用 */
-  .work-detail-overlay-content .work-details-row {
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: var(--space-2);
-  }
 }
 
 /* ── スキップナビゲーション ── */

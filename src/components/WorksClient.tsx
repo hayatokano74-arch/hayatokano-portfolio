@@ -38,7 +38,7 @@ export function WorksClient<T extends Work>({
 function ThumbRect({ src, alt }: { src?: string; alt?: string }) {
   if (src) {
     return (
-      <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", background: "#000" }}>
+      <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", background: "var(--media-bg)" }}>
         <Image
           src={src}
           alt={alt ?? ""}
@@ -55,7 +55,7 @@ function ThumbRect({ src, alt }: { src?: string; alt?: string }) {
       </div>
     );
   }
-  return <div style={{ width: "100%", aspectRatio: "16 / 9", background: "#000" }} />;
+  return <div style={{ width: "100%", aspectRatio: "16 / 9", background: "var(--media-bg)" }} />;
 }
 
 function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
@@ -117,8 +117,8 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
           style={{
             width: 16,
             height: 16,
-            borderBottom: "1px solid #9e9e9e",
-            borderRight: "1px solid #9e9e9e",
+            borderBottom: "1px solid var(--muted)",
+            borderRight: "1px solid var(--muted)",
             transform: "rotate(45deg)",
           }}
         />
@@ -175,10 +175,10 @@ function WorksList<T extends Work>({
                     width={32}
                     height={32}
                     loading="lazy"
-                    style={{ width: 32, height: 32, objectFit: "cover", display: "block", background: "#000" }}
+                    style={{ width: 32, height: 32, objectFit: "cover", display: "block", background: "var(--media-bg)" }}
                   />
                 ) : (
-                  <div style={{ width: 32, height: 32, background: "#000" }} />
+                  <div style={{ width: 32, height: 32, background: "var(--media-bg)" }} />
                 )}
               </div>
             </summary>
@@ -225,11 +225,11 @@ function WorksList<T extends Work>({
                         objectFit: "cover",
                         marginLeft: "auto",
                         display: "block",
-                        background: "#000",
+                        background: "var(--media-bg)",
                       }}
                     />
                   ) : (
-                    <div style={{ width: "100%", maxWidth: 520, aspectRatio: "16 / 10", background: "#000", marginLeft: "auto" }} />
+                    <div style={{ width: "100%", maxWidth: 520, aspectRatio: "16 / 10", background: "var(--media-bg)", marginLeft: "auto" }} />
                   )}
                 </Link>
               </div>
