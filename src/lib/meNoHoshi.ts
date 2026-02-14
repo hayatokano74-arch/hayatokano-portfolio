@@ -218,10 +218,10 @@ async function fetchWpMeNoHoshiPosts(): Promise<MeNoHoshiPost[] | null> {
   const data = await fetchWpApi<unknown>("hayato/v1/me-no-hoshi");
   if (!data || !Array.isArray(data)) return null;
 
-  const normalized = data
+  // WP APIが空配列を返した場合もフォールバックせず空配列を返す
+  return data
     .map((item) => normalizePost(item as WpMeNoHoshiResponse))
     .filter((item): item is MeNoHoshiPost => Boolean(item));
-  return normalized.length > 0 ? normalized : null;
 }
 
 export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [

@@ -61,10 +61,10 @@ export async function getTexts(): Promise<TextPost[]> {
   const data = await fetchWpApi<WpTextResponse[]>("hayato/v1/text");
   if (!data || !Array.isArray(data)) return fallbackTexts;
 
-  const normalized = data
+  // WP APIが空配列を返した場合もフォールバックせず空配列を返す
+  return data
     .map(normalizeText)
     .filter((t): t is TextPost => Boolean(t));
-  return normalized.length > 0 ? normalized : fallbackTexts;
 }
 
 /** slug 指定で1件取得 */
