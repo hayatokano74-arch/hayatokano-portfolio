@@ -227,6 +227,8 @@ button {
 /* ── Works グリッド（投稿数ベースのレスポンシブ） ── */
 .works-grid {
   display: grid;
+  gap: var(--space-5);
+  align-items: start;
 }
 
 .work-grid-item:hover .work-grid-meta {
@@ -681,6 +683,7 @@ button {
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
   align-items: start;
+  margin-top: var(--space-10);
 }
 
 .me-no-hoshi-meta-column {
@@ -828,7 +831,7 @@ button {
   }
 
   .works-view-toggle {
-    font-size: 16px !important;
+    font-size: 16px;
   }
 
   .header-category-row {
@@ -941,7 +944,7 @@ button {
 
   /* Works グリッド: モバイルは1カラム */
   .works-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   /* Works サマリー: モバイルは3カラム簡易グリッド */
@@ -1112,6 +1115,7 @@ button {
   .text-list-categories {
     grid-column: 2;
     grid-row: 2;
+    text-align: left;
   }
 
   /* News モバイル: サマリーは3カラム簡易グリッド */
@@ -1330,11 +1334,16 @@ button {
   grid-column: 1 / span 6;
   display: flex;
   align-items: center;
+  gap: var(--space-7);
 }
 
 .works-view-toggle {
   display: flex;
   align-items: center;
+  gap: var(--space-4);
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 500;
 }
 
 /* ── ヘッダーカテゴリ行: 12カラムグリッド ── */
@@ -1382,6 +1391,9 @@ button {
   grid-column: 3 / span 6;
   min-width: 0;
   overflow-wrap: anywhere;
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 700;
 }
 
 .works-list-summary-tags {
@@ -1458,6 +1470,16 @@ button {
   grid-column: 8 / -1;
   min-width: 0;
   overflow: hidden;
+}
+
+.works-list-media img,
+.works-list-media > div {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  margin-left: auto;
+  display: block;
+  background: var(--media-bg);
 }
 
 /* ── Text リスト行: 12カラムグリッド ── */

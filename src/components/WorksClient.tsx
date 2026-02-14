@@ -75,11 +75,7 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
     <div style={{ position: "relative", paddingBottom: "var(--space-14)" }}>
       <div
         className="works-grid"
-        style={{
-          gridTemplateColumns,
-          gap: "var(--space-5)",
-          alignItems: "start",
-        }}
+        style={{ gridTemplateColumns }}
       >
         {works.map((w) => (
           (() => {
@@ -165,7 +161,7 @@ function WorksList<T extends Work>({
             {/* サマリー行: 12カラムグリッド */}
             <summary className="works-list-summary">
               <div className="works-list-summary-date" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.date}</div>
-              <div className="works-list-summary-title" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.title}</div>
+              <div className="works-list-summary-title">{w.title}</div>
               <div className="works-list-summary-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 600 }}>
                 {w.tags.join("    ")}
               </div>
@@ -221,17 +217,12 @@ function WorksList<T extends Work>({
                       height={lead?.height ?? 720}
                       loading="lazy"
                       style={{
-                        width: "100%",
-                        maxWidth: 520,
                         aspectRatio: `${lead?.width ?? 1280} / ${lead?.height ?? 720}`,
                         objectFit: "cover",
-                        marginLeft: "auto",
-                        display: "block",
-                        background: "var(--media-bg)",
                       }}
                     />
                   ) : (
-                    <div style={{ width: "100%", maxWidth: 520, aspectRatio: "16 / 10", background: "var(--media-bg)", marginLeft: "auto" }} />
+                    <div style={{ aspectRatio: "16 / 10" }} />
                   )}
                 </Link>
               </div>

@@ -31,7 +31,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   ];
 
   return (
-    <section className="me-no-hoshi-detail" style={{ marginTop: "var(--space-10)" }}>
+    <section className="me-no-hoshi-detail">
       <div className="me-no-hoshi-meta-column">
         <h1 style={{ margin: 0, fontSize: "var(--font-heading)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{post.title}</h1>
 
