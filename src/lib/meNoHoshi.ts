@@ -142,6 +142,11 @@ function normalizeWorkList(items: WpMeNoHoshiResponse["archiveWorks"], slug: str
     .filter((item): item is MeNoHoshiArchiveWork => Boolean(item));
 }
 
+/** HTMLタグを除去してプレーンテキストにする */
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").trim();
+}
+
 function normalizeTag(value: string): WorkTag | null {
   const allowed: WorkTag[] = ["Photography", "Video", "Personal", "Portrait", "Exhibition"];
   return allowed.includes(value as WorkTag) ? (value as WorkTag) : null;
@@ -169,7 +174,7 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     subtitle,
     tags: tags.length > 0 ? tags : ["Photography"],
     year: (post.year ?? "2025").trim(),
-    excerpt: (post.excerpt ?? "").trim(),
+    excerpt: stripHtml(post.excerpt ?? ""),
     media,
     details: {
       artist: (details.artist ?? "").trim(),
@@ -182,7 +187,7 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
       access: (details.access ?? "").trim(),
       bio: (details.bio ?? "").trim(),
     },
-    statement: (post.statement ?? "").trim(),
+    statement: stripHtml(post.statement ?? ""),
     notice: (post.notice ?? "").trim(),
     keyVisuals,
     heroCaption: (post.heroCaption ?? "").trim(),

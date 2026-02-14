@@ -4,18 +4,24 @@ import type { ReactNode } from "react";
 import type { Work } from "@/lib/mock";
 import { blurDataURL } from "@/lib/blur";
 
+/** リスト表示のExcerpt最大文字数（デフォルト: 200） */
+const DEFAULT_EXCERPT_MAX_LENGTH = 200;
+
 export function WorksClient<T extends Work>({
   works,
   view,
   basePath = "/works",
   detailQuery = "?mode=gallery&img=1",
   renderListDetail,
+  excerptMaxLength = DEFAULT_EXCERPT_MAX_LENGTH,
 }: {
   works: T[];
   view: "grid" | "list";
   basePath?: "/works" | "/me-no-hoshi";
   detailQuery?: string;
   renderListDetail?: (work: T) => ReactNode;
+  /** リスト表示でのExcerpt最大文字数。0で無制限 */
+  excerptMaxLength?: number;
 }) {
   const detailHref = (slug: string) => `${basePath}/${slug}${detailQuery}`;
   return (
@@ -23,7 +29,7 @@ export function WorksClient<T extends Work>({
       {view === "grid" ? (
         <WorksGrid works={works} detailHref={detailHref} />
       ) : (
-        <WorksList works={works} detailHref={detailHref} renderListDetail={renderListDetail} />
+        <WorksList works={works} detailHref={detailHref} renderListDetail={renderListDetail} excerptMaxLength={excerptMaxLength} />
       )}
     </div>
   );
@@ -58,7 +64,7 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
       <div
         className="grid"
         style={{
-          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))",
           gap: "var(--space-5)",
           alignItems: "start",
         }}
@@ -109,14 +115,21 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
   );
 }
 
+function truncateText(text: string, maxLength: number): string {
+  if (maxLength <= 0 || text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + "...";
+}
+
 function WorksList<T extends Work>({
   works,
   detailHref,
   renderListDetail,
+  excerptMaxLength = DEFAULT_EXCERPT_MAX_LENGTH,
 }: {
   works: T[];
   detailHref: (slug: string) => string;
   renderListDetail?: (work: T) => ReactNode;
+  excerptMaxLength?: number;
 }) {
   return (
     <div>
@@ -160,7 +173,7 @@ function WorksList<T extends Work>({
                   {w.tags.join("    ")}
                 </div>
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
-                <div className="works-list-excerpt" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap" }}>{w.excerpt}</div>
+                <div className="works-list-excerpt" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap" }}>{truncateText(w.excerpt, excerptMaxLength)}</div>
                 <div
                   className="works-list-view"
                   style={{

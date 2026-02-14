@@ -27,8 +27,11 @@ export default async function WorksPage({
       work.excerpt.toLowerCase().includes(q)
     );
   }
+  /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
+  const existingTags = new Set(works.flatMap((w) => w.tags));
+  const activeCategories = CATEGORY_MENU.filter((c) => c === "All" || existingTags.has(c as never));
   const categoryHrefs = Object.fromEntries(
-    CATEGORY_MENU.map((category) => {
+    activeCategories.map((category) => {
       const params = new URLSearchParams();
       params.set("view", view);
       if (category !== "All") params.set("tag", category);

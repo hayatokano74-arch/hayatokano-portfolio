@@ -19,15 +19,18 @@ export default async function TextListPage({
   let filteredTexts =
     activeCategory === "All"
       ? texts
-      : texts.filter((post) => post.categories.includes(activeCategory));
+      : texts.filter((post) => (post.categories as string[]).includes(activeCategory));
   if (q) {
     filteredTexts = filteredTexts.filter((post) =>
       post.title.toLowerCase().includes(q) ||
       post.body.toLowerCase().includes(q)
     );
   }
+  /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
+  const existingTags = new Set(texts.flatMap((t) => t.categories));
+  const activeCategories = CATEGORY_MENU.filter((c) => c === "All" || existingTags.has(c as never));
   const categoryHrefs = Object.fromEntries(
-    CATEGORY_MENU.map((category) => {
+    activeCategories.map((category) => {
       const params = new URLSearchParams();
       if (category !== "All") params.set("tag", category);
       const qs = params.toString();

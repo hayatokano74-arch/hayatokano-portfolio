@@ -158,17 +158,10 @@ export function Header({
       {showCategoryRow ? (
         <div className="header-category-row">
           <div className="header-category-links" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
-            {CATEGORY_MENU.map((item) => {
+            {CATEGORY_MENU.filter((item) => categoryHrefs?.[item]).map((item) => {
               const className = item === activeCategory ? "underline-active" : "";
               const style = { color: item === activeCategory ? "var(--fg)" : "var(--muted)" } as const;
-              const href = categoryHrefs?.[item];
-              if (!href) {
-                return (
-                  <span key={item} className={className} style={style}>
-                    {item}
-                  </span>
-                );
-              }
+              const href = categoryHrefs![item]!;
               return (
                 <Link key={item} href={href} className={`${className} action-link`.trim()} style={style}>
                   {item}

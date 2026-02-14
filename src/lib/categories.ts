@@ -1,4 +1,4 @@
-export const CATEGORY_MENU = ["All", "Photography", "Video", "Personal", "Portrait"] as const;
+export const CATEGORY_MENU = ["All", "Photography", "Video", "Personal", "Portrait", "Exhibition"] as const;
 
 export type Category = (typeof CATEGORY_MENU)[number];
 

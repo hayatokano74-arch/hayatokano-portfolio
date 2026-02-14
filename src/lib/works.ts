@@ -17,33 +17,16 @@ const VALID_TAGS: WorkTag[] = [
   "Exhibition",
 ];
 
-/**
- * WP sanitize_file_name が日本語を uXXXX 形式に変換するが
- * 実ファイルは日本語のまま保存されるため URL を修正する
- */
-function fixWpMediaUrl(url: string): string {
-  try {
-    const u = new URL(url);
-    const parts = u.pathname.split("/");
-    const filename = parts[parts.length - 1];
-    /* uXXXX パターンが2つ以上連続する場合のみ変換（誤検知防止） */
-    if (!/u[0-9a-f]{4}u[0-9a-f]{4}/i.test(filename)) return url;
-    const fixed = filename.replace(/u([0-9a-f]{4})/gi, (_, hex) =>
-      String.fromCharCode(parseInt(hex, 16)),
-    );
-    parts[parts.length - 1] = fixed;
-    u.pathname = parts.join("/");
-    return u.toString();
-  } catch {
-    return url;
-  }
-}
-
 function normalizeTag(value: string): WorkTag | null {
   const found = VALID_TAGS.find(
     (t) => t.toLowerCase() === value.toLowerCase(),
   );
   return found ?? null;
+}
+
+/** HTMLタグを除去してプレーンテキストにする */
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").trim();
 }
 
 function normalizeWork(raw: WpWorkResponse): Work | null {
@@ -60,11 +43,11 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
     .map((m) => ({
       id: m.id!,
       type: (m.type === "video" ? "video" : "image") as "image" | "video",
-      src: fixWpMediaUrl(m.src!),
+      src: m.src!,
       alt: m.alt ?? "",
       width: m.width ?? 1280,
       height: m.height ?? 800,
-      ...(m.poster ? { poster: fixWpMediaUrl(m.poster) } : {}),
+      ...(m.poster ? { poster: m.poster } : {}),
     }));
 
   if (media.length === 0) return null;
@@ -76,7 +59,7 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
     title,
     tags: tags.length > 0 ? tags : ["Photography"],
     year: (raw.year ?? "").trim(),
-    excerpt: (raw.excerpt ?? "").trim(),
+    excerpt: stripHtml(raw.excerpt ?? ""),
     details: {
       artist: (d.artist ?? "").trim(),
       period: (d.period ?? "").trim(),
