@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 import { MeNoHoshiDetail } from "@/components/MeNoHoshiDetail";
-import { getMeNoHoshiPosts } from "@/lib/meNoHoshi";
+import { getMeNoHoshiPosts, getMeNoHoshiBySlug } from "@/lib/meNoHoshi";
 
 export async function generateStaticParams() {
   const posts = await getMeNoHoshiPosts();
@@ -16,8 +16,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const posts = await getMeNoHoshiPosts();
-  const post = posts.find((item) => item.slug === slug);
+  /* React.cache() により getMeNoHoshiPosts の重複リクエストを排除 */
+  const post = await getMeNoHoshiBySlug(slug);
   if (!post) return {};
   const hero = post.media[0];
   return {
@@ -37,8 +37,7 @@ export default async function MeNoHoshiDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const posts = await getMeNoHoshiPosts();
-  const post = posts.find((item) => item.slug === slug);
+  const post = await getMeNoHoshiBySlug(slug);
   if (!post) return notFound();
 
   return (

@@ -5,6 +5,7 @@
  * WP_BASE_URL 未設定 or API失敗時は mock.ts のフォールバックデータを返す
  */
 
+import { cache } from "react";
 import { type TextPost, type WorkTag, texts as fallbackTexts } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
 import type { WpTextResponse } from "@/lib/wp/types";
@@ -56,8 +57,8 @@ function normalizeText(raw: WpTextResponse): TextPost | null {
   };
 }
 
-/** Text 全件取得 */
-export async function getTexts(): Promise<TextPost[]> {
+/** Text 全件取得（React.cache でリクエスト単位の重複排除） */
+export const getTexts = cache(async (): Promise<TextPost[]> => {
   const data = await fetchWpApi<WpTextResponse[]>("hayato/v1/text");
   if (!data || !Array.isArray(data)) return fallbackTexts;
 
@@ -65,12 +66,10 @@ export async function getTexts(): Promise<TextPost[]> {
   return data
     .map(normalizeText)
     .filter((t): t is TextPost => Boolean(t));
-}
+});
 
-/** slug 指定で1件取得 */
-export async function getTextBySlug(
-  slug: string,
-): Promise<TextPost | undefined> {
+/** slug 指定で1件取得（React.cache でリクエスト単位の重複排除） */
+export const getTextBySlug = cache(async (slug: string): Promise<TextPost | undefined> => {
   const all = await getTexts();
   return all.find((t) => t.slug === slug);
-}
+});

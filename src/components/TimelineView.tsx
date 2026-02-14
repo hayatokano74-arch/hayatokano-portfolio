@@ -33,22 +33,35 @@ type ArchiveYear = { year: string; count: number; months: ArchiveMonth[] };
 
 function buildArchiveTree(dates: string[]): ArchiveYear[] {
   const tree: ArchiveYear[] = [];
+  /* Map/Set で O(1) ルックアップに最適化（js-set-map-lookups） */
+  const yearMap = new Map<string, ArchiveYear>();
+  const monthMap = new Map<string, ArchiveMonth>();
+  const dateSet = new Map<string, Set<string>>();
+
   for (const d of dates) {
     const [y, m] = d.split(".");
-    let yearNode = tree.find((t) => t.year === y);
+
+    let yearNode = yearMap.get(y);
     if (!yearNode) {
       yearNode = { year: y, count: 0, months: [] };
+      yearMap.set(y, yearNode);
       tree.push(yearNode);
     }
     yearNode.count++;
+
     const key = `${y}-${m}`;
-    let monthNode = yearNode.months.find((mn) => mn.key === key);
+    let monthNode = monthMap.get(key);
     if (!monthNode) {
       monthNode = { month: m, key, count: 0, dates: [] };
+      monthMap.set(key, monthNode);
       yearNode.months.push(monthNode);
+      dateSet.set(key, new Set());
     }
     monthNode.count++;
-    if (!monthNode.dates.includes(d)) {
+
+    const seen = dateSet.get(key)!;
+    if (!seen.has(d)) {
+      seen.add(d);
       monthNode.dates.push(d);
     }
   }

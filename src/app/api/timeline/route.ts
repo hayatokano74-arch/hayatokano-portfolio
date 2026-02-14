@@ -108,8 +108,9 @@ export async function POST(request: NextRequest) {
     const imageIds: number[] = [];
     const validImages = images.filter((f) => f && f.size > 0);
 
-    for (const img of validImages) {
-      try {
+    // async-parallel: 画像アップロードを並列実行（直列 → Promise.allSettled）
+    const uploadResults = await Promise.allSettled(
+      validImages.map(async (img) => {
         const imgBuffer = Buffer.from(await img.arrayBuffer());
         const uploadRes = await fetch(`${wpBase}/wp-json/wp/v2/media`, {
           method: "POST",
@@ -120,22 +121,22 @@ export async function POST(request: NextRequest) {
           },
           body: imgBuffer,
         });
-
-        if (uploadRes.ok) {
-          const media = await uploadRes.json();
-          imageIds.push(media.id);
-        } else {
+        if (!uploadRes.ok) {
           const errText = await uploadRes.text();
-          console.error("画像アップロード失敗:", uploadRes.status, errText);
-          return NextResponse.json(
-            { error: "画像アップロードに失敗しました" },
-            { status: 502 },
-          );
+          throw new Error(`${uploadRes.status}: ${errText}`);
         }
-      } catch (e) {
-        console.error("画像アップロードエラー:", e);
+        const media = await uploadRes.json();
+        return media.id as number;
+      }),
+    );
+
+    for (const result of uploadResults) {
+      if (result.status === "fulfilled") {
+        imageIds.push(result.value);
+      } else {
+        console.error("画像アップロード失敗:", result.reason);
         return NextResponse.json(
-          { error: "画像アップロード中にエラーが発生しました" },
+          { error: "画像アップロードに失敗しました" },
           { status: 502 },
         );
       }

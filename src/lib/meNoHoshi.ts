@@ -1,5 +1,11 @@
+import { cache } from "react";
 import { type Work, type WorkTag } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
+
+/* モジュールレベルに RegExp を巻き上げ（js-hoist-regexp） */
+const RE_UNICODE_TEST = /u[0-9a-fA-F]{4}/;
+const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
+const RE_HTML_TAGS = /<[^>]*>/g;
 
 type MeNoHoshiDetails = {
   artist: string;
@@ -144,7 +150,7 @@ function normalizeWorkList(items: WpMeNoHoshiResponse["archiveWorks"], slug: str
 
 /** HTMLタグを除去してプレーンテキストにする */
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
+  return html.replace(RE_HTML_TAGS, "").trim();
 }
 
 /**
@@ -152,8 +158,8 @@ function stripHtml(html: string): string {
  * WP sanitize_file_name() がCJK文字を壊した場合のフォールバック
  */
 function fixBrokenUnicodeUrl(url: string): string {
-  if (!/u[0-9a-fA-F]{4}/.test(url)) return url;
-  return url.replace(/u([0-9a-fA-F]{4})/g, (_match, hex) => {
+  if (!RE_UNICODE_TEST.test(url)) return url;
+  return url.replace(RE_UNICODE_REPLACE, (_match, hex) => {
     const cp = parseInt(hex, 16);
     if (cp >= 0x3000 && cp <= 0x9fff) return String.fromCodePoint(cp);
     if (cp >= 0xf900 && cp <= 0xfaff) return String.fromCodePoint(cp);
@@ -429,7 +435,14 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
   },
 ];
 
-export async function getMeNoHoshiPosts() {
+/** 目の星 全件取得（React.cache でリクエスト単位の重複排除） */
+export const getMeNoHoshiPosts = cache(async (): Promise<MeNoHoshiPost[]> => {
   const wpPosts = await fetchWpMeNoHoshiPosts();
   return wpPosts ?? meNoHoshiFallbackPosts;
-}
+});
+
+/** slug 指定で1件取得（React.cache でリクエスト単位の重複排除） */
+export const getMeNoHoshiBySlug = cache(async (slug: string): Promise<MeNoHoshiPost | undefined> => {
+  const all = await getMeNoHoshiPosts();
+  return all.find((p) => p.slug === slug);
+});

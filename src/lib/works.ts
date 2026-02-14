@@ -5,9 +5,15 @@
  * WP_BASE_URL 未設定 or API失敗時は mock.ts のフォールバックデータを返す
  */
 
+import { cache } from "react";
 import { type Work, type WorkTag, works as fallbackWorks } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
 import type { WpWorkResponse } from "@/lib/wp/types";
+
+/* モジュールレベルに RegExp を巻き上げ（js-hoist-regexp） */
+const RE_UNICODE_TEST = /u[0-9a-fA-F]{4}/;
+const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
+const RE_HTML_TAGS = /<[^>]*>/g;
 
 const VALID_TAGS: WorkTag[] = [
   "Photography",
@@ -26,7 +32,7 @@ function normalizeTag(value: string): WorkTag | null {
 
 /** HTMLタグを除去してプレーンテキストにする */
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
+  return html.replace(RE_HTML_TAGS, "").trim();
 }
 
 /**
@@ -35,8 +41,8 @@ function stripHtml(html: string): string {
  */
 function fixBrokenUnicodeUrl(url: string): string {
   // uXXXX が連続するパターン（CJKの壊れたエスケープ）を検出
-  if (!/u[0-9a-fA-F]{4}/.test(url)) return url;
-  return url.replace(/u([0-9a-fA-F]{4})/g, (_match, hex) => {
+  if (!RE_UNICODE_TEST.test(url)) return url;
+  return url.replace(RE_UNICODE_REPLACE, (_match, hex) => {
     const cp = parseInt(hex, 16);
     // CJK/ひらがな/カタカナ範囲のみ復元（英数字のuXXXXパターンを誤変換しない）
     if (cp >= 0x3000 && cp <= 0x9fff) return String.fromCodePoint(cp);
@@ -105,8 +111,8 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
   };
 }
 
-/** Works 全件取得 */
-export async function getWorks(): Promise<Work[]> {
+/** Works 全件取得（React.cache でリクエスト単位の重複排除） */
+export const getWorks = cache(async (): Promise<Work[]> => {
   const data = await fetchWpApi<WpWorkResponse[]>("hayato/v1/works");
   if (!data || !Array.isArray(data)) return fallbackWorks;
 
@@ -114,10 +120,10 @@ export async function getWorks(): Promise<Work[]> {
     .map(normalizeWork)
     .filter((w): w is Work => Boolean(w));
   return normalized.length > 0 ? normalized : fallbackWorks;
-}
+});
 
-/** slug 指定で1件取得 */
-export async function getWorkBySlug(slug: string): Promise<Work | undefined> {
+/** slug 指定で1件取得（React.cache でリクエスト単位の重複排除） */
+export const getWorkBySlug = cache(async (slug: string): Promise<Work | undefined> => {
   const all = await getWorks();
   return all.find((w) => w.slug === slug);
-}
+});
