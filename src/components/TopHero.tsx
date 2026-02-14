@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeToggle, ThemeDot } from "@/components/ThemeToggle";
 
 /* ── 型定義 ── */
 type LatestWork = {
@@ -108,6 +108,9 @@ export function TopHero({ candidates, latestWorks }: Props) {
         >
           <span className="mobile-menu-icon" style={{ "--icon-color": "#fff" } as React.CSSProperties} />
         </button>
+
+        {/* テーマ切替ドット */}
+        <ThemeDot className="top-hero-theme-dot" />
 
         {/* デスクトップナビ（ヘッダーと同位置） */}
         <nav className="top-hero-nav">

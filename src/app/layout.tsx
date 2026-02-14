@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
-import { ThemeScript, ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeScript } from "@/components/ThemeToggle";
 import { GridDebugOverlay } from "@/components/GridDebugOverlay";
 import "./globals.css";
 
@@ -48,7 +48,6 @@ export default function RootLayout({
       <head><ThemeScript /></head>
       <body>
         {children}
-        <div className="theme-switch-wrap"><ThemeToggle /></div>
         {process.env.NODE_ENV === "development" && <GridDebugOverlay />}
       </body>
     </html>

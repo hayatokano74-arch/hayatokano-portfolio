@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CATEGORY_MENU, type Category } from "@/lib/categories";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeToggle, ThemeDot } from "@/components/ThemeToggle";
 
 type Section = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
 type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
@@ -77,6 +77,9 @@ export function Header({
         >
           <span className="mobile-menu-icon" />
         </button>
+
+        {/* テーマ切替ドット: ブランドとナビの間 */}
+        <ThemeDot />
 
         {/* デスクトップナビ: ナンバリング付き */}
         <nav className="desktop-main-nav">

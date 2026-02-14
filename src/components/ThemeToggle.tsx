@@ -78,6 +78,35 @@ export function ThemeToggle({ forceShow = false }: { forceShow?: boolean } = {})
   );
 }
 
+/* ヘッダー用のドット型テーマ切替 */
+export function ThemeDot({ className = "" }: { className?: string } = {}) {
+  const [theme, setTheme] = useState<Theme>("light");
+
+  useEffect(() => {
+    const t = initTheme();
+    setTheme(t);
+    const handler = (next: Theme) => setTheme(next);
+    listeners.add(handler);
+    return () => { listeners.delete(handler); };
+  }, []);
+
+  const toggle = useCallback(() => {
+    const next = theme === "light" ? "dark" : "light";
+    setGlobalTheme(next);
+  }, [theme]);
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={theme === "dark" ? "ライトモードに切り替え" : "ダークモードに切り替え"}
+      className={`theme-dot ${className}`.trim()}
+    >
+      <span className="theme-dot-circle" />
+    </button>
+  );
+}
+
 /* SSR時のちらつき防止スクリプト */
 export function ThemeScript() {
   const script = `(function(){try{var t=localStorage.getItem("${STORAGE_KEY}");if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})()`;
