@@ -125,7 +125,7 @@ export function Header({
             <div style={{ fontSize: "var(--font-heading)", lineHeight: 1, fontWeight: 700 }}>{title}</div>
 
             {showWorksToggle ? (
-              <div className="flex items-center" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
+              <div className="works-view-toggle" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
                 <Link
                   href={worksGridHref}
                   className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
@@ -148,7 +148,7 @@ export function Header({
         showWorksToggle ? (
           <div className="header-title-row">
             <div className="header-title-left" style={{ gap: "var(--space-7)" }}>
-              <div className="flex items-center" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
+              <div className="works-view-toggle" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
                 <Link
                   href={worksGridHref}
                   className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}

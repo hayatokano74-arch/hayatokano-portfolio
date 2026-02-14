@@ -1246,6 +1246,11 @@ button {
   align-items: center;
 }
 
+.works-view-toggle {
+  display: flex;
+  align-items: center;
+}
+
 /* ── ヘッダーカテゴリ行: 12カラムグリッド ── */
 .header-category-row {
   display: grid;
@@ -2172,6 +2177,10 @@ button {
     width: 100%;
     justify-content: space-between;
     gap: var(--space-4);
+  }
+
+  .works-view-toggle {
+    font-size: 16px !important;
   }
 
   .header-category-row {
