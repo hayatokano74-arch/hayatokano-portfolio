@@ -93,19 +93,15 @@ function TimelineImage({ image }: { image: TimelineItem["images"] extends (infer
   if (!image) return null;
   return (
     <div
-      style={{
-        position: "relative",
-        width: "min(60%, 400px)",
-        aspectRatio: `${image.width} / ${image.height}`,
-        overflow: "hidden",
-      }}
+      className="timeline-post-image-wrap"
+      style={{ aspectRatio: `${image.width} / ${image.height}` }}
     >
       <Image
         src={image.src}
         alt={image.alt}
         fill
         loading="lazy"
-        sizes="(max-width: 900px) 60vw, 400px"
+        sizes="(max-width: 900px) 100vw, 400px"
         placeholder="blur"
         blurDataURL={blurDataURL(image.width, image.height)}
         style={{ objectFit: "cover" }}
@@ -117,47 +113,36 @@ function TimelineImage({ image }: { image: TimelineItem["images"] extends (infer
 /* ─── 個別の投稿カード ─── */
 function TimelinePost({ item }: { item: TimelineItem }) {
   const time = item.date.split(" ")[1] ?? "";
+  const hasImage = item.type === "photo" && item.images && item.images.length > 0;
+
+  /* テキストの margin 用クラス */
+  const textClass = [
+    "timeline-post-text",
+    item.title ? "after-title" : hasImage ? "after-image" : "",
+  ].filter(Boolean).join(" ");
 
   return (
-    <article id={item.id} style={{ scrollMarginTop: "var(--space-11)", paddingTop: "var(--space-4)", paddingBottom: "var(--space-2)" }}>
-      {item.type === "photo" && item.images && item.images.length > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
-          {item.images.map((img, idx) => (
+    <article id={item.id} className="timeline-post">
+      {hasImage ? (
+        <div className="timeline-post-images">
+          {item.images!.map((img, idx) => (
             <TimelineImage key={idx} image={img} />
           ))}
         </div>
       ) : null}
 
-      {/* タイトル（任意ラベル） */}
       {item.title && (
-        <div
-          style={{
-            marginTop: item.type === "photo" ? "var(--space-3)" : 0,
-            fontSize: "var(--font-body)",
-            lineHeight: "var(--lh-normal)",
-            fontWeight: 700,
-            letterSpacing: "0.02em",
-          }}
-        >
+        <div className={`timeline-post-title${hasImage ? " has-image" : ""}`}>
           {item.title}
         </div>
       )}
 
       {item.text ? (
-        <div
-          style={{
-            marginTop: item.title ? "var(--space-2)" : (item.type === "photo" ? "var(--space-3)" : 0),
-            fontSize: "var(--font-body)",
-            lineHeight: "var(--lh-relaxed)",
-            fontWeight: 500,
-            whiteSpace: "pre-wrap",
-          }}
-        >
+        <div className={textClass}>
           {item.text}
         </div>
       ) : null}
 
-      {/* タグ表示 */}
       {item.tags && item.tags.length > 0 && (
         <div className="timeline-post-tags">
           {item.tags.map((tag) => (
@@ -172,11 +157,9 @@ function TimelinePost({ item }: { item: TimelineItem }) {
         </div>
       )}
 
-      {/* 時刻表示（アンカーリンク） */}
       <a
         href={`#${item.id}`}
-        className="action-link action-link-muted"
-        style={{ display: "inline-block", marginTop: "var(--space-3)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.04em" }}
+        className="action-link action-link-muted timeline-post-time"
       >
         {time}
       </a>
@@ -575,10 +558,8 @@ function ActiveFilter({ activeDate, activeMonth, activeType }: { activeDate?: st
   const clearHref = qs ? `/timeline?${qs}` : "/timeline";
 
   return (
-    <div style={{ marginBottom: "var(--space-6)", display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
-      <span style={{ fontSize: "var(--font-body)", fontWeight: 700, lineHeight: "var(--lh-normal)" }}>
-        {label}
-      </span>
+    <div className="timeline-active-filter">
+      <span className="timeline-active-filter-label">{label}</span>
       <Link
         href={clearHref}
         className="action-link action-link-muted"
@@ -621,31 +602,27 @@ export function TimelineView({
       <div className="timeline-layout" style={{ marginTop: "var(--space-6)" }}>
         {/* コンテンツ */}
         <div className="timeline-content">
-            <ActiveFilter activeDate={activeDate} activeMonth={activeMonth} activeType={activeType} />
-            {groups.length === 0 ? (
-              <div style={{ fontSize: "var(--font-body)", fontWeight: 500, color: "var(--muted)" }}>
-                投稿がありません
+          <ActiveFilter activeDate={activeDate} activeMonth={activeMonth} activeType={activeType} />
+          {groups.length === 0 ? (
+            <div className="timeline-empty">投稿がありません</div>
+          ) : null}
+
+          {groups.map((group, groupIdx) => (
+            <div key={group.date} style={{ paddingTop: groupIdx > 0 ? "var(--space-9)" : undefined }}>
+              {groupIdx > 0 ? (
+                <div className="hrline timeline-date-separator" />
+              ) : null}
+
+              <div style={{ marginBottom: "var(--space-2)" }}>
+                <span className="timeline-date-group">{group.date}</span>
               </div>
-            ) : null}
 
-            {groups.map((group, groupIdx) => (
-              <div key={group.date} style={{ paddingTop: groupIdx > 0 ? "var(--space-9)" : 0 }}>
-                {groupIdx > 0 ? (
-                  <div className="hrline" style={{ marginBottom: "var(--space-9)" }} />
-                ) : null}
-
-                <div style={{ marginBottom: "var(--space-2)" }}>
-                  <span style={{ fontSize: "var(--font-body)", fontWeight: 700, letterSpacing: "0.04em" }}>
-                    {group.date}
-                  </span>
-                </div>
-
-                {group.items.map((item) => (
-                  <TimelinePost key={item.id} item={item} />
-                ))}
-              </div>
-            ))}
-          </div>
+              {group.items.map((item) => (
+                <TimelinePost key={item.id} item={item} />
+              ))}
+            </div>
+          ))}
+        </div>
 
         {/* サイドバー（デスクトップのみ） */}
         <ArchiveSidebar allDates={allDates} activeMonth={activeMonth} activeDate={activeDate} activeType={activeType} />

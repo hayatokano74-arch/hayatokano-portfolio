@@ -1274,6 +1274,11 @@ button {
     display: none;
   }
 
+  /* タイムライン投稿: モバイルで画像を全幅に */
+  .timeline-post-image-wrap {
+    width: 100%;
+  }
+
   /* Contact: モバイルで1カラム */
   .contact-layout {
     grid-template-columns: 1fr;
@@ -1636,6 +1641,88 @@ button {
 
 .timeline-post-tag:hover {
   color: var(--fg);
+}
+
+/* ── Timeline 投稿スタイル ── */
+.timeline-post {
+  scroll-margin-top: var(--space-11);
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-2);
+}
+
+.timeline-post-images {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.timeline-post-image-wrap {
+  position: relative;
+  width: min(60%, 400px);
+  overflow: hidden;
+}
+
+.timeline-post-title {
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.timeline-post-title.has-image {
+  margin-top: var(--space-3);
+}
+
+.timeline-post-text {
+  font-size: var(--font-body);
+  line-height: var(--lh-relaxed);
+  font-weight: 500;
+  white-space: pre-wrap;
+}
+
+.timeline-post-text.after-title {
+  margin-top: var(--space-2);
+}
+
+.timeline-post-text.after-image {
+  margin-top: var(--space-3);
+}
+
+.timeline-post-time {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-size: var(--font-meta);
+  line-height: var(--lh-normal);
+  letter-spacing: 0.04em;
+}
+
+.timeline-date-group {
+  font-size: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.timeline-date-separator {
+  margin-bottom: var(--space-9);
+}
+
+.timeline-active-filter {
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.timeline-active-filter-label {
+  font-size: var(--font-body);
+  font-weight: 700;
+  line-height: var(--lh-normal);
+}
+
+.timeline-empty {
+  font-size: var(--font-body);
+  font-weight: 500;
+  color: var(--muted);
 }
 
 /* アーカイブサイドバー: 列10-12（コンテンツとの間に列9が空白） */
