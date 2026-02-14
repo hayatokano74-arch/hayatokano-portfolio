@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { ThemeToggle, ThemeDot } from "@/components/ThemeToggle";
+import { ThemeDot } from "@/components/ThemeToggle";
 
 /* ── 型定義 ── */
 type LatestWork = {
@@ -138,8 +138,8 @@ export function TopHero({ candidates, latestWorks }: Props) {
                 <span className="mobile-nav-label">{label}</span>
               </Link>
             ))}
-            <div className="theme-switch-in-menu" style={{ marginTop: "var(--space-7)" }}>
-              <ThemeToggle forceShow />
+            <div style={{ marginTop: "var(--space-7)" }}>
+              <ThemeDot />
             </div>
           </nav>
         </div>

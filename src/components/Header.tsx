@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CATEGORY_MENU, type Category } from "@/lib/categories";
-import { ThemeToggle, ThemeDot } from "@/components/ThemeToggle";
+import { ThemeDot } from "@/components/ThemeToggle";
 
 type Section = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
 type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
@@ -111,8 +111,8 @@ export function Header({
                 <span className="mobile-nav-label">{label}</span>
               </Link>
             ))}
-            <div className="theme-switch-in-menu" style={{ marginTop: "var(--space-7)" }}>
-              <ThemeToggle forceShow />
+            <div style={{ marginTop: "var(--space-7)" }}>
+              <ThemeDot />
             </div>
           </nav>
         </div>

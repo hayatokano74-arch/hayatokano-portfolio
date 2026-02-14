@@ -87,8 +87,8 @@
 }
 .theme-dot-circle {
   display: block;
-  width: 5px;
-  height: 5px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--fg);
   transition: opacity 200ms ease, background 200ms ease;
@@ -137,6 +137,11 @@
 /* メニュー内テーマスイッチ: デスクトップでは非表示 */
 .theme-switch-in-menu {
   display: none;
+}
+
+/* モバイルメニュー内のドット: grid-column をリセット */
+.mobile-overlay .theme-dot {
+  grid-column: unset;
 }
 
 html,
@@ -696,8 +701,8 @@ button {
     --pad-y: var(--space-7);
   }
 
-  /* テーマドット: モバイルでは非表示 */
-  .theme-dot {
+  /* テーマドット: モバイルではヘッダーバー内は非表示（メニュー内で表示） */
+  .header-bar > .theme-dot {
     display: none;
   }
 
