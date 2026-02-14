@@ -44,8 +44,8 @@ export default function PostPage() {
   const [postType, setPostType] = useState<"text" | "photo">("text");
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [posting, setPosting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -107,17 +107,24 @@ export default function PostPage() {
     }
   }, [verifyPin]);
 
-  /* ── 画像選択 ── */
-  function handleImageSelect(file: File | null) {
-    if (!file) {
-      setImage(null);
-      setImagePreview(null);
-      return;
+  /* ── 画像選択（複数対応） ── */
+  function handleImagesSelect(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const newFiles = Array.from(files);
+    setImages((prev) => [...prev, ...newFiles]);
+    for (const file of newFiles) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreviews((prev) => [...prev, e.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
     }
-    setImage(file);
-    const reader = new FileReader();
-    reader.onload = (e) => setImagePreview(e.target?.result as string);
-    reader.readAsDataURL(file);
+  }
+
+  function removeImage(index: number) {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   /* ── テキストエリア自動拡張 ── */
@@ -138,7 +145,10 @@ export default function PostPage() {
 
   /* ── 投稿送信 ── */
   async function handleSubmit() {
-    if (!text.trim()) return;
+    /* photo タイプはテキスト任意、text タイプはテキスト必須 */
+    const isPhoto = postType === "photo";
+    if (!isPhoto && !text.trim()) return;
+    if (isPhoto && images.length === 0 && !text.trim()) return;
     setPosting(true);
 
     /* テキストから #タグ を抽出し、選択タグとマージ */
@@ -155,7 +165,9 @@ export default function PostPage() {
     if (allTags.length > 0) {
       fd.append("tags", JSON.stringify(allTags));
     }
-    if (image) fd.append("image", image);
+    for (const img of images) {
+      fd.append("image", img);
+    }
 
     try {
       const res = await fetch("/api/timeline", {
@@ -166,8 +178,8 @@ export default function PostPage() {
         setSuccess(true);
         setTitle("");
         setText("");
-        setImage(null);
-        setImagePreview(null);
+        setImages([]);
+        setImagePreviews([]);
         setPostType("text");
         setSelectedTags([]);
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -308,35 +320,39 @@ export default function PostPage() {
         </div>
       )}
 
-      {/* 写真選択 */}
+      {/* 写真選択（複数対応） */}
       {postType === "photo" && (
         <div className="post-image-area">
-          {imagePreview ? (
-            <div className="post-image-preview-wrap">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imagePreview} alt="プレビュー" className="post-image-preview" />
-              <button
-                className="post-image-remove"
-                onClick={() => {
-                  handleImageSelect(null);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }}
-              >
-                ×
-              </button>
+          {imagePreviews.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+              {imagePreviews.map((preview, idx) => (
+                <div key={idx} className="post-image-preview-wrap">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={preview} alt={`プレビュー ${idx + 1}`} className="post-image-preview" />
+                  <button
+                    className="post-image-remove"
+                    onClick={() => removeImage(idx)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
             </div>
-          ) : (
-            <label className="post-image-drop">
-              <span>写真を選択</span>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageSelect(e.target.files?.[0] ?? null)}
-                hidden
-              />
-            </label>
           )}
+          <label className="post-image-drop" style={imagePreviews.length > 0 ? { marginTop: "var(--space-3)" } : undefined}>
+            <span>{imagePreviews.length > 0 ? "写真を追加" : "写真を選択"}</span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => {
+                handleImagesSelect(e.target.files);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+              hidden
+            />
+          </label>
         </div>
       )}
 
@@ -344,7 +360,7 @@ export default function PostPage() {
       <button
         className="post-btn post-btn-primary post-submit"
         onClick={handleSubmit}
-        disabled={posting || !text.trim()}
+        disabled={posting || (postType === "text" ? !text.trim() : (images.length === 0 && !text.trim()))}
       >
         {posting ? "投稿中…" : "投稿する"}
       </button>

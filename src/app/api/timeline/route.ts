@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     const text = formData.get("text") as string;
     const type = formData.get("type") as string;
     const date = formData.get("date") as string;
-    const image = formData.get("image") as File | null;
+    const images = formData.getAll("image") as File[];
     const tagsRaw = formData.get("tags") as string | null;
 
     /* PIN検証 */
@@ -98,29 +98,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "PINが正しくありません" }, { status: 401 });
     }
 
-    if (!text?.trim()) {
+    /* テキスト必須チェック: photo タイプはテキスト任意 */
+    const isPhoto = type === "photo";
+    if (!isPhoto && !text?.trim()) {
       return NextResponse.json({ error: "テキストは必須です" }, { status: 400 });
     }
 
-    let imageId = 0;
+    /* 複数画像アップロード */
+    const imageIds: number[] = [];
+    const validImages = images.filter((f) => f && f.size > 0);
 
-    /* 画像アップロード（任意） */
-    if (image && image.size > 0) {
+    for (const img of validImages) {
       try {
-        const imgBuffer = Buffer.from(await image.arrayBuffer());
+        const imgBuffer = Buffer.from(await img.arrayBuffer());
         const uploadRes = await fetch(`${wpBase}/wp-json/wp/v2/media`, {
           method: "POST",
           headers: {
             Authorization: wpAuthHeader(wpUser, wpPass),
-            "Content-Disposition": `attachment; filename="${encodeURIComponent(image.name)}"`,
-            "Content-Type": image.type || "image/jpeg",
+            "Content-Disposition": `attachment; filename="${encodeURIComponent(img.name)}"`,
+            "Content-Type": img.type || "image/jpeg",
           },
           body: imgBuffer,
         });
 
         if (uploadRes.ok) {
           const media = await uploadRes.json();
-          imageId = media.id;
+          imageIds.push(media.id);
         } else {
           const errText = await uploadRes.text();
           console.error("画像アップロード失敗:", uploadRes.status, errText);
@@ -152,8 +155,8 @@ export async function POST(request: NextRequest) {
       }
 
       const payload: Record<string, unknown> = {
-        text: text.trim(),
-        type: type === "photo" ? "photo" : "text",
+        text: (text ?? "").trim(),
+        type: isPhoto ? "photo" : "text",
         date: date || "",
       };
       if (title) {
@@ -162,8 +165,8 @@ export async function POST(request: NextRequest) {
       if (tags.length > 0) {
         payload.tags = tags;
       }
-      if (imageId > 0) {
-        payload.image_id = imageId;
+      if (imageIds.length > 0) {
+        payload.image_ids = imageIds;
       }
 
       const postRes = await fetch(`${wpBase}/wp-json/hayato/v1/timeline`, {
