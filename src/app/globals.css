@@ -222,8 +222,38 @@ button {
   border-top: 1px solid var(--line);
 }
 
+/* ── Works グリッド（投稿数ベースのレスポンシブ） ── */
+.works-grid {
+  display: grid;
+}
+
 .work-grid-item:hover .work-grid-meta {
   opacity: 1 !important;
+}
+
+/* ── Excerpt HTML（詳細ページ） ── */
+.work-excerpt-html strong {
+  font-weight: 700;
+}
+.work-excerpt-html em {
+  font-style: italic;
+}
+.work-excerpt-html a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.work-excerpt-html h2,
+.work-excerpt-html h3,
+.work-excerpt-html h4 {
+  font-weight: 700;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+.work-excerpt-html h2 {
+  font-size: var(--font-heading);
+}
+.work-excerpt-html h3 {
+  font-size: var(--font-body);
 }
 
 .hide-scrollbar {
@@ -2213,6 +2243,11 @@ button {
 
 /* ═══ モバイルオーバーライド（デスクトップルールの後に配置して確実に上書き） ═══ */
 @media (max-width: 900px) {
+  /* ── Works グリッド: モバイルは1カラム ── */
+  .works-grid {
+    grid-template-columns: 1fr !important;
+  }
+
   /* ── ヘッダー ── */
   .header-title-row {
     grid-template-columns: 1fr auto;

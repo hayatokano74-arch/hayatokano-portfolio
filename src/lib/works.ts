@@ -76,7 +76,7 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
     title,
     tags: tags.length > 0 ? tags : ["Photography"],
     year: (raw.year ?? "").trim(),
-    excerpt: stripHtml(raw.excerpt ?? ""),
+    excerpt: (raw.excerpt ?? "").trim(),
     details: {
       artist: (d.artist ?? "").trim(),
       period: (d.period ?? "").trim(),

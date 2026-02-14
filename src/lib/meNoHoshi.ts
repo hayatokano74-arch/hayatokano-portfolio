@@ -191,7 +191,7 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     subtitle,
     tags: tags.length > 0 ? tags : ["Photography"],
     year: (post.year ?? "2025").trim(),
-    excerpt: stripHtml(post.excerpt ?? ""),
+    excerpt: (post.excerpt ?? "").trim(),
     media,
     details: {
       artist: (details.artist ?? "").trim(),

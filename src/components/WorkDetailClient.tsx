@@ -347,7 +347,11 @@ export function WorkDetailClient({ work }: { work: Work }) {
                   <div style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
                 </div>
               ) : null}
-              <div style={{ marginTop: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}>{work.excerpt}</div>
+              <div
+                className="work-excerpt-html"
+                style={{ marginTop: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
+                dangerouslySetInnerHTML={{ __html: work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>") }}
+              />
               <div style={{ marginTop: "var(--space-5)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
                 {work.tags.map((tag, idx) => (
                   <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>

@@ -59,12 +59,24 @@ function ThumbRect({ src, alt }: { src?: string; alt?: string }) {
 }
 
 function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
+  const count = works.length;
+  const maxCols = Math.min(count || 1, 8);
+
+  // 投稿数に応じた最大列数を制限する動的グリッド
+  // auto-fill の最小幅を計算: (100% - gap合計) / maxCols
+  // これにより maxCols 列以上は生成されない
+  const gapPx = 24; // var(--space-5) ≈ 24px
+  const gapTotal = (maxCols - 1) * gapPx;
+  const gridTemplateColumns = maxCols === 1
+    ? "repeat(auto-fill, minmax(190px, 320px))"
+    : `repeat(auto-fill, minmax(max(190px, calc((100% - ${gapTotal}px) / ${maxCols})), 1fr))`;
+
   return (
     <div style={{ position: "relative", paddingBottom: "var(--space-14)" }}>
       <div
-        className="grid"
+        className="works-grid"
         style={{
-          gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))",
+          gridTemplateColumns,
           gap: "var(--space-5)",
           alignItems: "start",
         }}
@@ -115,9 +127,15 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
   );
 }
 
+/** HTMLタグを除去してプレーンテキストにする */
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").trim();
+}
+
 function truncateText(text: string, maxLength: number): string {
-  if (maxLength <= 0 || text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
+  const plain = stripHtml(text).replace(/\r\n/g, "\n");
+  if (maxLength <= 0 || plain.length <= maxLength) return plain;
+  return plain.slice(0, maxLength) + "...";
 }
 
 function WorksList<T extends Work>({
