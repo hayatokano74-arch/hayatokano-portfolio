@@ -29,6 +29,23 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
 }
 
+/**
+ * 壊れたUnicodeエスケープ（uXXXX → 正しいUnicode文字）を復元
+ * WP sanitize_file_name() がCJK文字を壊した場合のフォールバック
+ */
+function fixBrokenUnicodeUrl(url: string): string {
+  // uXXXX が連続するパターン（CJKの壊れたエスケープ）を検出
+  if (!/u[0-9a-fA-F]{4}/.test(url)) return url;
+  return url.replace(/u([0-9a-fA-F]{4})/g, (_match, hex) => {
+    const cp = parseInt(hex, 16);
+    // CJK/ひらがな/カタカナ範囲のみ復元（英数字のuXXXXパターンを誤変換しない）
+    if (cp >= 0x3000 && cp <= 0x9fff) return String.fromCodePoint(cp);
+    if (cp >= 0xf900 && cp <= 0xfaff) return String.fromCodePoint(cp);
+    if (cp >= 0xff00 && cp <= 0xffef) return String.fromCodePoint(cp);
+    return _match; // CJK範囲外はそのまま
+  });
+}
+
 function normalizeWork(raw: WpWorkResponse): Work | null {
   const slug = (raw.slug ?? "").trim();
   const title = (raw.title ?? "").trim();
@@ -43,11 +60,11 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
     .map((m) => ({
       id: m.id!,
       type: (m.type === "video" ? "video" : "image") as "image" | "video",
-      src: m.src!,
+      src: fixBrokenUnicodeUrl(m.src!),
       alt: m.alt ?? "",
       width: m.width ?? 1280,
       height: m.height ?? 800,
-      ...(m.poster ? { poster: m.poster } : {}),
+      ...(m.poster ? { poster: fixBrokenUnicodeUrl(m.poster) } : {}),
     }));
 
   if (media.length === 0) return null;

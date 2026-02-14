@@ -106,7 +106,7 @@ type WpMeNoHoshiResponse = {
 function normalizeKeyVisualList(items: WpMeNoHoshiResponse["keyVisuals"], slug: string) {
   return (items ?? [])
     .map((item, index) => {
-      const src = (item.image?.src ?? "").trim();
+      const src = fixBrokenUnicodeUrl((item.image?.src ?? "").trim());
       if (!src) return null;
       return {
         id: item.id?.trim() || `${slug}-key-visual-${index + 1}`,
@@ -125,7 +125,7 @@ function normalizeKeyVisualList(items: WpMeNoHoshiResponse["keyVisuals"], slug: 
 function normalizeWorkList(items: WpMeNoHoshiResponse["archiveWorks"], slug: string, key: "past" | "archive") {
   return (items ?? [])
     .map((item, index) => {
-      const src = (item.image?.src ?? "").trim();
+      const src = fixBrokenUnicodeUrl((item.image?.src ?? "").trim());
       if (!src) return null;
       return {
         id: item.id?.trim() || `${slug}-${key}-${index + 1}`,
@@ -147,6 +147,21 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
 }
 
+/**
+ * 壊れたUnicodeエスケープ（uXXXX → 正しいUnicode文字）を復元
+ * WP sanitize_file_name() がCJK文字を壊した場合のフォールバック
+ */
+function fixBrokenUnicodeUrl(url: string): string {
+  if (!/u[0-9a-fA-F]{4}/.test(url)) return url;
+  return url.replace(/u([0-9a-fA-F]{4})/g, (_match, hex) => {
+    const cp = parseInt(hex, 16);
+    if (cp >= 0x3000 && cp <= 0x9fff) return String.fromCodePoint(cp);
+    if (cp >= 0xf900 && cp <= 0xfaff) return String.fromCodePoint(cp);
+    if (cp >= 0xff00 && cp <= 0xffef) return String.fromCodePoint(cp);
+    return _match;
+  });
+}
+
 function normalizeTag(value: string): WorkTag | null {
   const allowed: WorkTag[] = ["Photography", "Video", "Personal", "Portrait", "Exhibition"];
   return allowed.includes(value as WorkTag) ? (value as WorkTag) : null;
@@ -159,7 +174,9 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
   if (!slug || !title) return null;
 
   const tags = (post.tags ?? []).map(normalizeTag).filter((tag): tag is WorkTag => Boolean(tag));
-  const media = (post.media ?? []).filter((item) => !!item?.id && !!item?.src);
+  const media = (post.media ?? [])
+    .filter((item) => !!item?.id && !!item?.src)
+    .map((item) => ({ ...item, src: fixBrokenUnicodeUrl(item.src), ...(item.poster ? { poster: fixBrokenUnicodeUrl(item.poster) } : {}) }));
   if (media.length === 0) return null;
 
   const details = post.details ?? {};
