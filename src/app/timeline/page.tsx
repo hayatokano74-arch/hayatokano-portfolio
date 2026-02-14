@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
-import { Header } from "@/components/Header";
 
 export const metadata: Metadata = { title: "Time Line" };
-import { TimelineView } from "@/components/TimelineView";
+import { TimelinePageContent } from "@/components/TimelineView";
 import { getTimeline } from "@/lib/timeline";
 
 /* 日付文字列 → 月キー "2026-02" */
@@ -60,8 +59,7 @@ export default async function TimelinePage({
 
   return (
     <CanvasShell>
-      <Header active="Time Line" title="Time Line" showCategoryRow={false} />
-      <TimelineView
+      <TimelinePageContent
         items={filtered}
         activeType={activeType}
         activeMonth={activeMonth}

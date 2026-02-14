@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import type { TimelineItem } from "@/lib/mock";
 import { blurDataURL } from "@/lib/blur";
+import { Header } from "@/components/Header";
 
 /* 日付文字列 "2026.02.03 12:36" → 日付部分 "2026.02.03" */
 function dateOnly(date: string) {
@@ -400,20 +401,37 @@ function ArchiveSidebar({
   );
 }
 
-/* ─── モバイル用インラインアーカイブ（簡易版） ─── */
-function MobileArchive({
+/* ─── モバイル用ボトムドロワーアーカイブ ─── */
+function MobileArchiveDrawer({
   allDates,
   activeMonth,
   activeDate,
   activeType,
+  open,
+  onClose,
 }: {
   allDates: string[];
   activeMonth?: string;
   activeDate?: string;
   activeType?: string;
+  open: boolean;
+  onClose: () => void;
 }) {
-  const [open, setOpen] = useState(false);
   const tree = useMemo(() => buildArchiveTree(allDates), [allDates]);
+  const [openKeys, setOpenKeys] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    if (tree.length > 0) initial.add(tree[0].year);
+    return initial;
+  });
+
+  const toggle = useCallback((key: string) => {
+    setOpenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
 
   function buildMonthHref(monthKey: string) {
     const params = new URLSearchParams();
@@ -423,50 +441,137 @@ function MobileArchive({
     return qs ? `/timeline?${qs}` : "/timeline";
   }
 
+  function buildDateHref(date: string) {
+    const params = new URLSearchParams();
+    if (activeType) params.set("type", activeType);
+    if (activeDate !== date) params.set("date", date);
+    const qs = params.toString();
+    return qs ? `/timeline?${qs}` : "/timeline";
+  }
+
+  const btnStyle = {
+    border: 0,
+    background: "transparent",
+    padding: 0,
+    cursor: "pointer",
+  } as const;
+
+  if (!open) return null;
+
   return (
-    <div className="timeline-mobile-archive">
-      <button
-        type="button"
-        className="action-link"
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          border: 0,
-          background: "transparent",
-          padding: 0,
-          fontSize: "var(--font-body)",
-          lineHeight: "var(--lh-normal)",
-          fontWeight: 500,
-          color: "var(--muted)",
-        }}
-      >
-        Archive {open ? "−" : "+"}
-      </button>
-      {open ? (
-        <div style={{ marginTop: "var(--space-3)", display: "flex", flexWrap: "wrap", gap: "var(--space-3)" }}>
-          {tree.flatMap((y) =>
-            y.months.map((m) => {
-              const isActive = activeMonth === m.key;
-              return (
-                <Link
-                  key={m.key}
-                  href={buildMonthHref(m.key)}
-                  className={`${isActive ? "underline-active" : ""} action-link`.trim()}
-                  onClick={() => setOpen(false)}
-                  style={{
-                    fontSize: "var(--font-meta)",
-                    lineHeight: "var(--lh-normal)",
-                    fontWeight: isActive ? 700 : 400,
-                    color: isActive ? "var(--fg)" : "var(--muted)",
-                  }}
-                >
-                  {y.year}/{Number(m.month)}月 ({m.count})
-                </Link>
-              );
-            }),
-          )}
+    <>
+      {/* バックドロップ */}
+      <div className="mobile-archive-drawer-backdrop" onClick={onClose} />
+
+      {/* ドロワー本体 */}
+      <div className="mobile-archive-drawer">
+        <div className="mobile-archive-drawer-header">
+          <span style={{ fontSize: "var(--font-heading)", fontWeight: 700 }}>Archive</span>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              ...btnStyle,
+              fontSize: "var(--font-body)",
+              lineHeight: 1,
+              color: "var(--muted)",
+            }}
+            aria-label="閉じる"
+          >
+            ✕
+          </button>
         </div>
-      ) : null}
-    </div>
+
+        {tree.map((yearNode) => {
+          const yearOpen = openKeys.has(yearNode.year);
+          return (
+            <div key={yearNode.year} style={{ marginBottom: "var(--space-3)" }}>
+              <button
+                type="button"
+                onClick={() => toggle(yearNode.year)}
+                style={{
+                  ...btnStyle,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: "var(--font-body)",
+                  lineHeight: "var(--lh-normal)",
+                  fontWeight: 700,
+                  color: "var(--fg)",
+                }}
+              >
+                <ToggleArrow open={yearOpen} />
+                <span>{yearNode.year}</span>
+                <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
+                  ({yearNode.count})
+                </span>
+              </button>
+
+              {yearOpen ? (
+                <div style={{ paddingLeft: 16, marginTop: "var(--space-1)" }}>
+                  {yearNode.months.map((monthNode) => {
+                    const monthOpen = openKeys.has(monthNode.key);
+                    const isMonthActive = activeMonth === monthNode.key;
+                    return (
+                      <div key={monthNode.key} style={{ marginBottom: "var(--space-1)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>
+                          <button
+                            type="button"
+                            onClick={() => toggle(monthNode.key)}
+                            style={{ ...btnStyle, display: "inline-flex", alignItems: "center" }}
+                          >
+                            <ToggleArrow open={monthOpen} />
+                          </button>
+                          <Link
+                            href={buildMonthHref(monthNode.key)}
+                            className={`${isMonthActive ? "underline-active" : ""} action-link`.trim()}
+                            onClick={onClose}
+                            style={{
+                              fontWeight: isMonthActive ? 700 : 500,
+                              color: isMonthActive ? "var(--fg)" : "var(--muted)",
+                            }}
+                          >
+                            {Number(monthNode.month)}月
+                          </Link>
+                          <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
+                            ({monthNode.count})
+                          </span>
+                        </div>
+
+                        {monthOpen ? (
+                          <div style={{ paddingLeft: 16, marginTop: 0 }}>
+                            {monthNode.dates.map((d) => {
+                              const isDateActive = activeDate === d;
+                              return (
+                                <Link
+                                  key={d}
+                                  href={buildDateHref(d)}
+                                  className={`${isDateActive ? "underline-active" : ""} action-link`.trim()}
+                                  onClick={onClose}
+                                  style={{
+                                    display: "block",
+                                    fontSize: "var(--font-meta)",
+                                    lineHeight: "var(--lh-normal)",
+                                    fontWeight: isDateActive ? 700 : 400,
+                                    color: isDateActive ? "var(--fg)" : "var(--muted)",
+                                  }}
+                                >
+                                  {d}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -537,7 +642,6 @@ export function TimelineView({
       <div className="timeline-layout" style={{ marginTop: "var(--space-6)" }}>
         {/* コンテンツ */}
         <div className="timeline-content">
-            <MobileArchive allDates={allDates} activeMonth={activeMonth} activeDate={activeDate} activeType={activeType} />
             <ActiveFilter activeDate={activeDate} activeMonth={activeMonth} activeType={activeType} activeTag={activeTag} />
             {groups.length === 0 ? (
               <div style={{ fontSize: "var(--font-body)", fontWeight: 500, color: "var(--muted)" }}>
@@ -568,5 +672,67 @@ export function TimelineView({
         <ArchiveSidebar allDates={allDates} activeMonth={activeMonth} activeDate={activeDate} activeType={activeType} />
       </div>
     </div>
+  );
+}
+
+/* ─── ページラッパー: Header + TimelineView + ドロワーを統合 ─── */
+export function TimelinePageContent({
+  items,
+  activeType,
+  activeMonth,
+  activeDate,
+  activeTag,
+  availableMonths,
+  availableTags,
+  allDates,
+}: {
+  items: TimelineItem[];
+  activeType?: string;
+  activeMonth?: string;
+  activeDate?: string;
+  activeTag?: string;
+  availableMonths: string[];
+  availableTags: string[];
+  allDates: string[];
+}) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const archiveButton = (
+    <button
+      type="button"
+      className="mobile-archive-trigger"
+      onClick={() => setDrawerOpen(true)}
+    >
+      Archive +
+    </button>
+  );
+
+  return (
+    <>
+      <Header
+        active="Time Line"
+        title="Time Line"
+        showCategoryRow={false}
+        titleRight={archiveButton}
+      />
+      <TimelineView
+        items={items}
+        activeType={activeType}
+        activeMonth={activeMonth}
+        activeDate={activeDate}
+        activeTag={activeTag}
+        availableMonths={availableMonths}
+        availableTags={availableTags}
+        allDates={allDates}
+      />
+      <MobileArchiveDrawer
+        allDates={allDates}
+        activeMonth={activeMonth}
+        activeDate={activeDate}
+        activeType={activeType}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
+    </>
   );
 }

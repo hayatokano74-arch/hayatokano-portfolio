@@ -34,6 +34,7 @@ export function Header({
   showSearch = true,
   activeCategory = "Video",
   categoryHrefs,
+  titleRight,
 }: {
   active: Section;
   title: HeaderTitle;
@@ -48,6 +49,7 @@ export function Header({
   showSearch?: boolean;
   activeCategory?: Category;
   categoryHrefs?: Partial<Record<Category, string>>;
+  titleRight?: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -119,10 +121,12 @@ export function Header({
       ) : null}
 
       {/* ── タイトル行（12カラムグリッド） ── */}
-      {showTitleRow ? (
+      {showTitleRow || showWorksToggle || titleRight ? (
         <div className="header-title-row">
           <div className="header-title-left" style={{ gap: "var(--space-7)" }}>
-            <div style={{ fontSize: "var(--font-heading)", lineHeight: 1, fontWeight: 700 }}>{title}</div>
+            {showTitleRow ? (
+              <div style={{ fontSize: "var(--font-heading)", lineHeight: 1, fontWeight: 700 }}>{title}</div>
+            ) : null}
 
             {showWorksToggle ? (
               <div className="works-view-toggle" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
@@ -143,31 +147,12 @@ export function Header({
               </div>
             ) : null}
           </div>
+
+          {titleRight ? (
+            <div className="header-title-right">{titleRight}</div>
+          ) : null}
         </div>
-      ) : (
-        showWorksToggle ? (
-          <div className="header-title-row">
-            <div className="header-title-left" style={{ gap: "var(--space-7)" }}>
-              <div className="works-view-toggle" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
-                <Link
-                  href={worksGridHref}
-                  className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
-                  style={{ color: view === "grid" ? "var(--fg)" : "var(--muted)" }}
-                >
-                  Grid
-                </Link>
-                <Link
-                  href={worksListHref}
-                  className={`${view === "list" ? "underline-active" : ""} action-link`.trim()}
-                  style={{ color: view === "list" ? "var(--fg)" : "var(--muted)" }}
-                >
-                  List
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : null
-      )}
+      ) : null}
 
       {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (
