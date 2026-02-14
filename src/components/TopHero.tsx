@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { NAV_ITEMS } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 
 /* ── 型定義 ── */
@@ -16,17 +17,6 @@ type Props = {
   candidates: string[];
   latestWorks: LatestWork[];
 };
-
-/* ── ナビ項目 ── */
-const NAV_ITEMS = [
-  { num: "01", label: "Works", href: "/works" },
-  { num: "02", label: "Text", href: "/text" },
-  { num: "03", label: "目の星", href: "/me-no-hoshi" },
-  { num: "04", label: "Time Line", href: "/timeline" },
-  { num: "05", label: "News", href: "/news" },
-  { num: "06", label: "About", href: "/about" },
-  { num: "07", label: "Contact", href: "/contact" },
-];
 
 export function TopHero({ candidates, latestWorks }: Props) {
   const [index, setIndex] = useState(0);
@@ -59,7 +49,7 @@ export function TopHero({ candidates, latestWorks }: Props) {
   }, [defaultSrc]);
 
   return (
-    <main className="top-hero" style={{ overflow: "hidden" }}>
+    <main id="main-content" className="top-hero" style={{ overflow: "hidden" }}>
       {/* デフォルト背景画像 */}
       {defaultSrc ? (
         <div

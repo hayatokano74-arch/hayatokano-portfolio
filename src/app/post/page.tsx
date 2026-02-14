@@ -220,6 +220,7 @@ export default function PostPage() {
             onChange={(e) => setPinInput(e.target.value)}
             className="post-pin-input"
             placeholder="PIN"
+            aria-label="PIN入力"
             autoFocus
           />
           <button
@@ -270,6 +271,7 @@ export default function PostPage() {
         onChange={(e) => setTitle(e.target.value)}
         className="post-title-input"
         placeholder="タイトル（任意）"
+        aria-label="投稿タイトル"
       />
 
       {/* 選択中のタグ */}
@@ -332,6 +334,7 @@ export default function PostPage() {
                   <button
                     className="post-image-remove"
                     onClick={() => removeImage(idx)}
+                    aria-label={`画像${idx + 1}を削除`}
                   >
                     ×
                   </button>

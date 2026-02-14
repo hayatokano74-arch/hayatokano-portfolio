@@ -39,7 +39,7 @@ export function NewsView({ items }: { items: NewsItem[] }) {
               {item.image ? (
                 <Image
                   src={item.image.src}
-                  alt=""
+                  alt={item.title}
                   width={32}
                   height={32}
                   loading="lazy"
@@ -66,7 +66,7 @@ export function NewsView({ items }: { items: NewsItem[] }) {
               {item.image ? (
                 <Image
                   src={item.image.src}
-                  alt=""
+                  alt={item.title}
                   width={item.image.width}
                   height={item.image.height}
                   loading="lazy"

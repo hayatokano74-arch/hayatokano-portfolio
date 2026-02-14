@@ -92,7 +92,7 @@ export default async function AboutPage() {
             >
               <Image
                 src={photo.src}
-                alt=""
+                alt="Hayato Kano"
                 fill
                 priority={idx === 0}
                 sizes="(max-width: 900px) 100vw, 920px"

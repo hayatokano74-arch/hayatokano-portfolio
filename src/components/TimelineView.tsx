@@ -327,6 +327,8 @@ function ArchiveSidebar({
             <button
               type="button"
               onClick={() => toggle(yearNode.year)}
+              aria-expanded={yearOpen}
+              aria-label={`${yearNode.year}年のアーカイブ`}
               style={{
                 ...btnStyle,
                 display: "flex",
@@ -358,6 +360,8 @@ function ArchiveSidebar({
                         <button
                           type="button"
                           onClick={() => toggle(monthNode.key)}
+                          aria-expanded={monthOpen}
+                          aria-label={`${Number(monthNode.month)}月のアーカイブ`}
                           style={{ ...btnStyle, display: "inline-flex", alignItems: "center" }}
                         >
                           <ToggleArrow open={monthOpen} />
@@ -502,6 +506,8 @@ function MobileArchiveDrawer({
               <button
                 type="button"
                 onClick={() => toggle(yearNode.year)}
+                aria-expanded={yearOpen}
+                aria-label={`${yearNode.year}年のアーカイブ`}
                 style={{
                   ...btnStyle,
                   display: "flex",
@@ -531,6 +537,8 @@ function MobileArchiveDrawer({
                           <button
                             type="button"
                             onClick={() => toggle(monthNode.key)}
+                            aria-expanded={monthOpen}
+                            aria-label={`${Number(monthNode.month)}月のアーカイブ`}
                             style={{ ...btnStyle, display: "inline-flex", alignItems: "center" }}
                           >
                             <ToggleArrow open={monthOpen} />

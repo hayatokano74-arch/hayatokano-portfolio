@@ -2545,3 +2545,22 @@ button {
     gap: var(--space-2);
   }
 }
+
+/* ── スキップナビゲーション ── */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: var(--pad-x);
+  z-index: 9999;
+  padding: var(--space-2) var(--space-4);
+  background: var(--fg);
+  color: var(--bg);
+  font-size: var(--font-body);
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0 0 4px 4px;
+  transition: top 120ms ease;
+}
+.skip-nav:focus {
+  top: 0;
+}

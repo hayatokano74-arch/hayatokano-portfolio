@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import DOMPurify from "dompurify";
 import { works, type Work } from "@/lib/mock";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 import { blurDataURL } from "@/lib/blur";
@@ -350,7 +351,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
               <div
                 className="work-excerpt-html"
                 style={{ marginTop: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
-                dangerouslySetInnerHTML={{ __html: work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>") }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) }}
               />
               <div style={{ marginTop: "var(--space-5)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
                 {work.tags.map((tag, idx) => (

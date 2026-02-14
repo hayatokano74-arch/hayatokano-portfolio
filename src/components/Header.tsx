@@ -4,21 +4,10 @@ import Link from "next/link";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CATEGORY_MENU, type Category } from "@/lib/categories";
+import { NAV_ITEMS, type Section } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 
-type Section = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
 type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
-
-/* ナビゲーション項目（ナンバリング付き） */
-const NAV_ITEMS: { num: string; label: string; href: string; section: Section }[] = [
-  { num: "01", label: "Works", href: "/works", section: "Works" },
-  { num: "02", label: "Text", href: "/text", section: "Text" },
-  { num: "03", label: "目の星", href: "/me-no-hoshi", section: "目の星" },
-  { num: "04", label: "Time Line", href: "/timeline", section: "Time Line" },
-  { num: "05", label: "News", href: "/news", section: "News" },
-  { num: "06", label: "About", href: "/about", section: "About" },
-  { num: "07", label: "Contact", href: "/contact", section: "Contact" },
-];
 
 export function Header({
   active,
@@ -125,7 +114,7 @@ export function Header({
         <div className="header-title-row">
           <div className="header-title-left" style={{ gap: "var(--space-7)" }}>
             {showTitleRow ? (
-              <div style={{ fontSize: "var(--font-heading)", lineHeight: 1, fontWeight: 700 }}>{title}</div>
+              <h1 style={{ fontSize: "var(--font-heading)", lineHeight: 1, fontWeight: 700, margin: 0 }}>{title}</h1>
             ) : null}
 
             {showWorksToggle ? (
@@ -234,6 +223,7 @@ function SearchInput() {
         }}
         onBlur={() => commit(query)}
         placeholder="search"
+        aria-label="作品を検索"
         style={searchInputStyle}
       />
     </div>

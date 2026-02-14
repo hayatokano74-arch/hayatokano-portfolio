@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 
 /* ── 環境変数 ── */
 function getEnv() {
@@ -24,12 +25,29 @@ function wpAuthHeader(user: string, pass: string) {
   return `Basic ${encoded}`;
 }
 
-/* PIN 検証 */
+/* PIN 検証（タイミング攻撃対策: timingSafeEqual を使用） */
 function verifyPin(input: string): boolean {
   const { pin } = getEnv();
   if (!pin) return false;
-  return input === pin;
+  const a = Buffer.from(input);
+  const b = Buffer.from(pin);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
+
+/* 許可する投稿タイプ */
+const ALLOWED_TYPES = ["text", "photo"] as const;
+
+/* 許可する画像 MIME タイプ */
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/heic", "image/heif"];
+
+/* バリデーション定数 */
+const MAX_TITLE_LENGTH = 200;
+const MAX_TEXT_LENGTH = 10000;
+const MAX_TAG_COUNT = 20;
+const MAX_TAG_LENGTH = 50;
+const MAX_IMAGE_COUNT = 10;
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024; /* 20MB */
 
 /* ── GET: 最近の投稿取得 ── */
 export async function GET(request: NextRequest) {
@@ -98,15 +116,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "PINが正しくありません" }, { status: 401 });
     }
 
+    /* タイプのバリデーション */
+    if (!ALLOWED_TYPES.includes(type as typeof ALLOWED_TYPES[number])) {
+      return NextResponse.json({ error: "不正な投稿タイプです" }, { status: 400 });
+    }
+
+    /* タイトルの長さチェック */
+    if (title.length > MAX_TITLE_LENGTH) {
+      return NextResponse.json({ error: `タイトルは${MAX_TITLE_LENGTH}文字以内です` }, { status: 400 });
+    }
+
     /* テキスト必須チェック: photo タイプはテキスト任意 */
     const isPhoto = type === "photo";
     if (!isPhoto && !text?.trim()) {
       return NextResponse.json({ error: "テキストは必須です" }, { status: 400 });
     }
 
+    /* テキストの長さチェック */
+    if (text && text.length > MAX_TEXT_LENGTH) {
+      return NextResponse.json({ error: `テキストは${MAX_TEXT_LENGTH}文字以内です` }, { status: 400 });
+    }
+
+    /* 日付の形式チェック */
+    if (date && !/^\d{4}\.\d{2}\.\d{2} \d{2}:\d{2}$/.test(date)) {
+      return NextResponse.json({ error: "日付の形式が不正です" }, { status: 400 });
+    }
+
     /* 複数画像アップロード */
     const imageIds: number[] = [];
     const validImages = images.filter((f) => f && f.size > 0);
+
+    /* 画像数チェック */
+    if (validImages.length > MAX_IMAGE_COUNT) {
+      return NextResponse.json({ error: `画像は${MAX_IMAGE_COUNT}枚以内です` }, { status: 400 });
+    }
+
+    /* 画像サイズ・MIMEタイプチェック */
+    for (const img of validImages) {
+      if (img.size > MAX_IMAGE_SIZE) {
+        return NextResponse.json({ error: "画像サイズが大きすぎます（20MB以内）" }, { status: 400 });
+      }
+      if (img.type && !ALLOWED_IMAGE_TYPES.includes(img.type)) {
+        return NextResponse.json({ error: `許可されていない画像形式です: ${img.type}` }, { status: 400 });
+      }
+    }
 
     // async-parallel: 画像アップロードを並列実行（直列 → Promise.allSettled）
     const uploadResults = await Promise.allSettled(
@@ -150,7 +203,10 @@ export async function POST(request: NextRequest) {
         try {
           const parsed = JSON.parse(tagsRaw);
           if (Array.isArray(parsed)) {
-            tags = parsed.filter((t: unknown) => typeof t === "string" && (t as string).trim()).map((t: string) => t.trim());
+            tags = parsed
+              .filter((t: unknown) => typeof t === "string" && (t as string).trim())
+              .map((t: string) => t.trim().slice(0, MAX_TAG_LENGTH))
+              .slice(0, MAX_TAG_COUNT);
           }
         } catch { /* JSON パース失敗は無視 */ }
       }

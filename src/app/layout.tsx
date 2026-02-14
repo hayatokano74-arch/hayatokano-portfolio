@@ -47,6 +47,9 @@ export default function RootLayout({
     <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`} suppressHydrationWarning>
       <head><ThemeScript /></head>
       <body>
+        <a href="#main-content" className="skip-nav">
+          メインコンテンツへ
+        </a>
         {children}
         {process.env.NODE_ENV === "development" && <GridDebugOverlay />}
       </body>
