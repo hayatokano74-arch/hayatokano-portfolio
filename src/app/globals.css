@@ -1120,9 +1120,9 @@ button {
   column-gap: var(--grid-gutter);
 }
 
-/* タイムラインコンテンツ: 列4-8 */
+/* タイムラインコンテンツ: 列4-9（中央配置） */
 .timeline-content {
-  grid-column: 4 / span 5;
+  grid-column: 4 / span 6;
   min-width: 0;
 }
 
@@ -1159,9 +1159,9 @@ button {
   color: var(--fg);
 }
 
-/* アーカイブサイドバー: 列10-12（コンテンツとの間に列9が空白） */
+/* アーカイブサイドバー: 列11-12（右端配置） */
 .timeline-sidebar {
-  grid-column: 10 / -1;
+  grid-column: 11 / -1;
   position: sticky;
   top: var(--space-7);
   align-self: start;
