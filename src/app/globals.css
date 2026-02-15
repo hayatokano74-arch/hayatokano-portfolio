@@ -1323,9 +1323,9 @@ button.tl-photo-cell {
   letter-spacing: 0.1em;
 }
 
-/* アーカイブサイドバー: 行1から開始、フィルタタブと同じ高さ */
+/* アーカイブサイドバー: 行1から開始、ヘッダーAbout位置に揃える */
 .timeline-sidebar {
-  grid-column: 10 / -1;
+  grid-column: 11 / -1;
   grid-row: 1 / -1;
   position: sticky;
   top: var(--space-7);
