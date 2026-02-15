@@ -155,10 +155,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `タイトルは${MAX_TITLE_LENGTH}文字以内です` }, { status: 400 });
     }
 
-    /* テキスト必須チェック: photo タイプはテキスト任意 */
+    /* テキスト必須チェック: photo タイプはテキスト任意、タグのみでもOK */
     const isPhoto = type === "photo";
-    if (!isPhoto && !text?.trim()) {
-      return NextResponse.json({ error: "テキストは必須です" }, { status: 400 });
+    const hasTags = tagsRaw ? (() => { try { const p = JSON.parse(tagsRaw); return Array.isArray(p) && p.length > 0; } catch { return false; } })() : false;
+    if (!isPhoto && !text?.trim() && !hasTags) {
+      return NextResponse.json({ error: "テキストまたはタグが必要です" }, { status: 400 });
     }
 
     /* テキストの長さチェック */

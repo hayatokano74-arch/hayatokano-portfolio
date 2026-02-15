@@ -72,6 +72,12 @@ export default function PostPage() {
     return [...new Set(all)];
   }, [recent, drafts]);
 
+  /* ── タグ除去後のテキスト（ボタン活性化判定用） ── */
+  const hasCleanText = useMemo(() => {
+    const { cleanText } = extractTags(text);
+    return !!cleanText.trim();
+  }, [text]);
+
   /* ── 最近の投稿を読み込み ── */
   const loadRecent = useCallback(async () => {
     try {
@@ -208,17 +214,20 @@ export default function PostPage() {
   /* ── 投稿送信（新規 or 編集） ── */
   async function handleSubmit(asDraft = false) {
     const isPhoto = postType === "photo";
+
+    /* タグ抽出を先に行い、cleanText でバリデーションする */
+    const { cleanText, tags: inlineTags } = extractTags(text);
+    const hasText = !!cleanText.trim();
+
     if (!editingId) {
       /* 新規投稿のバリデーション */
-      if (!isPhoto && !text.trim()) return;
-      if (isPhoto && images.length === 0 && !text.trim()) return;
+      if (!isPhoto && !hasText) return;
+      if (isPhoto && images.length === 0 && !hasText) return;
     } else {
-      /* 編集のバリデーション */
-      if (!isPhoto && !text.trim()) return;
+      /* 編集のバリデーション: photo は画像既存なのでテキスト不要 */
+      if (!isPhoto && !hasText) return;
     }
     setPosting(true);
-
-    const { cleanText, tags: inlineTags } = extractTags(text);
     const allTags = [...new Set([...selectedTags, ...inlineTags])];
     const pin = localStorage.getItem("tl-pin") ?? "";
 
@@ -519,8 +528,8 @@ export default function PostPage() {
           className="post-btn post-btn-primary post-submit"
           onClick={() => handleSubmit(false)}
           disabled={posting || (editingId
-            ? (postType === "text" ? !text.trim() : !text.trim())
-            : (postType === "text" ? !text.trim() : (images.length === 0 && !text.trim()))
+            ? (postType === "text" ? !hasCleanText : false)
+            : (postType === "text" ? !hasCleanText : (images.length === 0 && !hasCleanText))
           )}
         >
           {posting ? "送信中…" : editingId ? "更新する" : "投稿する"}
@@ -528,7 +537,7 @@ export default function PostPage() {
         <button
           className="post-btn post-btn-secondary"
           onClick={() => handleSubmit(true)}
-          disabled={posting || (!text.trim() && !title.trim())}
+          disabled={posting || (!hasCleanText && !title.trim() && selectedTags.length === 0)}
         >
           下書き保存
         </button>
