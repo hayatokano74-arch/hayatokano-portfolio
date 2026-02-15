@@ -433,7 +433,7 @@ function ArchiveSidebar({
 
   return (
     <aside className="timeline-sidebar">
-      <div style={{ paddingTop: "var(--space-2)" }}>
+      <div>
       {tree.map((yearNode) => {
         const yearOpen = openKeys.has(yearNode.year);
         return (

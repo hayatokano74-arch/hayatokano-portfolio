@@ -363,11 +363,11 @@ button {
   letter-spacing: -0.02em;
 }
 
-/* デスクトップナビ: 列6-12、両端をカラム線に合わせて均等配置 */
+/* デスクトップナビ: subgridで親の列6-12を継承し、各アイテムが列線に揃う */
 .desktop-main-nav {
   grid-column: 6 / -1;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: subgrid;
   align-items: center;
 }
 
