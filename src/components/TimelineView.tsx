@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { TimelineItem } from "@/lib/mock";
 import { blurDataURL } from "@/lib/blur";
 import { Header } from "@/components/Header";
@@ -89,10 +89,105 @@ function ToggleArrow({ open }: { open: boolean }) {
 }
 
 /* ─── 写真投稿の1枚表示 ─── */
-/* ─── Twitter風 複数画像グリッド ─── */
+/* ─── 画像ライトボックス（Twitter風） ─── */
 type ImageItem = NonNullable<TimelineItem["images"]>[number];
 
+function PhotoLightbox({
+  images,
+  index,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  images: ImageItem[];
+  index: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  const img = images[index];
+  const hasMultiple = images.length > 1;
+
+  /* キーボード操作 */
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && hasMultiple) onPrev();
+      if (e.key === "ArrowRight" && hasMultiple) onNext();
+    }
+    document.addEventListener("keydown", handleKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose, onPrev, onNext, hasMultiple]);
+
+  return (
+    <div className="tl-lightbox" onClick={onClose} role="dialog" aria-label="画像を拡大表示">
+      {/* 閉じるボタン */}
+      <button type="button" className="tl-lightbox-close" onClick={onClose} aria-label="閉じる">
+        ×
+      </button>
+
+      {/* 画像 */}
+      <div className="tl-lightbox-img" onClick={(e) => e.stopPropagation()}>
+        <Image
+          src={img.src}
+          alt={img.alt}
+          width={img.width}
+          height={img.height}
+          sizes="90vw"
+          priority
+          style={{ objectFit: "contain", maxWidth: "90vw", maxHeight: "90vh", width: "auto", height: "auto" }}
+        />
+      </div>
+
+      {/* ナビゲーション矢印 */}
+      {hasMultiple && (
+        <>
+          <button
+            type="button"
+            className="tl-lightbox-nav tl-lightbox-nav--prev"
+            onClick={(e) => { e.stopPropagation(); onPrev(); }}
+            aria-label="前の画像"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            className="tl-lightbox-nav tl-lightbox-nav--next"
+            onClick={(e) => { e.stopPropagation(); onNext(); }}
+            aria-label="次の画像"
+          >
+            ›
+          </button>
+        </>
+      )}
+
+      {/* カウンター */}
+      {hasMultiple && (
+        <div className="tl-lightbox-counter">
+          {index + 1} / {images.length}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Twitter風 複数画像グリッド ─── */
 function TimelineImageGrid({ images }: { images: ImageItem[] }) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const openLightbox = useCallback((idx: number) => setLightboxIndex(idx), []);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const prevImage = useCallback(() => {
+    setLightboxIndex((i) => (i !== null ? (i - 1 + images.length) % images.length : null));
+  }, [images.length]);
+  const nextImage = useCallback(() => {
+    setLightboxIndex((i) => (i !== null ? (i + 1) % images.length : null));
+  }, [images.length]);
+
   if (!images || images.length === 0) return null;
 
   const count = images.length;
@@ -100,76 +195,75 @@ function TimelineImageGrid({ images }: { images: ImageItem[] }) {
   const visible = images.slice(0, maxShow);
   const extra = count - maxShow;
 
-  /* 1枚: そのまま表示 */
-  if (count === 1) {
-    const img = visible[0];
+  /* クリック可能な画像セル */
+  function Cell({ img, idx, className }: { img: ImageItem; idx: number; className?: string }) {
     return (
-      <div className="tl-photo-grid tl-photo-grid--1">
-        <div className="tl-photo-cell">
-          <Image src={img.src} alt={img.alt} fill loading="lazy"
-            sizes="(max-width: 900px) 90vw, 500px"
-            placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
-            style={{ objectFit: "cover" }} />
-        </div>
-      </div>
+      <button
+        type="button"
+        className={`tl-photo-cell ${className ?? ""}`.trim()}
+        onClick={() => openLightbox(idx)}
+        aria-label={`画像${idx + 1}を拡大`}
+      >
+        <Image src={img.src} alt={img.alt} fill loading="lazy"
+          sizes="(max-width: 900px) 90vw, 500px"
+          placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
+          style={{ objectFit: "cover" }} />
+      </button>
     );
   }
 
-  /* 2枚: 横並び */
-  if (count === 2) {
+  const grid = (() => {
+    if (count === 1) {
+      return (
+        <div className="tl-photo-grid tl-photo-grid--1">
+          <Cell img={visible[0]} idx={0} />
+        </div>
+      );
+    }
+    if (count === 2) {
+      return (
+        <div className="tl-photo-grid tl-photo-grid--2">
+          {visible.map((img, i) => <Cell key={i} img={img} idx={i} />)}
+        </div>
+      );
+    }
+    if (count === 3) {
+      return (
+        <div className="tl-photo-grid tl-photo-grid--3">
+          <Cell img={visible[0]} idx={0} className="tl-photo-cell--main" />
+          <div className="tl-photo-side">
+            {visible.slice(1).map((img, i) => <Cell key={i} img={img} idx={i + 1} />)}
+          </div>
+        </div>
+      );
+    }
     return (
-      <div className="tl-photo-grid tl-photo-grid--2">
+      <div className="tl-photo-grid tl-photo-grid--4">
         {visible.map((img, i) => (
-          <div key={i} className="tl-photo-cell">
-            <Image src={img.src} alt={img.alt} fill loading="lazy"
-              sizes="(max-width: 900px) 45vw, 250px"
-              placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
-              style={{ objectFit: "cover" }} />
+          <div key={i} style={{ position: "relative" }}>
+            <Cell img={img} idx={i} />
+            {i === 3 && extra > 0 && (
+              <span className="tl-photo-extra">+{extra}</span>
+            )}
           </div>
         ))}
       </div>
     );
-  }
+  })();
 
-  /* 3枚: 左1枚大 + 右2枚縦並び */
-  if (count === 3) {
-    return (
-      <div className="tl-photo-grid tl-photo-grid--3">
-        <div className="tl-photo-cell tl-photo-cell--main">
-          <Image src={visible[0].src} alt={visible[0].alt} fill loading="lazy"
-            sizes="(max-width: 900px) 50vw, 280px"
-            placeholder="blur" blurDataURL={blurDataURL(visible[0].width, visible[0].height)}
-            style={{ objectFit: "cover" }} />
-        </div>
-        <div className="tl-photo-side">
-          {visible.slice(1).map((img, i) => (
-            <div key={i} className="tl-photo-cell">
-              <Image src={img.src} alt={img.alt} fill loading="lazy"
-                sizes="(max-width: 900px) 40vw, 220px"
-                placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
-                style={{ objectFit: "cover" }} />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  /* 4枚以上: 2x2グリッド + 残りバッジ */
   return (
-    <div className="tl-photo-grid tl-photo-grid--4">
-      {visible.map((img, i) => (
-        <div key={i} className="tl-photo-cell">
-          <Image src={img.src} alt={img.alt} fill loading="lazy"
-            sizes="(max-width: 900px) 45vw, 250px"
-            placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
-            style={{ objectFit: "cover" }} />
-          {i === 3 && extra > 0 && (
-            <span className="tl-photo-extra">+{extra}</span>
-          )}
-        </div>
-      ))}
-    </div>
+    <>
+      {grid}
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          images={images}
+          index={lightboxIndex}
+          onClose={closeLightbox}
+          onPrev={prevImage}
+          onNext={nextImage}
+        />
+      )}
+    </>
   );
 }
 
