@@ -349,7 +349,7 @@ function ArchiveSidebar({
 
                       {/* 日付一覧: クリックでその日の投稿だけ表示 */}
                       {monthOpen ? (
-                        <div style={{ paddingLeft: 16, marginTop: 0 }}>
+                        <div style={{ paddingLeft: 16, marginTop: 0, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                           {monthNode.dates.map((d) => {
                             const isDateActive = activeDate === d;
                             return (
@@ -358,7 +358,7 @@ function ArchiveSidebar({
                                 href={buildDateHref(d)}
                                 className={`${isDateActive ? "underline-active" : ""} action-link`.trim()}
                                 style={{
-                                  display: "block",
+                                  display: "inline-block",
                                   fontSize: "var(--font-meta)",
                                   lineHeight: "var(--lh-normal)",
                                   fontWeight: isDateActive ? 700 : 400,
