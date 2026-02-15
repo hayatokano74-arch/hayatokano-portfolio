@@ -756,47 +756,42 @@ export function TimelineView({
   const groups = groupByDate(items);
 
   return (
-    <div style={{ marginTop: "var(--space-6)" }}>
-      {/* フィルタタブ: 12カラムグリッドに直接配置 */}
-      <div className="timeline-layout">
-        <div className="timeline-filter-tabs-wrap">
-          <FilterTabs activeMonth={activeMonth} activeDate={activeDate} activeTag={activeTag} availableTags={availableTags} />
+    <div className="timeline-layout" style={{ marginTop: "var(--space-6)" }}>
+      {/* フィルタタブ */}
+      <div className="timeline-filter-tabs-wrap">
+        <FilterTabs activeMonth={activeMonth} activeDate={activeDate} activeTag={activeTag} availableTags={availableTags} />
+      </div>
+
+      {/* サイドバー（デスクトップのみ、フィルタタブと同じ行から開始） */}
+      <ArchiveSidebar allDates={allDates} activeMonth={activeMonth} activeDate={activeDate} />
+
+      {/* コンテンツ */}
+      <div className="timeline-content">
+          <ActiveFilter activeDate={activeDate} activeMonth={activeMonth} activeTag={activeTag} />
+          {groups.length === 0 ? (
+            <div style={{ fontSize: "var(--font-body)", fontWeight: 500, color: "var(--muted)" }}>
+              投稿がありません
+            </div>
+          ) : null}
+
+          {groups.map((group, groupIdx) => (
+            <div key={group.date} style={{ paddingTop: groupIdx > 0 ? "var(--space-9)" : 0 }}>
+              {groupIdx > 0 ? (
+                <div className="hrline" style={{ marginBottom: "var(--space-9)" }} />
+              ) : null}
+
+              <div style={{ marginBottom: "var(--space-2)" }}>
+                <span style={{ fontSize: "var(--font-body)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                  {group.date}
+                </span>
+              </div>
+
+              {group.items.map((item) => (
+                <TimelinePost key={item.id} item={item} />
+              ))}
+            </div>
+          ))}
         </div>
-      </div>
-
-      {/* メインレイアウト: 12カラムグリッド */}
-      <div className="timeline-layout" style={{ marginTop: "var(--space-6)" }}>
-        {/* コンテンツ */}
-        <div className="timeline-content">
-            <ActiveFilter activeDate={activeDate} activeMonth={activeMonth} activeTag={activeTag} />
-            {groups.length === 0 ? (
-              <div style={{ fontSize: "var(--font-body)", fontWeight: 500, color: "var(--muted)" }}>
-                投稿がありません
-              </div>
-            ) : null}
-
-            {groups.map((group, groupIdx) => (
-              <div key={group.date} style={{ paddingTop: groupIdx > 0 ? "var(--space-9)" : 0 }}>
-                {groupIdx > 0 ? (
-                  <div className="hrline" style={{ marginBottom: "var(--space-9)" }} />
-                ) : null}
-
-                <div style={{ marginBottom: "var(--space-2)" }}>
-                  <span style={{ fontSize: "var(--font-body)", fontWeight: 700, letterSpacing: "0.04em" }}>
-                    {group.date}
-                  </span>
-                </div>
-
-                {group.items.map((item) => (
-                  <TimelinePost key={item.id} item={item} />
-                ))}
-              </div>
-            ))}
-          </div>
-
-        {/* サイドバー（デスクトップのみ） */}
-        <ArchiveSidebar allDates={allDates} activeMonth={activeMonth} activeDate={activeDate} />
-      </div>
     </div>
   );
 }

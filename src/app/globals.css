@@ -1120,15 +1120,18 @@ button {
   column-gap: var(--grid-gutter);
 }
 
-/* タイムラインコンテンツ: 列5-8（4列幅、視覚的中央） */
-.timeline-content {
-  grid-column: 5 / span 4;
-  min-width: 0;
-}
-
-/* フィルタタブ: コンテンツと同じ列に揃える */
+/* フィルタタブ: 行1、コンテンツと同じ列 */
 .timeline-filter-tabs-wrap {
   grid-column: 5 / span 4;
+  grid-row: 1;
+  margin-bottom: var(--space-6);
+}
+
+/* タイムラインコンテンツ: 行2、列5-8（4列幅） */
+.timeline-content {
+  grid-column: 5 / span 4;
+  grid-row: 2;
+  min-width: 0;
 }
 
 .timeline-filter-tabs {
@@ -1320,9 +1323,10 @@ button.tl-photo-cell {
   letter-spacing: 0.1em;
 }
 
-/* アーカイブサイドバー: 列11-12（ヘッダーのAboutと同じ位置） */
+/* アーカイブサイドバー: 行1から開始、フィルタタブと同じ高さ */
 .timeline-sidebar {
-  grid-column: 11 / -1;
+  grid-column: 10 / -1;
+  grid-row: 1 / -1;
   position: sticky;
   top: var(--space-7);
   align-self: start;
