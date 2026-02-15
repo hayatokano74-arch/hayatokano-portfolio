@@ -1159,9 +1159,83 @@ button {
   color: var(--fg);
 }
 
-/* アーカイブサイドバー: 列11-12（右端配置） */
+/* ── Twitter風 写真グリッド ── */
+.tl-photo-grid {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  gap: 2px;
+}
+
+/* 1枚 */
+.tl-photo-grid--1 {
+  display: block;
+}
+.tl-photo-grid--1 .tl-photo-cell {
+  position: relative;
+  width: min(80%, 480px);
+  aspect-ratio: 4 / 3;
+}
+
+/* 2枚: 横並び */
+.tl-photo-grid--2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 480px;
+}
+.tl-photo-grid--2 .tl-photo-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+
+/* 3枚: 左1大 + 右2小 */
+.tl-photo-grid--3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 480px;
+}
+.tl-photo-grid--3 .tl-photo-cell--main {
+  position: relative;
+  grid-row: 1 / 3;
+  aspect-ratio: auto;
+}
+.tl-photo-grid--3 .tl-photo-side {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+}
+.tl-photo-grid--3 .tl-photo-side .tl-photo-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+
+/* 4枚: 2x2 */
+.tl-photo-grid--4 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  max-width: 480px;
+}
+.tl-photo-grid--4 .tl-photo-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+
+/* +N バッジ */
+.tl-photo-extra {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: var(--font-heading);
+  font-weight: 700;
+}
+
+/* アーカイブサイドバー: 列12（最右端） */
 .timeline-sidebar {
-  grid-column: 11 / -1;
+  grid-column: 12 / -1;
   position: sticky;
   top: var(--space-7);
   align-self: start;

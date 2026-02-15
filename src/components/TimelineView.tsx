@@ -89,27 +89,86 @@ function ToggleArrow({ open }: { open: boolean }) {
 }
 
 /* ─── 写真投稿の1枚表示 ─── */
-function TimelineImage({ image }: { image: TimelineItem["images"] extends (infer T)[] | undefined ? T : never }) {
-  if (!image) return null;
+/* ─── Twitter風 複数画像グリッド ─── */
+type ImageItem = NonNullable<TimelineItem["images"]>[number];
+
+function TimelineImageGrid({ images }: { images: ImageItem[] }) {
+  if (!images || images.length === 0) return null;
+
+  const count = images.length;
+  const maxShow = 4;
+  const visible = images.slice(0, maxShow);
+  const extra = count - maxShow;
+
+  /* 1枚: そのまま表示 */
+  if (count === 1) {
+    const img = visible[0];
+    return (
+      <div className="tl-photo-grid tl-photo-grid--1">
+        <div className="tl-photo-cell">
+          <Image src={img.src} alt={img.alt} fill loading="lazy"
+            sizes="(max-width: 900px) 90vw, 500px"
+            placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
+            style={{ objectFit: "cover" }} />
+        </div>
+      </div>
+    );
+  }
+
+  /* 2枚: 横並び */
+  if (count === 2) {
+    return (
+      <div className="tl-photo-grid tl-photo-grid--2">
+        {visible.map((img, i) => (
+          <div key={i} className="tl-photo-cell">
+            <Image src={img.src} alt={img.alt} fill loading="lazy"
+              sizes="(max-width: 900px) 45vw, 250px"
+              placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
+              style={{ objectFit: "cover" }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  /* 3枚: 左1枚大 + 右2枚縦並び */
+  if (count === 3) {
+    return (
+      <div className="tl-photo-grid tl-photo-grid--3">
+        <div className="tl-photo-cell tl-photo-cell--main">
+          <Image src={visible[0].src} alt={visible[0].alt} fill loading="lazy"
+            sizes="(max-width: 900px) 50vw, 280px"
+            placeholder="blur" blurDataURL={blurDataURL(visible[0].width, visible[0].height)}
+            style={{ objectFit: "cover" }} />
+        </div>
+        <div className="tl-photo-side">
+          {visible.slice(1).map((img, i) => (
+            <div key={i} className="tl-photo-cell">
+              <Image src={img.src} alt={img.alt} fill loading="lazy"
+                sizes="(max-width: 900px) 40vw, 220px"
+                placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
+                style={{ objectFit: "cover" }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* 4枚以上: 2x2グリッド + 残りバッジ */
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "min(60%, 400px)",
-        aspectRatio: `${image.width} / ${image.height}`,
-        overflow: "hidden",
-      }}
-    >
-      <Image
-        src={image.src}
-        alt={image.alt}
-        fill
-        loading="lazy"
-        sizes="(max-width: 900px) 60vw, 400px"
-        placeholder="blur"
-        blurDataURL={blurDataURL(image.width, image.height)}
-        style={{ objectFit: "cover" }}
-      />
+    <div className="tl-photo-grid tl-photo-grid--4">
+      {visible.map((img, i) => (
+        <div key={i} className="tl-photo-cell">
+          <Image src={img.src} alt={img.alt} fill loading="lazy"
+            sizes="(max-width: 900px) 45vw, 250px"
+            placeholder="blur" blurDataURL={blurDataURL(img.width, img.height)}
+            style={{ objectFit: "cover" }} />
+          {i === 3 && extra > 0 && (
+            <span className="tl-photo-extra">+{extra}</span>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -121,11 +180,7 @@ function TimelinePost({ item }: { item: TimelineItem }) {
   return (
     <article id={item.id} style={{ scrollMarginTop: "var(--space-11)", paddingTop: "var(--space-4)", paddingBottom: "var(--space-2)" }}>
       {item.type === "photo" && item.images && item.images.length > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
-          {item.images.map((img, idx) => (
-            <TimelineImage key={idx} image={img} />
-          ))}
-        </div>
+        <TimelineImageGrid images={item.images} />
       ) : null}
 
       {/* タイトル（任意ラベル） */}
