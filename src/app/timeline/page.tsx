@@ -20,10 +20,9 @@ function dateOnly(date: string) {
 export default async function TimelinePage({
   searchParams,
 }: {
-  searchParams?: Promise<{ type?: string; month?: string; date?: string; q?: string; tag?: string }>;
+  searchParams?: Promise<{ month?: string; date?: string; q?: string; tag?: string }>;
 }) {
   const sp = searchParams ? await searchParams : undefined;
-  const activeType = sp?.type === "photo" || sp?.type === "text" ? sp.type : undefined;
   const activeMonth = sp?.month;
   const activeDate = sp?.date;
   const activeTag = sp?.tag;
@@ -41,9 +40,6 @@ export default async function TimelinePage({
 
   /* フィルタリング */
   let filtered = timeline;
-  if (activeType) {
-    filtered = filtered.filter((item) => item.type === activeType);
-  }
   if (activeTag) {
     filtered = filtered.filter((item) => item.tags?.includes(activeTag));
   }
@@ -61,7 +57,6 @@ export default async function TimelinePage({
     <CanvasShell>
       <TimelinePageContent
         items={filtered}
-        activeType={activeType}
         activeMonth={activeMonth}
         activeDate={activeDate}
         activeTag={activeTag}
