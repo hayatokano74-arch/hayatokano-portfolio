@@ -1120,15 +1120,15 @@ button {
   column-gap: var(--grid-gutter);
 }
 
-/* タイムラインコンテンツ: 列4-9（中央配置） */
+/* タイムラインコンテンツ: 列5-9（視覚的中央） */
 .timeline-content {
-  grid-column: 4 / span 6;
+  grid-column: 5 / span 5;
   min-width: 0;
 }
 
-/* フィルタタブ: グリッドのガターに合わせた間隔で配置 */
+/* フィルタタブ: コンテンツと同じ列に揃える */
 .timeline-filter-tabs-wrap {
-  grid-column: 1 / -1;
+  grid-column: 5 / span 5;
 }
 
 .timeline-filter-tabs {
