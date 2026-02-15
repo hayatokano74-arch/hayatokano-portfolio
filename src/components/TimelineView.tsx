@@ -189,10 +189,14 @@ function FilterTabs({
   activeType,
   activeMonth,
   activeDate,
+  activeTag,
+  availableTags,
 }: {
   activeType?: string;
   activeMonth?: string;
   activeDate?: string;
+  activeTag?: string;
+  availableTags: string[];
 }) {
   const tabs = [
     { label: "すべて", value: undefined },
@@ -200,9 +204,21 @@ function FilterTabs({
     { label: "テキスト", value: "text" },
   ] as const;
 
-  function buildHref(type?: string) {
+  function buildHref(type?: string, tag?: string) {
     const params = new URLSearchParams();
     if (type) params.set("type", type);
+    if (tag) params.set("tag", tag);
+    if (activeMonth) params.set("month", activeMonth);
+    if (activeDate) params.set("date", activeDate);
+    const qs = params.toString();
+    return qs ? `/timeline?${qs}` : "/timeline";
+  }
+
+  function buildTagHref(tag: string) {
+    const params = new URLSearchParams();
+    if (activeType) params.set("type", activeType);
+    /* トグル動作: 同じタグなら解除、別タグなら切替 */
+    if (activeTag !== tag) params.set("tag", tag);
     if (activeMonth) params.set("month", activeMonth);
     if (activeDate) params.set("date", activeDate);
     const qs = params.toString();
@@ -216,7 +232,7 @@ function FilterTabs({
         return (
           <Link
             key={tab.label}
-            href={buildHref(tab.value)}
+            href={buildHref(tab.value, activeTag)}
             className={`${isActive ? "underline-active" : ""} action-link`.trim()}
             style={{ color: isActive ? "var(--fg)" : "var(--muted)" }}
           >
@@ -224,6 +240,24 @@ function FilterTabs({
           </Link>
         );
       })}
+      {availableTags.length > 0 && (
+        <>
+          <span style={{ color: "var(--muted)", opacity: 0.5, userSelect: "none" }} aria-hidden="true">·</span>
+          {availableTags.map((tag) => {
+            const isActive = activeTag === tag;
+            return (
+              <Link
+                key={tag}
+                href={buildTagHref(tag)}
+                className={`${isActive ? "underline-active" : ""} action-link`.trim()}
+                style={{ color: isActive ? "var(--fg)" : "var(--muted)", whiteSpace: "nowrap" }}
+              >
+                #{tag}
+              </Link>
+            );
+          })}
+        </>
+      )}
     </nav>
   );
 }
@@ -563,10 +597,14 @@ function MobileArchiveDrawer({
 }
 
 /* ─── アクティブフィルタ表示 ─── */
-function ActiveFilter({ activeDate, activeMonth, activeType }: { activeDate?: string; activeMonth?: string; activeType?: string }) {
-  if (!activeDate && !activeMonth) return null;
+function ActiveFilter({ activeDate, activeMonth, activeType, activeTag }: { activeDate?: string; activeMonth?: string; activeType?: string; activeTag?: string }) {
+  if (!activeDate && !activeMonth && !activeTag) return null;
 
-  const label = activeDate ? activeDate : `${activeMonth!.replace("-", "年")}月`;
+  const parts: string[] = [];
+  if (activeTag) parts.push(`#${activeTag}`);
+  if (activeDate) parts.push(activeDate);
+  else if (activeMonth) parts.push(`${activeMonth.replace("-", "年")}月`);
+  const label = parts.join(" / ");
 
   /* フィルタ解除リンク: type は維持、date/month/tag を解除 */
   const params = new URLSearchParams();
@@ -596,14 +634,18 @@ export function TimelineView({
   activeType,
   activeMonth,
   activeDate,
+  activeTag,
   availableMonths,
+  availableTags,
   allDates,
 }: {
   items: TimelineItem[];
   activeType?: string;
   activeMonth?: string;
   activeDate?: string;
+  activeTag?: string;
   availableMonths: string[];
+  availableTags: string[];
   allDates: string[];
 }) {
   const groups = groupByDate(items);
@@ -613,7 +655,7 @@ export function TimelineView({
       {/* フィルタタブ: 12カラムグリッドに直接配置 */}
       <div className="timeline-layout">
         <div className="timeline-filter-tabs-wrap">
-          <FilterTabs activeType={activeType} activeMonth={activeMonth} activeDate={activeDate} />
+          <FilterTabs activeType={activeType} activeMonth={activeMonth} activeDate={activeDate} activeTag={activeTag} availableTags={availableTags} />
         </div>
       </div>
 
@@ -621,7 +663,7 @@ export function TimelineView({
       <div className="timeline-layout" style={{ marginTop: "var(--space-6)" }}>
         {/* コンテンツ */}
         <div className="timeline-content">
-            <ActiveFilter activeDate={activeDate} activeMonth={activeMonth} activeType={activeType} />
+            <ActiveFilter activeDate={activeDate} activeMonth={activeMonth} activeType={activeType} activeTag={activeTag} />
             {groups.length === 0 ? (
               <div style={{ fontSize: "var(--font-body)", fontWeight: 500, color: "var(--muted)" }}>
                 投稿がありません
@@ -660,14 +702,18 @@ export function TimelinePageContent({
   activeType,
   activeMonth,
   activeDate,
+  activeTag,
   availableMonths,
+  availableTags,
   allDates,
 }: {
   items: TimelineItem[];
   activeType?: string;
   activeMonth?: string;
   activeDate?: string;
+  activeTag?: string;
   availableMonths: string[];
+  availableTags: string[];
   allDates: string[];
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -695,7 +741,9 @@ export function TimelinePageContent({
         activeType={activeType}
         activeMonth={activeMonth}
         activeDate={activeDate}
+        activeTag={activeTag}
         availableMonths={availableMonths}
+        availableTags={availableTags}
         allDates={allDates}
       />
       <MobileArchiveDrawer
