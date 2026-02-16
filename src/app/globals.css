@@ -1049,6 +1049,21 @@ button {
   grid-column: 2 / -1;
 }
 
+/* View All ボタン: ピル型ボーダー */
+.works-list-view .action-link {
+  display: block;
+  width: 100%;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-5);
+  transition: border-color var(--duration-fast) ease;
+}
+
+.works-list-view .action-link:hover {
+  border-color: var(--fg);
+}
+
 .works-list-media {
   grid-column: 8 / -1;
   min-width: 0;
