@@ -38,40 +38,58 @@ export default async function AboutPage() {
             CV
           </div>
           <div className="hrline" />
-          {about.cv.map((row, i) => (
-            <div key={i}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "56px minmax(0, 1fr)",
-                  columnGap: "var(--space-6)",
-                  paddingTop: "var(--space-2)",
-                  paddingBottom: "var(--space-2)",
-                }}
-              >
+          {about.cv.map((row, i) =>
+            /* year が空 → セクション見出し */
+            !row.year ? (
+              <div key={i}>
                 <div
                   style={{
-                    fontSize: "var(--font-body)",
-                    lineHeight: "var(--lh-normal)",
-                    fontWeight: 700,
+                    fontSize: "var(--font-meta)",
+                    letterSpacing: "0.16em",
                     color: "var(--muted)",
-                  }}
-                >
-                  {row.year}
-                </div>
-                <div
-                  style={{
-                    fontSize: "var(--font-body)",
-                    lineHeight: "var(--lh-normal)",
-                    fontWeight: 500,
+                    paddingTop: i === 0 ? 0 : "var(--space-7)",
+                    paddingBottom: "var(--space-3)",
                   }}
                 >
                   {row.content}
                 </div>
+                <div className="hrline" />
               </div>
-              <div className="hrline" />
-            </div>
-          ))}
+            ) : (
+              <div key={i}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "56px minmax(0, 1fr)",
+                    columnGap: "var(--space-6)",
+                    paddingTop: "var(--space-2)",
+                    paddingBottom: "var(--space-2)",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "var(--font-body)",
+                      lineHeight: "var(--lh-normal)",
+                      fontWeight: 700,
+                      color: "var(--muted)",
+                    }}
+                  >
+                    {row.year}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "var(--font-body)",
+                      lineHeight: "var(--lh-normal)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {row.content}
+                  </div>
+                </div>
+                <div className="hrline" />
+              </div>
+            ),
+          )}
         </div>
 
         {/* 右カラム: 写真（縦一列） */}
