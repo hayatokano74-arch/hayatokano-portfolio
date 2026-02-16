@@ -27,17 +27,6 @@ export default async function AboutPage() {
             {about.statement}
           </div>
 
-          <div
-            style={{
-              fontSize: "var(--font-meta)",
-              letterSpacing: "0.16em",
-              color: "var(--muted)",
-              marginBottom: "var(--space-3)",
-            }}
-          >
-            CV
-          </div>
-          <div className="hrline" />
           {about.cv.map((row, i) =>
             /* year が空 → セクション見出し */
             !row.year ? (
