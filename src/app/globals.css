@@ -2019,6 +2019,13 @@ button.tl-photo-cell {
   }
 }
 
+/* ═══ 中間幅: ナビのナンバリング非表示（列幅不足による折り返し防止） ═══ */
+@media (min-width: 901px) and (max-width: 1400px) {
+  .header-nav-num {
+    display: none;
+  }
+}
+
 /* ═══ モバイルオーバーライド（ファイル末尾に1ブロックのみ配置） ═══ */
 @media (max-width: 900px) {
   :root {
