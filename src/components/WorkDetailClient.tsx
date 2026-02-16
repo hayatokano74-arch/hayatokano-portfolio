@@ -31,8 +31,9 @@ export function WorkDetailClient({ work }: { work: Work }) {
   );
   const prevWork = works[(currentWorkIndex - 1 + works.length) % works.length];
   const nextWork = works[(currentWorkIndex + 1) % works.length];
-  const prevImage = Math.max(1, img - 1);
-  const nextImage = Math.min(work.media.length, img + 1);
+  const total = work.media.length;
+  const prevImage = img <= 1 ? total : img - 1;
+  const nextImage = img >= total ? 1 : img + 1;
   const currentMedia = work.media[img - 1];
   const galleryStageWidth = "min(100%, clamp(680px, 64vw, 1120px))";
   const galleryStageHeight = "min(100%, clamp(280px, 56dvh, 820px))";
