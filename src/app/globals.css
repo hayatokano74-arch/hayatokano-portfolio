@@ -311,13 +311,34 @@ button {
   gap: var(--space-3);
 }
 
-/* ホバー: 区切り線の色が変わる */
-.work-grid-item:hover .work-grid-divider {
-  border-color: var(--fg);
+/* DETAILS 行 */
+.work-grid-details {
+  padding-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.work-grid-item:hover .work-grid-detail {
+.work-grid-details-row {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--font-meta);
+  line-height: var(--lh-normal);
+}
+
+.work-grid-details-label {
+  color: var(--muted);
+  flex-shrink: 0;
+  width: 64px;
+  letter-spacing: 0.04em;
+}
+
+.work-grid-details-value {
   color: var(--fg);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── Excerpt HTML（詳細ページ） ── */

@@ -58,6 +58,29 @@ function ThumbRect({ src, alt }: { src?: string; alt?: string }) {
   return <div style={{ width: "100%", aspectRatio: "16 / 9", background: "var(--media-bg)" }} />;
 }
 
+/* グリッド用 DETAILS（値があるフィールドだけ表示） */
+function GridDetails({ details }: { details: Work["details"] }) {
+  const rows = [
+    { label: "ARTIST", value: details.artist },
+    { label: "PERIOD", value: details.period },
+    { label: "VENUE", value: details.venue },
+    { label: "MEDIUM", value: details.medium },
+    { label: "PHOTO", value: details.credit_photo },
+    { label: "DESIGN", value: details.credit_design },
+  ].filter((r) => r.value);
+  if (rows.length === 0) return null;
+  return (
+    <div className="work-grid-details">
+      {rows.map((r) => (
+        <div key={r.label} className="work-grid-details-row">
+          <span className="work-grid-details-label">{r.label}</span>
+          <span className="work-grid-details-value">{r.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
   const count = works.length;
   const maxCols = Math.min(count || 1, 8);
@@ -98,6 +121,7 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
                   {w.year && <span>{w.year}</span>}
                 </span>
               </div>
+              <GridDetails details={w.details} />
             </Link>
           );
         })}
