@@ -276,10 +276,14 @@ button {
   color: var(--fg);
 }
 
-/* 区切り線 */
+/* 区切り線（ライトモードではグレー） */
 .work-grid-divider {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--line-light);
   margin-top: var(--space-3);
+}
+
+[data-theme="dark"] .work-grid-divider {
+  border-color: var(--line);
 }
 
 /* テキスト情報: タイトル左、詳細右 */
