@@ -72,11 +72,16 @@ export default function PostPage() {
     return [...new Set(all)];
   }, [recent, drafts]);
 
-  /* ── タグ除去後のテキスト（ボタン活性化判定用） ── */
-  const hasCleanText = useMemo(() => {
-    const { cleanText } = extractTags(text);
-    return !!cleanText.trim();
-  }, [text]);
+  /* ── 投稿可能判定: テキスト・タグ・画像のいずれか1つがあればOK ── */
+  const { hasText, hasAnyTag } = useMemo(() => {
+    const { cleanText, tags: inlineTags } = extractTags(text);
+    return {
+      hasText: !!cleanText.trim(),
+      hasAnyTag: selectedTags.length > 0 || inlineTags.length > 0,
+    };
+  }, [text, selectedTags]);
+  const hasImages = images.length > 0;
+  const canPost = hasText || hasAnyTag || hasImages;
 
   /* ── 最近の投稿を読み込み ── */
   const loadRecent = useCallback(async () => {
@@ -215,20 +220,15 @@ export default function PostPage() {
   async function handleSubmit(asDraft = false) {
     const isPhoto = postType === "photo";
 
-    /* タグ抽出を先に行い、cleanText でバリデーションする */
+    /* タグ抽出 */
     const { cleanText, tags: inlineTags } = extractTags(text);
-    const hasText = !!cleanText.trim();
-
-    if (!editingId) {
-      /* 新規投稿のバリデーション */
-      if (!isPhoto && !hasText) return;
-      if (isPhoto && images.length === 0 && !hasText) return;
-    } else {
-      /* 編集のバリデーション: photo は画像既存なのでテキスト不要 */
-      if (!isPhoto && !hasText) return;
-    }
-    setPosting(true);
     const allTags = [...new Set([...selectedTags, ...inlineTags])];
+
+    /* バリデーション: テキスト・タグ・画像・タイトルのいずれか1つが必要 */
+    const hasContent = !!cleanText.trim() || allTags.length > 0 || images.length > 0 || !!title.trim();
+    if (!editingId && !hasContent) return;
+
+    setPosting(true);
     const pin = localStorage.getItem("tl-pin") ?? "";
 
     try {
@@ -527,17 +527,14 @@ export default function PostPage() {
         <button
           className="post-btn post-btn-primary post-submit"
           onClick={() => handleSubmit(false)}
-          disabled={posting || (editingId
-            ? (postType === "text" ? !hasCleanText : false)
-            : (postType === "text" ? !hasCleanText : (images.length === 0 && !hasCleanText))
-          )}
+          disabled={posting || (!editingId && !canPost)}
         >
           {posting ? "送信中…" : editingId ? "更新する" : "投稿する"}
         </button>
         <button
           className="post-btn post-btn-secondary"
           onClick={() => handleSubmit(true)}
-          disabled={posting || (!hasCleanText && !title.trim() && selectedTags.length === 0)}
+          disabled={posting || (!canPost && !title.trim())}
         >
           下書き保存
         </button>
