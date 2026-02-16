@@ -2106,9 +2106,9 @@ button.tl-photo-cell {
     grid-template-columns: 104px minmax(0, 1fr) 32px !important;
     column-gap: var(--space-3) !important;
     row-gap: 0;
-    align-items: start !important;
-    padding-top: var(--space-2);
-    padding-bottom: var(--space-2);
+    align-items: center !important;
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-3);
   }
 
   .works-list-summary-date {
@@ -2132,7 +2132,6 @@ button.tl-photo-cell {
   .works-list-summary-thumb {
     grid-column: 3;
     grid-row: 1;
-    align-self: start;
   }
 
   /* ── Works リスト: ディテール ── */
