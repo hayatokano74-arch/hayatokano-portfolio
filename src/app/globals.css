@@ -2021,6 +2021,16 @@ button.tl-photo-cell {
   }
 }
 
+/* ═══ 大画面: Timelineコンテンツ幅を4列に戻す ═══ */
+@media (min-width: 1601px) {
+  .timeline-filter-tabs-wrap {
+    grid-column: 5 / span 4;
+  }
+  .timeline-content {
+    grid-column: 5 / span 4;
+  }
+}
+
 /* ═══ モバイルオーバーライド（ファイル末尾に1ブロックのみ配置） ═══ */
 @media (max-width: 900px) {
   :root {
