@@ -29,9 +29,9 @@ function normalizeAbout(raw: WpAboutResponse): About | null {
     }));
 
   const cv = (raw.cv ?? [])
-    .filter((c) => c.year && c.content)
+    .filter((c) => c.content)
     .map((c) => ({
-      year: c.year!,
+      year: c.year ?? "",
       content: c.content!,
     }));
 
