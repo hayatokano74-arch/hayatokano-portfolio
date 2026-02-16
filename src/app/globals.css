@@ -1197,14 +1197,14 @@ button {
 
 /* フィルタタブ: 行1、コンテンツと同じ列 */
 .timeline-filter-tabs-wrap {
-  grid-column: 5 / span 4;
+  grid-column: 4 / span 5;
   grid-row: 1;
   margin-bottom: var(--space-6);
 }
 
-/* タイムラインコンテンツ: 行2、列5-8（4列幅） */
+/* タイムラインコンテンツ: 行2、列4-8（5列幅） */
 .timeline-content {
-  grid-column: 5 / span 4;
+  grid-column: 4 / span 5;
   grid-row: 2;
   min-width: 0;
 }
