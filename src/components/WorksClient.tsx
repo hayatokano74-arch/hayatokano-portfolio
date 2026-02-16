@@ -58,15 +58,30 @@ function ThumbRect({ src, alt }: { src?: string; alt?: string }) {
   return <div style={{ width: "100%", aspectRatio: "16 / 9", background: "var(--media-bg)" }} />;
 }
 
-/* グリッド用 DETAILS（値があるフィールドだけ表示） */
+/* グリッド用 DETAILS（投稿ごとに値があるフィールドだけ表示） */
 function GridDetails({ details }: { details: Work["details"] }) {
   const rows = [
     { label: "ARTIST", value: details.artist },
     { label: "PERIOD", value: details.period },
     { label: "VENUE", value: details.venue },
+    { label: "ADDRESS", value: details.address },
+    { label: "ACCESS", value: details.access },
+    { label: "HOURS", value: details.hours },
+    { label: "CLOSED", value: details.closed },
+    { label: "ADMISSION", value: details.admission },
+    { label: "ORGANIZER", value: details.organizer },
+    { label: "CURATOR", value: details.curator },
     { label: "MEDIUM", value: details.medium },
+    { label: "DIMENSIONS", value: details.dimensions },
+    { label: "EDITION", value: details.edition },
+    { label: "SERIES", value: details.series },
+    { label: "PUBLISHER", value: details.publisher },
+    { label: "PAGES", value: details.pages },
+    { label: "BINDING", value: details.binding },
+    { label: "PRICE", value: details.price },
     { label: "PHOTO", value: details.credit_photo },
     { label: "DESIGN", value: details.credit_design },
+    { label: "COOPERATION", value: details.credit_cooperation },
   ].filter((r) => r.value);
   if (rows.length === 0) return null;
   return (
