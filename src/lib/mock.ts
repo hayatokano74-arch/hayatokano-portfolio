@@ -302,41 +302,7 @@ export type NewsItem = {
   image?: { src: string; width: number; height: number };
 };
 
-export const news: NewsItem[] = [
-  {
-    id: "news-1",
-    date: "2025.10.15",
-    title: "個展「Field Notes」開催のお知らせ",
-    body: "2025年11月1日より、GALLERY SPACEにて個展「Field Notes」を開催します。新作を含む写真作品約30点を展示予定です。",
-    image: { src: "https://picsum.photos/seed/news-1/800/500", width: 800, height: 500 },
-  },
-  {
-    id: "news-2",
-    date: "2025.09.20",
-    title: "グループ展「見ることの輪郭」参加",
-    body: "東京都写真美術館にて開催のグループ展に参加します。会期は10月5日〜11月30日。",
-    image: { src: "https://picsum.photos/seed/news-2/800/500", width: 800, height: 500 },
-  },
-  {
-    id: "news-3",
-    date: "2025.07.01",
-    title: "ウェブサイトをリニューアルしました",
-    body: "ポートフォリオサイトを全面的にリニューアルしました。過去作品のアーカイブおよびテキストを公開しています。",
-  },
-  {
-    id: "news-4",
-    date: "2025.04.10",
-    title: "写真集「距離について」刊行",
-    body: "2022年から2024年にかけて撮影した作品をまとめた写真集を自主出版しました。オンラインショップにて販売中です。",
-    image: { src: "https://picsum.photos/seed/news-4/800/500", width: 800, height: 500 },
-  },
-  {
-    id: "news-5",
-    date: "2024.12.01",
-    title: "アーティスト・イン・レジデンス採択",
-    body: "2025年度のアーティスト・イン・レジデンスプログラムに採択されました。滞在制作の記録はTimelineにて更新予定です。",
-  },
-];
+export const news: NewsItem[] = [];
 
 /* ── About ── */
 
