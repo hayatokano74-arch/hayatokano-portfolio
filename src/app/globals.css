@@ -269,8 +269,55 @@ button {
   display: grid;
 }
 
-.work-grid-item:hover .work-grid-meta {
-  opacity: 1 !important;
+/* グリッドアイテム */
+.work-grid-item {
+  display: block;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+/* 区切り線 */
+.work-grid-divider {
+  border-top: 1px solid var(--line);
+  margin-top: var(--space-3);
+}
+
+/* テキスト情報: タイトル左、詳細右 */
+.work-grid-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.work-grid-title {
+  font-size: var(--font-meta);
+  line-height: var(--lh-normal);
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.work-grid-detail {
+  font-size: var(--font-meta);
+  line-height: var(--lh-normal);
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* ホバー: 区切り線の色が変わる */
+.work-grid-item:hover .work-grid-divider {
+  border-color: var(--fg);
+}
+
+.work-grid-item:hover .work-grid-detail {
+  color: var(--fg);
 }
 
 /* ── Excerpt HTML（詳細ページ） ── */

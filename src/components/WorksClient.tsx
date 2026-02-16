@@ -62,10 +62,7 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
   const count = works.length;
   const maxCols = Math.min(count || 1, 8);
 
-  // 投稿数に応じた最大列数を制限する動的グリッド
-  // auto-fill の最小幅を計算: (100% - gap合計) / maxCols
-  // これにより maxCols 列以上は生成されない
-  const gapPx = 24; // var(--space-5) ≈ 24px
+  const gapPx = 24;
   const gapTotal = (maxCols - 1) * gapPx;
   const gridTemplateColumns = maxCols === 1
     ? "repeat(auto-fill, minmax(190px, 320px))"
@@ -77,40 +74,33 @@ function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHr
         className="works-grid"
         style={{
           gridTemplateColumns,
-          gap: "var(--space-5)",
+          gap: "var(--space-7)",
           alignItems: "start",
         }}
       >
-        {works.map((w) => (
-          (() => {
-            const lead = w.media[0];
-            const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
-            const thumbAlt = w.thumbnail?.alt ?? lead?.alt;
-            return (
-          <Link
-            key={w.slug}
-            href={detailHref(w.slug)}
-            prefetch={true}
-            className="work-grid-item"
-            style={{ display: "block" }}
-          >
-            <ThumbRect src={thumbSrc} alt={thumbAlt} />
-            <div
-              style={{
-                marginTop: "var(--space-2)",
-                fontSize: "var(--font-meta)",
-                lineHeight: "var(--lh-normal)",
-                opacity: 0,
-                transition: "opacity 120ms linear",
-              }}
-              className="work-grid-meta"
+        {works.map((w) => {
+          const lead = w.media[0];
+          const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
+          const thumbAlt = w.thumbnail?.alt ?? lead?.alt;
+          return (
+            <Link
+              key={w.slug}
+              href={detailHref(w.slug)}
+              prefetch={true}
+              className="work-grid-item"
             >
-              {w.title} | {w.year}
-            </div>
-          </Link>
-            );
-          })()
-        ))}
+              <ThumbRect src={thumbSrc} alt={thumbAlt} />
+              <div className="work-grid-divider" />
+              <div className="work-grid-info">
+                <span className="work-grid-title">{w.title}</span>
+                <span className="work-grid-detail">
+                  {w.tags[0] && <span>{w.tags[0]}</span>}
+                  {w.year && <span>{w.year}</span>}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: "var(--space-2)" }}>
