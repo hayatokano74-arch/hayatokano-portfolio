@@ -218,8 +218,6 @@ export default function PostPage() {
 
   /* ── 投稿送信（新規 or 編集） ── */
   async function handleSubmit(asDraft = false) {
-    const isPhoto = postType === "photo";
-
     /* タグ抽出 */
     const { cleanText, tags: inlineTags } = extractTags(text);
     const allTags = [...new Set([...selectedTags, ...inlineTags])];
@@ -227,6 +225,9 @@ export default function PostPage() {
     /* バリデーション: テキスト・タグ・画像・タイトルのいずれか1つが必要 */
     const hasContent = !!cleanText.trim() || allTags.length > 0 || images.length > 0 || !!title.trim();
     if (!editingId && !hasContent) return;
+
+    /* type自動判定: 画像があれば photo、なければ text（WP側のtype別バリデーション対策） */
+    const effectiveType = images.length > 0 ? "photo" : postType;
 
     setPosting(true);
     const pin = localStorage.getItem("tl-pin") ?? "";
@@ -239,7 +240,7 @@ export default function PostPage() {
           id: editingId,
           title: title.trim(),
           text: cleanText,
-          type: postType,
+          type: effectiveType,
           tags: allTags,
         };
         if (asDraft) {
@@ -268,7 +269,7 @@ export default function PostPage() {
         fd.append("pin", pin);
         if (title.trim()) fd.append("title", title.trim());
         fd.append("text", cleanText);
-        fd.append("type", postType);
+        fd.append("type", effectiveType);
         fd.append("date", formatNow());
         if (asDraft) fd.append("status", "draft");
         if (allTags.length > 0) {
@@ -415,7 +416,13 @@ export default function PostPage() {
       <div className="post-type-toggle">
         <button
           className={`post-type-btn ${postType === "text" ? "active" : ""}`}
-          onClick={() => setPostType("text")}
+          onClick={() => {
+            setPostType("text");
+            /* photo→text 切替時に画像をクリア（type不一致防止） */
+            setImages([]);
+            setImagePreviews([]);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+          }}
         >
           テキスト
         </button>

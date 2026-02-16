@@ -241,9 +241,12 @@ export async function POST(request: NextRequest) {
         } catch { /* JSON パース失敗は無視 */ }
       }
 
+      /* type自動判定: 画像があればphoto（WP側のtype別バリデーション対策） */
+      const effectiveType = imageIds.length > 0 ? "photo" : (type === "photo" ? "photo" : "text");
+
       const payload: Record<string, unknown> = {
         text: (text ?? "").trim(),
-        type: type === "photo" ? "photo" : "text",
+        type: effectiveType,
         date: date || "",
       };
       if (title) {
