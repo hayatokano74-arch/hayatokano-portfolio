@@ -1050,13 +1050,13 @@ button {
 }
 
 .works-list-summary-title {
-  grid-column: 3 / span 6;
+  grid-column: 3 / span 5;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
 .works-list-summary-tags {
-  grid-column: 9 / span 3;
+  grid-column: 8 / span 4;
   min-width: 0;
   overflow-wrap: anywhere;
   display: flex;
