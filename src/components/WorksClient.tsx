@@ -112,13 +112,7 @@ function GridDetails({ details }: { details: unknown }) {
 function WorksGrid<T extends WorkLike>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
   return (
     <div style={{ position: "relative", paddingBottom: "var(--space-14)" }}>
-      <div
-        className="works-grid"
-        style={{
-          gap: "var(--space-7)",
-          alignItems: "start",
-        }}
-      >
+      <div className="works-grid">
         {works.map((w) => {
           const lead = w.media[0];
           const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);

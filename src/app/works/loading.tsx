@@ -18,16 +18,11 @@ export default function WorksLoading() {
           opacity: 0.5,
         }}
       />
-      <div
-        className="works-grid"
-        style={{
-          gap: "var(--space-5)",
-        }}
-      >
-        {Array.from({ length: 6 }, (_, i) => (
+      <div className="works-grid">
+        {Array.from({ length: 8 }, (_, i) => (
           <div
             key={i}
-            className="skeleton-pulse"
+            className="skeleton-pulse work-grid-item"
             style={{
               width: "100%",
               aspectRatio: "16 / 9",

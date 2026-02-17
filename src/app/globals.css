@@ -299,14 +299,19 @@ button {
 /* ── Works グリッド（投稿数ベースのレスポンシブ） ── */
 .works-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 420px));
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
+  row-gap: var(--space-7);
+  align-items: start;
 }
 
-/* グリッドアイテム */
+/* グリッドアイテム: 3カラム幅 × 4枚/行 */
 .work-grid-item {
+  grid-column: span 3;
   display: block;
   text-decoration: none;
   color: var(--fg);
+  min-width: 0;
 }
 
 /* 区切り線（ライトモードではグレー） */
@@ -2297,6 +2302,10 @@ button.tl-photo-cell {
   /* ── Works グリッド ── */
   .works-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .work-grid-item {
+    grid-column: 1 / -1;
   }
 
   .works-view-toggle {
