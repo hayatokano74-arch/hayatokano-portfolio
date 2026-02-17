@@ -109,7 +109,10 @@ export const works: Work[] = Array.from({ length: 24 }).map((_, i) => {
     excerpt:
       "土を掘り返していると鳥が寄って来る。地中から出てきた幼虫を摘んでどこかへと飛んでいく。私には見えていないものが見えている。見えていないのではなくて、きっと違う注意力を持っているのだろう。\n\n土を掘り返していると鳥が寄って来る。地中から出てきた幼虫を摘んでどこかへと飛んでいく。私には見えていないものが見えている。見えていないのではなくて、きっと違う注意力を持っているのだろう。",
     details: {
-      artist: "Eglit Hill",
+      exhibition_type: n % 3 === 0 ? "グループ展" : n % 3 === 1 ? "個展" : "芸術祭",
+      exhibition_title: n % 3 !== 1 ? "Reborn-Art Festival 2025" : undefined,
+      artist: "Hayato Kano",
+      artists: n % 3 !== 1 ? "Hayato Kano, Yuki Tanaka, Rina Suzuki, Takeshi Mori" : undefined,
       period: "2025.01.08–2025.10.07",
       venue: "Hamada House East",
       hours: "11:00–18:00",
@@ -117,6 +120,14 @@ export const works: Work[] = Array.from({ length: 24 }).map((_, i) => {
       admission: "Free",
       address: "兵庫県神戸市中央区（仮）",
       access: "JR三ノ宮駅から徒歩8分（仮）",
+      organizer: n % 3 === 2 ? "Reborn-Art Festival 実行委員会" : undefined,
+      curator: n % 2 === 0 ? "Fumio Watanabe" : undefined,
+      supported_by: n % 3 !== 1 ? "文化庁, 宮城県, 石巻市" : undefined,
+      medium: "写真、映像インスタレーション",
+      dimensions: "サイズ可変",
+      credit_photo: "Hayato Kano",
+      credit_cooperation: n % 3 !== 1 ? "石巻のキワマリ荘" : undefined,
+      award: n % 4 === 0 ? "令和7年度 芸術選奨新人賞（仮）" : undefined,
       bio:
         "都市周縁の空間と身体の距離を主題に、写真と映像を横断しながら制作。展示空間に応じた再編集を継続している。",
     },
