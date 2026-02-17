@@ -1,4 +1,4 @@
-export type WorkTag = "Photography" | "Video" | "Personal" | "Portrait" | "Exhibition";
+export type WorkTag = string;
 
 export type Work = {
   slug: string;

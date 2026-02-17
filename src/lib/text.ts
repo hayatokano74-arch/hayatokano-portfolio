@@ -6,23 +6,16 @@
  */
 
 import { cache } from "react";
-import { type TextPost, type WorkTag, texts as fallbackTexts } from "@/lib/mock";
+import { type TextPost, texts as fallbackTexts } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
 import type { WpTextResponse } from "@/lib/wp/types";
 
-type TextCategory = Exclude<WorkTag, "Exhibition">;
+type TextCategory = string;
 
-const VALID_CATEGORIES: TextCategory[] = [
-  "Photography",
-  "Video",
-  "Personal",
-  "Portrait",
-];
-
+/** カテゴリ文字列を正規化（空文字除去のみ） */
 function normalizeCategory(value: string): TextCategory | null {
-  return VALID_CATEGORIES.includes(value as TextCategory)
-    ? (value as TextCategory)
-    : null;
+  const trimmed = value.trim();
+  return trimmed || null;
 }
 
 function normalizeText(raw: WpTextResponse): TextPost | null {

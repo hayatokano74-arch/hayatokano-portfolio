@@ -15,19 +15,10 @@ const RE_UNICODE_TEST = /u[0-9a-fA-F]{4}/;
 const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
 const RE_HTML_TAGS = /<[^>]*>/g;
 
-const VALID_TAGS: WorkTag[] = [
-  "Photography",
-  "Video",
-  "Personal",
-  "Portrait",
-  "Exhibition",
-];
-
-function normalizeTag(value: string): WorkTag | null {
-  const found = VALID_TAGS.find(
-    (t) => t.toLowerCase() === value.toLowerCase(),
-  );
-  return found ?? null;
+/** タグ文字列を正規化（空文字除去のみ） */
+function normalizeTag(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed || null;
 }
 
 /** HTMLタグを除去してプレーンテキストにする */
@@ -59,7 +50,7 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
 
   const tags = (raw.tags ?? [])
     .map(normalizeTag)
-    .filter((t): t is WorkTag => Boolean(t));
+    .filter((t): t is string => Boolean(t));
 
   const media = (raw.media ?? [])
     .filter((m) => m?.id && m?.src)

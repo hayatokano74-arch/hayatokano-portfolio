@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { type Work, type WorkTag } from "@/lib/mock";
+import { type Work } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
 
 /* モジュールレベルに RegExp を巻き上げ（js-hoist-regexp） */
@@ -42,7 +42,7 @@ export type MeNoHoshiPost = {
   date: string;
   title: string;
   subtitle: string;
-  tags: WorkTag[];
+  tags: string[];
   year: string;
   excerpt: string;
   media: Work["media"];
@@ -210,9 +210,10 @@ function fixBrokenUnicodeUrl(url: string): string {
   });
 }
 
-function normalizeTag(value: string): WorkTag | null {
-  const allowed: WorkTag[] = ["Photography", "Video", "Personal", "Portrait", "Exhibition"];
-  return allowed.includes(value as WorkTag) ? (value as WorkTag) : null;
+/** タグ文字列を正規化（空文字除去のみ） */
+function normalizeTag(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed || null;
 }
 
 function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
@@ -221,7 +222,7 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
   const subtitle = (post.subtitle ?? "").trim();
   if (!slug || !title) return null;
 
-  const tags = (post.tags ?? []).map(normalizeTag).filter((tag): tag is WorkTag => Boolean(tag));
+  const tags = (post.tags ?? []).map(normalizeTag).filter((tag): tag is string => Boolean(tag));
   const media = (post.media ?? [])
     .filter((item) => !!item?.id && !!item?.src)
     .map((item) => ({ ...item, src: fixBrokenUnicodeUrl(item.src), ...(item.poster ? { poster: fixBrokenUnicodeUrl(item.poster) } : {}) }));
