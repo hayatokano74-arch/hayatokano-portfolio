@@ -29,18 +29,10 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
 
         {post.announcement ? (
           <div
-            className="mnh-announcement"
-            style={{
-              marginTop: "var(--space-5)",
-              padding: "var(--space-4)",
-              border: "1px solid var(--line-light)",
-              fontSize: "var(--font-body)",
-              lineHeight: "var(--lh-relaxed)",
-            }}
-          >
-            <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)", marginBottom: "var(--space-2)" }}>お知らせ</div>
-            <div className="mnh-rich-text" dangerouslySetInnerHTML={{ __html: post.announcement }} />
-          </div>
+            className="mnh-rich-text"
+            style={{ marginTop: "var(--space-5)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
+            dangerouslySetInnerHTML={{ __html: post.announcement }}
+          />
         ) : null}
 
         <div style={{ marginTop: "var(--space-10)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", letterSpacing: "0.2em" }}>DETAILS</div>
