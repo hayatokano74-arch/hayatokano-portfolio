@@ -405,6 +405,7 @@ button {
 
 .works-list-open-tags {
   display: none;
+  gap: var(--space-4);
 }
 
 /* ── ヘッダー: Exhibition Catalog スタイル ── */
@@ -1023,6 +1024,8 @@ button {
   grid-column: 9 / span 3;
   min-width: 0;
   overflow-wrap: anywhere;
+  display: flex;
+  gap: var(--space-4);
 }
 
 /* サムネイル: 最終列の右端に揃える（ページ右辺と一致） */
@@ -2298,7 +2301,8 @@ button.tl-photo-cell {
   }
 
   .works-list-open-tags {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
     white-space: normal;
   }
 

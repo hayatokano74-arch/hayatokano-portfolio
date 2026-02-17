@@ -212,7 +212,7 @@ function WorksList<T extends WorkLike>({
             <summary className="works-list-summary">
               <div className="works-list-summary-date" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.date}</div>
               <div className="works-list-summary-title" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.title}</div>
-              <div className="works-list-summary-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 600, display: "flex", gap: "var(--space-4)" }}>
+              <div className="works-list-summary-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 600 }}>
                 {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
               </div>
               <div className="works-list-summary-thumb">
@@ -235,7 +235,7 @@ function WorksList<T extends WorkLike>({
             <div className="works-list-detail">
               <div className="works-list-spacer" />
               <div className="works-list-body">
-                <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)", display: "flex", gap: "var(--space-4)" }}>
+                <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)" }}>
                   {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
                 </div>
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
