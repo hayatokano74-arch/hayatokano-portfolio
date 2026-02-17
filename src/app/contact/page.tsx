@@ -36,15 +36,7 @@ export default function ContactPage() {
             <div className="hrline" />
             {links.map((item) => (
               <div key={item.label}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "112px minmax(0, 1fr)",
-                    columnGap: "var(--space-6)",
-                    paddingTop: "var(--space-3)",
-                    paddingBottom: "var(--space-3)",
-                  }}
-                >
+                <div className="contact-info-row">
                   <div
                     style={{
                       fontSize: "var(--font-meta)",

@@ -138,12 +138,12 @@ export function WorkDetailClient({ work }: { work: Work }) {
       }}
     >
       {/* トップバー: 12カラムグリッドで配置 */}
-      <div className="work-detail-top" style={{ marginBottom: "var(--space-7)", display: "grid", gridTemplateColumns: "repeat(12, 1fr)", columnGap: "var(--grid-gutter)", alignItems: "center" }}>
+      <div className="work-detail-top" style={{ marginBottom: "var(--space-7)" }}>
         <div style={{ gridColumn: "1 / span 4", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, minWidth: 0 }}>
           <Link
             href="/works"
             className="action-link action-link-muted"
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, lineHeight: 1 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "var(--space-2)", lineHeight: 1 }}
           >
             <span
               aria-hidden="true"
@@ -268,7 +268,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
       </div>
 
       {/* ボトムバー: 12カラムグリッドで配置 */}
-      <div className="work-detail-bottom" style={{ paddingTop: "var(--space-6)", display: "grid", gridTemplateColumns: "repeat(12, 1fr)", columnGap: "var(--grid-gutter)", alignItems: "end" }}>
+      <div className="work-detail-bottom" style={{ paddingTop: "var(--space-6)" }}>
         <div style={{ gridColumn: "1 / span 11", display: "flex", flexDirection: "column", gap: "var(--space-2)", alignItems: "flex-start", minWidth: 0 }}>
         <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
           {work.title} | {work.year}
@@ -309,7 +309,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
               background: "transparent",
               display: "inline-flex",
               alignItems: "center",
-              gap: 8,
+              gap: "var(--space-2)",
             }}
             onClick={() => setDetailOpen(true)}
           >
@@ -374,18 +374,13 @@ function IndexGrid({ work, current, onSelect }: { work: Work; current: number; o
 
   return (
     <div
+      className="index-grid hide-scrollbar"
       style={{
-        width: "min(100%, 1240px)",
-        margin: "0 auto",
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(min(240px, 100%), 1fr))",
         gap: "var(--space-6)",
         height: "100%",
         overflowY: "auto",
         paddingBottom: "var(--space-6)",
-        alignContent: "start",
       }}
-      className="hide-scrollbar"
     >
       {thumbs.map((image, idx) => {
         const n = idx + 1;

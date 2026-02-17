@@ -21,11 +21,11 @@ export default async function ReadingMode({
   return (
     <CanvasShell>
       <div className="text-detail-layout flex items-start justify-between" style={{ gap: "var(--space-8)", marginTop: "var(--space-7)" }}>
-        <div className="text-detail-rail" style={{ width: 280, fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
+        <div className="text-detail-rail" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
           <Link
             href={`/text/${post.slug}`}
             className="action-link action-link-muted"
-            style={{ display: "inline-flex", alignItems: "center", gap: 4, lineHeight: 1 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "var(--space-1)", lineHeight: 1 }}
           >
             <span
               aria-hidden="true"
@@ -39,7 +39,7 @@ export default async function ReadingMode({
           </Link>
         </div>
 
-        <div className="text-detail-main" style={{ width: "min(100%, 640px)", marginLeft: "auto", marginRight: "auto" }}>
+        <div className="text-detail-main">
           <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-5)", textAlign: "left" }}>{post.title}</div>
           {post.sections?.length ? (
             <div>

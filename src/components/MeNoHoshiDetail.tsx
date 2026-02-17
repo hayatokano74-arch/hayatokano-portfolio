@@ -41,15 +41,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           {tableRows.map((row) => (
             <div
               key={row.key}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "112px minmax(0,1fr)",
-                alignItems: "baseline",
-                borderBottom: "1px solid var(--line-light)",
-                gap: "var(--space-2)",
-                paddingTop: "var(--space-2)",
-                paddingBottom: "var(--space-2)",
-              }}
+              className="work-details-row"
             >
               <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>{row.label}</div>
               <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>{row.value}</div>
@@ -87,7 +79,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
         {post.showKeyVisuals && (
           <div className="me-no-hoshi-section is-first">
             <div className="me-no-hoshi-section-label">KEY VISUAL</div>
-            <div style={{ marginTop: "var(--space-3)", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: "var(--space-4)" }}>
+            <div className="single-col-grid" style={{ marginTop: "var(--space-3)", gap: "var(--space-4)" }}>
               {keyVisuals.map((visual, idx) => (
                 <article key={visual.id}>
                   <div

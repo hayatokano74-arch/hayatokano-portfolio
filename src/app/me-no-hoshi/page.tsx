@@ -79,14 +79,7 @@ function MeNoHoshiListDetails({ post }: { post: MeNoHoshiPost }) {
         {rows.map((row) => (
           <div
             key={row.key}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "112px minmax(0,1fr)",
-              borderBottom: "1px solid var(--line-light)",
-              gap: "var(--space-2)",
-              paddingTop: "var(--space-2)",
-              paddingBottom: "var(--space-2)",
-            }}
+            className="work-details-row"
           >
             <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>{row.label}</div>
             <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>{row.value}</div>

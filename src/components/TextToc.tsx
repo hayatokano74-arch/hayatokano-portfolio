@@ -43,7 +43,7 @@ export function TextToc({ toc }: { toc: { id: string; label: string }[] }) {
             lineHeight: "var(--lh-relaxed)",
             fontWeight: 400,
             display: "flex",
-            gap: 8,
+            gap: "var(--space-2)",
             alignItems: "baseline",
             marginBottom: 0,
           }}

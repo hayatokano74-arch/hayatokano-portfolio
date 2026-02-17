@@ -73,13 +73,9 @@ export function NewsView({ items }: { items: NewsItem[] }) {
                   sizes="(max-width: 900px) 100vw, 520px"
                   placeholder="blur"
                   blurDataURL={blurDataURL(item.image.width, item.image.height)}
+                  className="list-media-img"
                   style={{
-                    width: "100%",
-                    maxWidth: 520,
                     aspectRatio: `${item.image.width} / ${item.image.height}`,
-                    objectFit: "cover",
-                    marginLeft: "auto",
-                    display: "block",
                   }}
                 />
               ) : null}

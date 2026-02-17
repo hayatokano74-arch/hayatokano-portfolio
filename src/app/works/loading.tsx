@@ -19,9 +19,8 @@ export default function WorksLoading() {
         }}
       />
       <div
+        className="works-grid"
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
           gap: "var(--space-5)",
         }}
       >

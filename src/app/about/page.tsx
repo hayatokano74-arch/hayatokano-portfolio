@@ -46,15 +46,7 @@ export default async function AboutPage() {
               </div>
             ) : (
               <div key={i}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "56px minmax(0, 1fr)",
-                    columnGap: "var(--space-6)",
-                    paddingTop: "var(--space-2)",
-                    paddingBottom: "var(--space-2)",
-                  }}
-                >
+                <div className="cv-detail-row">
                   <div
                     style={{
                       fontSize: "var(--font-body)",

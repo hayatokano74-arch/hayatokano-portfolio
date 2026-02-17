@@ -110,14 +110,11 @@ function GridDetails({ details }: { details: unknown }) {
 }
 
 function WorksGrid<T extends WorkLike>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
-  const gridTemplateColumns = "repeat(auto-fill, minmax(190px, 420px))";
-
   return (
     <div style={{ position: "relative", paddingBottom: "var(--space-14)" }}>
       <div
         className="works-grid"
         style={{
-          gridTemplateColumns,
           gap: "var(--space-7)",
           alignItems: "start",
         }}
@@ -259,18 +256,13 @@ function WorksList<T extends WorkLike>({
                       width={lead?.width ?? 1280}
                       height={lead?.height ?? 720}
                       loading="lazy"
+                      className="list-media-img"
                       style={{
-                        width: "100%",
-                        maxWidth: 520,
                         aspectRatio: `${lead?.width ?? 1280} / ${lead?.height ?? 720}`,
-                        objectFit: "cover",
-                        marginLeft: "auto",
-                        display: "block",
-                        background: "var(--media-bg)",
                       }}
                     />
                   ) : (
-                    <div style={{ width: "100%", maxWidth: 520, aspectRatio: "16 / 10", background: "var(--media-bg)", marginLeft: "auto" }} />
+                    <div className="list-media-img" style={{ aspectRatio: "16 / 10" }} />
                   )}
                 </Link>
               </div>

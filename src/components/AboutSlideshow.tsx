@@ -63,7 +63,7 @@ export function AboutSlideshow({ photos }: { photos: Photo[] }) {
       <div
         style={{
           display: "flex",
-          gap: 8,
+          gap: "var(--space-2)",
           marginTop: "var(--space-2)",
           flexShrink: 0,
         }}

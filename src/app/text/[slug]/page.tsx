@@ -43,7 +43,7 @@ export default async function TextDetail({
           <Link
             href={`/text/${post.slug}/reading`}
             className="action-link"
-            style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8 }}
+            style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "var(--space-2)" }}
           >
             <span>Reading</span>
             <span aria-hidden="true" style={{ fontSize: "0.95em" }}>↗</span>

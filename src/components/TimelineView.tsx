@@ -448,7 +448,7 @@ function ArchiveSidebar({
                 ...btnStyle,
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
+                gap: "var(--space-2)",
                 fontSize: "var(--font-body)",
                 lineHeight: "var(--lh-normal)",
                 fontWeight: 700,
@@ -464,14 +464,14 @@ function ArchiveSidebar({
 
             {/* 月一覧 */}
             {yearOpen ? (
-              <div style={{ paddingLeft: 16, marginTop: "var(--space-1)" }}>
+              <div style={{ paddingLeft: "var(--space-3)", marginTop: "var(--space-1)" }}>
                 {yearNode.months.map((monthNode) => {
                   const monthOpen = openKeys.has(monthNode.key);
                   const isMonthActive = activeMonth === monthNode.key;
                   return (
                     <div key={monthNode.key} style={{ marginBottom: "var(--space-1)" }}>
                       {/* 月ラベル: ▶ はトグル、月名はフィルタリンク */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>
                         <button
                           type="button"
                           onClick={() => toggle(monthNode.key)}
@@ -498,7 +498,7 @@ function ArchiveSidebar({
 
                       {/* 日付一覧: クリックでその日の投稿だけ表示 */}
                       {monthOpen ? (
-                        <div style={{ paddingLeft: 16, marginTop: 0, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <div style={{ paddingLeft: "var(--space-3)", marginTop: 0, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                           {monthNode.dates.map((d) => {
                             const isDateActive = activeDate === d;
                             return (
@@ -623,7 +623,7 @@ function MobileArchiveDrawer({
                   ...btnStyle,
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
+                  gap: "var(--space-2)",
                   fontSize: "var(--font-body)",
                   lineHeight: "var(--lh-normal)",
                   fontWeight: 700,
@@ -638,13 +638,13 @@ function MobileArchiveDrawer({
               </button>
 
               {yearOpen ? (
-                <div style={{ paddingLeft: 16, marginTop: "var(--space-1)" }}>
+                <div style={{ paddingLeft: "var(--space-3)", marginTop: "var(--space-1)" }}>
                   {yearNode.months.map((monthNode) => {
                     const monthOpen = openKeys.has(monthNode.key);
                     const isMonthActive = activeMonth === monthNode.key;
                     return (
                       <div key={monthNode.key} style={{ marginBottom: "var(--space-1)" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>
                           <button
                             type="button"
                             onClick={() => toggle(monthNode.key)}
@@ -671,7 +671,7 @@ function MobileArchiveDrawer({
                         </div>
 
                         {monthOpen ? (
-                          <div style={{ paddingLeft: 16, marginTop: 0 }}>
+                          <div style={{ paddingLeft: "var(--space-3)", marginTop: 0 }}>
                             {monthNode.dates.map((d) => {
                               const isDateActive = activeDate === d;
                               return (
