@@ -4,10 +4,13 @@ import type { ReactNode } from "react";
 import type { Work } from "@/lib/mock";
 import { blurDataURL } from "@/lib/blur";
 
+/** WorksClient が受け取れる最小型（details を柔軟に） */
+type WorkLike = Omit<Work, "details"> & { details: unknown };
+
 /** リスト表示のExcerpt最大文字数（デフォルト: 200） */
 const DEFAULT_EXCERPT_MAX_LENGTH = 200;
 
-export function WorksClient<T extends Work>({
+export function WorksClient<T extends WorkLike>({
   works,
   view,
   basePath = "/works",
@@ -59,30 +62,40 @@ function ThumbRect({ src, alt }: { src?: string; alt?: string }) {
 }
 
 /* グリッド用 DETAILS（投稿ごとに値があるフィールドだけ表示） */
-function GridDetails({ details }: { details: Work["details"] }) {
-  const rows = [
-    { label: "ARTIST", value: details.artist },
-    { label: "PERIOD", value: details.period },
-    { label: "VENUE", value: details.venue },
-    { label: "ADDRESS", value: details.address },
-    { label: "ACCESS", value: details.access },
-    { label: "HOURS", value: details.hours },
-    { label: "CLOSED", value: details.closed },
-    { label: "ADMISSION", value: details.admission },
-    { label: "ORGANIZER", value: details.organizer },
-    { label: "CURATOR", value: details.curator },
-    { label: "MEDIUM", value: details.medium },
-    { label: "DIMENSIONS", value: details.dimensions },
-    { label: "EDITION", value: details.edition },
-    { label: "SERIES", value: details.series },
-    { label: "PUBLISHER", value: details.publisher },
-    { label: "PAGES", value: details.pages },
-    { label: "BINDING", value: details.binding },
-    { label: "PRICE", value: details.price },
-    { label: "PHOTO", value: details.credit_photo },
-    { label: "DESIGN", value: details.credit_design },
-    { label: "COOPERATION", value: details.credit_cooperation },
-  ].filter((r) => r.value);
+function GridDetails({ details }: { details: unknown }) {
+  let rows: { label: string; value: string | undefined }[];
+
+  /* 配列形式（MeNoHoshi）: そのまま使う */
+  if (Array.isArray(details)) {
+    rows = (details as { label: string; value: string }[]).map((d) => ({ label: d.label, value: d.value }));
+  } else {
+    /* オブジェクト形式（Works）: 既存ロジック */
+    const d = details as Work["details"];
+    rows = [
+      { label: "ARTIST", value: d.artist },
+      { label: "PERIOD", value: d.period },
+      { label: "VENUE", value: d.venue },
+      { label: "ADDRESS", value: d.address },
+      { label: "ACCESS", value: d.access },
+      { label: "HOURS", value: d.hours },
+      { label: "CLOSED", value: d.closed },
+      { label: "ADMISSION", value: d.admission },
+      { label: "ORGANIZER", value: d.organizer },
+      { label: "CURATOR", value: d.curator },
+      { label: "MEDIUM", value: d.medium },
+      { label: "DIMENSIONS", value: d.dimensions },
+      { label: "EDITION", value: d.edition },
+      { label: "SERIES", value: d.series },
+      { label: "PUBLISHER", value: d.publisher },
+      { label: "PAGES", value: d.pages },
+      { label: "BINDING", value: d.binding },
+      { label: "PRICE", value: d.price },
+      { label: "PHOTO", value: d.credit_photo },
+      { label: "DESIGN", value: d.credit_design },
+      { label: "COOPERATION", value: d.credit_cooperation },
+    ];
+  }
+  rows = rows.filter((r) => r.value);
   if (rows.length === 0) return null;
   return (
     <div className="work-grid-details">
@@ -96,7 +109,7 @@ function GridDetails({ details }: { details: Work["details"] }) {
   );
 }
 
-function WorksGrid<T extends Work>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
+function WorksGrid<T extends WorkLike>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
   const count = works.length;
   const maxCols = Math.min(count || 1, 8);
 
@@ -168,7 +181,7 @@ function truncateText(text: string, maxLength: number): string {
   return plain.slice(0, maxLength) + "...";
 }
 
-function WorksList<T extends Work>({
+function WorksList<T extends WorkLike>({
   works,
   detailHref,
   renderListDetail,

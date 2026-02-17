@@ -5,18 +5,13 @@ import { fetchWpApi } from "@/lib/wp/client";
 /* モジュールレベルに RegExp を巻き上げ（js-hoist-regexp） */
 const RE_UNICODE_TEST = /u[0-9a-fA-F]{4}/;
 const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
-const RE_HTML_TAGS = /<[^>]*>/g;
+const RE_HTML_TAG = /<[a-z][\s\S]*?>/i;
 
-type MeNoHoshiDetails = {
-  artist: string;
-  period: string;
-  venue: string;
-  hours: string;
-  closed: string;
-  admission: string;
-  address: string;
-  access: string;
-  bio?: string;
+/** DETAILS の1項目（順序付き） */
+type MeNoHoshiDetailItem = {
+  key: string;
+  label: string;
+  value: string;
 };
 
 type MeNoHoshiArchiveWork = {
@@ -51,7 +46,8 @@ export type MeNoHoshiPost = {
   year: string;
   excerpt: string;
   media: Work["media"];
-  details: MeNoHoshiDetails;
+  details: MeNoHoshiDetailItem[];
+  bio: string;
   statement: string;
   notice: string;
   keyVisuals: MeNoHoshiKeyVisual[];
@@ -70,7 +66,8 @@ type WpMeNoHoshiResponse = {
   tags?: string[];
   excerpt?: string;
   media?: Work["media"];
-  details?: Partial<MeNoHoshiDetails>;
+  details?: { key?: string; label?: string; value?: string }[] | Record<string, string>;
+  bio?: string;
   statement?: string;
   notice?: string;
   keyVisuals?: {
@@ -148,9 +145,46 @@ function normalizeWorkList(items: WpMeNoHoshiResponse["archiveWorks"], slug: str
     .filter((item): item is MeNoHoshiArchiveWork => Boolean(item));
 }
 
-/** HTMLタグを除去してプレーンテキストにする */
-function stripHtml(html: string): string {
-  return html.replace(RE_HTML_TAGS, "").trim();
+/** HTMLタグがなければ改行をbrに変換、HTMLがあればそのまま返す */
+function ensureHtml(text: string): string {
+  if (!text) return "";
+  if (RE_HTML_TAG.test(text)) return text;
+  return text.replace(/\n/g, "<br />");
+}
+
+/** DETAILS配列の正規化（新形式: 配列 / 旧形式: オブジェクト 両対応） */
+function normalizeDetails(raw: WpMeNoHoshiResponse["details"]): MeNoHoshiDetailItem[] {
+  const defaultOrder = ["artist", "period", "open_date", "hours", "closed", "admission", "venue", "address", "access"];
+  const labels: Record<string, string> = {
+    artist: "ARTIST", period: "PERIOD", open_date: "OPEN DATE",
+    hours: "HOURS", closed: "CLOSED", admission: "ADMISSION",
+    venue: "VENUE", address: "ADDRESS", access: "ACCESS",
+  };
+
+  /* 新形式: 配列 */
+  if (Array.isArray(raw)) {
+    return raw
+      .filter((item): item is { key: string; label: string; value: string } =>
+        typeof item === "object" && item !== null && typeof item.key === "string",
+      )
+      .map((item) => ({
+        key: item.key,
+        label: item.label || labels[item.key] || item.key.toUpperCase(),
+        value: String(item.value ?? "").trim(),
+      }));
+  }
+
+  /* 旧形式: オブジェクト（後方互換） */
+  if (typeof raw === "object" && raw !== null) {
+    const obj = raw as Record<string, string>;
+    return defaultOrder.map((key) => ({
+      key,
+      label: labels[key] || key.toUpperCase(),
+      value: String(obj[key] ?? "").trim(),
+    }));
+  }
+
+  return [];
 }
 
 /**
@@ -185,10 +219,17 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     .map((item) => ({ ...item, src: fixBrokenUnicodeUrl(item.src), ...(item.poster ? { poster: fixBrokenUnicodeUrl(item.poster) } : {}) }));
   if (media.length === 0) return null;
 
-  const details = post.details ?? {};
+  const details = normalizeDetails(post.details);
   const keyVisuals = normalizeKeyVisualList(post.keyVisuals, slug);
   const pastWorks = normalizeWorkList(post.pastWorks, slug, "past");
   const archiveWorks = normalizeWorkList(post.archiveWorks, slug, "archive");
+
+  /* bio: 新形式(トップレベル) / 旧形式(details内) 両対応 */
+  const bioRaw = post.bio ?? (
+    typeof post.details === "object" && !Array.isArray(post.details)
+      ? (post.details as Record<string, string>).bio
+      : undefined
+  );
 
   return {
     slug,
@@ -199,18 +240,9 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     year: (post.year ?? "2025").trim(),
     excerpt: (post.excerpt ?? "").trim(),
     media,
-    details: {
-      artist: (details.artist ?? "").trim(),
-      period: (details.period ?? "").trim(),
-      venue: (details.venue ?? "").trim(),
-      hours: (details.hours ?? "").trim(),
-      closed: (details.closed ?? "").trim(),
-      admission: (details.admission ?? "").trim(),
-      address: (details.address ?? "").trim(),
-      access: (details.access ?? "").trim(),
-      bio: (details.bio ?? "").trim(),
-    },
-    statement: stripHtml(post.statement ?? ""),
+    details,
+    bio: ensureHtml(String(bioRaw ?? "").trim()),
+    statement: ensureHtml((post.statement ?? "").trim()),
     notice: (post.notice ?? "").trim(),
     keyVisuals,
     heroCaption: (post.heroCaption ?? "").trim(),
@@ -265,17 +297,17 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
         height: 1200,
       },
     ],
-    details: {
-      artist: "架空 太郎",
-      period: "2024.05.01–2024.05.19",
-      venue: "目の星（石巻）",
-      hours: "12:00–18:00",
-      closed: "Tue",
-      admission: "Free",
-      address: "宮城県石巻市（住所は仮）",
-      access: "JR石巻駅から徒歩10分（仮）",
-      bio: "北海道札幌市生まれ。写真を軸に、風景と生活の関係を主題に制作。近年は展示空間と写真の距離感を含めた構成にも取り組む。",
-    },
+    details: [
+      { key: "artist", label: "ARTIST", value: "架空 太郎" },
+      { key: "period", label: "PERIOD", value: "2024.05.01–2024.05.19" },
+      { key: "hours", label: "HOURS", value: "12:00–18:00" },
+      { key: "closed", label: "CLOSED", value: "Tue" },
+      { key: "admission", label: "ADMISSION", value: "Free" },
+      { key: "venue", label: "VENUE", value: "目の星（石巻）" },
+      { key: "address", label: "ADDRESS", value: "宮城県石巻市（住所は仮）" },
+      { key: "access", label: "ACCESS", value: "JR石巻駅から徒歩10分（仮）" },
+    ],
+    bio: "北海道札幌市生まれ。写真を軸に、風景と生活の関係を主題に制作。近年は展示空間と写真の距離感を含めた構成にも取り組む。",
     statement:
       "本展は、居住と記憶の境界をめぐる写真展。展示は小さな空間の中で、光と距離に応答しながら構成された。",
     notice: "※展示情報は変更となる場合があります。最新情報はこのページをご確認ください。",
@@ -368,17 +400,17 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
         height: 1600,
       },
     ],
-    details: {
-      artist: "架空 花",
-      period: "2024.09.14–2024.10.20",
-      venue: "目の星（石巻）",
-      hours: "11:00–19:00",
-      closed: "Mon",
-      admission: "Free",
-      address: "宮城県石巻市（住所は仮）",
-      access: "JR石巻駅から徒歩12分（仮）",
-      bio: "宮城県石巻市出身。光の変化にともなう風景の輪郭を主題に、写真と文章を往復しながら制作を行う。",
-    },
+    details: [
+      { key: "artist", label: "ARTIST", value: "架空 花" },
+      { key: "period", label: "PERIOD", value: "2024.09.14–2024.10.20" },
+      { key: "hours", label: "HOURS", value: "11:00–19:00" },
+      { key: "closed", label: "CLOSED", value: "Mon" },
+      { key: "admission", label: "ADMISSION", value: "Free" },
+      { key: "venue", label: "VENUE", value: "目の星（石巻）" },
+      { key: "address", label: "ADDRESS", value: "宮城県石巻市（住所は仮）" },
+      { key: "access", label: "ACCESS", value: "JR石巻駅から徒歩12分（仮）" },
+    ],
+    bio: "宮城県石巻市出身。光の変化にともなう風景の輪郭を主題に、写真と文章を往復しながら制作を行う。",
     statement: "日常の明暗差と記憶の輪郭を、複数のシリーズで再編集した展示。",
     notice: "※詳細は更新される場合があります。",
     keyVisuals: [

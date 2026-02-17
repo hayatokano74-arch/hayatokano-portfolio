@@ -19,16 +19,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             caption: "",
           },
         ];
-  const tableRows: Array<{ label: string; value: string }> = [
-    { label: "ARTIST", value: post.details.artist },
-    { label: "PERIOD", value: post.details.period },
-    { label: "VENUE", value: post.details.venue },
-    { label: "HOURS", value: post.details.hours },
-    { label: "CLOSED", value: post.details.closed },
-    { label: "ADMISSION", value: post.details.admission },
-    { label: "ADDRESS", value: post.details.address },
-    { label: "ACCESS", value: post.details.access },
-  ];
+  /* 空フィールドを除外して表示 */
+  const tableRows = post.details.filter((row) => row.value);
 
   return (
     <section className="me-no-hoshi-detail" style={{ marginTop: "var(--space-10)" }}>
@@ -40,7 +32,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
         <div style={{ marginTop: "var(--space-2)", borderTop: "1px solid var(--line-light)" }}>
           {tableRows.map((row) => (
             <div
-              key={row.label}
+              key={row.key}
               style={{
                 display: "grid",
                 gridTemplateColumns: "112px minmax(0,1fr)",
@@ -56,7 +48,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           ))}
         </div>
 
-        {post.details.bio ? (
+        {post.bio ? (
           <div
             style={{
               marginTop: "var(--space-6)",
@@ -66,11 +58,19 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             }}
           >
             <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
-            <div style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)", maxWidth: 460 }}>{post.details.bio}</div>
+            <div
+              className="mnh-rich-text"
+              style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)", maxWidth: 460 }}
+              dangerouslySetInnerHTML={{ __html: post.bio }}
+            />
           </div>
         ) : null}
 
-        <div style={{ marginTop: post.details.bio ? "var(--space-6)" : "var(--space-8)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500, maxWidth: 460 }}>{post.statement}</div>
+        <div
+          className="mnh-rich-text"
+          style={{ marginTop: post.bio ? "var(--space-6)" : "var(--space-8)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500, maxWidth: 460 }}
+          dangerouslySetInnerHTML={{ __html: post.statement }}
+        />
         <div style={{ marginTop: "var(--space-5)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)", maxWidth: 460 }}>{post.notice}</div>
       </div>
 

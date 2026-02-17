@@ -69,16 +69,7 @@ export default async function MeNoHoshiPage({
 }
 
 function MeNoHoshiListDetails({ post }: { post: MeNoHoshiPost }) {
-  const rows = [
-    { label: "ARTIST", value: post.details.artist },
-    { label: "PERIOD", value: post.details.period },
-    { label: "VENUE", value: post.details.venue },
-    { label: "HOURS", value: post.details.hours },
-    { label: "CLOSED", value: post.details.closed },
-    { label: "ADMISSION", value: post.details.admission },
-    { label: "ADDRESS", value: post.details.address },
-    { label: "ACCESS", value: post.details.access },
-  ].filter((row) => row.value);
+  const rows = post.details.filter((row) => row.value);
 
   if (rows.length === 0) return null;
 
@@ -88,7 +79,7 @@ function MeNoHoshiListDetails({ post }: { post: MeNoHoshiPost }) {
       <div style={{ borderTop: "1px solid var(--line-light)" }}>
         {rows.map((row) => (
           <div
-            key={row.label}
+            key={row.key}
             style={{
               display: "grid",
               gridTemplateColumns: "112px minmax(0,1fr)",

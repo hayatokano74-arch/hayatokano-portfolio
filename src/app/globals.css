@@ -821,6 +821,36 @@ button {
   color: var(--muted);
 }
 
+/* ── 目の星 リッチテキスト ── */
+.mnh-rich-text p {
+  margin: 0 0 0.75em;
+}
+.mnh-rich-text p:last-child {
+  margin-bottom: 0;
+}
+.mnh-rich-text strong {
+  font-weight: 700;
+}
+.mnh-rich-text em {
+  font-style: italic;
+}
+.mnh-rich-text ul,
+.mnh-rich-text ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+.mnh-rich-text li {
+  margin-bottom: 0.25em;
+}
+.mnh-rich-text a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.mnh-rich-text a:hover {
+  opacity: 0.7;
+}
+
 /* ── モバイルアーカイブドロワー ── */
 .header-title-right {
   display: none;
