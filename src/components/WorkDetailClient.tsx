@@ -35,7 +35,6 @@ export function WorkDetailClient({ work }: { work: Work }) {
   const prevImage = img <= 1 ? total : img - 1;
   const nextImage = img >= total ? 1 : img + 1;
   const currentMedia = work.media[img - 1];
-  const galleryStageHeight = "min(100%, clamp(280px, 56dvh, 820px))";
 
   const goToImage = useCallback(
     (nextImg: number) => {
@@ -196,7 +195,6 @@ export function WorkDetailClient({ work }: { work: Work }) {
             <div
               className="work-detail-gallery-stage"
               style={{
-                maxHeight: galleryStageHeight,
                 zIndex: currentMedia?.type === "video" ? 3 : 0,
               }}
             >
@@ -210,28 +208,29 @@ export function WorkDetailClient({ work }: { work: Work }) {
                   style={{
                     width: "100%",
                     height: "auto",
-                    maxHeight: "100%",
                     display: "block",
                   }}
                 />
               ) : currentMedia?.src ? (
-                <div style={{ position: "relative", width: "100%", height: "100%" }}>
-                  <Image
-                    src={currentMedia.src}
-                    alt={currentMedia.alt}
-                    fill
-                    priority={img === 1}
-                    sizes="(max-width: 900px) 100vw, 66vw"
-                    placeholder="blur"
-                    blurDataURL={blurDataURL(currentMedia.width, currentMedia.height)}
-                    style={{
-                      objectFit: "contain",
-                      objectPosition: "center",
-                    }}
-                  />
-                </div>
+                <Image
+                  src={currentMedia.src}
+                  alt={currentMedia.alt}
+                  width={currentMedia.width}
+                  height={currentMedia.height}
+                  priority={img === 1}
+                  sizes="(max-width: 900px) 100vw, 66vw"
+                  placeholder="blur"
+                  blurDataURL={blurDataURL(currentMedia.width, currentMedia.height)}
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: "min(72vh, 820px)",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                />
               ) : (
-                <div style={{ width: "100%", height: "100%", border: "1px solid var(--line)" }} />
+                <div style={{ aspectRatio: "16 / 9", width: "100%", border: "1px solid var(--line)" }} />
               )}
             </div>
           </>
