@@ -72,7 +72,11 @@ function GridDetails({ details }: { details: unknown }) {
     /* オブジェクト形式（Works）: 既存ロジック */
     const d = details as Work["details"];
     rows = [
+      /* 展示情報 */
+      { label: "TYPE", value: d.exhibition_type },
+      { label: "EXHIBITION", value: d.exhibition_title },
       { label: "ARTIST", value: d.artist },
+      { label: "ARTISTS", value: d.artists },
       { label: "PERIOD", value: d.period },
       { label: "VENUE", value: d.venue },
       { label: "ADDRESS", value: d.address },
@@ -82,17 +86,29 @@ function GridDetails({ details }: { details: unknown }) {
       { label: "ADMISSION", value: d.admission },
       { label: "ORGANIZER", value: d.organizer },
       { label: "CURATOR", value: d.curator },
+      { label: "SUPPORTED BY", value: d.supported_by },
+      { label: "WEBSITE", value: d.url },
+      /* 作品情報 */
       { label: "MEDIUM", value: d.medium },
       { label: "DIMENSIONS", value: d.dimensions },
       { label: "EDITION", value: d.edition },
       { label: "SERIES", value: d.series },
+      /* 出版情報 */
       { label: "PUBLISHER", value: d.publisher },
       { label: "PAGES", value: d.pages },
       { label: "BINDING", value: d.binding },
       { label: "PRICE", value: d.price },
+      /* クレジット */
       { label: "PHOTO", value: d.credit_photo },
       { label: "DESIGN", value: d.credit_design },
+      { label: "TEXT", value: d.credit_text },
+      { label: "SOUND", value: d.credit_sound },
+      { label: "VIDEO", value: d.credit_video },
+      { label: "TRANSLATION", value: d.credit_translation },
       { label: "COOPERATION", value: d.credit_cooperation },
+      /* 実績 */
+      { label: "AWARD", value: d.award },
+      { label: "COLLECTION", value: d.collection },
     ];
   }
   rows = rows.filter((r) => r.value);
