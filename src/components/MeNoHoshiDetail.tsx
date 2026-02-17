@@ -36,6 +36,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
               style={{
                 display: "grid",
                 gridTemplateColumns: "112px minmax(0,1fr)",
+                alignItems: "baseline",
                 borderBottom: "1px solid var(--line-light)",
                 gap: "var(--space-2)",
                 paddingTop: "var(--space-2)",
