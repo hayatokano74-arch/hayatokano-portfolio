@@ -167,9 +167,10 @@ export function TestGalleryClient({
             <Image
               src={item.type === "video" ? (item.poster ?? "") : item.src}
               alt={item.alt}
-              width={120}
-              height={80}
-              loading={idx < 6 ? "eager" : "lazy"}
+              width={80}
+              height={54}
+              loading={idx < 8 ? "eager" : "lazy"}
+              sizes="80px"
               style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
             />
           </button>
