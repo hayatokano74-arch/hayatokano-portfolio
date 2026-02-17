@@ -51,7 +51,7 @@ export default function RootLayout({
           メインコンテンツへ
         </a>
         {children}
-        {process.env.NODE_ENV === "development" && <GridDebugOverlay />}
+        <GridDebugOverlay />
       </body>
     </html>
   );

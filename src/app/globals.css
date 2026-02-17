@@ -265,9 +265,13 @@ button {
   width: 100%;
   max-width: 520px;
   object-fit: cover;
-  margin-left: auto;
   display: block;
   background: var(--media-bg);
+}
+
+/* News 用: メディアセル内で右寄せ（Works はグリッドカラムで配置） */
+.news-accord-media .list-media-img {
+  margin-left: auto;
 }
 
 .underline-active {
@@ -438,21 +442,16 @@ button {
   display: none;
 }
 
-/* デスクトップ: open 時のみタグ表示（写真と同じラッパー内） */
+/* デスクトップ: open 時のみタグ表示（detail グリッドの直接子） */
 .works-list-open-tags {
   display: none;
+  grid-column: 8 / -1;
   gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .works-row[open] .works-list-open-tags {
   display: flex;
-}
-
-/* 写真とタグを同じ左端に揃えるラッパー */
-.works-list-media-inner {
-  margin-left: auto;
-  max-width: 520px;
-  width: 100%;
 }
 
 /* ── ヘッダー: Exhibition Catalog スタイル ── */
@@ -2378,6 +2377,7 @@ button.tl-photo-cell {
   }
 
   .works-list-open-tags {
+    grid-column: 1 !important;
     display: flex;
     flex-wrap: wrap;
     white-space: normal;
@@ -2410,11 +2410,6 @@ button.tl-photo-cell {
   .works-list-media.is-portrait {
     justify-self: end;
     width: min(72vw, 248px);
-  }
-
-  .works-list-media-inner {
-    margin-left: 0 !important;
-    max-width: 100% !important;
   }
 
   .works-list-media img,

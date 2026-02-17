@@ -244,29 +244,28 @@ function WorksList<T extends WorkLike>({
                   </Link>
                 </div>
               </div>
+              {/* タグ: 写真と同じカラム線に配置 */}
+              <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
+                {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
+              </div>
               <div className={`works-list-media ${isPortraitLead ? "is-portrait" : ""}`.trim()}>
-                <div className="works-list-media-inner">
-                  <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)" }}>
-                    {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
-                  </div>
-                  <Link href={detailHref(w.slug)} className="action-link" style={{ display: "block" }}>
-                    {thumbSrc ? (
-                      <Image
-                        src={thumbSrc}
-                        alt={thumbAlt ?? ""}
-                        width={lead?.width ?? 1280}
-                        height={lead?.height ?? 720}
-                        loading="lazy"
-                        className="list-media-img"
-                        style={{
-                          aspectRatio: `${lead?.width ?? 1280} / ${lead?.height ?? 720}`,
-                        }}
-                      />
-                    ) : (
-                      <div className="list-media-img" style={{ aspectRatio: "16 / 10" }} />
-                    )}
-                  </Link>
-                </div>
+                <Link href={detailHref(w.slug)} className="action-link" style={{ display: "block" }}>
+                  {thumbSrc ? (
+                    <Image
+                      src={thumbSrc}
+                      alt={thumbAlt ?? ""}
+                      width={lead?.width ?? 1280}
+                      height={lead?.height ?? 720}
+                      loading="lazy"
+                      className="list-media-img"
+                      style={{
+                        aspectRatio: `${lead?.width ?? 1280} / ${lead?.height ?? 720}`,
+                      }}
+                    />
+                  ) : (
+                    <div className="list-media-img" style={{ aspectRatio: "16 / 10" }} />
+                  )}
+                </Link>
               </div>
             </div>
           </details>
