@@ -9,6 +9,21 @@ import { works, type Work } from "@/lib/mock";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 import { blurDataURL } from "@/lib/blur";
 
+/** YouTube / Vimeo の URL を埋め込み用に変換。該当しなければ null */
+function getEmbedUrl(src: string): string | null {
+  /* YouTube: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID */
+  const ytMatch = src.match(
+    /(?:youtube\.com\/(?:watch\?.*v=|embed\/)|youtu\.be\/)([\w-]{11})/,
+  );
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`;
+
+  /* Vimeo: vimeo.com/ID */
+  const vmMatch = src.match(/vimeo\.com\/(\d+)/);
+  if (vmMatch) return `https://player.vimeo.com/video/${vmMatch[1]}`;
+
+  return null;
+}
+
 export function WorkDetailClient({ work }: { work: Work }) {
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -198,20 +213,39 @@ export function WorkDetailClient({ work }: { work: Work }) {
                 zIndex: currentMedia?.type === "video" ? 3 : 0,
               }}
             >
-              {currentMedia?.type === "video" ? (
-                <video
-                  src={currentMedia.src}
-                  poster={currentMedia.poster}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    display: "block",
-                  }}
-                />
-              ) : currentMedia?.src ? (
+              {currentMedia?.type === "video" ? (() => {
+                const embedUrl = getEmbedUrl(currentMedia.src);
+                return embedUrl ? (
+                  <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9" }}>
+                    <iframe
+                      src={embedUrl}
+                      title={currentMedia.alt || "video"}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        border: "none",
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <video
+                    src={currentMedia.src}
+                    poster={currentMedia.poster}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    style={{
+                      width: "100%",
+                      aspectRatio: "16 / 9",
+                      display: "block",
+                    }}
+                  />
+                );
+              })() : currentMedia?.src ? (
                 <Image
                   src={currentMedia.src}
                   alt={currentMedia.alt}
