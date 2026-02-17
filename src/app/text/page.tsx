@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = { title: "Text" };
 import { getTexts } from "@/lib/text";
-import { CATEGORY_MENU, parseCategory } from "@/lib/categories";
+import { buildCategoryMenu, parseCategory } from "@/lib/categories";
 
 export default async function TextListPage({
   searchParams,
@@ -27,10 +27,9 @@ export default async function TextListPage({
     );
   }
   /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
-  const existingTags = new Set(texts.flatMap((t) => t.categories));
-  const activeCategories = CATEGORY_MENU.filter((c) => c === "All" || existingTags.has(c as never));
+  const categoryMenu = buildCategoryMenu(texts.flatMap((t) => t.categories));
   const categoryHrefs = Object.fromEntries(
-    activeCategories.map((category) => {
+    categoryMenu.map((category) => {
       const params = new URLSearchParams();
       if (category !== "All") params.set("tag", category);
       const qs = params.toString();

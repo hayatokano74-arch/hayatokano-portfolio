@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { CATEGORY_MENU, type Category } from "@/lib/categories";
+import { type Category } from "@/lib/categories";
 import { NAV_ITEMS, type Section } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 
@@ -147,7 +147,7 @@ export function Header({
       {showCategoryRow ? (
         <div className="header-category-row">
           <div className="header-category-links" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
-            {CATEGORY_MENU.filter((item) => categoryHrefs?.[item]).map((item) => {
+            {Object.keys(categoryHrefs ?? {}).filter((item) => categoryHrefs?.[item]).map((item) => {
               const className = item === activeCategory ? "underline-active" : "";
               const style = { color: item === activeCategory ? "var(--fg)" : "var(--muted)" } as const;
               const href = categoryHrefs![item]!;

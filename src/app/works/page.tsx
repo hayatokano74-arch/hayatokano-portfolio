@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 export const metadata: Metadata = { title: "Works" };
 import { WorksClient } from "@/components/WorksClient";
 import { getWorks } from "@/lib/works";
-import { CATEGORY_MENU, parseCategory } from "@/lib/categories";
+import { buildCategoryMenu, parseCategory } from "@/lib/categories";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 
 export default async function WorksPage({
@@ -28,16 +28,15 @@ export default async function WorksPage({
     );
   }
   /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
-  const existingTags = new Set(works.flatMap((w) => w.tags));
-  const activeCategories = CATEGORY_MENU.filter((c) => c === "All" || existingTags.has(c as never));
+  const categoryMenu = buildCategoryMenu(works.flatMap((w) => w.tags));
   const categoryHrefs = Object.fromEntries(
-    activeCategories.map((category) => {
+    categoryMenu.map((category) => {
       const params = new URLSearchParams();
       params.set("view", view);
       if (category !== "All") params.set("tag", category);
       return [category, `/works?${params.toString()}`];
     }),
-  ) as Record<(typeof CATEGORY_MENU)[number], string>;
+  ) as Record<string, string>;
   const worksToggleParams = new URLSearchParams();
   if (activeCategory !== "All") worksToggleParams.set("tag", activeCategory);
   const worksGridHref = `/works?${new URLSearchParams({ ...Object.fromEntries(worksToggleParams), view: "grid" }).toString()}`;

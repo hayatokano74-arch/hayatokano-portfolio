@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { WorksClient } from "@/components/WorksClient";
 
 export const metadata: Metadata = { title: "目の星" };
-import { CATEGORY_MENU, parseCategory } from "@/lib/categories";
+import { buildCategoryMenu, parseCategory } from "@/lib/categories";
 import { getMeNoHoshiPosts, type MeNoHoshiPost } from "@/lib/meNoHoshi";
 
 export default async function MeNoHoshiPage({
@@ -27,16 +27,15 @@ export default async function MeNoHoshiPage({
     );
   }
   /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
-  const existingTags = new Set(posts.flatMap((p) => p.tags));
-  const activeCategories = CATEGORY_MENU.filter((c) => c === "All" || existingTags.has(c as never));
+  const categoryMenu = buildCategoryMenu(posts.flatMap((p) => p.tags));
   const categoryHrefs = Object.fromEntries(
-    activeCategories.map((category) => {
+    categoryMenu.map((category) => {
       const params = new URLSearchParams();
       params.set("view", view);
       if (category !== "All") params.set("tag", category);
       return [category, `/me-no-hoshi?${params.toString()}`];
     }),
-  ) as Record<(typeof CATEGORY_MENU)[number], string>;
+  ) as Record<string, string>;
   const toggleParams = new URLSearchParams();
   if (activeCategory !== "All") toggleParams.set("tag", activeCategory);
   const worksGridHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleParams), view: "grid" }).toString()}`;

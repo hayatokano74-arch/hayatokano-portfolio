@@ -1,9 +1,13 @@
-export const CATEGORY_MENU = ["All", "Photography", "Video", "Personal", "Portrait", "Exhibition"] as const;
+/** カテゴリ（タグ）は自由文字列。"All" は特別な全件表示用 */
+export type Category = string;
 
-export type Category = (typeof CATEGORY_MENU)[number];
-
-export function parseCategory(value?: string): Category {
-  if (!value) return "All";
-  return CATEGORY_MENU.includes(value as Category) ? (value as Category) : "All";
+/** 投稿のタグ一覧から動的にカテゴリメニューを生成（"All" を先頭に） */
+export function buildCategoryMenu(tags: string[]): string[] {
+  const unique = [...new Set(tags)];
+  return ["All", ...unique];
 }
 
+export function parseCategory(value?: string): string {
+  if (!value) return "All";
+  return value;
+}
