@@ -35,7 +35,6 @@ export function WorkDetailClient({ work }: { work: Work }) {
   const prevImage = img <= 1 ? total : img - 1;
   const nextImage = img >= total ? 1 : img + 1;
   const currentMedia = work.media[img - 1];
-  const galleryStageWidth = "min(100%, clamp(680px, 64vw, 1120px))";
   const galleryStageHeight = "min(100%, clamp(280px, 56dvh, 820px))";
 
   const goToImage = useCallback(
@@ -177,51 +176,27 @@ export function WorkDetailClient({ work }: { work: Work }) {
         </div>
       </div>
 
-      <div style={{ position: "relative", minHeight: 0, overflow: "hidden" }}>
+      <div className="work-detail-stage-grid">
         {mode === "gallery" ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+          <>
+            {/* 左半分クリック: 前の画像 */}
             <button
               type="button"
               aria-label="previous image area"
               onClick={() => goToImage(prevImage)}
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                width: "50%",
-                height: "100%",
-                cursor: "w-resize",
-                background: "transparent",
-                border: 0,
-                padding: 0,
-                zIndex: 1,
-              }}
+              className="work-detail-click-prev"
             />
+            {/* 右半分クリック: 次の画像 */}
             <button
               type="button"
               aria-label="next image area"
               onClick={() => goToImage(nextImage)}
-              style={{
-                position: "absolute",
-                right: 0,
-                top: 0,
-                width: "50%",
-                height: "100%",
-                cursor: "e-resize",
-                background: "transparent",
-                border: 0,
-                padding: 0,
-                zIndex: 1,
-              }}
+              className="work-detail-click-next"
             />
             <div
+              className="work-detail-gallery-stage"
               style={{
-                width: galleryStageWidth,
                 maxHeight: galleryStageHeight,
-                height: "100%",
-                position: "relative",
-                display: "grid",
-                placeItems: "center",
                 zIndex: currentMedia?.type === "video" ? 3 : 0,
               }}
             >
@@ -246,7 +221,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
                     alt={currentMedia.alt}
                     fill
                     priority={img === 1}
-                    sizes="(max-width: 900px) 100vw, min(64vw, 1120px)"
+                    sizes="(max-width: 900px) 100vw, 66vw"
                     placeholder="blur"
                     blurDataURL={blurDataURL(currentMedia.width, currentMedia.height)}
                     style={{
@@ -259,9 +234,9 @@ export function WorkDetailClient({ work }: { work: Work }) {
                 <div style={{ width: "100%", height: "100%", border: "1px solid var(--line)" }} />
               )}
             </div>
-          </div>
+          </>
         ) : (
-          <div style={{ height: "100%", overflow: "hidden" }}>
+          <div className="work-detail-index-stage">
             <IndexGrid work={work} current={img} onSelect={goToImage} />
           </div>
         )}
