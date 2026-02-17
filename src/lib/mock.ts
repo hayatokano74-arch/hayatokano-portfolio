@@ -8,17 +8,22 @@ export type Work = {
   year: string;
   excerpt: string;
   details: {
-    /* 展示情報 */
+    /* 展示情報（基本） */
+    exhibition_type?: string;   /* 個展 / グループ展 / 芸術祭 / アートフェア / 企画展 / 上映 等 */
+    exhibition_title?: string;  /* 展覧会名（グループ展等では作品タイトルと別） */
     artist: string;
     period: string;
     venue: string;
-    address: string;
-    access: string;
-    hours: string;
-    closed: string;
-    admission: string;
+    address?: string;
+    access?: string;
+    hours?: string;
+    closed?: string;
+    admission?: string;
     organizer?: string;
     curator?: string;
+    artists?: string;           /* 出展作家（グループ展の場合） */
+    supported_by?: string;      /* 主催・共催・後援・協賛・助成 */
+    url?: string;               /* 展覧会ウェブサイト */
     /* 作品情報 */
     medium?: string;
     dimensions?: string;
@@ -32,7 +37,14 @@ export type Work = {
     /* クレジット */
     credit_photo?: string;
     credit_design?: string;
+    credit_text?: string;       /* テキスト・文章 */
+    credit_sound?: string;      /* 音響（映像・インスタレーション） */
+    credit_video?: string;      /* 映像編集 */
+    credit_translation?: string; /* 翻訳 */
     credit_cooperation?: string;
+    /* 実績 */
+    award?: string;             /* 受賞 */
+    collection?: string;        /* 所蔵・収蔵（美術館等） */
     /* その他 */
     bio?: string;
   };

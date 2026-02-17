@@ -19,6 +19,8 @@ export type WpWorkResponse = {
     height?: number;
   };
   details?: {
+    exhibition_type?: string;
+    exhibition_title?: string;
     artist?: string;
     period?: string;
     venue?: string;
@@ -29,6 +31,9 @@ export type WpWorkResponse = {
     admission?: string;
     organizer?: string;
     curator?: string;
+    artists?: string;
+    supported_by?: string;
+    url?: string;
     medium?: string;
     dimensions?: string;
     edition?: string;
@@ -39,7 +44,13 @@ export type WpWorkResponse = {
     price?: string;
     credit_photo?: string;
     credit_design?: string;
+    credit_text?: string;
+    credit_sound?: string;
+    credit_video?: string;
+    credit_translation?: string;
     credit_cooperation?: string;
+    award?: string;
+    collection?: string;
     bio?: string;
   };
   media?: {
