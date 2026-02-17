@@ -27,6 +27,22 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
       <div className="me-no-hoshi-meta-column">
         <h1 style={{ margin: 0, fontSize: "var(--font-heading)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{post.title}</h1>
 
+        {post.announcement ? (
+          <div
+            className="mnh-announcement"
+            style={{
+              marginTop: "var(--space-5)",
+              padding: "var(--space-4)",
+              border: "1px solid var(--line-light)",
+              fontSize: "var(--font-body)",
+              lineHeight: "var(--lh-relaxed)",
+            }}
+          >
+            <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)", marginBottom: "var(--space-2)" }}>お知らせ</div>
+            <div className="mnh-rich-text" dangerouslySetInnerHTML={{ __html: post.announcement }} />
+          </div>
+        ) : null}
+
         <div style={{ marginTop: "var(--space-10)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", letterSpacing: "0.2em" }}>DETAILS</div>
 
         <div style={{ marginTop: "var(--space-2)", borderTop: "1px solid var(--line-light)" }}>
@@ -76,126 +92,132 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
       </div>
 
       <div className="me-no-hoshi-visual-column">
-        <div className="me-no-hoshi-section is-first">
-          <div className="me-no-hoshi-section-label">KEY VISUAL</div>
-          <div style={{ marginTop: "var(--space-3)", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: "var(--space-4)" }}>
-            {keyVisuals.map((visual, idx) => (
-              <article key={visual.id}>
-                <div
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    aspectRatio: `${visual.image.width} / ${visual.image.height}`,
-                    maxHeight: "min(72vh, 820px)",
-                    background: "var(--bg)",
-                    overflow: "hidden",
-                    display: "grid",
-                    placeItems: "center",
-                  }}
-                >
-                  <Image
-                    src={visual.image.src}
-                    alt={visual.image.alt}
-                    fill
-                    priority={idx === 0}
-                    sizes="(max-width: 900px) 100vw, 920px"
-                    placeholder="blur"
-                    blurDataURL={blurDataURL(visual.image.width, visual.image.height)}
-                    style={{ objectFit: "contain", objectPosition: "center" }}
-                  />
-                </div>
-                {visual.caption ? (
-                  <div style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{visual.caption}</div>
-                ) : null}
-              </article>
-            ))}
-          </div>
-          <div style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{post.heroCaption}</div>
-        </div>
-
-        <section className="me-no-hoshi-section">
-          <div className="me-no-hoshi-section-label">PAST WORKS</div>
-
-          <div
-            className="me-no-hoshi-past-grid"
-            style={{
-              marginTop: "var(--space-3)",
-              display: "grid",
-              gap: "var(--space-5)",
-            }}
-          >
-            {post.pastWorks.map((work) => (
-              <article key={work.id}>
-                <figure style={{ margin: 0 }}>
-                  <Image
-                    src={work.image.src}
-                    alt={work.image.alt}
-                    width={work.image.width}
-                    height={work.image.height}
-                    loading="lazy"
-                    sizes="(max-width: 900px) 100vw, 46vw"
-                    placeholder="blur"
-                    blurDataURL={blurDataURL(work.image.width, work.image.height)}
+        {post.showKeyVisuals && (
+          <div className="me-no-hoshi-section is-first">
+            <div className="me-no-hoshi-section-label">KEY VISUAL</div>
+            <div style={{ marginTop: "var(--space-3)", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: "var(--space-4)" }}>
+              {keyVisuals.map((visual, idx) => (
+                <article key={visual.id}>
+                  <div
                     style={{
-                      display: "block",
+                      position: "relative",
                       width: "100%",
-                      height: "auto",
+                      aspectRatio: `${visual.image.width} / ${visual.image.height}`,
                       maxHeight: "min(72vh, 820px)",
-                      objectFit: "contain",
-                      objectPosition: "left top",
+                      background: "var(--bg)",
+                      overflow: "hidden",
+                      display: "grid",
+                      placeItems: "center",
                     }}
-                  />
-                  <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
-                    {work.title}
-                    {work.year ? ` | ${work.year}` : ""}
-                  </figcaption>
-                </figure>
-              </article>
-            ))}
+                  >
+                    <Image
+                      src={visual.image.src}
+                      alt={visual.image.alt}
+                      fill
+                      priority={idx === 0}
+                      sizes="(max-width: 900px) 100vw, 920px"
+                      placeholder="blur"
+                      blurDataURL={blurDataURL(visual.image.width, visual.image.height)}
+                      style={{ objectFit: "contain", objectPosition: "center" }}
+                    />
+                  </div>
+                  {visual.caption ? (
+                    <div style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{visual.caption}</div>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+            <div style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{post.heroCaption}</div>
           </div>
-        </section>
+        )}
 
-        <section className="me-no-hoshi-section">
-          <div className="me-no-hoshi-section-label">ARCHIVE</div>
+        {post.showPastWorks && post.pastWorks.length > 0 && (
+          <section className="me-no-hoshi-section">
+            <div className="me-no-hoshi-section-label">PAST WORKS</div>
 
-          <div
-            className="me-no-hoshi-archive-grid"
-            style={{
-              marginTop: "var(--space-3)",
-              display: "grid",
-              gap: "var(--space-5)",
-            }}
-          >
-            {post.archiveWorks.map((work) => (
-              <article key={work.id}>
-                <figure style={{ margin: 0 }}>
-                  <Image
-                    src={work.image.src}
-                    alt={work.image.alt}
-                    width={work.image.width}
-                    height={work.image.height}
-                    loading="lazy"
-                    sizes="(max-width: 900px) 100vw, 920px"
-                    placeholder="blur"
-                    blurDataURL={blurDataURL(work.image.width, work.image.height)}
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      height: "auto",
-                      maxHeight: "min(72vh, 820px)",
-                      objectFit: "contain",
-                      objectPosition: "left top",
-                    }}
-                  />
-                  <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
-                    {work.title}
-                    {work.year ? ` | ${work.year}` : ""}
-                  </figcaption>
-                </figure>
-              </article>
-            ))}
-          </div>
-        </section>
+            <div
+              className="me-no-hoshi-past-grid"
+              style={{
+                marginTop: "var(--space-3)",
+                display: "grid",
+                gap: "var(--space-5)",
+              }}
+            >
+              {post.pastWorks.map((work) => (
+                <article key={work.id}>
+                  <figure style={{ margin: 0 }}>
+                    <Image
+                      src={work.image.src}
+                      alt={work.image.alt}
+                      width={work.image.width}
+                      height={work.image.height}
+                      loading="lazy"
+                      sizes="(max-width: 900px) 100vw, 46vw"
+                      placeholder="blur"
+                      blurDataURL={blurDataURL(work.image.width, work.image.height)}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        height: "auto",
+                        maxHeight: "min(72vh, 820px)",
+                        objectFit: "contain",
+                        objectPosition: "left top",
+                      }}
+                    />
+                    <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
+                      {work.title}
+                      {work.year ? ` | ${work.year}` : ""}
+                    </figcaption>
+                  </figure>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {post.showArchiveWorks && post.archiveWorks.length > 0 && (
+          <section className="me-no-hoshi-section">
+            <div className="me-no-hoshi-section-label">ARCHIVE</div>
+
+            <div
+              className="me-no-hoshi-archive-grid"
+              style={{
+                marginTop: "var(--space-3)",
+                display: "grid",
+                gap: "var(--space-5)",
+              }}
+            >
+              {post.archiveWorks.map((work) => (
+                <article key={work.id}>
+                  <figure style={{ margin: 0 }}>
+                    <Image
+                      src={work.image.src}
+                      alt={work.image.alt}
+                      width={work.image.width}
+                      height={work.image.height}
+                      loading="lazy"
+                      sizes="(max-width: 900px) 100vw, 920px"
+                      placeholder="blur"
+                      blurDataURL={blurDataURL(work.image.width, work.image.height)}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        height: "auto",
+                        maxHeight: "min(72vh, 820px)",
+                        objectFit: "contain",
+                        objectPosition: "left top",
+                      }}
+                    />
+                    <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
+                      {work.title}
+                      {work.year ? ` | ${work.year}` : ""}
+                    </figcaption>
+                  </figure>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </section>
   );

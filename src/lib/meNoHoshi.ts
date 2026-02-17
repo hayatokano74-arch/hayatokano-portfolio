@@ -48,6 +48,7 @@ export type MeNoHoshiPost = {
   media: Work["media"];
   details: MeNoHoshiDetailItem[];
   bio: string;
+  announcement: string;
   statement: string;
   notice: string;
   keyVisuals: MeNoHoshiKeyVisual[];
@@ -55,6 +56,9 @@ export type MeNoHoshiPost = {
   pastWorks: MeNoHoshiArchiveWork[];
   archiveNote: string;
   archiveWorks: MeNoHoshiArchiveWork[];
+  showKeyVisuals: boolean;
+  showPastWorks: boolean;
+  showArchiveWorks: boolean;
 };
 
 type WpMeNoHoshiResponse = {
@@ -68,8 +72,12 @@ type WpMeNoHoshiResponse = {
   media?: Work["media"];
   details?: { key?: string; label?: string; value?: string }[] | Record<string, string>;
   bio?: string;
+  announcement?: string;
   statement?: string;
   notice?: string;
+  showKeyVisuals?: boolean;
+  showPastWorks?: boolean;
+  showArchiveWorks?: boolean;
   keyVisuals?: {
     id?: string;
     image?: {
@@ -242,6 +250,7 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     media,
     details,
     bio: ensureHtml(String(bioRaw ?? "").trim()),
+    announcement: ensureHtml((post.announcement ?? "").trim()),
     statement: ensureHtml((post.statement ?? "").trim()),
     notice: (post.notice ?? "").trim(),
     keyVisuals,
@@ -249,6 +258,9 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     pastWorks,
     archiveNote: (post.archiveNote ?? "").trim(),
     archiveWorks,
+    showKeyVisuals: post.showKeyVisuals !== false,
+    showPastWorks: post.showPastWorks !== false,
+    showArchiveWorks: post.showArchiveWorks !== false,
   };
 }
 
@@ -308,9 +320,13 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
       { key: "access", label: "ACCESS", value: "JR石巻駅から徒歩10分（仮）" },
     ],
     bio: "北海道札幌市生まれ。写真を軸に、風景と生活の関係を主題に制作。近年は展示空間と写真の距離感を含めた構成にも取り組む。",
+    announcement: "",
     statement:
       "本展は、居住と記憶の境界をめぐる写真展。展示は小さな空間の中で、光と距離に応答しながら構成された。",
     notice: "※展示情報は変更となる場合があります。最新情報はこのページをご確認ください。",
+    showKeyVisuals: true,
+    showPastWorks: true,
+    showArchiveWorks: true,
     keyVisuals: [
       {
         id: "kv-1",
@@ -411,8 +427,12 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
       { key: "access", label: "ACCESS", value: "JR石巻駅から徒歩12分（仮）" },
     ],
     bio: "宮城県石巻市出身。光の変化にともなう風景の輪郭を主題に、写真と文章を往復しながら制作を行う。",
+    announcement: "",
     statement: "日常の明暗差と記憶の輪郭を、複数のシリーズで再編集した展示。",
     notice: "※詳細は更新される場合があります。",
+    showKeyVisuals: true,
+    showPastWorks: true,
+    showArchiveWorks: true,
     keyVisuals: [
       {
         id: "kv-2",
