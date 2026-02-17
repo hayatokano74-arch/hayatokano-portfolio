@@ -48,7 +48,6 @@ export type MeNoHoshiPost = {
   media: Work["media"];
   details: MeNoHoshiDetailItem[];
   bio: string;
-  announcement: string;
   statement: string;
   notice: string;
   keyVisuals: MeNoHoshiKeyVisual[];
@@ -72,7 +71,6 @@ type WpMeNoHoshiResponse = {
   media?: Work["media"];
   details?: { key?: string; label?: string; value?: string }[] | Record<string, string>;
   bio?: string;
-  announcement?: string;
   statement?: string;
   notice?: string;
   showKeyVisuals?: boolean;
@@ -247,11 +245,11 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     subtitle,
     tags,
     year: (post.year ?? "2025").trim(),
-    excerpt: (post.excerpt ?? "").trim(),
+    /* excerpt: WP の抜粋があればそれを使い、なければ statement から自動生成 */
+    excerpt: (post.excerpt ?? "").trim() || (post.statement ?? "").trim(),
     media,
     details,
     bio: ensureHtml(String(bioRaw ?? "").trim()),
-    announcement: ensureHtml((post.announcement ?? "").trim()),
     statement: ensureHtml((post.statement ?? "").trim()),
     notice: (post.notice ?? "").trim(),
     keyVisuals,
@@ -283,7 +281,7 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
     subtitle: "架空 太郎",
     tags: ["Exhibition", "Photography", "Personal"],
     year: "2024",
-    excerpt: "居住と記憶の境界をめぐる写真展示。",
+    excerpt: "本展は、居住と記憶の境界をめぐる写真展。展示は小さな空間の中で、光と距離に応答しながら構成された。",
     media: [
       {
         id: "hero-1",
@@ -321,7 +319,6 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
       { key: "access", label: "ACCESS", value: "JR石巻駅から徒歩10分（仮）" },
     ],
     bio: "北海道札幌市生まれ。写真を軸に、風景と生活の関係を主題に制作。近年は展示空間と写真の距離感を含めた構成にも取り組む。",
-    announcement: "",
     statement:
       "本展は、居住と記憶の境界をめぐる写真展。展示は小さな空間の中で、光と距離に応答しながら構成された。",
     notice: "※展示情報は変更となる場合があります。最新情報はこのページをご確認ください。",
@@ -398,7 +395,7 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
     subtitle: "架空 花",
     tags: ["Photography", "Portrait"],
     year: "2024",
-    excerpt: "肖像と空間を横断するインスタレーション。",
+    excerpt: "日常の明暗差と記憶の輪郭を、複数のシリーズで再編集した展示。",
     media: [
       {
         id: "hero-2",
@@ -428,7 +425,6 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
       { key: "access", label: "ACCESS", value: "JR石巻駅から徒歩12分（仮）" },
     ],
     bio: "宮城県石巻市出身。光の変化にともなう風景の輪郭を主題に、写真と文章を往復しながら制作を行う。",
-    announcement: "",
     statement: "日常の明暗差と記憶の輪郭を、複数のシリーズで再編集した展示。",
     notice: "※詳細は更新される場合があります。",
     showKeyVisuals: true,

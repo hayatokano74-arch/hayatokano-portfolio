@@ -27,14 +27,6 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
       <div className="me-no-hoshi-meta-column">
         <h1 style={{ margin: 0, fontSize: "var(--font-heading)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{post.title}</h1>
 
-        {post.announcement ? (
-          <div
-            className="mnh-rich-text"
-            style={{ marginTop: "var(--space-5)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
-            dangerouslySetInnerHTML={{ __html: post.announcement }}
-          />
-        ) : null}
-
         <div style={{ marginTop: "var(--space-10)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", letterSpacing: "0.2em" }}>DETAILS</div>
 
         <div style={{ marginTop: "var(--space-2)", borderTop: "1px solid var(--line-light)" }}>
