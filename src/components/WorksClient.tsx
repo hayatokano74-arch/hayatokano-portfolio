@@ -110,14 +110,7 @@ function GridDetails({ details }: { details: unknown }) {
 }
 
 function WorksGrid<T extends WorkLike>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
-  const count = works.length;
-  const maxCols = Math.min(count || 1, 8);
-
-  const gapPx = 24;
-  const gapTotal = (maxCols - 1) * gapPx;
-  const gridTemplateColumns = maxCols === 1
-    ? "repeat(auto-fill, minmax(190px, 320px))"
-    : `repeat(auto-fill, minmax(max(190px, calc((100% - ${gapTotal}px) / ${maxCols})), 1fr))`;
+  const gridTemplateColumns = "repeat(auto-fill, minmax(190px, 420px))";
 
   return (
     <div style={{ position: "relative", paddingBottom: "var(--space-14)" }}>
