@@ -416,23 +416,24 @@ button {
 
 /* DETAILS 行 */
 .work-grid-details {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.work-grid-details-row {
-  display: flex;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-5);
+  row-gap: 2px;
   font-size: var(--font-meta);
   line-height: var(--lh-normal);
 }
 
+.work-grid-details-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
 .work-grid-details-label {
   color: var(--muted);
-  flex-shrink: 0;
-  width: 64px;
   letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .work-grid-details-value {
