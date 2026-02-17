@@ -244,7 +244,7 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     date: (post.date ?? "2024/10/09").trim(),
     title,
     subtitle,
-    tags: tags.length > 0 ? tags : ["Photography"],
+    tags,
     year: (post.year ?? "2025").trim(),
     excerpt: (post.excerpt ?? "").trim(),
     media,

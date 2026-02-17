@@ -77,7 +77,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
             <div
               className="mnh-rich-text"
-              style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)", maxWidth: 460 }}
+              style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}
               dangerouslySetInnerHTML={{ __html: post.bio }}
             />
           </div>
@@ -85,10 +85,10 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
 
         <div
           className="mnh-rich-text"
-          style={{ marginTop: post.bio ? "var(--space-6)" : "var(--space-8)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500, maxWidth: 460 }}
+          style={{ marginTop: post.bio ? "var(--space-6)" : "var(--space-8)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}
           dangerouslySetInnerHTML={{ __html: post.statement }}
         />
-        <div style={{ marginTop: "var(--space-5)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)", maxWidth: 460 }}>{post.notice}</div>
+        <div style={{ marginTop: "var(--space-5)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>
       </div>
 
       <div className="me-no-hoshi-visual-column">
