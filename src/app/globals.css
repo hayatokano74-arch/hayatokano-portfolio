@@ -2153,6 +2153,19 @@ button.tl-photo-cell {
   }
 }
 
+/* ═══ Works グリッド: レスポンシブ span 切替 ═══ */
+@media (max-width: 1399px) {
+  .work-grid-item {
+    grid-column: span 4; /* 3枚/行 */
+  }
+}
+
+@media (max-width: 1099px) {
+  .work-grid-item {
+    grid-column: span 6; /* 2枚/行 */
+  }
+}
+
 /* ═══ モバイルオーバーライド（ファイル末尾に1ブロックのみ配置） ═══ */
 @media (max-width: 900px) {
   :root {
