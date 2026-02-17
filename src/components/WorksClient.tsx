@@ -145,7 +145,7 @@ function WorksGrid<T extends WorkLike>({ works, detailHref }: { works: T[]; deta
               <div className="work-grid-info">
                 <span className="work-grid-title">{w.title}</span>
                 <span className="work-grid-detail">
-                  {w.tags[0] && <span>{w.tags[0]}</span>}
+                  {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
                   {w.year && <span>{w.year}</span>}
                 </span>
               </div>

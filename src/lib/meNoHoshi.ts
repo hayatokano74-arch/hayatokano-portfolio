@@ -156,7 +156,7 @@ function ensureHtml(text: string): string {
 function normalizeDetails(raw: WpMeNoHoshiResponse["details"]): MeNoHoshiDetailItem[] {
   const defaultOrder = ["artist", "period", "open_date", "hours", "closed", "admission", "venue", "address", "access"];
   const labels: Record<string, string> = {
-    artist: "ARTIST", period: "PERIOD", open_date: "OPEN DATE",
+    artist: "ARTIST", period: "PERIOD", open_date: "OPEN",
     hours: "HOURS", closed: "CLOSED", admission: "ADMISSION",
     venue: "VENUE", address: "ADDRESS", access: "ACCESS",
   };
