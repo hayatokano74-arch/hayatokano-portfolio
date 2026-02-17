@@ -140,10 +140,11 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                         objectPosition: "left top",
                       }}
                     />
-                    <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
-                      {work.title}
-                      {work.year ? ` | ${work.year}` : ""}
-                    </figcaption>
+                    {(work.title || work.year) ? (
+                      <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
+                        {work.title}{work.title && work.year ? ` | ${work.year}` : work.year}
+                      </figcaption>
+                    ) : null}
                   </figure>
                 </article>
               ))}
@@ -184,10 +185,11 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                         objectPosition: "left top",
                       }}
                     />
-                    <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
-                      {work.title}
-                      {work.year ? ` | ${work.year}` : ""}
-                    </figcaption>
+                    {(work.title || work.year) ? (
+                      <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
+                        {work.title}{work.title && work.year ? ` | ${work.year}` : work.year}
+                      </figcaption>
+                    ) : null}
                   </figure>
                 </article>
               ))}

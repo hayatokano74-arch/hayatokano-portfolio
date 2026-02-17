@@ -138,7 +138,7 @@ function normalizeWorkList(items: WpMeNoHoshiResponse["archiveWorks"], slug: str
       if (!src) return null;
       return {
         id: item.id?.trim() || `${slug}-${key}-${index + 1}`,
-        title: item.title?.trim() || "Work",
+        title: item.title?.trim() || "",
         year: item.year?.trim() || "",
         image: {
           src,
