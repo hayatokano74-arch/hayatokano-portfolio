@@ -2143,6 +2143,67 @@ button.tl-photo-cell {
   }
 }
 
+/* ═══ テストギャラリー ═══ */
+.test-gallery-shell {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
+  height: calc(100dvh - var(--pad-y) * 2);
+  min-height: 0;
+}
+
+.test-gallery-info {
+  grid-column: 1 / span 2;
+  align-self: end;
+  padding-bottom: var(--space-6);
+  min-width: 0;
+}
+
+.test-gallery-main {
+  grid-column: 3 / span 8;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.test-gallery-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.test-gallery-thumbs {
+  grid-column: 11 / -1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  min-width: 0;
+}
+
+.test-gallery-thumb-btn {
+  flex-shrink: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) ease, opacity var(--duration-fast) ease;
+  opacity: 0.6;
+}
+
+.test-gallery-thumb-btn:hover {
+  opacity: 0.85;
+}
+
+.test-gallery-thumb-btn.is-active {
+  border-color: var(--fg);
+  opacity: 1;
+}
+
 /* ═══ 大画面: Timelineコンテンツ幅を4列に戻す ═══ */
 @media (min-width: 1601px) {
   .timeline-filter-tabs-wrap {
@@ -2543,6 +2604,37 @@ button.tl-photo-cell {
 
   .news-accord-media {
     grid-column: 1;
+  }
+
+  /* ── テストギャラリー ── */
+  .test-gallery-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: var(--space-5);
+  }
+
+  .test-gallery-info {
+    grid-column: 1 / -1;
+    align-self: start;
+    padding-bottom: 0;
+  }
+
+  .test-gallery-main {
+    grid-column: 1 / -1;
+    height: 60dvh;
+  }
+
+  .test-gallery-thumbs {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: var(--space-2);
+  }
+
+  .test-gallery-thumb-btn {
+    width: 80px;
+    flex-shrink: 0;
   }
 
   /* ── About ── */
