@@ -260,12 +260,10 @@ button {
   align-content: start;
 }
 
-/* リスト/ニュース用: 右寄せメディア画像 */
+/* リスト/ニュース用: メディア画像（幅はグリッドカラムが決める） */
 .list-media-img {
   width: 100%;
-  max-width: 520px;
   object-fit: cover;
-  margin-left: auto;
   display: block;
   background: var(--media-bg);
 }
@@ -1057,10 +1055,7 @@ button {
 }
 
 .works-list-summary-tags {
-  grid-column: 8 / -1;
-  /* 写真と同じ右寄せ520pxコンテナ — 左端が揃う */
-  width: min(100%, 520px);
-  margin-left: auto;
+  grid-column: 9 / span 3;
   min-width: 0;
   overflow-wrap: anywhere;
   display: flex;
@@ -1147,7 +1142,7 @@ button {
 }
 
 .works-list-media {
-  grid-column: 8 / -1;
+  grid-column: 9 / -1;
   min-width: 0;
   overflow: hidden;
 }
@@ -1279,7 +1274,7 @@ button {
 }
 
 .news-accord-media {
-  grid-column: 8 / -1;
+  grid-column: 9 / -1;
   min-width: 0;
   overflow: hidden;
 }
