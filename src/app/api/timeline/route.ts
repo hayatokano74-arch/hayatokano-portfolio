@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "不明なアクション" }, { status: 400 });
   }
 
-  /* FormData リクエスト: 投稿作成 */
+  /* FormData リクエスト: 画像アップロード or 投稿作成 */
   if (contentType.includes("multipart/form-data")) {
     const { wpBase, wpUser, wpPass } = getEnv();
     if (!wpBase || !wpUser || !wpPass) {
@@ -132,18 +132,62 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const pin = formData.get("pin") as string;
-    const title = (formData.get("title") as string | null)?.trim() ?? "";
-    const text = formData.get("text") as string;
-    const type = formData.get("type") as string;
-    const date = formData.get("date") as string;
-    const statusField = formData.get("status") as string | null;
-    const images = formData.getAll("image") as File[];
-    const tagsRaw = formData.get("tags") as string | null;
 
     /* PIN検証 */
     if (!verifyPin(pin ?? "")) {
       return NextResponse.json({ error: "PINが正しくありません" }, { status: 401 });
     }
+
+    const action = formData.get("action") as string | null;
+
+    /* ── 画像単体アップロード（Vercel 4.5MBボディ制限対策: 1枚ずつ送信） ── */
+    if (action === "upload-image") {
+      const image = formData.get("image") as File | null;
+      if (!image || image.size === 0) {
+        return NextResponse.json({ error: "画像が必要です" }, { status: 400 });
+      }
+      if (image.size > MAX_IMAGE_SIZE) {
+        return NextResponse.json({ error: "画像サイズが大きすぎます（20MB以内）" }, { status: 400 });
+      }
+      if (image.type && !ALLOWED_IMAGE_TYPES.includes(image.type)) {
+        return NextResponse.json({ error: `許可されていない画像形式です: ${image.type}` }, { status: 400 });
+      }
+
+      try {
+        const imgBuffer = Buffer.from(await image.arrayBuffer());
+        const uploadRes = await fetch(`${wpBase}/wp-json/wp/v2/media`, {
+          method: "POST",
+          headers: {
+            Authorization: wpAuthHeader(wpUser, wpPass),
+            "Content-Disposition": `attachment; filename="${encodeURIComponent(image.name || "image.jpg")}"`,
+            "Content-Type": image.type || "image/jpeg",
+          },
+          body: imgBuffer,
+        });
+        if (!uploadRes.ok) {
+          const errText = await uploadRes.text();
+          console.error("画像アップロード失敗:", uploadRes.status, errText.slice(0, 200));
+          return NextResponse.json(
+            { error: "画像アップロードに失敗しました" },
+            { status: 502 },
+          );
+        }
+        const media = await uploadRes.json();
+        return NextResponse.json({ ok: true, imageId: media.id });
+      } catch (e) {
+        console.error("画像アップロードエラー:", e);
+        return NextResponse.json({ error: "画像アップロード中にエラーが発生しました" }, { status: 502 });
+      }
+    }
+
+    /* ── 投稿作成（画像はimage_idsで受け取り、ファイルは含まない） ── */
+    const title = (formData.get("title") as string | null)?.trim() ?? "";
+    const text = formData.get("text") as string;
+    const type = formData.get("type") as string;
+    const date = formData.get("date") as string;
+    const statusField = formData.get("status") as string | null;
+    const tagsRaw = formData.get("tags") as string | null;
+    const imageIdsRaw = formData.get("image_ids") as string | null;
 
     /* タイプのバリデーション */
     if (!ALLOWED_TYPES.includes(type as typeof ALLOWED_TYPES[number])) {
@@ -155,10 +199,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `タイトルは${MAX_TITLE_LENGTH}文字以内です` }, { status: 400 });
     }
 
-    /* コンテンツ存在チェック: テキスト・タグ・画像・タイトルのいずれか1つが必要 */
+    /* コンテンツ存在チェック: テキスト・タグ・画像ID・タイトルのいずれか1つが必要 */
     const hasTags = tagsRaw ? (() => { try { const p = JSON.parse(tagsRaw); return Array.isArray(p) && p.length > 0; } catch { return false; } })() : false;
-    const hasValidImages = images.some((f) => f && f.size > 0);
-    if (!text?.trim() && !hasTags && !hasValidImages && !title) {
+    const hasImageIds = imageIdsRaw ? (() => { try { const p = JSON.parse(imageIdsRaw); return Array.isArray(p) && p.length > 0; } catch { return false; } })() : false;
+    if (!text?.trim() && !hasTags && !hasImageIds && !title) {
       return NextResponse.json({ error: "テキスト・タグ・画像・タイトルのいずれかが必要です" }, { status: 400 });
     }
 
@@ -170,59 +214,6 @@ export async function POST(request: NextRequest) {
     /* 日付の形式チェック */
     if (date && !/^\d{4}\.\d{2}\.\d{2} \d{2}:\d{2}$/.test(date)) {
       return NextResponse.json({ error: "日付の形式が不正です" }, { status: 400 });
-    }
-
-    /* 複数画像アップロード */
-    const imageIds: number[] = [];
-    const validImages = images.filter((f) => f && f.size > 0);
-
-    /* 画像数チェック */
-    if (validImages.length > MAX_IMAGE_COUNT) {
-      return NextResponse.json({ error: `画像は${MAX_IMAGE_COUNT}枚以内です` }, { status: 400 });
-    }
-
-    /* 画像サイズ・MIMEタイプチェック */
-    for (const img of validImages) {
-      if (img.size > MAX_IMAGE_SIZE) {
-        return NextResponse.json({ error: "画像サイズが大きすぎます（20MB以内）" }, { status: 400 });
-      }
-      if (img.type && !ALLOWED_IMAGE_TYPES.includes(img.type)) {
-        return NextResponse.json({ error: `許可されていない画像形式です: ${img.type}` }, { status: 400 });
-      }
-    }
-
-    // async-parallel: 画像アップロードを並列実行（直列 → Promise.allSettled）
-    const uploadResults = await Promise.allSettled(
-      validImages.map(async (img) => {
-        const imgBuffer = Buffer.from(await img.arrayBuffer());
-        const uploadRes = await fetch(`${wpBase}/wp-json/wp/v2/media`, {
-          method: "POST",
-          headers: {
-            Authorization: wpAuthHeader(wpUser, wpPass),
-            "Content-Disposition": `attachment; filename="${encodeURIComponent(img.name)}"`,
-            "Content-Type": img.type || "image/jpeg",
-          },
-          body: imgBuffer,
-        });
-        if (!uploadRes.ok) {
-          const errText = await uploadRes.text();
-          throw new Error(`${uploadRes.status}: ${errText}`);
-        }
-        const media = await uploadRes.json();
-        return media.id as number;
-      }),
-    );
-
-    for (const result of uploadResults) {
-      if (result.status === "fulfilled") {
-        imageIds.push(result.value);
-      } else {
-        console.error("画像アップロード失敗:", result.reason);
-        return NextResponse.json(
-          { error: "画像アップロードに失敗しました" },
-          { status: 502 },
-        );
-      }
     }
 
     /* WP に投稿作成 */
@@ -237,6 +228,17 @@ export async function POST(request: NextRequest) {
               .filter((t: unknown) => typeof t === "string" && (t as string).trim())
               .map((t: string) => t.trim().slice(0, MAX_TAG_LENGTH))
               .slice(0, MAX_TAG_COUNT);
+          }
+        } catch { /* JSON パース失敗は無視 */ }
+      }
+
+      /* 画像IDをパース */
+      let imageIds: number[] = [];
+      if (imageIdsRaw) {
+        try {
+          const parsed = JSON.parse(imageIdsRaw);
+          if (Array.isArray(parsed)) {
+            imageIds = parsed.filter((id: unknown) => typeof id === "number" && (id as number) > 0);
           }
         } catch { /* JSON パース失敗は無視 */ }
       }

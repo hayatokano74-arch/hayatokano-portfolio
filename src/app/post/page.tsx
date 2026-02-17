@@ -32,6 +32,54 @@ function extractTags(text: string): { cleanText: string; tags: string[] } {
   return { cleanText, tags };
 }
 
+/* ── 画像圧縮（Vercel 4.5MBボディ制限対策） ── */
+function compressImage(file: File, maxDim = 1920, quality = 0.85): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      /* 長辺がmaxDimを超える場合のみリサイズ */
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("Canvas未対応")); return; }
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => blob ? resolve(blob) : reject(new Error("圧縮に失敗しました")),
+        "image/jpeg",
+        quality,
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("画像の読み込みに失敗")); };
+    img.src = url;
+  });
+}
+
+/* ── 画像1枚をWPにアップロード（サーバー経由） ── */
+async function uploadSingleImage(file: File, pin: string): Promise<number> {
+  const compressed = await compressImage(file);
+  const fd = new FormData();
+  fd.append("pin", pin);
+  fd.append("action", "upload-image");
+  fd.append("image", compressed, file.name.replace(/\.[^.]+$/, ".jpg"));
+
+  const res = await fetch("/api/timeline", { method: "POST", body: fd });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "アップロード失敗" }));
+    throw new Error(err.error ?? "アップロード失敗");
+  }
+  const data = await res.json();
+  return data.imageId as number;
+}
+
 /* ============================
    メインコンポーネント
    ============================ */
@@ -265,6 +313,21 @@ export default function PostPage() {
         }
       } else {
         /* ── POST: 新規投稿 ── */
+
+        /* 画像を1枚ずつアップロード（Vercel 4.5MBボディ制限対策） */
+        const uploadedImageIds: number[] = [];
+        for (let i = 0; i < images.length; i++) {
+          try {
+            const imageId = await uploadSingleImage(images[i], pin);
+            uploadedImageIds.push(imageId);
+          } catch (e) {
+            alert(`画像${i + 1}のアップロードに失敗しました: ${e instanceof Error ? e.message : "不明なエラー"}`);
+            setPosting(false);
+            return;
+          }
+        }
+
+        /* 投稿作成（画像データなし、IDのみ） */
         const fd = new FormData();
         fd.append("pin", pin);
         if (title.trim()) fd.append("title", title.trim());
@@ -275,8 +338,8 @@ export default function PostPage() {
         if (allTags.length > 0) {
           fd.append("tags", JSON.stringify(allTags));
         }
-        for (const img of images) {
-          fd.append("image", img);
+        if (uploadedImageIds.length > 0) {
+          fd.append("image_ids", JSON.stringify(uploadedImageIds));
         }
 
         const res = await fetch("/api/timeline", {
