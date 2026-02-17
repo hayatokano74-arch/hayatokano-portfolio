@@ -225,9 +225,6 @@ function WorksList<T extends WorkLike>({
             <div className="works-list-detail">
               <div className="works-list-spacer" />
               <div className="works-list-body">
-                <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)" }}>
-                  {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
-                </div>
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
                 <div className="works-list-excerpt" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap" }}>{truncateText(w.excerpt, excerptMaxLength)}</div>
                 <div
@@ -248,23 +245,28 @@ function WorksList<T extends WorkLike>({
                 </div>
               </div>
               <div className={`works-list-media ${isPortraitLead ? "is-portrait" : ""}`.trim()}>
-                <Link href={detailHref(w.slug)} className="action-link" style={{ display: "block" }}>
-                  {thumbSrc ? (
-                    <Image
-                      src={thumbSrc}
-                      alt={thumbAlt ?? ""}
-                      width={lead?.width ?? 1280}
-                      height={lead?.height ?? 720}
-                      loading="lazy"
-                      className="list-media-img"
-                      style={{
-                        aspectRatio: `${lead?.width ?? 1280} / ${lead?.height ?? 720}`,
-                      }}
-                    />
-                  ) : (
-                    <div className="list-media-img" style={{ aspectRatio: "16 / 10" }} />
-                  )}
-                </Link>
+                <div className="works-list-media-inner">
+                  <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)" }}>
+                    {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
+                  </div>
+                  <Link href={detailHref(w.slug)} className="action-link" style={{ display: "block" }}>
+                    {thumbSrc ? (
+                      <Image
+                        src={thumbSrc}
+                        alt={thumbAlt ?? ""}
+                        width={lead?.width ?? 1280}
+                        height={lead?.height ?? 720}
+                        loading="lazy"
+                        className="list-media-img"
+                        style={{
+                          aspectRatio: `${lead?.width ?? 1280} / ${lead?.height ?? 720}`,
+                        }}
+                      />
+                    ) : (
+                      <div className="list-media-img" style={{ aspectRatio: "16 / 10" }} />
+                    )}
+                  </Link>
+                </div>
               </div>
             </div>
           </details>
