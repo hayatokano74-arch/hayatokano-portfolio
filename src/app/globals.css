@@ -315,6 +315,16 @@ button {
   gap: var(--space-3);
 }
 
+/* タグ行: タイトルとDETAILSの間 */
+.work-grid-tags {
+  display: flex;
+  gap: var(--space-3);
+  padding-top: var(--space-1);
+  font-size: var(--font-meta);
+  line-height: var(--lh-normal);
+  color: var(--muted);
+}
+
 /* DETAILS 行 */
 .work-grid-details {
   padding-top: var(--space-2);

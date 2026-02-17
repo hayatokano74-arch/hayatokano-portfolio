@@ -145,10 +145,14 @@ function WorksGrid<T extends WorkLike>({ works, detailHref }: { works: T[]; deta
               <div className="work-grid-info">
                 <span className="work-grid-title">{w.title}</span>
                 <span className="work-grid-detail">
-                  {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
                   {w.year && <span>{w.year}</span>}
                 </span>
               </div>
+              {w.tags.length > 0 && (
+                <div className="work-grid-tags">
+                  {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
+                </div>
+              )}
               <GridDetails details={w.details} />
             </Link>
           );
@@ -208,8 +212,8 @@ function WorksList<T extends WorkLike>({
             <summary className="works-list-summary">
               <div className="works-list-summary-date" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.date}</div>
               <div className="works-list-summary-title" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.title}</div>
-              <div className="works-list-summary-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 600 }}>
-                {w.tags.join("    ")}
+              <div className="works-list-summary-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 600, display: "flex", gap: "var(--space-4)" }}>
+                {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
               </div>
               <div className="works-list-summary-thumb">
                 {thumbSrc ? (
@@ -231,8 +235,8 @@ function WorksList<T extends WorkLike>({
             <div className="works-list-detail">
               <div className="works-list-spacer" />
               <div className="works-list-body">
-                <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)" }}>
-                  {w.tags.join("    ")}
+                <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)", display: "flex", gap: "var(--space-4)" }}>
+                  {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
                 </div>
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
                 <div className="works-list-excerpt" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap" }}>{truncateText(w.excerpt, excerptMaxLength)}</div>
