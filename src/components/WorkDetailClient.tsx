@@ -362,6 +362,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
                 style={{ marginTop: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) }}
               />
+              {work.tags.length > 0 && (
               <div style={{ marginTop: "var(--space-5)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
                 {work.tags.map((tag, idx) => (
                   <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
@@ -369,6 +370,7 @@ export function WorkDetailClient({ work }: { work: Work }) {
                   </span>
                 ))}
               </div>
+              )}
             </div>
           </div>
         </div>

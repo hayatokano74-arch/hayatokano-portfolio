@@ -82,7 +82,7 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
     slug,
     date: (raw.date ?? "").trim(),
     title,
-    tags: tags.length > 0 ? tags : ["Photography"],
+    tags,
     year: (raw.year ?? "").trim(),
     excerpt: (raw.excerpt ?? "").trim(),
     ...(thumbnail ? { thumbnail } : {}),
