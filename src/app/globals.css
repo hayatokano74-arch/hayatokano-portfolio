@@ -1143,6 +1143,7 @@ button {
   grid-column: 3 / span 5;
   display: grid;
   grid-template-columns: subgrid;
+  align-self: start;
   min-width: 0;
   overflow-wrap: anywhere;
 }
