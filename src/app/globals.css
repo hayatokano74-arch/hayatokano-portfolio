@@ -2427,15 +2427,7 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-5);
 }
 
-/* タグフィルタ中のラベル */
-.garden-filter-label {
-  font-size: var(--font-meta);
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  margin: 0 0 var(--space-5);
-}
-
-/* ブラケットリンク */
+/* ページリンク（ブラケットリンク [テキスト]） */
 .garden-link {
   color: var(--fg);
   text-decoration: underline;
@@ -2448,38 +2440,48 @@ button.tl-photo-cell {
   text-decoration-color: var(--fg);
 }
 
-.garden-link-broken {
-  color: var(--muted);
-  text-decoration-style: dashed;
-}
-
-/* ハッシュタグリンク */
+/* ハッシュタグリンク #タグ */
 .garden-hashtag {
-  font-size: var(--font-meta);
   letter-spacing: 0.04em;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s ease;
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--muted);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s ease;
 }
 
 .garden-hashtag:hover {
-  color: var(--fg);
+  text-decoration-color: var(--fg);
 }
 
-/* バックリンク */
-.garden-backlinks {
-  margin-top: var(--space-9);
-  padding-top: var(--space-7);
-  border-top: 1px solid var(--line);
+/* MDファイルが未作成のページリンク（仮想ページ） */
+.garden-link-empty {
+  text-decoration-style: dashed;
 }
 
-.garden-backlinks-heading {
+/* 仮想ページの本文エリア */
+.garden-detail-empty {
+  font-size: var(--font-body);
+  color: var(--muted);
+  font-style: italic;
+  margin: 0 0 var(--space-7);
+}
+
+/* セクション見出し共通（Links, 2-hop Links） */
+.garden-section-heading {
   font-size: var(--font-meta);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
   margin: 0 0 var(--space-5);
+}
+
+/* バックリンク（Links） */
+.garden-backlinks {
+  margin-top: var(--space-9);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--line);
 }
 
 .garden-backlinks-list {
@@ -2503,6 +2505,39 @@ button.tl-photo-cell {
   line-height: var(--lh-relaxed);
   color: var(--muted);
   margin: var(--space-1) 0 0;
+}
+
+/* 2-hopリンク */
+.garden-twohop {
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line);
+}
+
+.garden-twohop-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.garden-twohop-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.garden-twohop-title {
+  font-size: var(--font-body);
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.garden-twohop-via {
+  font-size: var(--font-meta);
+  color: var(--muted);
 }
 
 /* 戻るリンク */

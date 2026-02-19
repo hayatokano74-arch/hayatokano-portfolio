@@ -6,7 +6,7 @@ export function GardenBacklinks({ backlinks }: { backlinks: BacklinkEntry[] }) {
 
   return (
     <section className="garden-backlinks">
-      <h2 className="garden-backlinks-heading">Backlinks</h2>
+      <h2 className="garden-section-heading">Links</h2>
       <ul className="garden-backlinks-list">
         {backlinks.map((bl) => (
           <li key={bl.slug} className="garden-backlink-item">

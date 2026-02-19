@@ -11,7 +11,7 @@ export interface GardenFrontmatter {
   type?: GardenNodeType;
 }
 
-/** パース済みのGardenノード */
+/** パース済みのGardenノード（MDファイルが存在する実ページ） */
 export interface GardenNode {
   slug: string;
   title: string;
@@ -30,4 +30,12 @@ export interface BacklinkEntry {
   title: string;
   /** リンクを含む文脈テキスト */
   context: string;
+}
+
+/** 2-hopリンクエントリ（間接的に関連するページ） */
+export interface TwoHopEntry {
+  slug: string;
+  title: string;
+  /** 中継ページのタイトル（A→B→Cの場合、Bのタイトル） */
+  via: string;
 }

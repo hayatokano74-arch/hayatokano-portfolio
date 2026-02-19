@@ -1,55 +1,74 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 import { GardenBacklinks } from "@/components/GardenBacklinks";
-import { getAllNodes, getNodeBySlug } from "@/lib/garden/reader";
-import { getBacklinks } from "@/lib/garden/backlinks";
+import { GardenTwoHopLinks } from "@/components/GardenTwoHopLinks";
+import { getNodeBySlug, getAllPageSlugs, getVirtualPageTitle } from "@/lib/garden/reader";
+import { getBacklinks, getTwoHopLinks } from "@/lib/garden/backlinks";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  const nodes = await getAllNodes();
-  return nodes.map((node) => ({ slug: node.slug }));
+  const slugs = getAllPageSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const node = await getNodeBySlug(decodeURIComponent(slug));
-  if (!node) return { title: "Not Found" };
-  return { title: node.title };
+  const decoded = decodeURIComponent(slug);
+  const node = await getNodeBySlug(decoded);
+  if (node) return { title: node.title };
+  const virtualTitle = getVirtualPageTitle(decoded);
+  return { title: virtualTitle ?? decoded };
 }
 
 export default async function GardenNodePage({ params }: Props) {
   const { slug } = await params;
-  const node = await getNodeBySlug(decodeURIComponent(slug));
-  if (!node) notFound();
+  const decoded = decodeURIComponent(slug);
+  const node = await getNodeBySlug(decoded);
 
-  const backlinks = getBacklinks(node.slug);
+  // MDファイルが存在しない場合は仮想ページ（バックリンク一覧のみ）
+  const pageSlug = node?.slug ?? decoded;
+  const pageTitle = node?.title ?? getVirtualPageTitle(decoded) ?? decoded;
+
+  const backlinks = getBacklinks(pageSlug);
+  const twoHopLinks = getTwoHopLinks(pageSlug);
 
   return (
     <CanvasShell>
       <Header active="Garden" title="Garden" showCategoryRow={false} showSearch={false} />
       <article className="garden-detail">
-        <div className="garden-detail-meta">
-          <time className="garden-detail-date">{node.date}</time>
-          {node.tags.length > 0 && (
-            <div className="garden-detail-tags">
-              {node.tags.map((tag) => (
-                <span key={tag} className="garden-card-tag">{tag}</span>
-              ))}
+        <h1 className="garden-detail-title">{pageTitle}</h1>
+
+        {node ? (
+          <>
+            <div className="garden-detail-meta">
+              <time className="garden-detail-date">{node.date}</time>
+              {node.tags.length > 0 && (
+                <div className="garden-detail-tags">
+                  {node.tags.map((tag) => (
+                    <span key={tag} className="garden-card-tag">{tag}</span>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        <h1 className="garden-detail-title">{node.title}</h1>
-        <div
-          className="garden-detail-body"
-          dangerouslySetInnerHTML={{ __html: node.contentHtml }}
-        />
+            <div
+              className="garden-detail-body"
+              dangerouslySetInnerHTML={{ __html: node.contentHtml }}
+            />
+          </>
+        ) : (
+          <p className="garden-detail-empty">
+            このページにはまだ内容がありません。
+          </p>
+        )}
+
         <GardenBacklinks backlinks={backlinks} />
+        <GardenTwoHopLinks links={twoHopLinks} />
+
         <div className="garden-detail-back">
           <Link href="/garden" className="action-link">
             ← Garden に戻る

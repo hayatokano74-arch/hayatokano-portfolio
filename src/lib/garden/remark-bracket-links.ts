@@ -1,28 +1,20 @@
-/* [テキスト] と #タグ を Garden リンクに変換する remark プラグイン */
+/* [テキスト] と #タグ を /garden/slug ページリンクに変換する remark プラグイン */
 
 import type { Root, PhrasingContent } from "mdast";
 import type { Plugin } from "unified";
 import { titleToSlug } from "./slug";
 
-/**
- * ブラケットリンク: `[テキスト]` にマッチ
- * - `[text](url)` (標準リンク) と `![alt](url)` (画像) は除外
- */
+/** ブラケットリンク: [テキスト] */
 const BRACKET_RE = /(?<!\!)\[([^\[\]]+?)\](?!\()/g;
 
-/**
- * ハッシュタグ: `#タグ` にマッチ
- * - 先頭 or 空白の直後に `#` + 1文字以上の単語文字
- * - Markdown見出し `# ` (スペース付き) は除外される（テキストノード内では見出し構文は出現しない）
- */
+/** ハッシュタグ: #タグ（ページリンクとして扱う） */
 const HASHTAG_RE = /(?:^|(?<=\s))#([\p{L}\p{N}_-]+)/gu;
 
 interface Options {
-  /** 存在するノードのslugセット */
+  /** 存在するノードのslugセット（MDファイルがあるもの） */
   existingSlugs: Set<string>;
 }
 
-/** ブラケットリンク or ハッシュタグのマッチ情報 */
 interface LinkMatch {
   index: number;
   length: number;
@@ -54,30 +46,28 @@ export const remarkBracketLinks: Plugin<[Options], Root> = (options) => {
     (node as { children: unknown[] }).children = newChildren;
   }
 
-  /** ブラケットリンクとハッシュタグを統合的にパースする */
   function splitGardenLinks(text: string): PhrasingContent[] {
-    // 全マッチを収集してインデックス順にソート
     const matches: LinkMatch[] = [];
 
+    // ブラケットリンク [テキスト] → ページリンク
     for (const m of text.matchAll(BRACKET_RE)) {
       const title = m[1];
       const slug = titleToSlug(title);
-      const exists = existingSlugs.has(slug);
       matches.push({
         index: m.index!,
         length: m[0].length,
-        html: exists
-          ? `<a href="/garden/${encodeURIComponent(slug)}" class="garden-link">${esc(title)}</a>`
-          : `<a class="garden-link garden-link-broken">${esc(title)}</a>`,
+        html: `<a href="/garden/${encodeURIComponent(slug)}" class="garden-link${existingSlugs.has(slug) ? "" : " garden-link-empty"}">${esc(title)}</a>`,
       });
     }
 
+    // ハッシュタグ #タグ → 同じページリンク（表示だけ # 付き）
     for (const m of text.matchAll(HASHTAG_RE)) {
       const tag = m[1];
+      const slug = titleToSlug(tag);
       matches.push({
         index: m.index!,
         length: m[0].length,
-        html: `<a href="/garden?tag=${encodeURIComponent(tag)}" class="garden-hashtag">#${esc(tag)}</a>`,
+        html: `<a href="/garden/${encodeURIComponent(slug)}" class="garden-hashtag${existingSlugs.has(slug) ? "" : " garden-link-empty"}">#${esc(tag)}</a>`,
       });
     }
 
@@ -85,16 +75,13 @@ export const remarkBracketLinks: Plugin<[Options], Root> = (options) => {
       return [{ type: "text", value: text }];
     }
 
-    // インデックス順にソート
     matches.sort((a, b) => a.index - b.index);
 
     const result: PhrasingContent[] = [];
     let lastIndex = 0;
 
     for (const match of matches) {
-      // 重複マッチ（ブラケット内のハッシュタグ等）をスキップ
       if (match.index < lastIndex) continue;
-
       if (match.index > lastIndex) {
         result.push({ type: "text", value: text.slice(lastIndex, match.index) });
       }

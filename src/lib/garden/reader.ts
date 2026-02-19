@@ -9,12 +9,13 @@ import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { remarkBracketLinks } from "./remark-bracket-links";
 import { titleToSlug } from "./slug";
+import { getAllLinkedSlugs } from "./backlinks";
 import type { GardenNode, GardenFrontmatter, GardenNodeType } from "./types";
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
-/** 全ノードのslugセットを取得（ブラケットリンク解決用） */
-function getAllSlugs(): Set<string> {
+/** MDファイルが存在するノードのslugセットを取得 */
+function getFileSlugs(): Set<string> {
   if (!fs.existsSync(GARDEN_DIR)) return new Set();
   const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
   const slugs = new Set<string>();
@@ -42,8 +43,11 @@ async function parseFile(filePath: string, existingSlugs: Set<string>): Promise<
 
   const contentHtml = String(result);
 
-  // 抜粋: 最初の段落からHTMLタグを除去し、80文字に切る
-  const plainText = content.replace(/\[([^\]]+)\]/g, "$1").replace(/\n/g, " ").trim();
+  const plainText = content
+    .replace(/(?<!\!)\[([^\]]+)\](?!\()/g, "$1")
+    .replace(/(?:^|\s)#([\p{L}\p{N}_-]+)/gu, " $1")
+    .replace(/\n/g, " ")
+    .trim();
   const excerpt = plainText.length > 80 ? plainText.slice(0, 80) + "…" : plainText;
 
   return {
@@ -57,11 +61,11 @@ async function parseFile(filePath: string, existingSlugs: Set<string>): Promise<
   };
 }
 
-/** 全ノードを取得（日付降順） */
+/** 全ノードを取得（MDファイルが存在するもののみ。日付降順） */
 export async function getAllNodes(): Promise<GardenNode[]> {
   if (!fs.existsSync(GARDEN_DIR)) return [];
   const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
-  const existingSlugs = getAllSlugs();
+  const existingSlugs = getFileSlugs();
 
   const nodes = await Promise.all(
     files.map((file) => parseFile(path.join(GARDEN_DIR, file), existingSlugs)),
@@ -70,11 +74,11 @@ export async function getAllNodes(): Promise<GardenNode[]> {
   return nodes.sort((a, b) => (a.date > b.date ? -1 : 1));
 }
 
-/** slugで1ノードを取得 */
+/** slugで1ノードを取得（MDファイルが存在するもののみ） */
 export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
   if (!fs.existsSync(GARDEN_DIR)) return null;
   const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
-  const existingSlugs = getAllSlugs();
+  const existingSlugs = getFileSlugs();
 
   for (const file of files) {
     const filePath = path.join(GARDEN_DIR, file);
@@ -86,4 +90,28 @@ export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
     }
   }
   return null;
+}
+
+/**
+ * 全ページのslugリストを取得（generateStaticParams用）。
+ * MDファイルのあるページ + リンクされているが未作成の仮想ページを含む。
+ */
+export function getAllPageSlugs(): string[] {
+  const fileSlugs = getFileSlugs();
+  const linkedSlugs = getAllLinkedSlugs();
+
+  const all = new Set<string>(fileSlugs);
+  for (const slug of linkedSlugs.keys()) {
+    all.add(slug);
+  }
+  return [...all];
+}
+
+/**
+ * 仮想ページのタイトルを取得。
+ * MDファイルがないがリンクされているページのタイトルを返す。
+ */
+export function getVirtualPageTitle(slug: string): string | null {
+  const linkedSlugs = getAllLinkedSlugs();
+  return linkedSlugs.get(slug) ?? null;
 }
