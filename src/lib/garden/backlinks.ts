@@ -5,7 +5,7 @@ import path from "path";
 import matter from "gray-matter";
 import { cache } from "react";
 import { titleToSlug } from "./slug";
-import type { GardenFrontmatter, BacklinkEntry, TwoHopGroup } from "./types";
+import type { GardenFrontmatter, BacklinkEntry, TwoHopEntry } from "./types";
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
@@ -83,56 +83,66 @@ export const getBacklinks = cache((targetSlug: string): BacklinkEntry[] => {
 });
 
 /**
- * Cosense方式の2-hopリンクを取得。
- * 現在のページが持つリンク先（forward links）ごとに、
- * 同じリンク先を共有する他のページをグループ化して返す。
- *
- * 例: 「石巻の朝」→ [写真と記憶] で、
- * 「冬の光」も→ [写真と記憶] なら、
- * グループ「写真と記憶」の下に「冬の光」が表示される。
+ * 2-hopリンクを取得。
+ * ページBから見て:
+ * - A→B のバックリンク元 A が持つ他のリンク先 C
+ * - B→D のリンク先 D にリンクしている他のページ E
+ * これらが2-hopリンク。
  */
-export const getTwoHopLinks = cache((currentSlug: string): TwoHopGroup[] => {
+export const getTwoHopLinks = cache((currentSlug: string): TwoHopEntry[] => {
   const allLinks = scanAllLinks();
 
-  // 現在ページからのリンク先一覧（slug → title のマッピング）
-  const forwardLinks = new Map<string, string>();
+  // currentSlug にリンクしているページ（バックリンク元）
+  const backlinkSlugs = new Set(
+    allLinks
+      .filter((l) => l.targetSlug === currentSlug && l.sourceSlug !== currentSlug)
+      .map((l) => l.sourceSlug),
+  );
+
+  // currentSlug がリンクしているページ
+  const forwardSlugs = new Set(
+    allLinks
+      .filter((l) => l.sourceSlug === currentSlug && l.targetSlug !== currentSlug)
+      .map((l) => l.targetSlug),
+  );
+
+  const results = new Map<string, TwoHopEntry>();
+
+  // パターン1: A→current, A→C → Cは2-hop（経由: A）
   for (const link of allLinks) {
-    if (link.sourceSlug === currentSlug && link.targetSlug !== currentSlug) {
-      if (!forwardLinks.has(link.targetSlug)) {
-        forwardLinks.set(link.targetSlug, link.targetTitle);
-      }
-    }
-  }
-
-  // 各リンク先について、同じリンク先を持つ他のページを収集
-  const groups: TwoHopGroup[] = [];
-  for (const [targetSlug, targetTitle] of forwardLinks) {
-    const seen = new Set<string>();
-    const pages: { slug: string; title: string }[] = [];
-
-    for (const link of allLinks) {
-      // 同じターゲットにリンクしている他のページを収集
-      if (
-        link.targetSlug === targetSlug &&
-        link.sourceSlug !== currentSlug &&
-        !seen.has(link.sourceSlug)
-      ) {
-        seen.add(link.sourceSlug);
-        pages.push({ slug: link.sourceSlug, title: link.sourceTitle });
-      }
-    }
-
-    // 関連ページがあるグループのみ追加
-    if (pages.length > 0) {
-      groups.push({
-        via: targetTitle,
-        viaSlug: targetSlug,
-        pages,
+    if (
+      backlinkSlugs.has(link.sourceSlug) &&
+      link.targetSlug !== currentSlug &&
+      !backlinkSlugs.has(link.targetSlug) &&
+      !forwardSlugs.has(link.targetSlug) &&
+      !results.has(link.targetSlug)
+    ) {
+      results.set(link.targetSlug, {
+        slug: link.targetSlug,
+        title: link.targetTitle,
+        via: link.sourceTitle,
       });
     }
   }
 
-  return groups;
+  // パターン2: current→D, E→D → Eは2-hop（経由: D）
+  for (const link of allLinks) {
+    if (
+      forwardSlugs.has(link.targetSlug) &&
+      link.sourceSlug !== currentSlug &&
+      !backlinkSlugs.has(link.sourceSlug) &&
+      !forwardSlugs.has(link.sourceSlug) &&
+      !results.has(link.sourceSlug)
+    ) {
+      results.set(link.sourceSlug, {
+        slug: link.sourceSlug,
+        title: link.sourceTitle,
+        via: link.targetTitle,
+      });
+    }
+  }
+
+  return [...results.values()];
 });
 
 /**

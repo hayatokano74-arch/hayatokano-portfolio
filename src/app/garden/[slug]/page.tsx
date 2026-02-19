@@ -54,7 +54,7 @@ export default async function GardenNodePage({ params }: Props) {
         )}
 
         <GardenBacklinks backlinks={backlinks} />
-        <GardenTwoHopLinks groups={twoHopLinks} />
+        <GardenTwoHopLinks links={twoHopLinks} />
 
         <div className="garden-detail-back">
           <Link href="/garden" className="action-link">

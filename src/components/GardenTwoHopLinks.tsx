@@ -1,36 +1,22 @@
 import Link from "next/link";
-import type { TwoHopGroup } from "@/lib/garden/types";
+import type { TwoHopEntry } from "@/lib/garden/types";
 
-export function GardenTwoHopLinks({ groups }: { groups: TwoHopGroup[] }) {
-  if (groups.length === 0) return null;
+export function GardenTwoHopLinks({ links }: { links: TwoHopEntry[] }) {
+  if (links.length === 0) return null;
 
   return (
     <section className="garden-twohop">
       <h2 className="garden-section-heading"><span className="garden-section-icon">↝</span> 関連ページ</h2>
-      <div className="garden-twohop-groups">
-        {groups.map((group) => (
-          <div key={group.viaSlug} className="garden-twohop-group">
-            <Link
-              href={`/garden/${encodeURIComponent(group.viaSlug)}`}
-              className="garden-twohop-via-link action-link"
-            >
-              {group.via}
+      <ul className="garden-twohop-list">
+        {links.map((entry) => (
+          <li key={entry.slug} className="garden-twohop-item">
+            <Link href={`/garden/${encodeURIComponent(entry.slug)}`} className="garden-twohop-title action-link">
+              {entry.title}
             </Link>
-            <ul className="garden-twohop-pages">
-              {group.pages.map((page) => (
-                <li key={page.slug}>
-                  <Link
-                    href={`/garden/${encodeURIComponent(page.slug)}`}
-                    className="garden-twohop-page-link action-link"
-                  >
-                    {page.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+            <span className="garden-twohop-via">{entry.via}（経由）</span>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   );
 }
