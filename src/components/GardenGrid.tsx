@@ -7,7 +7,7 @@ export function GardenGrid({ nodes }: { nodes: GardenNode[] }) {
   }
 
   return (
-    <div className="garden-list">
+    <div className="garden-masonry">
       {nodes.map((node) => (
         <GardenNodeCard key={node.slug} node={node} />
       ))}
