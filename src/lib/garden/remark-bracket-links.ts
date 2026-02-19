@@ -1,19 +1,32 @@
-/* [テキスト] 形式のブラケットリンクを /garden/slug リンクに変換する remark プラグイン */
+/* [テキスト] と #タグ を Garden リンクに変換する remark プラグイン */
 
-import type { Root, Text, PhrasingContent } from "mdast";
+import type { Root, PhrasingContent } from "mdast";
 import type { Plugin } from "unified";
 import { titleToSlug } from "./slug";
 
 /**
- * ブラケットリンク正規表現:
- * - `[テキスト]` にマッチ
+ * ブラケットリンク: `[テキスト]` にマッチ
  * - `[text](url)` (標準リンク) と `![alt](url)` (画像) は除外
  */
 const BRACKET_RE = /(?<!\!)\[([^\[\]]+?)\](?!\()/g;
 
+/**
+ * ハッシュタグ: `#タグ` にマッチ
+ * - 先頭 or 空白の直後に `#` + 1文字以上の単語文字
+ * - Markdown見出し `# ` (スペース付き) は除外される（テキストノード内では見出し構文は出現しない）
+ */
+const HASHTAG_RE = /(?:^|(?<=\s))#([\p{L}\p{N}_-]+)/gu;
+
 interface Options {
   /** 存在するノードのslugセット */
   existingSlugs: Set<string>;
+}
+
+/** ブラケットリンク or ハッシュタグのマッチ情報 */
+interface LinkMatch {
+  index: number;
+  length: number;
+  html: string;
 }
 
 export const remarkBracketLinks: Plugin<[Options], Root> = (options) => {
@@ -29,10 +42,9 @@ export const remarkBracketLinks: Plugin<[Options], Root> = (options) => {
     const newChildren: unknown[] = [];
     for (const child of node.children) {
       if (child.type === "text" && typeof child.value === "string") {
-        const parts = splitBracketLinks(child.value);
+        const parts = splitGardenLinks(child.value);
         newChildren.push(...parts);
       } else {
-        // 再帰的に子ノードを処理
         if (child.children) {
           visitText(child as typeof node);
         }
@@ -42,42 +54,62 @@ export const remarkBracketLinks: Plugin<[Options], Root> = (options) => {
     (node as { children: unknown[] }).children = newChildren;
   }
 
-  function splitBracketLinks(text: string): PhrasingContent[] {
+  /** ブラケットリンクとハッシュタグを統合的にパースする */
+  function splitGardenLinks(text: string): PhrasingContent[] {
+    // 全マッチを収集してインデックス順にソート
+    const matches: LinkMatch[] = [];
+
+    for (const m of text.matchAll(BRACKET_RE)) {
+      const title = m[1];
+      const slug = titleToSlug(title);
+      const exists = existingSlugs.has(slug);
+      matches.push({
+        index: m.index!,
+        length: m[0].length,
+        html: exists
+          ? `<a href="/garden/${encodeURIComponent(slug)}" class="garden-link">${esc(title)}</a>`
+          : `<a class="garden-link garden-link-broken">${esc(title)}</a>`,
+      });
+    }
+
+    for (const m of text.matchAll(HASHTAG_RE)) {
+      const tag = m[1];
+      matches.push({
+        index: m.index!,
+        length: m[0].length,
+        html: `<a href="/garden?tag=${encodeURIComponent(tag)}" class="garden-hashtag">#${esc(tag)}</a>`,
+      });
+    }
+
+    if (matches.length === 0) {
+      return [{ type: "text", value: text }];
+    }
+
+    // インデックス順にソート
+    matches.sort((a, b) => a.index - b.index);
+
     const result: PhrasingContent[] = [];
     let lastIndex = 0;
 
-    for (const match of text.matchAll(BRACKET_RE)) {
-      const fullMatch = match[0];
-      const title = match[1];
-      const start = match.index!;
+    for (const match of matches) {
+      // 重複マッチ（ブラケット内のハッシュタグ等）をスキップ
+      if (match.index < lastIndex) continue;
 
-      // マッチ前のテキスト
-      if (start > lastIndex) {
-        result.push({ type: "text", value: text.slice(lastIndex, start) });
+      if (match.index > lastIndex) {
+        result.push({ type: "text", value: text.slice(lastIndex, match.index) });
       }
-
-      const slug = titleToSlug(title);
-      const exists = existingSlugs.has(slug);
-
-      result.push({
-        type: "html",
-        value: exists
-          ? `<a href="/garden/${encodeURIComponent(slug)}" class="garden-link">${escapeHtml(title)}</a>`
-          : `<a class="garden-link garden-link-broken">${escapeHtml(title)}</a>`,
-      } as PhrasingContent);
-
-      lastIndex = start + fullMatch.length;
+      result.push({ type: "html", value: match.html } as PhrasingContent);
+      lastIndex = match.index + match.length;
     }
 
-    // 残りのテキスト
     if (lastIndex < text.length) {
       result.push({ type: "text", value: text.slice(lastIndex) });
     }
 
-    return result.length > 0 ? result : [{ type: "text", value: text }];
+    return result;
   }
 };
 
-function escapeHtml(s: string): string {
+function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }

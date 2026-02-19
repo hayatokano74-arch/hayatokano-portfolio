@@ -2427,6 +2427,35 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-5);
 }
 
+/* タグフィルタバー */
+.garden-tag-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.garden-filter-tag {
+  font-size: var(--font-meta);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 4px var(--space-3);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.garden-filter-tag:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
+.garden-filter-tag--active {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
 /* ブラケットリンク */
 .garden-link {
   color: var(--fg);
@@ -2443,6 +2472,19 @@ button.tl-photo-cell {
 .garden-link-broken {
   color: var(--muted);
   text-decoration-style: dashed;
+}
+
+/* ハッシュタグリンク */
+.garden-hashtag {
+  font-size: var(--font-meta);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.garden-hashtag:hover {
+  color: var(--fg);
 }
 
 /* バックリンク */
