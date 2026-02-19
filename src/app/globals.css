@@ -2291,13 +2291,13 @@ button.tl-photo-cell {
   margin-top: var(--space-6);
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
   .garden-masonry {
     columns: 2;
   }
 }
 
-/* ノードカード */
+/* ノードカード（共通） */
 .garden-card {
   display: block;
   break-inside: avoid;
@@ -2305,7 +2305,6 @@ button.tl-photo-cell {
   padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: 4px;
-  text-decoration: none;
   color: var(--fg);
   transition: border-color 0.2s ease;
 }
@@ -2314,33 +2313,62 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
+.garden-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
 .garden-card-date {
-  display: block;
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
-  margin-bottom: var(--space-2);
+  flex-shrink: 0;
+}
+
+.garden-card-title-link {
+  text-decoration: none;
+  color: inherit;
 }
 
 .garden-card-title {
   font-size: var(--font-heading);
   font-weight: 700;
   line-height: var(--lh-tight);
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
 }
 
-.garden-card-excerpt {
+/* カード内本文（全文表示） */
+.garden-card-body {
   font-size: var(--font-body);
   line-height: var(--lh-relaxed);
+  color: var(--fg);
+}
+
+.garden-card-body p {
+  margin: 0 0 var(--space-4);
+}
+
+.garden-card-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* メモ: よりコンパクトに */
+.garden-card--memo .garden-card-title {
+  font-size: var(--font-body);
+  margin-bottom: var(--space-2);
+}
+
+.garden-card--memo .garden-card-body {
+  font-size: var(--font-meta);
   color: var(--muted);
-  margin: 0;
 }
 
 .garden-card-tags {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-3);
 }
 
 .garden-card-tag {

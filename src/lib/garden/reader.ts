@@ -9,7 +9,7 @@ import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { remarkBracketLinks } from "./remark-bracket-links";
 import { titleToSlug } from "./slug";
-import type { GardenNode, GardenFrontmatter } from "./types";
+import type { GardenNode, GardenFrontmatter, GardenNodeType } from "./types";
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
@@ -51,6 +51,7 @@ async function parseFile(filePath: string, existingSlugs: Set<string>): Promise<
     title: fm.title,
     date: fm.date,
     tags: fm.tags ?? [],
+    type: (fm.type ?? "note") as GardenNodeType,
     contentHtml,
     excerpt,
   };

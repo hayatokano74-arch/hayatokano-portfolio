@@ -2,6 +2,7 @@
 title: "Digital Garden"
 date: "2026-02-19"
 tags: ["thinking", "web"]
+type: "note"
 ---
 
 Digital Gardenは、完成された記事ではなく、育てていく庭のようなノートの集まりだ。
