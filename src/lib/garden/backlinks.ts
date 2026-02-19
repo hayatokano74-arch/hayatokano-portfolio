@@ -67,26 +67,42 @@ function toPageSummary(
 
 /**
  * Cosense方式のLinks（1-hop）を取得。
- * forward links（ページ内のリンク先）+ backlinks（被リンク元）を
- * 区別なく混在して返す。各ページのexcerpt付き。
+ * 現在ページのリンク先を共有する他のページ + 被リンク元を
+ * ページカード（タイトル + 抜粋）として返す。
+ *
+ * 例: 石巻の朝 → [写真と記憶] で、冬の光も → [写真と記憶] なら、
+ *     冬の光がリンクカードとして表示される。
  */
 export const getLinkedPages = cache((currentSlug: string): LinkedPageSummary[] => {
   const allLinks = scanAllLinks();
   const summaryMap = getNodeSummaryMap();
   const seen = new Set<string>();
+  seen.add(currentSlug);
   const results: LinkedPageSummary[] = [];
 
-  // forward links: 現在ページ → ターゲット
+  // forward linksのターゲットを収集
+  const forwardTargets = new Set<string>();
   for (const link of allLinks) {
-    if (link.sourceSlug === currentSlug && link.targetSlug !== currentSlug && !seen.has(link.targetSlug)) {
-      seen.add(link.targetSlug);
-      results.push(toPageSummary(link.targetSlug, link.targetTitle, summaryMap));
+    if (link.sourceSlug === currentSlug && link.targetSlug !== currentSlug) {
+      forwardTargets.add(link.targetSlug);
     }
   }
 
-  // backlinks: ソース → 現在ページ
+  // 各forward linkターゲットを共有する他のページを収集
   for (const link of allLinks) {
-    if (link.targetSlug === currentSlug && link.sourceSlug !== currentSlug && !seen.has(link.sourceSlug)) {
+    if (
+      forwardTargets.has(link.targetSlug) &&
+      link.sourceSlug !== currentSlug &&
+      !seen.has(link.sourceSlug)
+    ) {
+      seen.add(link.sourceSlug);
+      results.push(toPageSummary(link.sourceSlug, link.sourceTitle, summaryMap));
+    }
+  }
+
+  // backlinks: 現在ページに直接リンクしているページ
+  for (const link of allLinks) {
+    if (link.targetSlug === currentSlug && !seen.has(link.sourceSlug)) {
       seen.add(link.sourceSlug);
       results.push(toPageSummary(link.sourceSlug, link.sourceTitle, summaryMap));
     }
@@ -97,45 +113,43 @@ export const getLinkedPages = cache((currentSlug: string): LinkedPageSummary[] =
 
 /**
  * Cosense方式の2-hopリンクを取得。
- * 現在ページのforward links（リンク先）ごとに、
- * 同じリンク先を共有する他のページをグループ化して返す。
+ * Linksセクションで表示済みのページを除外し、
+ * さらに遠い関連ページをグループ化して返す。
  */
 export const getTwoHopLinks = cache((currentSlug: string): TwoHopGroup[] => {
   const allLinks = scanAllLinks();
   const summaryMap = getNodeSummaryMap();
 
-  // 1-hopで直接つながっているページ（Links表示済み）を除外用に収集
-  const directSlugs = new Set<string>();
-  for (const link of allLinks) {
-    if (link.sourceSlug === currentSlug && link.targetSlug !== currentSlug) {
-      directSlugs.add(link.targetSlug);
-    }
-    if (link.targetSlug === currentSlug && link.sourceSlug !== currentSlug) {
-      directSlugs.add(link.sourceSlug);
-    }
-  }
+  // Linksセクションで表示済みのページを除外用に収集
+  const linkedPages = getLinkedPages(currentSlug);
+  const linkedSlugs = new Set<string>(linkedPages.map((p) => p.slug));
+  linkedSlugs.add(currentSlug);
 
-  // 現在ページからのforward links一覧（中継ページ候補）
-  const forwardLinks = new Map<string, string>();
-  for (const link of allLinks) {
-    if (link.sourceSlug === currentSlug && link.targetSlug !== currentSlug) {
-      if (!forwardLinks.has(link.targetSlug)) {
-        forwardLinks.set(link.targetSlug, link.targetTitle);
+  // Linksに表示されたページのforward linksを中継候補として収集
+  const hopTargets = new Map<string, string>();
+  for (const page of linkedPages) {
+    for (const link of allLinks) {
+      if (
+        link.sourceSlug === page.slug &&
+        link.targetSlug !== currentSlug &&
+        !linkedSlugs.has(link.targetSlug) &&
+        !hopTargets.has(link.targetSlug)
+      ) {
+        hopTargets.set(link.targetSlug, link.targetTitle);
       }
     }
   }
 
-  // 各forward linkについて、同じリンク先を持つ他のページを収集
+  // 各中継ターゲットを共有する、まだ表示されていないページを収集
   const groups: TwoHopGroup[] = [];
-  for (const [targetSlug, targetTitle] of forwardLinks) {
+  for (const [targetSlug, targetTitle] of hopTargets) {
     const seen = new Set<string>();
     const pages: LinkedPageSummary[] = [];
 
     for (const link of allLinks) {
       if (
         link.targetSlug === targetSlug &&
-        link.sourceSlug !== currentSlug &&
-        !directSlugs.has(link.sourceSlug) &&
+        !linkedSlugs.has(link.sourceSlug) &&
         !seen.has(link.sourceSlug)
       ) {
         seen.add(link.sourceSlug);
