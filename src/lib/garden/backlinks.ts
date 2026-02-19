@@ -5,7 +5,7 @@ import path from "path";
 import matter from "gray-matter";
 import { cache } from "react";
 import { titleToSlug } from "./slug";
-import type { GardenFrontmatter, BacklinkEntry, TwoHopEntry } from "./types";
+import type { GardenFrontmatter, ForwardLinkEntry, BacklinkEntry, TwoHopEntry } from "./types";
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
@@ -62,6 +62,23 @@ function extractContext(content: string, idx: number, matchLen: number): string 
     .replace(/\[([^\]]+)\]/g, "$1")
     .replace(/(?:^|(?<=\s))#([\p{L}\p{N}_-]+)/gu, "$1");
 }
+
+/** 特定slugからのフォワードリンク（ページ内に書かれたリンク先）を取得 */
+export const getForwardLinks = cache((sourceSlug: string): ForwardLinkEntry[] => {
+  const allLinks = scanAllLinks();
+  const seen = new Set<string>();
+  return allLinks
+    .filter((link) => link.sourceSlug === sourceSlug && link.targetSlug !== sourceSlug)
+    .filter((link) => {
+      if (seen.has(link.targetSlug)) return false;
+      seen.add(link.targetSlug);
+      return true;
+    })
+    .map((link) => ({
+      slug: link.targetSlug,
+      title: link.targetTitle,
+    }));
+});
 
 /** 特定slugに対するバックリンクを取得 */
 export const getBacklinks = cache((targetSlug: string): BacklinkEntry[] => {

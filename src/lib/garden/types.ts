@@ -24,6 +24,12 @@ export interface GardenNode {
   excerpt: string;
 }
 
+/** フォワードリンクエントリ（ページ内に書かれたリンク先） */
+export interface ForwardLinkEntry {
+  slug: string;
+  title: string;
+}
+
 /** バックリンクエントリ */
 export interface BacklinkEntry {
   slug: string;

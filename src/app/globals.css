@@ -2629,6 +2629,32 @@ button.tl-photo-cell {
   font-style: normal;
 }
 
+/* フォワードリンク（ページ内のリンク先） */
+.garden-forward-links {
+  margin-top: var(--space-9);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--line);
+}
+
+.garden-forward-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.garden-forward-link {
+  font-size: var(--font-body);
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.garden-forward-link:hover {
+  text-decoration: underline;
+}
+
 /* バックリンク（Links） */
 .garden-backlinks {
   margin-top: var(--space-9);

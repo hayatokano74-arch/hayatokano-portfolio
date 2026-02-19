@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
+import { GardenForwardLinks } from "@/components/GardenForwardLinks";
 import { GardenBacklinks } from "@/components/GardenBacklinks";
 import { GardenTwoHopLinks } from "@/components/GardenTwoHopLinks";
 import { getNodeBySlug, getAllPageSlugs, getVirtualPageTitle } from "@/lib/garden/reader";
-import { getBacklinks, getTwoHopLinks } from "@/lib/garden/backlinks";
+import { getForwardLinks, getBacklinks, getTwoHopLinks } from "@/lib/garden/backlinks";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -34,8 +35,13 @@ export default async function GardenNodePage({ params }: Props) {
   const pageSlug = node?.slug ?? decoded;
   const pageTitle = node?.title ?? getVirtualPageTitle(decoded) ?? decoded;
 
+  const forwardLinks = getForwardLinks(pageSlug);
   const backlinks = getBacklinks(pageSlug);
   const twoHopLinks = getTwoHopLinks(pageSlug);
+
+  // 実ページ: forward links を「リンク」として表示
+  // 仮想ページ: backlinks を「リンク」として表示（そのタグ/概念を持つページ一覧）
+  const isVirtualPage = !node;
 
   return (
     <CanvasShell>
@@ -53,8 +59,16 @@ export default async function GardenNodePage({ params }: Props) {
           </>
         )}
 
-        <GardenBacklinks backlinks={backlinks} />
-        <GardenTwoHopLinks links={twoHopLinks} />
+        {isVirtualPage ? (
+          /* 仮想ページ: backlinks = このタグ/概念を持つページ一覧 */
+          <GardenBacklinks backlinks={backlinks} />
+        ) : (
+          /* 実ページ: forward links + 2-hop links */
+          <>
+            <GardenForwardLinks links={forwardLinks} />
+            <GardenTwoHopLinks links={twoHopLinks} />
+          </>
+        )}
 
         <div className="garden-detail-back">
           <Link href="/garden" className="action-link">
