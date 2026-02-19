@@ -2445,25 +2445,6 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
-/* 横フローグリッド（左→右→次の行で日付順が自然に読める） */
-.garden-masonry {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--grid-gutter);
-  margin-top: var(--space-6);
-}
-
-.garden-masonry > * {
-  width: calc((100% - var(--grid-gutter) * 2) / 3);
-}
-
-@media (max-width: 1100px) {
-  .garden-masonry > * {
-    width: calc((100% - var(--grid-gutter)) / 2);
-  }
-}
-
 /* ノードカード（共通） */
 .garden-card {
   display: block;
@@ -3238,10 +3219,6 @@ button.tl-photo-cell {
   /* Garden モバイル */
   .garden-search-input {
     font-size: 16px; /* iOSのズーム防止 */
-  }
-
-  .garden-masonry > * {
-    width: 100%;
   }
 
   .garden-detail > * {
