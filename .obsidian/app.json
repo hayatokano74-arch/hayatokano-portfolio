@@ -1,6 +1,8 @@
 {
   "useMarkdownLinks": false,
-  "newLinkFormat": "shortest",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "content/garden",
+  "attachmentFolderPath": "content/garden",
   "showFrontmatter": true,
   "strictLineBreaks": false,
   "defaultViewMode": "source"

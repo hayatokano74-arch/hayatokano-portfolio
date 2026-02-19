@@ -18,10 +18,11 @@ npm-debug.log*
 public/garden-search-index.json
 
 # Obsidian（vault設定はコミットするが、ワークスペース状態は除外）
-content/garden/.obsidian/workspace.json
-content/garden/.obsidian/workspace-mobile.json
-content/garden/.obsidian/graph.json
-content/garden/.obsidian/hotkeys.json
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/graph.json
+.obsidian/hotkeys.json
+.obsidian/plugins/
 
 # misc
 .DS_Store
