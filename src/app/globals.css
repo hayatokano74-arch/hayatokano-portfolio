@@ -2631,9 +2631,7 @@ button.tl-photo-cell {
 
 /* Links（1-hop: forward + backlinks 混在） */
 .garden-linked {
-  margin-top: var(--space-9);
-  padding-top: var(--space-7);
-  border-top: 1px solid var(--line);
+  margin-top: var(--space-5);
 }
 
 .garden-linked-list {
@@ -2752,14 +2750,15 @@ button.tl-photo-cell {
 /* 関連ページ検索 + ソート */
 .garden-related {
   margin-top: var(--space-9);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--line);
 }
 
 .garden-related-controls {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-5);
 }
 
 .garden-related-search-wrap {
