@@ -7,7 +7,7 @@ import { type Category } from "@/lib/categories";
 import { NAV_ITEMS, type Section } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 
-type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "News" | "About" | "Contact";
+type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "Garden" | "News" | "About" | "Contact";
 
 export function Header({
   active,

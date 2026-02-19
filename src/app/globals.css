@@ -2282,6 +2282,186 @@ button.tl-photo-cell {
   }
 }
 
+/* ═══ Garden ═══ */
+
+/* マソンリーグリッド（CSS columns） */
+.garden-masonry {
+  columns: 3;
+  column-gap: var(--grid-gutter);
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 1200px) {
+  .garden-masonry {
+    columns: 2;
+  }
+}
+
+/* ノードカード */
+.garden-card {
+  display: block;
+  break-inside: avoid;
+  margin-bottom: var(--grid-gutter);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--fg);
+  transition: border-color 0.2s ease;
+}
+
+.garden-card:hover {
+  border-color: var(--fg);
+}
+
+.garden-card-date {
+  display: block;
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: var(--space-2);
+}
+
+.garden-card-title {
+  font-size: var(--font-heading);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  margin: 0 0 var(--space-3);
+}
+
+.garden-card-excerpt {
+  font-size: var(--font-body);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  margin: 0;
+}
+
+.garden-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.garden-card-tag {
+  font-size: var(--font-meta);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 2px var(--space-2);
+}
+
+/* 個別ページ */
+.garden-detail {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
+  margin-top: var(--space-6);
+}
+
+.garden-detail > * {
+  grid-column: 3 / span 8;
+  min-width: 0;
+}
+
+.garden-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.garden-detail-date {
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.garden-detail-tags {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.garden-detail-title {
+  font-size: var(--font-brand);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  margin: 0 0 var(--space-7);
+}
+
+.garden-detail-body {
+  font-size: var(--font-body);
+  line-height: var(--lh-relaxed);
+}
+
+.garden-detail-body p {
+  margin: 0 0 var(--space-5);
+}
+
+/* ブラケットリンク */
+.garden-link {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--muted);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.garden-link:hover {
+  text-decoration-color: var(--fg);
+}
+
+.garden-link-broken {
+  color: var(--muted);
+  text-decoration-style: dashed;
+}
+
+/* バックリンク */
+.garden-backlinks {
+  margin-top: var(--space-9);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--line);
+}
+
+.garden-backlinks-heading {
+  font-size: var(--font-meta);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 var(--space-5);
+}
+
+.garden-backlinks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.garden-backlink-title {
+  font-size: var(--font-body);
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.garden-backlink-context {
+  font-size: var(--font-meta);
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  margin: var(--space-1) 0 0;
+}
+
+/* 戻るリンク */
+.garden-detail-back {
+  margin-top: var(--space-9);
+  padding-top: var(--space-5);
+}
+
 /* ═══ モバイルオーバーライド（ファイル末尾に1ブロックのみ配置） ═══ */
 @media (max-width: 900px) {
   :root {
@@ -2831,6 +3011,15 @@ button.tl-photo-cell {
   .me-no-hoshi-section {
     margin-top: var(--space-7);
     padding-top: var(--space-4);
+  }
+
+  /* Garden モバイル */
+  .garden-masonry {
+    columns: 1;
+  }
+
+  .garden-detail > * {
+    grid-column: 1 / -1;
   }
 }
 
