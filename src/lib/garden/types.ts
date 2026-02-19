@@ -24,24 +24,20 @@ export interface GardenNode {
   excerpt: string;
 }
 
-/** フォワードリンクエントリ（ページ内に書かれたリンク先） */
-export interface ForwardLinkEntry {
+/** リンクされたページの概要（カード表示用） */
+export interface LinkedPageSummary {
   slug: string;
   title: string;
+  /** 本文抜粋（実ページのみ。仮想ページはundefined） */
+  excerpt?: string;
 }
 
-/** バックリンクエントリ */
-export interface BacklinkEntry {
-  slug: string;
-  title: string;
-  /** リンクを含む文脈テキスト */
-  context: string;
-}
-
-/** 2-hopリンクエントリ（間接的に関連するページ） */
-export interface TwoHopEntry {
-  slug: string;
-  title: string;
-  /** 中継ページのタイトル（A→B→Cの場合、Bのタイトル） */
+/** 2-hopリンクグループ（中継ページでグループ化） */
+export interface TwoHopGroup {
+  /** 中継ページのタイトル（グループ見出し） */
   via: string;
+  /** 中継ページのslug */
+  viaSlug: string;
+  /** このリンクを共有する関連ページ一覧 */
+  pages: LinkedPageSummary[];
 }

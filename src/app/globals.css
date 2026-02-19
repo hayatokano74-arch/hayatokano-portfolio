@@ -2629,93 +2629,124 @@ button.tl-photo-cell {
   font-style: normal;
 }
 
-/* フォワードリンク（ページ内のリンク先） */
-.garden-forward-links {
+/* Links（1-hop: forward + backlinks 混在） */
+.garden-linked {
   margin-top: var(--space-9);
   padding-top: var(--space-7);
   border-top: 1px solid var(--line);
 }
 
-.garden-forward-links-list {
+.garden-linked-list {
   list-style: none;
   padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
+  margin: var(--space-4) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--space-3);
 }
 
-.garden-forward-link {
-  font-size: var(--font-body);
+.garden-linked-card {
+  min-width: 0;
+}
+
+.garden-linked-card-link {
+  display: block;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: 4px;
   text-decoration: none;
   color: var(--fg);
+  transition: border-color 0.15s;
 }
 
-.garden-forward-link:hover {
-  text-decoration: underline;
+.garden-linked-card-link:hover {
+  border-color: var(--fg);
 }
 
-/* バックリンク（Links） */
-.garden-backlinks {
-  margin-top: var(--space-9);
-  padding-top: var(--space-7);
-  border-top: 1px solid var(--line);
-}
-
-.garden-backlinks-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.garden-backlink-title {
+.garden-linked-card-title {
+  display: block;
   font-size: var(--font-body);
   font-weight: 700;
-  text-decoration: none;
-  color: var(--fg);
 }
 
-.garden-backlink-context {
+.garden-linked-card-excerpt {
+  margin: var(--space-1) 0 0;
   font-size: var(--font-meta);
   line-height: var(--lh-relaxed);
   color: var(--muted);
-  margin: var(--space-1) 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* 2-hopリンク */
+/* 2-hopリンク（中継ページでグループ化） */
 .garden-twohop {
   margin-top: var(--space-7);
   padding-top: var(--space-5);
   border-top: 1px solid var(--line);
 }
 
-.garden-twohop-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.garden-twohop-groups {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.garden-twohop-item {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-}
-
-.garden-twohop-title {
-  font-size: var(--font-body);
-  text-decoration: none;
-  color: var(--fg);
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-4);
 }
 
 .garden-twohop-via {
   font-size: var(--font-meta);
+  letter-spacing: 0.08em;
   color: var(--muted);
+  text-decoration: none;
+}
+
+.garden-twohop-via:hover {
+  color: var(--fg);
+}
+
+.garden-twohop-pages {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-2);
+}
+
+.garden-twohop-card {
+  min-width: 0;
+}
+
+.garden-twohop-card-link {
+  display: block;
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--muted);
+  transition: border-color 0.15s;
+}
+
+.garden-twohop-card-link:hover {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+
+.garden-twohop-card-title {
+  display: block;
+  font-size: var(--font-meta);
+}
+
+.garden-twohop-card-excerpt {
+  margin: var(--space-1) 0 0;
+  font-size: 11px;
+  line-height: var(--lh-relaxed);
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* 戻るリンク */

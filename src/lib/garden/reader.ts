@@ -115,3 +115,30 @@ export function getVirtualPageTitle(slug: string): string | null {
   const linkedSlugs = getAllLinkedSlugs();
   return linkedSlugs.get(slug) ?? null;
 }
+
+/**
+ * 全ページの概要マップを取得（slug → { title, excerpt }）。
+ * リンクカード表示用。MDファイルがあるページのみexcerptを持つ。
+ */
+export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: string }> {
+  const map = new Map<string, { title: string; excerpt?: string }>();
+  if (!fs.existsSync(GARDEN_DIR)) return map;
+
+  const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
+  for (const file of files) {
+    const raw = fs.readFileSync(path.join(GARDEN_DIR, file), "utf-8");
+    const { data, content } = matter(raw);
+    const fm = data as GardenFrontmatter;
+    const slug = titleToSlug(fm.title);
+
+    const plainText = content
+      .replace(/(?<!\!)\[([^\]]+)\](?!\()/g, "$1")
+      .replace(/(?:^|\s)#([\p{L}\p{N}_-]+)/gu, " $1")
+      .replace(/\n/g, " ")
+      .trim();
+    const excerpt = plainText.length > 80 ? plainText.slice(0, 80) + "…" : plainText;
+
+    map.set(slug, { title: fm.title, excerpt });
+  }
+  return map;
+}
