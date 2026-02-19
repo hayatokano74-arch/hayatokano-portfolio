@@ -2427,33 +2427,12 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-5);
 }
 
-/* タグフィルタバー */
-.garden-tag-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-6);
-}
-
-.garden-filter-tag {
+/* タグフィルタ中のラベル */
+.garden-filter-label {
   font-size: var(--font-meta);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--muted);
-  text-decoration: none;
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  padding: 4px var(--space-3);
-  transition: color 0.2s ease, border-color 0.2s ease;
-}
-
-.garden-filter-tag:hover {
-  color: var(--fg);
-  border-color: var(--fg);
-}
-
-.garden-filter-tag--active {
-  color: var(--fg);
-  border-color: var(--fg);
+  margin: 0 0 var(--space-5);
 }
 
 /* ブラケットリンク */
