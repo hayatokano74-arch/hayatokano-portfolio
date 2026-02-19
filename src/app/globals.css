@@ -2547,7 +2547,7 @@ button.tl-photo-cell {
 }
 
 .garden-detail > * {
-  grid-column: 3 / span 8;
+  grid-column: 4 / span 6;
   min-width: 0;
 }
 
