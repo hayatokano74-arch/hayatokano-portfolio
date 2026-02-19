@@ -2449,6 +2449,7 @@ button.tl-photo-cell {
 .garden-masonry {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--grid-gutter);
   margin-top: var(--space-6);
 }
