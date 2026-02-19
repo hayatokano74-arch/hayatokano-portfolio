@@ -2659,37 +2659,52 @@ button.tl-photo-cell {
   margin: var(--space-1) 0 0;
 }
 
-/* 2-hopリンク */
+/* 2-hopリンク（Cosense方式グループ表示） */
 .garden-twohop {
   margin-top: var(--space-7);
   padding-top: var(--space-5);
   border-top: 1px solid var(--line);
 }
 
-.garden-twohop-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.garden-twohop-groups {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-5);
+  margin-top: var(--space-4);
 }
 
-.garden-twohop-item {
+.garden-twohop-group {
+  min-width: 160px;
+}
+
+.garden-twohop-via-link {
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.garden-twohop-via-link:hover {
+  color: var(--fg);
+}
+
+.garden-twohop-pages {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0;
   display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
-.garden-twohop-title {
+.garden-twohop-page-link {
   font-size: var(--font-body);
   text-decoration: none;
   color: var(--fg);
 }
 
-.garden-twohop-via {
-  font-size: var(--font-meta);
-  color: var(--muted);
+.garden-twohop-page-link:hover {
+  text-decoration: underline;
 }
 
 /* 戻るリンク */

@@ -32,10 +32,12 @@ export interface BacklinkEntry {
   context: string;
 }
 
-/** 2-hopリンクエントリ（間接的に関連するページ） */
-export interface TwoHopEntry {
-  slug: string;
-  title: string;
-  /** 中継ページのタイトル（A→B→Cの場合、Bのタイトル） */
+/** 2-hopリンクグループ（共有リンクでグループ化された関連ページ） */
+export interface TwoHopGroup {
+  /** 共有リンク先のタイトル（グループヘッダー） */
   via: string;
+  /** 共有リンク先のslug */
+  viaSlug: string;
+  /** このリンクを共有する他のページ一覧 */
+  pages: { slug: string; title: string }[];
 }
