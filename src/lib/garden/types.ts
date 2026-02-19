@@ -30,6 +30,8 @@ export interface LinkedPageSummary {
   title: string;
   /** 本文抜粋（実ページのみ。仮想ページはundefined） */
   excerpt?: string;
+  /** 投稿日（実ページのみ。仮想ページはundefined） */
+  date?: string;
 }
 
 /** 2-hopリンクグループ（中継ページでグループ化） */

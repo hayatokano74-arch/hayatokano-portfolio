@@ -120,8 +120,8 @@ export function getVirtualPageTitle(slug: string): string | null {
  * 全ページの概要マップを取得（slug → { title, excerpt }）。
  * リンクカード表示用。MDファイルがあるページのみexcerptを持つ。
  */
-export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: string }> {
-  const map = new Map<string, { title: string; excerpt?: string }>();
+export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: string; date?: string }> {
+  const map = new Map<string, { title: string; excerpt?: string; date?: string }>();
   if (!fs.existsSync(GARDEN_DIR)) return map;
 
   const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
@@ -138,7 +138,7 @@ export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: stri
       .trim();
     const excerpt = plainText.length > 80 ? plainText.slice(0, 80) + "…" : plainText;
 
-    map.set(slug, { title: fm.title, excerpt });
+    map.set(slug, { title: fm.title, excerpt, date: fm.date });
   }
   return map;
 }

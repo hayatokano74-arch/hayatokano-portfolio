@@ -51,17 +51,18 @@ const scanAllLinks = cache((): RawLink[] => {
   return links;
 });
 
-/** slug → LinkedPageSummary に変換（ページデータがあれば抜粋付き） */
+/** slug → LinkedPageSummary に変換（ページデータがあれば抜粋・日付付き） */
 function toPageSummary(
   slug: string,
   title: string,
-  summaryMap: Map<string, { title: string; excerpt?: string }>,
+  summaryMap: Map<string, { title: string; excerpt?: string; date?: string }>,
 ): LinkedPageSummary {
   const data = summaryMap.get(slug);
   return {
     slug,
     title: data?.title ?? title,
     excerpt: data?.excerpt,
+    date: data?.date,
   };
 }
 
