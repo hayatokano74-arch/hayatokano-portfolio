@@ -2313,18 +2313,12 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
-.garden-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
 .garden-card-date {
+  display: block;
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
-  flex-shrink: 0;
+  margin-bottom: var(--space-3);
 }
 
 .garden-card-title-link {
@@ -2365,21 +2359,6 @@ button.tl-photo-cell {
   color: var(--muted);
 }
 
-.garden-card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.garden-card-tag {
-  font-size: var(--font-meta);
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  padding: 2px var(--space-2);
-}
-
 /* 個別ページ */
 .garden-detail {
   display: grid;
@@ -2393,22 +2372,12 @@ button.tl-photo-cell {
   min-width: 0;
 }
 
-.garden-detail-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-3);
-}
-
 .garden-detail-date {
+  display: block;
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
-}
-
-.garden-detail-tags {
-  display: flex;
-  gap: var(--space-2);
+  margin-bottom: var(--space-5);
 }
 
 .garden-detail-title {
@@ -2467,7 +2436,7 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-7);
 }
 
-/* セクション見出し共通（Links, 2-hop Links） */
+/* セクション見出し共通（← Links, ↝ 2-hop Links） */
 .garden-section-heading {
   font-size: var(--font-meta);
   font-weight: 700;
@@ -2475,6 +2444,11 @@ button.tl-photo-cell {
   text-transform: uppercase;
   color: var(--muted);
   margin: 0 0 var(--space-5);
+}
+
+.garden-section-icon {
+  margin-right: var(--space-2);
+  font-style: normal;
 }
 
 /* バックリンク（Links） */

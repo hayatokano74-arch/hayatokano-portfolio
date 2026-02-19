@@ -45,16 +45,7 @@ export default async function GardenNodePage({ params }: Props) {
 
         {node ? (
           <>
-            <div className="garden-detail-meta">
-              <time className="garden-detail-date">{node.date}</time>
-              {node.tags.length > 0 && (
-                <div className="garden-detail-tags">
-                  {node.tags.map((tag) => (
-                    <span key={tag} className="garden-card-tag">{tag}</span>
-                  ))}
-                </div>
-              )}
-            </div>
+            <time className="garden-detail-date">{node.date}</time>
             <div
               className="garden-detail-body"
               dangerouslySetInnerHTML={{ __html: node.contentHtml }}
