@@ -30,7 +30,7 @@ export default async function GardenNodePage({ params }: Props) {
   const decoded = decodeURIComponent(slug);
   const node = await getNodeBySlug(decoded);
 
-  // MDファイルが存在しない場合は仮想ページ（バックリンク一覧のみ）
+  // MDファイルがなくてもリンクされた時点でページは存在する
   const pageSlug = node?.slug ?? decoded;
   const pageTitle = node?.title ?? getVirtualPageTitle(decoded) ?? decoded;
 
@@ -43,7 +43,7 @@ export default async function GardenNodePage({ params }: Props) {
       <article className="garden-detail">
         <h1 className="garden-detail-title">{pageTitle}</h1>
 
-        {node ? (
+        {node && (
           <>
             <time className="garden-detail-date">{node.date}</time>
             <div
@@ -51,10 +51,6 @@ export default async function GardenNodePage({ params }: Props) {
               dangerouslySetInnerHTML={{ __html: node.contentHtml }}
             />
           </>
-        ) : (
-          <p className="garden-detail-empty">
-            このページにはまだ内容がありません。
-          </p>
         )}
 
         <GardenBacklinks backlinks={backlinks} />
