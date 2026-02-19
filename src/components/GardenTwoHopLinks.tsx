@@ -6,14 +6,14 @@ export function GardenTwoHopLinks({ links }: { links: TwoHopEntry[] }) {
 
   return (
     <section className="garden-twohop">
-      <h2 className="garden-section-heading"><span className="garden-section-icon">↝</span> 2-hop Links</h2>
+      <h2 className="garden-section-heading"><span className="garden-section-icon">↝</span> 関連ページ</h2>
       <ul className="garden-twohop-list">
         {links.map((entry) => (
           <li key={entry.slug} className="garden-twohop-item">
             <Link href={`/garden/${encodeURIComponent(entry.slug)}`} className="garden-twohop-title action-link">
               {entry.title}
             </Link>
-            <span className="garden-twohop-via">via {entry.via}</span>
+            <span className="garden-twohop-via">{entry.via}（経由）</span>
           </li>
         ))}
       </ul>

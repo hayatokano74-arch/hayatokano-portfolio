@@ -2436,12 +2436,11 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-7);
 }
 
-/* セクション見出し共通（← Links, ↝ 2-hop Links） */
+/* セクション見出し共通（← リンク, ↝ 関連ページ） */
 .garden-section-heading {
   font-size: var(--font-meta);
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--muted);
   margin: 0 0 var(--space-5);
 }
