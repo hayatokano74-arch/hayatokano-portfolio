@@ -14,6 +14,9 @@ out/
 # debug
 npm-debug.log*
 
+# 生成ファイル
+public/garden-search-index.json
+
 # misc
 .DS_Store
 *.tsbuildinfo

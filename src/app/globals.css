@@ -2284,6 +2284,167 @@ button.tl-photo-cell {
 
 /* ═══ Garden ═══ */
 
+/* 検索UI */
+.garden-search-wrapper {
+  position: relative;
+  margin-top: var(--space-5);
+}
+
+.garden-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.garden-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.garden-search-input {
+  width: 100%;
+  padding: 10px 36px 10px 36px;
+  font-size: var(--font-body);
+  font-family: inherit;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.garden-search-input::placeholder {
+  color: var(--muted);
+}
+
+.garden-search-input:focus {
+  border-color: var(--fg);
+}
+
+.garden-search-input:disabled {
+  opacity: 0.5;
+}
+
+.garden-search-clear {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 16px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: color 0.15s ease;
+}
+
+.garden-search-clear:hover {
+  color: var(--fg);
+}
+
+/* QuickSearchポップアップ */
+.garden-search-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin-top: 4px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .garden-search-popup {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.garden-search-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: var(--fg);
+  transition: background-color 0.1s ease;
+}
+
+.garden-search-item:hover,
+.garden-search-item--active {
+  background: var(--line);
+}
+
+.garden-search-item-title {
+  font-size: var(--font-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.garden-search-item-date {
+  font-size: var(--font-meta);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-left: var(--space-4);
+  flex-shrink: 0;
+}
+
+.garden-search-hint {
+  padding: 6px 12px;
+  font-size: var(--font-meta);
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  letter-spacing: 0.04em;
+}
+
+.garden-search-empty {
+  padding: 10px 12px;
+  font-size: var(--font-meta);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+/* 全文検索結果バー */
+.garden-search-result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+  padding: 8px 0;
+  font-size: var(--font-meta);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+
+.garden-search-result-clear {
+  padding: 2px 8px;
+  font-size: var(--font-meta);
+  font-family: inherit;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.garden-search-result-clear:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
 /* 横フローグリッド（左→右→次の行で日付順が自然に読める） */
 .garden-masonry {
   display: flex;
@@ -3074,6 +3235,10 @@ button.tl-photo-cell {
   }
 
   /* Garden モバイル */
+  .garden-search-input {
+    font-size: 16px; /* iOSのズーム防止 */
+  }
+
   .garden-masonry > * {
     width: 100%;
   }
