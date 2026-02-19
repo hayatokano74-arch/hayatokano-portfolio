@@ -2284,41 +2284,30 @@ button.tl-photo-cell {
 
 /* ═══ Garden ═══ */
 
-/* マソンリーグリッド（CSS columns） */
-.garden-masonry {
-  columns: 3;
-  column-gap: var(--grid-gutter);
+/* 日付順リスト */
+.garden-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
   margin-top: var(--space-6);
 }
 
-@media (max-width: 1100px) {
-  .garden-masonry {
-    columns: 2;
-  }
-}
-
-/* ノードカード（共通） */
+/* ノードカード（日付順リスト用） */
 .garden-card {
-  display: block;
-  break-inside: avoid;
-  margin-bottom: var(--grid-gutter);
-  padding: var(--space-5);
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
   color: var(--fg);
-  transition: border-color 0.2s ease;
-}
-
-.garden-card:hover {
-  border-color: var(--fg);
 }
 
 .garden-card-date {
-  display: block;
+  flex-shrink: 0;
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
-  margin-bottom: var(--space-3);
+  min-width: 7em;
 }
 
 .garden-card-title-link {
@@ -2326,37 +2315,20 @@ button.tl-photo-cell {
   color: inherit;
 }
 
+.garden-card-title-link:hover {
+  text-decoration: underline;
+}
+
 .garden-card-title {
-  font-size: var(--font-heading);
-  font-weight: 700;
+  font-size: var(--font-body);
+  font-weight: 400;
   line-height: var(--lh-tight);
-  margin: 0 0 var(--space-4);
+  margin: 0;
 }
 
-/* カード内本文（全文表示） */
+/* カード内本文（リスト表示では非表示） */
 .garden-card-body {
-  font-size: var(--font-body);
-  line-height: var(--lh-relaxed);
-  color: var(--fg);
-}
-
-.garden-card-body p {
-  margin: 0 0 var(--space-4);
-}
-
-.garden-card-body p:last-child {
-  margin-bottom: 0;
-}
-
-/* メモ: よりコンパクトに */
-.garden-card--memo .garden-card-title {
-  font-size: var(--font-body);
-  margin-bottom: var(--space-2);
-}
-
-.garden-card--memo .garden-card-body {
-  font-size: var(--font-meta);
-  color: var(--muted);
+  display: none;
 }
 
 /* 個別ページ */
@@ -2368,7 +2340,7 @@ button.tl-photo-cell {
 }
 
 .garden-detail > * {
-  grid-column: 3 / span 8;
+  grid-column: 1 / -1;
   min-width: 0;
 }
 
@@ -2426,14 +2398,6 @@ button.tl-photo-cell {
 /* MDファイルが未作成のページリンク（仮想ページ） */
 .garden-link-empty {
   text-decoration-style: dashed;
-}
-
-/* 仮想ページの本文エリア */
-.garden-detail-empty {
-  font-size: var(--font-body);
-  color: var(--muted);
-  font-style: italic;
-  margin: 0 0 var(--space-7);
 }
 
 /* セクション見出し共通（← リンク, ↝ 関連ページ） */
@@ -3071,12 +3035,13 @@ button.tl-photo-cell {
   }
 
   /* Garden モバイル */
-  .garden-masonry {
-    columns: 1;
+  .garden-card {
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
-  .garden-detail > * {
-    grid-column: 1 / -1;
+  .garden-card-date {
+    min-width: auto;
   }
 }
 
