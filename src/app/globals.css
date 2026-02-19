@@ -2445,14 +2445,30 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
+/* グリッド（4カラム均一高さ） */
+.garden-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--grid-gutter);
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 1100px) {
+  .garden-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* ノードカード（共通） */
 .garden-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: 4px;
   color: var(--fg);
   transition: border-color 0.2s ease;
+  overflow: hidden;
 }
 
 .garden-card:hover {
@@ -2492,11 +2508,15 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-4);
 }
 
-/* カード内本文（全文表示） */
+/* カード内本文（4行で切り詰め） */
 .garden-card-body {
   font-size: var(--font-body);
   line-height: var(--lh-relaxed);
   color: var(--fg);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .garden-card-body p {
@@ -3232,6 +3252,10 @@ button.tl-photo-cell {
   /* Garden モバイル */
   .garden-search-input {
     font-size: 16px; /* iOSのズーム防止 */
+  }
+
+  .garden-grid {
+    grid-template-columns: 1fr;
   }
 
   .garden-detail > * {
