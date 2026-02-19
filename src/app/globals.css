@@ -2284,24 +2284,27 @@ button.tl-photo-cell {
 
 /* ═══ Garden ═══ */
 
-/* マソンリーグリッド（CSS columns） */
+/* 横フローグリッド（左→右→次の行で日付順が自然に読める） */
 .garden-masonry {
-  columns: 3;
-  column-gap: var(--grid-gutter);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--grid-gutter);
   margin-top: var(--space-6);
 }
 
+.garden-masonry > * {
+  width: calc((100% - var(--grid-gutter) * 2) / 3);
+}
+
 @media (max-width: 1100px) {
-  .garden-masonry {
-    columns: 2;
+  .garden-masonry > * {
+    width: calc((100% - var(--grid-gutter)) / 2);
   }
 }
 
 /* ノードカード（共通） */
 .garden-card {
   display: block;
-  break-inside: avoid;
-  margin-bottom: var(--grid-gutter);
   padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -3071,8 +3074,8 @@ button.tl-photo-cell {
   }
 
   /* Garden モバイル */
-  .garden-masonry {
-    columns: 1;
+  .garden-masonry > * {
+    width: 100%;
   }
 
   .garden-detail > * {
