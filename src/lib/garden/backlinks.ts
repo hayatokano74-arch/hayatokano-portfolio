@@ -10,7 +10,8 @@ import type { GardenFrontmatter, LinkedPageSummary, TwoHopGroup } from "./types"
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
-/** ブラケットリンクとハッシュタグの正規表現 */
+/** リンク構文の正規表現 */
+const WIKILINK_RE = /\[\[([^\[\]|]+?)(?:\|[^\[\]]+?)?\]\]/g;
 const BRACKET_RE = /(?<!\!)\[([^\[\]]+?)\](?!\()/g;
 const HASHTAG_RE = /(?:^|(?<=\s))#([\p{L}\p{N}_-]+)/gu;
 
@@ -33,8 +34,19 @@ const scanAllLinks = cache((): RawLink[] => {
     const fm = data as GardenFrontmatter;
     const sourceSlug = titleToSlug(fm.title);
 
-    // ブラケットリンク [テキスト]
+    // Obsidian式 [[wikilink]]（[[ページ|表示名]] のページ部分を使用）
+    const wikilinkPositions = new Set<number>();
+    for (const match of content.matchAll(WIKILINK_RE)) {
+      wikilinkPositions.add(match.index!);
+      const targetTitle = match[1];
+      const targetSlug = titleToSlug(targetTitle);
+      links.push({ sourceSlug, sourceTitle: fm.title, targetSlug, targetTitle });
+    }
+
+    // ブラケットリンク [テキスト]（wikilink内の [ ] と重複しないようスキップ）
     for (const match of content.matchAll(BRACKET_RE)) {
+      // [[wikilink]] の内側の [テキスト] はスキップ
+      if (wikilinkPositions.has(match.index! - 1)) continue;
       const targetTitle = match[1];
       const targetSlug = titleToSlug(targetTitle);
       links.push({ sourceSlug, sourceTitle: fm.title, targetSlug, targetTitle });

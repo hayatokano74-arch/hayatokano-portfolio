@@ -4,7 +4,10 @@ import type { Root, PhrasingContent } from "mdast";
 import type { Plugin } from "unified";
 import { titleToSlug } from "./slug";
 
-/** ブラケットリンク: [テキスト] */
+/** Obsidian式wikilink: [[テキスト]] または [[ページ|表示名]] */
+const WIKILINK_RE = /\[\[([^\[\]|]+?)(?:\|([^\[\]]+?))?\]\]/g;
+
+/** ブラケットリンク: [テキスト]（Cosense/Scrapbox式） */
 const BRACKET_RE = /(?<!\!)\[([^\[\]]+?)\](?!\()/g;
 
 /** ハッシュタグ: #タグ（ページリンクとして扱う） */
@@ -49,8 +52,22 @@ export const remarkBracketLinks: Plugin<[Options], Root> = (options) => {
   function splitGardenLinks(text: string): PhrasingContent[] {
     const matches: LinkMatch[] = [];
 
-    // ブラケットリンク [テキスト] → ページリンク
+    // Obsidian式 [[wikilink]] → ページリンク（[[ページ|表示名]] もサポート）
+    for (const m of text.matchAll(WIKILINK_RE)) {
+      const page = m[1];
+      const display = m[2] ?? page;
+      const slug = titleToSlug(page);
+      matches.push({
+        index: m.index!,
+        length: m[0].length,
+        html: `<a href="/garden/${encodeURIComponent(slug)}" class="garden-link${existingSlugs.has(slug) ? "" : " garden-link-empty"}">${esc(display)}</a>`,
+      });
+    }
+
+    // ブラケットリンク [テキスト] → ページリンク（Cosense/Scrapbox式）
     for (const m of text.matchAll(BRACKET_RE)) {
+      // wikilink [[]] と重複する場合はスキップ
+      if (matches.some((prev) => m.index! >= prev.index && m.index! < prev.index + prev.length)) continue;
       const title = m[1];
       const slug = titleToSlug(title);
       matches.push({
