@@ -2459,12 +2459,25 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
+.garden-card-meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.garden-card-index {
+  font-size: var(--font-meta);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.5;
+}
+
 .garden-card-date {
-  display: block;
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
-  margin-bottom: var(--space-3);
 }
 
 .garden-card-title-link {

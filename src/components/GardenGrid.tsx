@@ -10,10 +10,10 @@ export function GardenGrid({ nodes }: { nodes: GardenNode[] }) {
   }
 
   return (
-    <ResponsiveMasonry columnsCountBreakPoints={{ 0: 1, 900: 2, 1100: 3 }}>
+    <ResponsiveMasonry columnsCountBreakPoints={{ 0: 1, 900: 2 }}>
       <Masonry gutter="var(--grid-gutter)" sequential>
-        {nodes.map((node) => (
-          <GardenNodeCard key={node.slug} node={node} />
+        {nodes.map((node, i) => (
+          <GardenNodeCard key={node.slug} node={node} index={i + 1} />
         ))}
       </Masonry>
     </ResponsiveMasonry>
