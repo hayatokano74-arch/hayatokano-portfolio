@@ -4,39 +4,20 @@
     "type": "split",
     "children": [
       {
-        "id": "7c901c0df30639fa",
+        "id": "619af2c3587ae4e0",
         "type": "tabs",
         "children": [
           {
-            "id": "26bc1f91158c77b2",
+            "id": "8b724ad09fc29ed9",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "2026.02.22.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "2026.02.22"
-            }
-          },
-          {
-            "id": "2f2f36f09d1f0411",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "日記.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "日記"
+              "title": "新規タブ"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -109,7 +90,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "日記.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -119,7 +99,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "日記へのバックリンク"
+              "title": "バックリンク"
             }
           },
           {
@@ -196,15 +176,18 @@
       "bases:Create new base": false
     }
   },
-  "active": "aae25e7b154a5aa1",
+  "active": "d3da95415f98da1d",
   "lastOpenFiles": [
+    "日記.md",
+    "読書",
+    "メモ",
+    "無題のファイル.md",
+    "日記",
     "散歩道で.md",
     "雨の日の編集室.md",
-    "日記.md",
     "石巻の朝.md",
     "冬の光について.md",
-    "無題のファイル.md",
-    "2026.02.22.md",
+    "日記/2026.02.22.md",
     "Obsidianの使い方が変わった.md",
     "本棚の配置.md",
     "ハイパーテキストの夢.md",
