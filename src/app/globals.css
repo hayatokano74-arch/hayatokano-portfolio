@@ -2483,9 +2483,9 @@ button.tl-photo-cell {
   top: 0;
   z-index: 10;
   background: var(--bg);
-  font-size: var(--font-meta);
-  font-weight: 400;
-  letter-spacing: 0.08em;
+  font-size: var(--font-body);
+  font-weight: 700;
+  letter-spacing: normal;
   color: var(--muted);
   padding: var(--space-3) 0;
   border-bottom: 1px solid var(--line);
@@ -2651,8 +2651,8 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-7);
 }
 
-/* セクション見出し共通（← リンク, ↝ 関連ページ） */
-.garden-section-heading {
+/* セクション見出し共通（← リンク, ↝ 関連ページ） — 詳細ページ用 */
+.garden-detail-section-heading {
   font-size: var(--font-meta);
   font-weight: 700;
   letter-spacing: 0.08em;

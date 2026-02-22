@@ -6,7 +6,7 @@ export function GardenLinkedPages({ pages }: { pages: LinkedPageSummary[] }) {
 
   return (
     <section className="garden-linked">
-      <h2 className="garden-section-heading"><span className="garden-section-icon">←</span> リンク</h2>
+      <h2 className="garden-detail-section-heading"><span className="garden-section-icon">←</span> リンク</h2>
       <ul className="garden-linked-list">
         {pages.map((page) => (
           <li key={page.slug} className="garden-linked-card">

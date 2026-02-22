@@ -6,7 +6,7 @@ export function GardenTwoHopLinks({ groups }: { groups: TwoHopGroup[] }) {
 
   return (
     <section className="garden-twohop">
-      <h2 className="garden-section-heading"><span className="garden-section-icon">↝</span> 関連ページ</h2>
+      <h2 className="garden-detail-section-heading"><span className="garden-section-icon">↝</span> 関連ページ</h2>
       <div className="garden-twohop-groups">
         {groups.map((group) => (
           <div key={group.viaSlug} className="garden-twohop-group">
