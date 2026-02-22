@@ -2445,22 +2445,36 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
-/* 年月セクションの親コンテナ */
+/* 年月セクションの親コンテナ（12カラム中央配置） */
 .garden-sections {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
   margin-top: var(--space-6);
+}
+
+.garden-sections > * {
+  grid-column: 4 / span 6;
+  min-width: 0;
 }
 
 /* 年月セクション */
 .garden-section {
-  margin-bottom: var(--space-9);
+  margin-bottom: var(--space-7);
 }
 
 .garden-section:last-child {
   margin-bottom: 0;
 }
 
-/* 年月見出し（sticky） */
+/* 年月見出し（sticky、クリック可能） */
 .garden-section-heading {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -2470,42 +2484,52 @@ button.tl-photo-cell {
   letter-spacing: 0.08em;
   color: var(--muted);
   padding: var(--space-3) 0;
-  margin: 0 0 var(--space-5);
   border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-/* グリッド（2カラム、全文表示対応） */
-.garden-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--grid-gutter);
-  align-items: start;
-}
-
-/* ノードカード（共通） */
-.garden-card {
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-5);
-  border: 1px solid var(--line);
-  border-radius: 4px;
+.garden-section-heading:hover {
   color: var(--fg);
-  transition: border-color 0.2s ease;
-  overflow: hidden;
 }
 
-.garden-card:hover {
-  border-color: var(--fg);
+.garden-section-heading:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
 }
 
-.garden-card-meta {
+.garden-section-meta {
+  font-size: var(--font-meta);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* 投稿リスト（1列フラット） */
+.garden-list {
+  margin-top: var(--space-7);
+}
+
+/* 投稿エントリ（カードレス・フラット） */
+.garden-entry {
+  padding-bottom: var(--space-7);
+  margin-bottom: var(--space-7);
+  border-bottom: 1px dashed var(--line);
+}
+
+.garden-entry:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.garden-entry-meta {
   display: flex;
   align-items: baseline;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
 
-.garden-card-index {
+.garden-entry-index {
   font-size: var(--font-meta);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
@@ -2513,48 +2537,37 @@ button.tl-photo-cell {
   opacity: 0.5;
 }
 
-.garden-card-date {
+.garden-entry-date {
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
 }
 
-.garden-card-title-link {
+.garden-entry-title-link {
   text-decoration: none;
   color: inherit;
 }
 
-.garden-card-title {
+.garden-entry-title {
   font-size: var(--font-heading);
   font-weight: 700;
   line-height: var(--lh-tight);
   margin: 0 0 var(--space-4);
 }
 
-/* カード内本文（全文表示） */
-.garden-card-body {
+/* エントリ本文（全文表示） */
+.garden-entry-body {
   font-size: var(--font-body);
   line-height: var(--lh-relaxed);
   color: var(--fg);
 }
 
-.garden-card-body p {
+.garden-entry-body p {
   margin: 0 0 var(--space-4);
 }
 
-.garden-card-body p:last-child {
+.garden-entry-body p:last-child {
   margin-bottom: 0;
-}
-
-/* メモ: よりコンパクトに */
-.garden-card--memo .garden-card-title {
-  font-size: var(--font-body);
-  margin-bottom: var(--space-2);
-}
-
-.garden-card--memo .garden-card-body {
-  font-size: var(--font-meta);
-  color: var(--muted);
 }
 
 /* 個別ページ */
@@ -3408,12 +3421,8 @@ button.tl-photo-cell {
     font-size: 16px; /* iOSのズーム防止 */
   }
 
-  .garden-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .garden-section-heading {
-    font-size: var(--font-meta);
+  .garden-sections > * {
+    grid-column: 1 / -1;
   }
 
   .garden-detail > * {
