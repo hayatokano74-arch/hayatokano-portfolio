@@ -51,10 +51,11 @@ async function parseFile(filePath: string, existingSlugs: Set<string>): Promise<
   const excerpt = plainText.length > 80 ? plainText.slice(0, 80) + "…" : plainText;
 
   // gray-matterはYAMLの日付をDateオブジェクトに変換するため、文字列に正規化
+  const rawDate: unknown = fm.date;
   const dateStr =
-    fm.date instanceof Date
-      ? fm.date.toISOString().slice(0, 10)
-      : String(fm.date ?? "");
+    rawDate instanceof Date
+      ? rawDate.toISOString().slice(0, 10)
+      : String(rawDate ?? "");
 
   return {
     slug: titleToSlug(fm.title),
@@ -144,10 +145,11 @@ export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: stri
       .trim();
     const excerpt = plainText.length > 80 ? plainText.slice(0, 80) + "…" : plainText;
 
+    const rawDate: unknown = fm.date;
     const dateStr =
-      fm.date instanceof Date
-        ? fm.date.toISOString().slice(0, 10)
-        : String(fm.date ?? "");
+      rawDate instanceof Date
+        ? rawDate.toISOString().slice(0, 10)
+        : String(rawDate ?? "");
     map.set(slug, { title: fm.title, excerpt, date: dateStr });
   }
   return map;
