@@ -83,6 +83,8 @@ async function parseFile(filePath: string, filename: string, existingSlugs: Set<
       ? rawDate.toISOString().slice(0, 10)
       : String(rawDate ?? "");
 
+  const mtime = fs.statSync(filePath).mtime.getTime();
+
   return {
     slug: titleToSlug(fm.title),
     title: fm.title,
@@ -90,6 +92,7 @@ async function parseFile(filePath: string, filename: string, existingSlugs: Set<
     tags: fm.tags ?? [],
     contentHtml,
     excerpt,
+    mtime,
   };
 }
 
@@ -103,7 +106,11 @@ export async function getAllNodes(): Promise<GardenNode[]> {
     files.map((file) => parseFile(path.join(GARDEN_DIR, file), file, existingSlugs)),
   );
 
-  return nodes.sort((a, b) => (a.date > b.date ? -1 : 1));
+  // 日付降順 → 同日ならファイル更新時刻が新しい方が上
+  return nodes.sort((a, b) => {
+    if (a.date !== b.date) return a.date > b.date ? -1 : 1;
+    return b.mtime - a.mtime;
+  });
 }
 
 /** slugで1ノードを取得（MDファイルが存在するもののみ） */

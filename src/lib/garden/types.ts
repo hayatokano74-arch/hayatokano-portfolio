@@ -17,6 +17,8 @@ export interface GardenNode {
   contentHtml: string;
   /** 抜粋テキスト（カード表示用） */
   excerpt: string;
+  /** ファイル更新時刻（同日投稿のソート用、Unix ms） */
+  mtime: number;
 }
 
 /** リンクされたページの概要（カード表示用） */
