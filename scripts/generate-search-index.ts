@@ -6,6 +6,7 @@
 
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import matter from "gray-matter";
 
 interface SearchDoc {
@@ -36,6 +37,20 @@ function collectMdFiles(dir: string): { filePath: string; filename: string }[] {
     }
   }
   return results;
+}
+
+/** git の最終コミット時刻をYYYY-MM-DD形式で取得 */
+function gitDateForFile(filePath: string): string {
+  try {
+    const ts = execSync(`git log -1 --format=%ct -- "${filePath}"`, {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+    if (ts) return new Date(parseInt(ts, 10) * 1000).toISOString().slice(0, 10);
+  } catch {
+    // フォールバック
+  }
+  return fs.statSync(filePath).mtime.toISOString().slice(0, 10);
 }
 
 function stripMarkdown(content: string): string {
@@ -72,7 +87,7 @@ function main() {
         ? rawDate.toISOString().slice(0, 10)
         : rawDate
           ? String(rawDate)
-          : fs.statSync(filePath).mtime.toISOString().slice(0, 10);
+          : gitDateForFile(filePath);
 
     docs.push({
       id: title,

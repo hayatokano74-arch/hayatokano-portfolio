@@ -2,6 +2,7 @@
 
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import matter from "gray-matter";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
@@ -40,10 +41,26 @@ function titleFromFilename(filename: string): string {
   return filename.replace(/\.md$/, "");
 }
 
-/** ファイルの更新日をYYYY-MM-DD形式で取得 */
+/**
+ * git の最終コミット時刻を取得（Unix秒）。
+ * git 未管理やコミット前のファイルは fs.statSync にフォールバック。
+ */
+function getGitTimestamp(filePath: string): number {
+  try {
+    const ts = execSync(`git log -1 --format=%ct -- "${filePath}"`, {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+    if (ts) return parseInt(ts, 10) * 1000;
+  } catch {
+    // git が使えない環境ではフォールバック
+  }
+  return fs.statSync(filePath).mtime.getTime();
+}
+
+/** ファイルの更新日をYYYY-MM-DD形式で取得（gitコミット時刻ベース） */
 function dateFromFile(filePath: string): string {
-  const stat = fs.statSync(filePath);
-  return stat.mtime.toISOString().slice(0, 10);
+  return new Date(getGitTimestamp(filePath)).toISOString().slice(0, 10);
 }
 
 /** frontmatterを補完（title/dateがなければファイル名・日付から自動生成） */
@@ -102,7 +119,7 @@ async function parseFile(filePath: string, filename: string, existingSlugs: Set<
       ? rawDate.toISOString().slice(0, 10)
       : String(rawDate ?? "");
 
-  const mtime = fs.statSync(filePath).mtime.getTime();
+  const mtime = getGitTimestamp(filePath);
 
   return {
     slug: titleToSlug(fm.title),
