@@ -13,7 +13,7 @@ import { titleToSlug } from "@/lib/garden/slug";
 
 interface SearchHook {
   ready: boolean;
-  quickResults: Array<{ id: string; title: string; date: string; type: string; tags: string[]; snippet: string; score: number }>;
+  quickResults: Array<{ id: string; title: string; date: string; tags: string[]; snippet: string; score: number }>;
   quickSearch: (query: string) => void;
   fullSearch: (query: string) => void;
   clearSearch: () => void;

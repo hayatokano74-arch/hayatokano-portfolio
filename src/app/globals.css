@@ -536,14 +536,15 @@ button {
   letter-spacing: -0.02em;
 }
 
-/* デスクトップナビ: flexboxで各項目が自然な文字幅を取る */
+/* デスクトップナビ: space-betweenで項目を均等配分、gapなしで狭い画面でも収まる */
 .desktop-main-nav {
   grid-column: 6 / -1;
+  min-width: 0;
   display: flex;
-  gap: var(--grid-gutter);
   align-items: center;
   justify-content: space-between;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .header-nav-item {
@@ -580,7 +581,7 @@ button {
 }
 
 .header-nav-label {
-  font-size: var(--font-body);
+  font-size: clamp(11px, 1.1vw, var(--font-body));
   font-weight: 500;
   letter-spacing: 0.03em;
   line-height: 1;

@@ -12,7 +12,6 @@ interface SearchDoc {
   id: string;
   title: string;
   date: string;
-  type: string;
   tags: string[];
   body: string;
 }
@@ -44,13 +43,13 @@ function main() {
   for (const file of files) {
     const raw = fs.readFileSync(path.join(GARDEN_DIR, file), "utf-8");
     const { data, content } = matter(raw);
-    const fm = data as { title: string; date: string; type?: string; tags?: string[] };
+    const fm = data as { title: string; date: string; tags?: string[] };
+    if (!fm.title) continue;
 
     docs.push({
       id: fm.title,
       title: fm.title,
       date: fm.date,
-      type: fm.type ?? "note",
       tags: fm.tags ?? [],
       body: stripMarkdown(content),
     });

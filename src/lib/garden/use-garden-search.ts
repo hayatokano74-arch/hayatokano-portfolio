@@ -101,7 +101,6 @@ interface IndexDoc {
   id: string;
   title: string;
   date: string;
-  type: string;
   tags: string;
   body: string;
 }
@@ -123,7 +122,7 @@ export function useGardenSearch() {
 
         const ms = new MiniSearch<IndexDoc>({
           fields: ["title", "tags", "body"],
-          storeFields: ["title", "date", "type", "tags"],
+          storeFields: ["title", "date", "tags"],
           tokenize: bigramTokenize,
           searchOptions: {
             tokenize: bigramTokenize,
