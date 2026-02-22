@@ -10,7 +10,7 @@ import rehypeStringify from "rehype-stringify";
 import { remarkBracketLinks } from "./remark-bracket-links";
 import { titleToSlug } from "./slug";
 import { getAllLinkedSlugs } from "./backlinks";
-import type { GardenNode, GardenFrontmatter, GardenNodeType } from "./types";
+import type { GardenNode, GardenFrontmatter } from "./types";
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
@@ -62,7 +62,6 @@ async function parseFile(filePath: string, existingSlugs: Set<string>): Promise<
     title: fm.title,
     date: dateStr,
     tags: fm.tags ?? [],
-    type: (fm.type ?? "note") as GardenNodeType,
     contentHtml,
     excerpt,
   };
@@ -74,9 +73,17 @@ export async function getAllNodes(): Promise<GardenNode[]> {
   const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
   const existingSlugs = getFileSlugs();
 
-  const nodes = await Promise.all(
-    files.map((file) => parseFile(path.join(GARDEN_DIR, file), existingSlugs)),
+  const results = await Promise.all(
+    files.map(async (file) => {
+      const filePath = path.join(GARDEN_DIR, file);
+      const raw = fs.readFileSync(filePath, "utf-8");
+      const { data } = matter(raw);
+      // frontmatterにtitleがないファイルはスキップ
+      if (!(data as GardenFrontmatter).title) return null;
+      return parseFile(filePath, existingSlugs);
+    }),
   );
+  const nodes = results.filter((n): n is GardenNode => n !== null);
 
   return nodes.sort((a, b) => (a.date > b.date ? -1 : 1));
 }
@@ -136,6 +143,8 @@ export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: stri
     const raw = fs.readFileSync(path.join(GARDEN_DIR, file), "utf-8");
     const { data, content } = matter(raw);
     const fm = data as GardenFrontmatter;
+    // frontmatterにtitleがないファイルはスキップ
+    if (!fm.title) continue;
     const slug = titleToSlug(fm.title);
 
     const plainText = content

@@ -15,7 +15,6 @@ export interface SearchDoc {
   id: string;
   title: string;
   date: string;
-  type: string;
   tags: string[];
   body: string;
 }
@@ -24,7 +23,6 @@ export interface GardenSearchResult {
   id: string;
   title: string;
   date: string;
-  type: string;
   tags: string[];
   /** 全文検索時のマッチ抜粋（QuickSearchでは空） */
   snippet: string;
@@ -178,7 +176,7 @@ export function useGardenSearch() {
         id: r.id as string,
         title: (r as unknown as SearchDoc).title ?? (r.id as string),
         date: (r as unknown as SearchDoc).date ?? "",
-        type: (r as unknown as SearchDoc).type ?? "note",
+
         tags: ((r as unknown as SearchDoc).tags as unknown as string)?.split(" ").filter(Boolean) ?? [],
         snippet: "",
         score: r.score,
@@ -211,7 +209,7 @@ export function useGardenSearch() {
           id: r.id as string,
           title: (r as unknown as SearchDoc).title ?? (r.id as string),
           date: (r as unknown as SearchDoc).date ?? "",
-          type: (r as unknown as SearchDoc).type ?? "note",
+  
           tags: ((r as unknown as SearchDoc).tags as unknown as string)?.split(" ").filter(Boolean) ?? [],
           snippet: doc ? extractSnippet(doc.body, terms) : "",
           score: r.score,
