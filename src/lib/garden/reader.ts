@@ -14,6 +14,27 @@ import type { GardenNode, GardenFrontmatter } from "./types";
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
+/** 除外するディレクトリ名（テンプレート等） */
+const EXCLUDED_DIRS = new Set(["templates", ".obsidian"]);
+
+/** content/garden/ 以下の全 .md ファイルを再帰的に収集 */
+function collectMdFiles(dir: string): { filePath: string; filename: string }[] {
+  if (!fs.existsSync(dir)) return [];
+  const results: { filePath: string; filename: string }[] = [];
+
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) continue;
+    if (entry.isDirectory()) {
+      if (EXCLUDED_DIRS.has(entry.name)) continue;
+      results.push(...collectMdFiles(path.join(dir, entry.name)));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      results.push({ filePath: path.join(dir, entry.name), filename: entry.name });
+    }
+  }
+
+  return results;
+}
+
 /** ファイル名から拡張子を除去してタイトルを推定 */
 function titleFromFilename(filename: string): string {
   return filename.replace(/\.md$/, "");
@@ -41,14 +62,12 @@ function completeFrontmatter(
 
 /** MDファイルが存在するノードのslugセットを取得 */
 function getFileSlugs(): Set<string> {
-  if (!fs.existsSync(GARDEN_DIR)) return new Set();
-  const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
+  const files = collectMdFiles(GARDEN_DIR);
   const slugs = new Set<string>();
-  for (const file of files) {
-    const filePath = path.join(GARDEN_DIR, file);
+  for (const { filePath, filename } of files) {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data } = matter(raw);
-    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, file);
+    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, filename);
     slugs.add(titleToSlug(fm.title));
   }
   return slugs;
@@ -98,12 +117,12 @@ async function parseFile(filePath: string, filename: string, existingSlugs: Set<
 
 /** 全ノードを取得（MDファイルが存在するもののみ。日付降順） */
 export async function getAllNodes(): Promise<GardenNode[]> {
-  if (!fs.existsSync(GARDEN_DIR)) return [];
-  const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
+  const files = collectMdFiles(GARDEN_DIR);
+  if (files.length === 0) return [];
   const existingSlugs = getFileSlugs();
 
   const nodes = await Promise.all(
-    files.map((file) => parseFile(path.join(GARDEN_DIR, file), file, existingSlugs)),
+    files.map(({ filePath, filename }) => parseFile(filePath, filename, existingSlugs)),
   );
 
   // 日付降順 → 同日ならファイル更新時刻が新しい方が上
@@ -115,17 +134,16 @@ export async function getAllNodes(): Promise<GardenNode[]> {
 
 /** slugで1ノードを取得（MDファイルが存在するもののみ） */
 export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
-  if (!fs.existsSync(GARDEN_DIR)) return null;
-  const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
+  const files = collectMdFiles(GARDEN_DIR);
+  if (files.length === 0) return null;
   const existingSlugs = getFileSlugs();
 
-  for (const file of files) {
-    const filePath = path.join(GARDEN_DIR, file);
+  for (const { filePath, filename } of files) {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data } = matter(raw);
-    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, file);
+    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, filename);
     if (titleToSlug(fm.title) === slug) {
-      return parseFile(filePath, file, existingSlugs);
+      return parseFile(filePath, filename, existingSlugs);
     }
   }
   return null;
@@ -161,14 +179,12 @@ export function getVirtualPageTitle(slug: string): string | null {
  */
 export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: string; date?: string }> {
   const map = new Map<string, { title: string; excerpt?: string; date?: string }>();
-  if (!fs.existsSync(GARDEN_DIR)) return map;
+  const files = collectMdFiles(GARDEN_DIR);
 
-  const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
-  for (const file of files) {
-    const filePath = path.join(GARDEN_DIR, file);
+  for (const { filePath, filename } of files) {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
-    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, file);
+    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, filename);
     const slug = titleToSlug(fm.title);
 
     const plainText = content

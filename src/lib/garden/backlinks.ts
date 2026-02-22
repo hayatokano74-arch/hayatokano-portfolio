@@ -10,6 +10,25 @@ import type { GardenFrontmatter, LinkedPageSummary, TwoHopGroup } from "./types"
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
+/** 除外するディレクトリ名 */
+const EXCLUDED_DIRS = new Set(["templates", ".obsidian"]);
+
+/** content/garden/ 以下の全 .md ファイルを再帰的に収集 */
+function collectMdFiles(dir: string): { filePath: string; filename: string }[] {
+  if (!fs.existsSync(dir)) return [];
+  const results: { filePath: string; filename: string }[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) continue;
+    if (entry.isDirectory()) {
+      if (EXCLUDED_DIRS.has(entry.name)) continue;
+      results.push(...collectMdFiles(path.join(dir, entry.name)));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      results.push({ filePath: path.join(dir, entry.name), filename: entry.name });
+    }
+  }
+  return results;
+}
+
 /** リンク構文の正規表現 */
 const WIKILINK_RE = /\[\[([^\[\]|]+?)(?:\|[^\[\]]+?)?\]\]/g;
 const BRACKET_RE = /(?<!\!)\[([^\[\]]+?)\](?!\()/g;
@@ -24,17 +43,15 @@ interface RawLink {
 
 /** 全ファイルをスキャンしてリンク関係を抽出（ブラケットリンク + ハッシュタグ） */
 const scanAllLinks = cache((): RawLink[] => {
-  if (!fs.existsSync(GARDEN_DIR)) return [];
-  const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
+  const files = collectMdFiles(GARDEN_DIR);
   const links: RawLink[] = [];
 
-  for (const file of files) {
-    const filePath = path.join(GARDEN_DIR, file);
+  for (const { filePath, filename } of files) {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
     const fm = data as GardenFrontmatter;
     // frontmatterがなくてもファイル名からtitleを補完
-    const sourceTitle = fm.title || file.replace(/\.md$/, "");
+    const sourceTitle = fm.title || filename.replace(/\.md$/, "");
     const sourceSlug = titleToSlug(sourceTitle);
 
     // Obsidian式 [[wikilink]]（[[ページ|表示名]] のページ部分を使用）

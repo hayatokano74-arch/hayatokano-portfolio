@@ -19,6 +19,25 @@ interface SearchDoc {
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 const OUTPUT_PATH = path.join(process.cwd(), "public", "garden-search-index.json");
 
+/** 除外するディレクトリ名 */
+const EXCLUDED_DIRS = new Set(["templates", ".obsidian"]);
+
+/** content/garden/ 以下の全 .md ファイルを再帰的に収集 */
+function collectMdFiles(dir: string): { filePath: string; filename: string }[] {
+  if (!fs.existsSync(dir)) return [];
+  const results: { filePath: string; filename: string }[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) continue;
+    if (entry.isDirectory()) {
+      if (EXCLUDED_DIRS.has(entry.name)) continue;
+      results.push(...collectMdFiles(path.join(dir, entry.name)));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      results.push({ filePath: path.join(dir, entry.name), filename: entry.name });
+    }
+  }
+  return results;
+}
+
 function stripMarkdown(content: string): string {
   return content
     // ブラケットリンク [タイトル] → タイトル
@@ -37,17 +56,16 @@ function main() {
     return;
   }
 
-  const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
+  const files = collectMdFiles(GARDEN_DIR);
   const docs: SearchDoc[] = [];
 
-  for (const file of files) {
-    const filePath = path.join(GARDEN_DIR, file);
+  for (const { filePath, filename } of files) {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
     const fm = data as { title?: string; date?: string | Date; tags?: string[] };
 
     // frontmatter がなくてもファイル名から自動補完
-    const title = fm.title || file.replace(/\.md$/, "");
+    const title = fm.title || filename.replace(/\.md$/, "");
     const rawDate = fm.date;
     const date =
       rawDate instanceof Date
