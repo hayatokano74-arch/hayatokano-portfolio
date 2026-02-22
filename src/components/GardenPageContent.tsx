@@ -55,15 +55,13 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   }, [nodes, fullSearchIds]);
 
   return (
-    <>
+    <div className="garden-content">
       <GardenSearch
         search={search}
         onFullSearch={handleFullSearch}
         fullSearchIds={fullSearchIds}
       />
-      <div style={{ marginTop: "var(--space-6)" }}>
-        <GardenGrid nodes={filteredNodes} />
-      </div>
-    </>
+      <GardenGrid nodes={filteredNodes} />
+    </div>
   );
 }

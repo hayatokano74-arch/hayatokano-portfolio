@@ -2284,10 +2284,22 @@ button.tl-photo-cell {
 
 /* ═══ Garden ═══ */
 
+/* Gardenコンテンツ全体のグリッドコンテナ */
+.garden-content {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
+  margin-top: var(--space-5);
+}
+
+.garden-content > * {
+  grid-column: 4 / span 6;
+  min-width: 0;
+}
+
 /* 検索UI */
 .garden-search-wrapper {
   position: relative;
-  margin-top: var(--space-5);
 }
 
 .garden-search {
@@ -2445,17 +2457,9 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
-/* 年月セクションの親コンテナ（12カラム中央配置） */
+/* 年月セクションの親コンテナ */
 .garden-sections {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  column-gap: var(--grid-gutter);
   margin-top: var(--space-6);
-}
-
-.garden-sections > * {
-  grid-column: 4 / span 6;
-  min-width: 0;
 }
 
 /* 年月セクション */
@@ -3421,7 +3425,7 @@ button.tl-photo-cell {
     font-size: 16px; /* iOSのズーム防止 */
   }
 
-  .garden-sections > * {
+  .garden-content > * {
     grid-column: 1 / -1;
   }
 
