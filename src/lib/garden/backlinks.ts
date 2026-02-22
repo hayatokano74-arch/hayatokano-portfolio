@@ -29,10 +29,13 @@ const scanAllLinks = cache((): RawLink[] => {
   const links: RawLink[] = [];
 
   for (const file of files) {
-    const raw = fs.readFileSync(path.join(GARDEN_DIR, file), "utf-8");
+    const filePath = path.join(GARDEN_DIR, file);
+    const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
     const fm = data as GardenFrontmatter;
-    const sourceSlug = titleToSlug(fm.title);
+    // frontmatterがなくてもファイル名からtitleを補完
+    const sourceTitle = fm.title || file.replace(/\.md$/, "");
+    const sourceSlug = titleToSlug(sourceTitle);
 
     // Obsidian式 [[wikilink]]（[[ページ|表示名]] のページ部分を使用）
     const wikilinkPositions = new Set<number>();
@@ -40,7 +43,7 @@ const scanAllLinks = cache((): RawLink[] => {
       wikilinkPositions.add(match.index!);
       const targetTitle = match[1];
       const targetSlug = titleToSlug(targetTitle);
-      links.push({ sourceSlug, sourceTitle: fm.title, targetSlug, targetTitle });
+      links.push({ sourceSlug, sourceTitle, targetSlug, targetTitle });
     }
 
     // ブラケットリンク [テキスト]（wikilink内の [ ] と重複しないようスキップ）
@@ -49,14 +52,14 @@ const scanAllLinks = cache((): RawLink[] => {
       if (wikilinkPositions.has(match.index! - 1)) continue;
       const targetTitle = match[1];
       const targetSlug = titleToSlug(targetTitle);
-      links.push({ sourceSlug, sourceTitle: fm.title, targetSlug, targetTitle });
+      links.push({ sourceSlug, sourceTitle, targetSlug, targetTitle });
     }
 
     // ハッシュタグ #タグ（ページリンクとして扱う）
     for (const match of content.matchAll(HASHTAG_RE)) {
       const targetTitle = match[1];
       const targetSlug = titleToSlug(targetTitle);
-      links.push({ sourceSlug, sourceTitle: fm.title, targetSlug, targetTitle });
+      links.push({ sourceSlug, sourceTitle, targetSlug, targetTitle });
     }
   }
 
