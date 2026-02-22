@@ -41,15 +41,25 @@ function main() {
   const docs: SearchDoc[] = [];
 
   for (const file of files) {
-    const raw = fs.readFileSync(path.join(GARDEN_DIR, file), "utf-8");
+    const filePath = path.join(GARDEN_DIR, file);
+    const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
-    const fm = data as { title: string; date: string; tags?: string[] };
-    if (!fm.title) continue;
+    const fm = data as { title?: string; date?: string | Date; tags?: string[] };
+
+    // frontmatter がなくてもファイル名から自動補完
+    const title = fm.title || file.replace(/\.md$/, "");
+    const rawDate = fm.date;
+    const date =
+      rawDate instanceof Date
+        ? rawDate.toISOString().slice(0, 10)
+        : rawDate
+          ? String(rawDate)
+          : fs.statSync(filePath).mtime.toISOString().slice(0, 10);
 
     docs.push({
-      id: fm.title,
-      title: fm.title,
-      date: fm.date,
+      id: title,
+      title,
+      date,
       tags: fm.tags ?? [],
       body: stripMarkdown(content),
     });

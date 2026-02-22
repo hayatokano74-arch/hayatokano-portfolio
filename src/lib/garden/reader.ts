@@ -14,25 +14,51 @@ import type { GardenNode, GardenFrontmatter } from "./types";
 
 const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
 
+/** ファイル名から拡張子を除去してタイトルを推定 */
+function titleFromFilename(filename: string): string {
+  return filename.replace(/\.md$/, "");
+}
+
+/** ファイルの更新日をYYYY-MM-DD形式で取得 */
+function dateFromFile(filePath: string): string {
+  const stat = fs.statSync(filePath);
+  return stat.mtime.toISOString().slice(0, 10);
+}
+
+/** frontmatterを補完（title/dateがなければファイル名・日付から自動生成） */
+function completeFrontmatter(
+  fm: GardenFrontmatter,
+  filePath: string,
+  filename: string,
+): GardenFrontmatter {
+  return {
+    ...fm,
+    title: fm.title || titleFromFilename(filename),
+    date: fm.date || dateFromFile(filePath),
+    tags: fm.tags ?? [],
+  };
+}
+
 /** MDファイルが存在するノードのslugセットを取得 */
 function getFileSlugs(): Set<string> {
   if (!fs.existsSync(GARDEN_DIR)) return new Set();
   const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
   const slugs = new Set<string>();
   for (const file of files) {
-    const raw = fs.readFileSync(path.join(GARDEN_DIR, file), "utf-8");
+    const filePath = path.join(GARDEN_DIR, file);
+    const raw = fs.readFileSync(filePath, "utf-8");
     const { data } = matter(raw);
-    const fm = data as GardenFrontmatter;
-    slugs.add(fm.title ? titleToSlug(fm.title) : file.replace(/\.md$/, ""));
+    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, file);
+    slugs.add(titleToSlug(fm.title));
   }
   return slugs;
 }
 
 /** Markdownを1ファイルパースしてGardenNodeを返す */
-async function parseFile(filePath: string, existingSlugs: Set<string>): Promise<GardenNode> {
+async function parseFile(filePath: string, filename: string, existingSlugs: Set<string>): Promise<GardenNode> {
   const raw = fs.readFileSync(filePath, "utf-8");
   const { data, content } = matter(raw);
-  const fm = data as GardenFrontmatter;
+  const fm = completeFrontmatter(data as GardenFrontmatter, filePath, filename);
 
   const result = await unified()
     .use(remarkParse)
@@ -73,17 +99,9 @@ export async function getAllNodes(): Promise<GardenNode[]> {
   const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
   const existingSlugs = getFileSlugs();
 
-  const results = await Promise.all(
-    files.map(async (file) => {
-      const filePath = path.join(GARDEN_DIR, file);
-      const raw = fs.readFileSync(filePath, "utf-8");
-      const { data } = matter(raw);
-      // frontmatterにtitleがないファイルはスキップ
-      if (!(data as GardenFrontmatter).title) return null;
-      return parseFile(filePath, existingSlugs);
-    }),
+  const nodes = await Promise.all(
+    files.map((file) => parseFile(path.join(GARDEN_DIR, file), file, existingSlugs)),
   );
-  const nodes = results.filter((n): n is GardenNode => n !== null);
 
   return nodes.sort((a, b) => (a.date > b.date ? -1 : 1));
 }
@@ -98,9 +116,9 @@ export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
     const filePath = path.join(GARDEN_DIR, file);
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data } = matter(raw);
-    const fm = data as GardenFrontmatter;
+    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, file);
     if (titleToSlug(fm.title) === slug) {
-      return parseFile(filePath, existingSlugs);
+      return parseFile(filePath, file, existingSlugs);
     }
   }
   return null;
@@ -140,11 +158,10 @@ export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: stri
 
   const files = fs.readdirSync(GARDEN_DIR).filter((f) => f.endsWith(".md"));
   for (const file of files) {
-    const raw = fs.readFileSync(path.join(GARDEN_DIR, file), "utf-8");
+    const filePath = path.join(GARDEN_DIR, file);
+    const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
-    const fm = data as GardenFrontmatter;
-    // frontmatterにtitleがないファイルはスキップ
-    if (!fm.title) continue;
+    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, file);
     const slug = titleToSlug(fm.title);
 
     const plainText = content
