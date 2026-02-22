@@ -55,14 +55,14 @@ export function GardenGrid({ nodes }: { nodes: GardenNode[] }) {
     });
   };
 
-  // 通し番号を維持
+  // 通し番号（古い投稿=01、新しい投稿=最大番号）
+  const total = nodes.length;
   let runningIndex = 0;
 
   return (
     <div className="garden-sections">
       {groups.map((group) => {
         const isOpen = expanded.has(group.label);
-        // 通し番号を展開状態に関わらず進める
         const startIndex = runningIndex;
         runningIndex += group.nodes.length;
 
@@ -84,7 +84,7 @@ export function GardenGrid({ nodes }: { nodes: GardenNode[] }) {
                   <GardenNodeCard
                     key={node.slug}
                     node={node}
-                    index={startIndex + i + 1}
+                    index={total - startIndex - i}
                   />
                 ))}
               </div>
