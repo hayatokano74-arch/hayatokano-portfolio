@@ -30,7 +30,7 @@ export function WorksClient<T extends WorkLike>({
   return (
     <div style={{ marginTop: "var(--space-6)" }}>
       {view === "grid" ? (
-        <WorksGrid works={works} detailHref={detailHref} />
+        <WorksGrid works={works} detailHref={detailHref} showDetails={basePath === "/me-no-hoshi"} />
       ) : (
         <WorksList works={works} detailHref={detailHref} renderListDetail={renderListDetail} excerptMaxLength={excerptMaxLength} />
       )}
@@ -125,7 +125,7 @@ function GridDetails({ details }: { details: unknown }) {
   );
 }
 
-function WorksGrid<T extends WorkLike>({ works, detailHref }: { works: T[]; detailHref: (slug: string) => string }) {
+function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false }: { works: T[]; detailHref: (slug: string) => string; showDetails?: boolean }) {
   return (
     <div style={{ position: "relative", paddingBottom: "var(--space-14)" }}>
       <div className="works-grid">
@@ -148,12 +148,12 @@ function WorksGrid<T extends WorkLike>({ works, detailHref }: { works: T[]; deta
                   {w.year && <span>{w.year}</span>}
                 </span>
               </div>
-              {w.tags.length > 0 && (
+              {showDetails && w.tags.length > 0 && (
                 <div className="work-grid-tags">
                   {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
                 </div>
               )}
-              <GridDetails details={w.details} />
+              {showDetails && <GridDetails details={w.details} />}
             </Link>
           );
         })}
