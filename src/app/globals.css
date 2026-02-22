@@ -2445,18 +2445,41 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
-/* グリッド（4カラム均一高さ） */
-.garden-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--grid-gutter);
+/* 年月セクションの親コンテナ */
+.garden-sections {
   margin-top: var(--space-6);
 }
 
-@media (max-width: 1100px) {
-  .garden-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* 年月セクション */
+.garden-section {
+  margin-bottom: var(--space-9);
+}
+
+.garden-section:last-child {
+  margin-bottom: 0;
+}
+
+/* 年月見出し（sticky） */
+.garden-section-heading {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  font-size: var(--font-meta);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: var(--space-3) 0;
+  margin: 0 0 var(--space-5);
+  border-bottom: 1px solid var(--line);
+}
+
+/* グリッド（2カラム、全文表示対応） */
+.garden-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--grid-gutter);
+  align-items: start;
 }
 
 /* ノードカード（共通） */
@@ -2508,15 +2531,11 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-4);
 }
 
-/* カード内本文（4行で切り詰め） */
+/* カード内本文（全文表示） */
 .garden-card-body {
   font-size: var(--font-body);
   line-height: var(--lh-relaxed);
   color: var(--fg);
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .garden-card-body p {
@@ -3391,6 +3410,10 @@ button.tl-photo-cell {
 
   .garden-grid {
     grid-template-columns: 1fr;
+  }
+
+  .garden-section-heading {
+    font-size: var(--font-meta);
   }
 
   .garden-detail > * {
