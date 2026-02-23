@@ -9,7 +9,7 @@
  * 画像を Xserver にアップロード、Markdown を Dropbox に配置する。
  */
 
-import { writeFileSync, mkdirSync, existsSync, readFileSync, renameSync } from "fs";
+import { writeFileSync, mkdirSync, existsSync, readFileSync, renameSync, rmSync } from "fs";
 import { join, basename } from "path";
 import { execSync } from "child_process";
 
@@ -24,6 +24,7 @@ const XSERVER_IMAGE_DIR =
 const IMAGE_BASE_URL = "https://wp.hayatokano.com/garden-images";
 const TEMP_DIR = "/tmp/blogger-migration";
 const XSERVER_HOST = "xserver";
+const BATCH_SIZE = 100; // バッチあたりの処理件数（画像アップロード→削除の単位）
 
 // --- Blogger Atom フィードから投稿を取得 ---
 
@@ -408,30 +409,47 @@ async function main() {
     const mdPath = join(TEMP_DIR, "markdown", mdFilename);
     writeFileSync(mdPath, lines.join("\n"), "utf-8");
     processedPosts++;
+
+    // バッチ処理: BATCH_SIZE件ごとに画像をアップロード→ローカル削除（ディスク節約）
+    if (!DRY_RUN && processedPosts % BATCH_SIZE === 0) {
+      console.log(`\n📤 バッチアップロード (${processedPosts}件目まで完了)...`);
+      try {
+        execSync(
+          `rsync -avz --quiet ${TEMP_DIR}/images/ ${XSERVER_HOST}:${XSERVER_IMAGE_DIR}/`,
+          { stdio: "inherit", timeout: 600000 },
+        );
+        // アップロード成功 → ローカル画像を削除してディスクを解放
+        rmSync(join(TEMP_DIR, "images"), { recursive: true, force: true });
+        mkdirSync(join(TEMP_DIR, "images"), { recursive: true });
+        console.log(`  ✓ アップロード完了 — ローカル画像を削除\n`);
+      } catch (e) {
+        console.error(`  ⚠ バッチアップロード失敗 — ローカル画像を保持して続行`);
+      }
+    }
   }
 
   console.log("\n--- 変換完了 ---");
   console.log(`  投稿: ${processedPosts} 件`);
   console.log(`  画像: ${downloadedImages} / ${totalImages} 枚`);
   console.log(`  Markdown: ${TEMP_DIR}/markdown/`);
-  console.log(`  画像: ${TEMP_DIR}/images/\n`);
 
   if (DRY_RUN) {
+    console.log(`  画像: ${TEMP_DIR}/images/\n`);
     console.log("🔍 ドライラン — アップロード・コピーをスキップ");
     console.log(`  Markdown 確認: ls ${TEMP_DIR}/markdown/`);
     console.log(`  画像 確認: ls ${TEMP_DIR}/images/\n`);
   } else {
-    // Xserver にアップロード
-    console.log("📤 画像を Xserver にアップロード中...");
-    console.log("  （画像数が多いため数分かかる場合があります）\n");
+    // 残りの画像をアップロード（最後のバッチ）
+    console.log("\n📤 最終バッチの画像をアップロード中...");
     try {
       execSync(
-        `rsync -avz ${TEMP_DIR}/images/ ${XSERVER_HOST}:${XSERVER_IMAGE_DIR}/`,
-        { stdio: "inherit", timeout: 1800000 }, // 30分タイムアウト
+        `rsync -avz --quiet ${TEMP_DIR}/images/ ${XSERVER_HOST}:${XSERVER_IMAGE_DIR}/`,
+        { stdio: "inherit", timeout: 600000 },
       );
-      console.log("\n  ✓ アップロード完了\n");
+      rmSync(join(TEMP_DIR, "images"), { recursive: true, force: true });
+      console.log("  ✓ アップロード完了\n");
     } catch (e) {
-      console.error("\n  ⚠ アップロード失敗。手動で実行してください:");
+      console.error("  ⚠ アップロード失敗。手動で実行してください:");
       console.error(
         `  rsync -avz ${TEMP_DIR}/images/ ${XSERVER_HOST}:${XSERVER_IMAGE_DIR}/`,
       );
