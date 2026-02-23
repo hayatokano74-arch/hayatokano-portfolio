@@ -42,7 +42,7 @@ function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; wi
   const isPortrait = (height ?? 0) > (width ?? 0);
   if (src) {
     return (
-      <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", background: "var(--media-bg)" }}>
+      <div style={{ position: "relative", width: "100%", aspectRatio: "3 / 2", background: "var(--media-bg)" }}>
         <Image
           src={src}
           alt={alt ?? ""}
@@ -59,7 +59,7 @@ function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; wi
       </div>
     );
   }
-  return <div style={{ width: "100%", aspectRatio: "16 / 9", background: "var(--media-bg)" }} />;
+  return <div style={{ width: "100%", aspectRatio: "3 / 2", background: "var(--media-bg)" }} />;
 }
 
 /* グリッド用 DETAILS（投稿ごとに値があるフィールドだけ表示） */
