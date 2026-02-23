@@ -132,7 +132,31 @@ async function downloadFile(filePath: string): Promise<string> {
   return res.text();
 }
 
+// --- 並列実行ユーティリティ ---
+
+/** 同時実行数を制限しつつ全タスクを実行する */
+async function parallelLimit<T>(
+  tasks: (() => Promise<T>)[],
+  limit: number,
+): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  let idx = 0;
+
+  async function worker() {
+    while (idx < tasks.length) {
+      const i = idx++;
+      results[i] = await tasks[i]();
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, () => worker()));
+  return results;
+}
+
 // --- メインの取得関数 ---
+
+/** 同時ダウンロード上限 */
+const DOWNLOAD_CONCURRENCY = 30;
 
 /** 除外するディレクトリ名 */
 const EXCLUDED_DIRS = new Set(["templates", ".obsidian", ".trash"]);
@@ -156,20 +180,19 @@ export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
     return true;
   });
 
-  // 全ファイルを並列ダウンロード
-  const files = await Promise.all(
-    mdEntries.map(async (entry): Promise<GardenFile> => {
-      const content = await downloadFile(entry.path_lower);
-      return {
-        path: entry.path_display,
-        filename: entry.name,
-        content,
-        modifiedAt: entry.server_modified
-          ? new Date(entry.server_modified).getTime()
-          : Date.now(),
-      };
-    }),
-  );
+  // 同時実行数を制限してダウンロード（Dropbox レート制限対策）
+  const tasks = mdEntries.map((entry) => async (): Promise<GardenFile> => {
+    const content = await downloadFile(entry.path_lower);
+    return {
+      path: entry.path_display,
+      filename: entry.name,
+      content,
+      modifiedAt: entry.server_modified
+        ? new Date(entry.server_modified).getTime()
+        : Date.now(),
+    };
+  });
+  const files = await parallelLimit(tasks, DOWNLOAD_CONCURRENCY);
 
   return files;
 }
