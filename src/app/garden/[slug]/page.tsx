@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 import { GardenBody } from "@/components/GardenBody";
 import { GardenDetailRelated } from "@/components/GardenDetailRelated";
+import { GardenBackLink } from "@/components/GardenBackLink";
 import { getNodeBySlug, getAllPageSlugs, getVirtualPageTitle } from "@/lib/garden/reader";
 import { getLinkedPages, getTwoHopLinks } from "@/lib/garden/backlinks";
 
@@ -63,11 +63,7 @@ export default async function GardenNodePage({ params }: Props) {
 
         <GardenDetailRelated linkedPages={linkedPages} twoHopGroups={twoHopGroups} />
 
-        <div className="garden-detail-back">
-          <Link href="/garden" className="action-link">
-            ← Garden に戻る
-          </Link>
-        </div>
+        <GardenBackLink />
       </article>
     </CanvasShell>
   );
