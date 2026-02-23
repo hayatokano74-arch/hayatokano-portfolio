@@ -295,6 +295,8 @@ async function main() {
     }
 
     const dateStr = date.toISOString().slice(0, 10);
+    // ファイル名用のドット区切り日付（サイト表示と一致させる）
+    const dateDot = dateStr.replace(/-/g, ".");
     const yearMonth = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}`;
 
     // タイトルを整形（サフィックス除去 + ファイル名安全化）
@@ -314,15 +316,15 @@ async function main() {
       || safeTitle === dateStr
       || safeTitle === "untitled";
 
-    // ファイル名: 日付のみタイトルなら日付.md、それ以外は日付_タイトル.md
+    // ファイル名: ドット区切り日付（Ulysses の慣習に合わせる）
     let mdFilename = isDateOnlyTitle
-      ? `${dateStr}.md`
-      : `${dateStr}_${safeTitle}.md`;
+      ? `${dateDot}.md`
+      : `${dateDot}_${safeTitle}.md`;
     let counter = 2;
     while (usedFilenames.has(mdFilename)) {
       mdFilename = isDateOnlyTitle
-        ? `${dateStr}_${counter}.md`
-        : `${dateStr}_${safeTitle}_${counter}.md`;
+        ? `${dateDot}_${counter}.md`
+        : `${dateDot}_${safeTitle}_${counter}.md`;
       counter++;
     }
     usedFilenames.add(mdFilename);
