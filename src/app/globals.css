@@ -328,11 +328,13 @@ button {
   z-index: 1;
 }
 
-/* Works 詳細: Index モード（同じ8カラム内に配置） */
+/* Works 詳細: Index モード（同じ8カラム内に配置、垂直中央寄せ） */
 .work-detail-index-stage {
   grid-column: 3 / span 8;
   height: 100%;
   overflow: hidden;
+  display: flex;
+  align-items: center;
 }
 
 .index-grid {

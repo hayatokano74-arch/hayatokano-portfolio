@@ -407,7 +407,8 @@ function IndexGrid({ work, current, onSelect }: { work: Work; current: number; o
       className="index-grid hide-scrollbar"
       style={{
         gap: "var(--space-6)",
-        height: "100%",
+        width: "100%",
+        maxHeight: "100%",
         overflowY: "auto",
         paddingBottom: "var(--space-6)",
       }}
