@@ -63,7 +63,6 @@ function rehypeOptimizedImages() {
       // 最適化画像のURL
       const webp1920 = `${OPT_BASE}/${yearMonth}${nameNoExt}_1920.webp`;
       const webp640 = `${OPT_BASE}/${yearMonth}${nameNoExt}_640.webp`;
-      const lqip = `${OPT_BASE}/${yearMonth}${nameNoExt}_lqip.webp`;
       const jpg1920 = `${OPT_BASE}/${yearMonth}${nameNoExt}_1920.jpg`;
 
       // <picture> タグを構築
@@ -95,7 +94,6 @@ function rehypeOptimizedImages() {
                 ? { fetchpriority: "high", decoding: "async" }
                 : { loading: "lazy", decoding: "async" }),
               className: ["garden-img"],
-              style: `background-image:url(${lqip});background-size:cover`,
             },
             children: [],
           },
