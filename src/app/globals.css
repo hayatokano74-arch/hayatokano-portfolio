@@ -2664,8 +2664,18 @@ button.tl-photo-cell {
 }
 
 /* ページネーション（12カラムグリッドに配置） */
+/* ページネーションラッパー: garden-layout の外で12カラム中央配置 */
+.garden-pagination-wrap {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
+}
+
+.garden-pagination-wrap > .garden-pagination {
+  grid-column: 4 / span 6;
+}
+
 .garden-pagination {
-  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
@@ -3665,6 +3675,10 @@ button.tl-photo-cell {
 
   .garden-sidebar {
     display: none;
+  }
+
+  .garden-pagination-wrap {
+    display: block;
   }
 
   .garden-search-input {

@@ -529,14 +529,6 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
             fullSearchIds={fullSearchIds}
           />
           <GardenGrid groups={pageGroups} totalNodes={filteredNodes.length} prevNodeCount={prevNodeCount} />
-          {showPagination && (
-            <GardenPagination
-              currentPage={safePage}
-              totalPages={totalPages}
-              pageLabels={pageLabels}
-              onPageChange={handlePageChange}
-            />
-          )}
         </div>
         {showArchive && (
           <GardenArchiveSidebar
@@ -546,6 +538,16 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
           />
         )}
       </div>
+      {showPagination && (
+        <div className="garden-pagination-wrap">
+          <GardenPagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            pageLabels={pageLabels}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
       {showArchive && (
         <GardenMobileArchiveDrawer
           pages={pages}
