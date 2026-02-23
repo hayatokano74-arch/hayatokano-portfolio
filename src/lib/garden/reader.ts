@@ -55,33 +55,51 @@ function dateFromFilename(filename: string): string | null {
   return null;
 }
 
-/** インラインメタデータの抽出結果 */
-interface InlineMeta {
+/** 前処理の結果 */
+interface PreprocessResult {
   title: string | null;
   date: string | null;
   content: string;
 }
 
 /**
- * 本文の先頭にある title: / date: 行を抽出し、本文から除去する。
- * 例:
- *   "title:散歩の記録\ndate:2025-07-15\n本文..."
- *   → { title: "散歩の記録", date: "2025-07-15", content: "本文..." }
+ * ファイル内容を前処理する。以下の順序で実行:
+ *
+ * 1. 先頭行がファイル名と一致する場合に除去（Ulysses 対策）
+ * 2. 残りの先頭から title: / date: 行を抽出して除去
  *
  * frontmatter（---）がある場合は何もしない（gray-matter に任せる）。
- * title: と date: は順不同で、先頭の連続した行から抽出する。
+ *
+ * 例（Ulysses で日記）:
+ *   ファイル名: "2025.12.20.md"
+ *   本文: "2025.12.20\n今日は天気が良かった..."
+ *   → 先頭行除去 → { title: null, date: null, content: "今日は天気が良かった..." }
+ *
+ * 例（Ulysses で名前付き投稿 + date:）:
+ *   ファイル名: "散歩の記録.md"
+ *   本文: "散歩の記録\ndate:2025-07-15\n今日は..."
+ *   → 先頭行除去 → date: 抽出 → { title: null, date: "2025-07-15", content: "今日は..." }
  */
-function extractInlineMeta(raw: string): InlineMeta {
-  // frontmatter がある場合はスキップ
+function preprocessContent(raw: string, filename: string): PreprocessResult {
+  // frontmatter がある場合はそのまま返す
   if (raw.trimStart().startsWith("---")) {
     return { title: null, date: null, content: raw };
   }
 
-  let title: string | null = null;
-  let date: string | null = null;
   let remaining = raw;
 
-  // 先頭の連続した title:/date: 行を処理（最大2行）
+  // 1. 先頭行がファイル名（拡張子なし）と一致する場合に除去
+  const fileTitle = titleFromFilename(filename);
+  const firstLineEnd = remaining.indexOf("\n");
+  const firstLine = (firstLineEnd === -1 ? remaining : remaining.slice(0, firstLineEnd)).trim();
+  if (firstLine === fileTitle) {
+    remaining = firstLineEnd === -1 ? "" : remaining.slice(firstLineEnd + 1);
+  }
+
+  // 2. 先頭の連続した title:/date: 行を抽出（最大2行、順不同）
+  let title: string | null = null;
+  let date: string | null = null;
+
   for (let i = 0; i < 2; i++) {
     const dateMatch = remaining.match(/^date:\s*(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})\s*\n?/);
     if (dateMatch) {
@@ -136,25 +154,12 @@ function completeFrontmatter(
 async function getFileSlugs(files: GardenFile[]): Promise<Set<string>> {
   const slugs = new Set<string>();
   for (const file of files) {
-    const inline = extractInlineMeta(file.content);
-    const { data } = matter(inline.content);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
+    const pre = preprocessContent(file.content, file.filename);
+    const { data } = matter(pre.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, pre);
     slugs.add(titleToSlug(fm.title));
   }
   return slugs;
-}
-
-/**
- * 本文の先頭行がタイトル（ファイル名）と一致する場合に除去する。
- * Ulysses は最初の行をファイル名にするため、本文とタイトルが重複する。
- */
-function stripTitleLine(content: string, title: string): string {
-  const firstLineEnd = content.indexOf("\n");
-  const firstLine = (firstLineEnd === -1 ? content : content.slice(0, firstLineEnd)).trim();
-  if (firstLine === title) {
-    return firstLineEnd === -1 ? "" : content.slice(firstLineEnd + 1);
-  }
-  return content;
 }
 
 /** Markdownを1ファイルパースしてGardenNodeを返す */
@@ -162,12 +167,9 @@ async function parseFile(
   file: GardenFile,
   existingSlugs: Set<string>,
 ): Promise<GardenNode> {
-  const inline = extractInlineMeta(file.content);
-  const { data, content: rawContent } = matter(inline.content);
-  const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
-
-  // 本文先頭行がタイトルと同じなら除去（Ulysses のファイル名重複対策）
-  const content = stripTitleLine(rawContent, fm.title);
+  const pre = preprocessContent(file.content, file.filename);
+  const { data, content } = matter(pre.content);
+  const fm = completeFrontmatter(data as GardenFrontmatter, file, pre);
 
   const result = await unified()
     .use(remarkParse)
@@ -227,9 +229,9 @@ export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
   const existingSlugs = await getFileSlugs(files);
 
   for (const file of files) {
-    const inline = extractInlineMeta(file.content);
-    const { data } = matter(inline.content);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
+    const pre = preprocessContent(file.content, file.filename);
+    const { data } = matter(pre.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, pre);
     if (titleToSlug(fm.title) === slug) {
       return parseFile(file, existingSlugs);
     }
@@ -274,10 +276,9 @@ export async function getNodeSummaryMap(): Promise<Map<string, { title: string; 
   const files = await getGardenFiles();
 
   for (const file of files) {
-    const inline = extractInlineMeta(file.content);
-    const { data, content: rawContent } = matter(inline.content);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
-    const content = stripTitleLine(rawContent, fm.title);
+    const pre = preprocessContent(file.content, file.filename);
+    const { data, content } = matter(pre.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, pre);
     const slug = titleToSlug(fm.title);
 
     const plainText = content
