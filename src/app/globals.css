@@ -195,22 +195,17 @@ body {
 
 html {
   scroll-behavior: smooth;
-  /* サイト全体: スクロール中だけスクロールバーを表示（普段は完全非表示） */
-  scrollbar-width: none;
+  /* スクロールバー: 常にスペースを確保（レイアウトシフト防止）、普段は透明 */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
 html.is-scrolling {
-  scrollbar-width: thin;
   scrollbar-color: var(--muted) transparent;
 }
 
-/* WebKit: サイト全体のスクロールバー（普段は非表示） */
+/* WebKit: 常に6px確保、普段はサム透明、スクロール中だけ表示 */
 html::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
-}
-
-html.is-scrolling::-webkit-scrollbar {
   width: 6px;
 }
 
@@ -503,17 +498,17 @@ button {
   font-size: var(--font-body);
 }
 
-/* スクロール中だけスクロールバーを表示（普段は完全非表示） */
+/* スクロールバー: 常にスペース確保（シフト防止）、普段は透明 */
 .hide-scrollbar {
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
 .hide-scrollbar.is-scrolling {
-  scrollbar-width: thin;
   scrollbar-color: var(--muted) transparent;
 }
 
-/* WebKit: 普段は非表示、スクロール中のみ表示 */
+/* WebKit: 常に6px確保、スクロール中だけサム表示 */
 .hide-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
