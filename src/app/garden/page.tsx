@@ -8,8 +8,11 @@ import type { GardenNode } from "@/lib/garden/types";
 
 export const metadata: Metadata = { title: "Garden" };
 
-/* 60秒ごとに Dropbox から最新データを再取得 */
-export const revalidate = 60;
+/* サーバーレス関数の最大実行時間（秒）— 1078+ファイルの Dropbox ダウンロードに必要 */
+export const maxDuration = 60;
+
+/* 5分ごとに Dropbox から最新データを再取得 */
+export const revalidate = 300;
 
 export default async function GardenPage() {
   let nodes: GardenNode[] = [];

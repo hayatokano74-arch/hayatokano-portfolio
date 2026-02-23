@@ -10,8 +10,11 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-/* 60秒ごとに Dropbox から最新データを再取得 */
-export const revalidate = 60;
+/* サーバーレス関数の最大実行時間 */
+export const maxDuration = 60;
+
+/* 5分ごとに Dropbox から最新データを再取得 */
+export const revalidate = 300;
 
 /* ビルド時に存在しないページも動的に生成する */
 export const dynamicParams = true;
