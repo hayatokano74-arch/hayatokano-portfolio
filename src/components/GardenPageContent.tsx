@@ -217,7 +217,7 @@ function GardenArchiveSidebar({
               </button>
 
               {yearOpen ? (
-                <div style={{ paddingLeft: "var(--space-3)", marginTop: "var(--space-1)" }}>
+                <div style={{ marginTop: "var(--space-1)" }}>
                   {yearNode.months.map((m) => {
                     const isActive = m.page === currentPage;
                     return (
@@ -344,7 +344,7 @@ function GardenMobileArchiveDrawer({
               </button>
 
               {yearOpen ? (
-                <div style={{ paddingLeft: "var(--space-3)", marginTop: "var(--space-1)" }}>
+                <div style={{ marginTop: "var(--space-1)" }}>
                   {yearNode.months.map((m) => {
                     const isActive = m.page === currentPage;
                     return (
