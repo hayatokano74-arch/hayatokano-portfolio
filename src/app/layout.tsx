@@ -45,7 +45,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`} suppressHydrationWarning>
-      <head><ThemeScript /></head>
+      <head>
+        {/* 画像ドメインへの接続を事前確立（DNS + TCP + TLS で 100-300ms 短縮） */}
+        <link rel="preconnect" href="https://wp.hayatokano.com" />
+        <link rel="dns-prefetch" href="https://wp.hayatokano.com" />
+        <ThemeScript />
+      </head>
       <body>
         <a href="#main-content" className="skip-nav">
           メインコンテンツへ

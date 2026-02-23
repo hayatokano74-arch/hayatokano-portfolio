@@ -2703,7 +2703,11 @@ button.tl-photo-cell {
 .garden-img {
   background-repeat: no-repeat;
   background-position: center;
+  /* CLS防止: 読み込み前に領域を確保（横長写真の一般的なアスペクト比） */
+  aspect-ratio: 3 / 2;
+  object-fit: contain;
 }
+
 
 /* content-visibility で画面外エントリの描画を遅延 */
 .garden-entry-body {
