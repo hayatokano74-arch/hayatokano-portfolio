@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { NAV_ITEMS } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 
@@ -18,11 +18,32 @@ type Props = {
   latestWorks: LatestWork[];
 };
 
+/* ── ローディング画面 ── */
+function TopLoader({ progress, visible }: { progress: number; visible: boolean }) {
+  return (
+    <div
+      className={`top-loader ${visible ? "" : "top-loader--hidden"}`}
+      aria-hidden={!visible}
+    >
+      <div className="top-loader-brand">HAYATO KANO</div>
+      <div className="top-loader-bar">
+        <div
+          className="top-loader-bar-fill"
+          style={{ transform: `scaleX(${progress / 100})` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function TopHero({ candidates, latestWorks }: Props) {
   const [index, setIndex] = useState(0);
   const defaultSrc = useMemo(() => candidates[index] ?? null, [candidates, index]);
   const [loaded, setLoaded] = useState(false);
+  const [loaderDone, setLoaderDone] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const progressTimer = useRef<ReturnType<typeof setInterval>>(null);
 
   /* ── Works ホバーで背景切替 ── */
   const [hoverSrc, setHoverSrc] = useState<string | null>(null);
@@ -39,24 +60,63 @@ export function TopHero({ candidates, latestWorks }: Props) {
     setHoverVisible(false);
   }, []);
 
-  /* ── ヒーロー画像読み込み ── */
+  /* ── ヒーロー画像読み込み + プログレスバー ── */
   useEffect(() => {
-    if (!defaultSrc) return;
+    if (!defaultSrc) {
+      setLoaderDone(true);
+      return;
+    }
+
+    // プログレスバーのアニメーション（疑似的に進む、90%で止まる）
+    let current = 0;
+    progressTimer.current = setInterval(() => {
+      current += Math.random() * 12 + 3;
+      if (current > 90) current = 90;
+      setProgress(current);
+    }, 150);
+
     const img = new Image();
     img.src = defaultSrc;
-    img.onload = () => setLoaded(true);
-    img.onerror = () => setIndex((i) => i + 1);
+    img.onload = () => {
+      if (progressTimer.current) clearInterval(progressTimer.current);
+      setProgress(100);
+      setLoaded(true);
+      // プログレスバーが100%になった後にローダーをフェードアウト
+      setTimeout(() => setLoaderDone(true), 400);
+    };
+    img.onerror = () => {
+      if (progressTimer.current) clearInterval(progressTimer.current);
+      setIndex((i) => i + 1);
+    };
+
+    return () => {
+      if (progressTimer.current) clearInterval(progressTimer.current);
+    };
+  }, [defaultSrc]);
+
+  /* ── preload link を動的に挿入 ── */
+  useEffect(() => {
+    if (!defaultSrc) return;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = defaultSrc;
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
   }, [defaultSrc]);
 
   return (
     <main id="main-content" className="top-hero" style={{ overflow: "hidden" }}>
+      {/* ── ローディング画面 ── */}
+      <TopLoader progress={progress} visible={!loaderDone} />
+
       {/* デフォルト背景画像 */}
       {defaultSrc ? (
         <div
           className="top-hero-bg"
           style={{
             backgroundImage: `url(${defaultSrc})`,
-            opacity: loaded ? 1 : 0,
+            opacity: loaderDone && loaded ? 1 : 0,
           }}
         />
       ) : (
@@ -84,8 +144,14 @@ export function TopHero({ candidates, latestWorks }: Props) {
       {/* オーバーレイグラデーション */}
       <div className="top-hero-overlay" />
 
-      {/* 上部: ヘッダーバー（他ページと同じレイアウト） */}
-      <div className={`top-hero-header ${mobileMenuOpen ? "menu-open" : ""}`}>
+      {/* 上部: ヘッダーバー — ローダー終了後にフェードイン */}
+      <div
+        className={`top-hero-header ${mobileMenuOpen ? "menu-open" : ""}`}
+        style={{
+          opacity: loaderDone ? 1 : 0,
+          transition: "opacity 0.8s ease 0.1s",
+        }}
+      >
         <div className="top-hero-brand-name">HAYATO KANO</div>
 
         {/* モバイルメニューボタン */}
@@ -135,8 +201,14 @@ export function TopHero({ candidates, latestWorks }: Props) {
         </div>
       ) : null}
 
-      {/* 下部: 最新 Works リスト */}
-      <div className="top-hero-bottom">
+      {/* 下部: 最新 Works リスト — ローダー終了後にフェードイン */}
+      <div
+        className="top-hero-bottom"
+        style={{
+          opacity: loaderDone ? 1 : 0,
+          transition: "opacity 0.8s ease 0.3s",
+        }}
+      >
         <div className="top-hero-brand">
           <div className="top-hero-works" onMouseLeave={handleWorkLeave}>
             {latestWorks.map((work) => (

@@ -747,6 +747,48 @@ button {
   background: #0a0a0a;
 }
 
+/* ── トップページ ローディング画面 ── */
+.top-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  background: #0a0a0a;
+  transition: opacity 0.6s ease;
+}
+
+.top-loader--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.top-loader-brand {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #fff;
+}
+
+.top-loader-bar {
+  width: 160px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.top-loader-bar-fill {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  transform-origin: left;
+  transition: transform 0.2s ease;
+}
+
 .top-hero-bg {
   position: absolute;
   inset: 0;
