@@ -89,18 +89,18 @@ function pageRangeLabel(groups: MonthGroup[]): string {
   if (groups.length === 0) return "";
   if (groups.length === 1) return groups[0].label;
 
-  const first = groups[groups.length - 1].label; // 古い方
-  const last = groups[0].label; // 新しい方
+  const newest = groups[0].label; // 新しい方
+  const oldest = groups[groups.length - 1].label; // 古い方
 
-  // 同年なら月だけ表示（例: "2025年7月 — 9月"）
-  const yearMatch = first.match(/^(\d+)年/);
-  const lastYearMatch = last.match(/^(\d+)年/);
-  if (yearMatch && lastYearMatch && yearMatch[1] === lastYearMatch[1]) {
-    const monthOnly = last.replace(/^\d+年/, "");
-    return `${first} — ${monthOnly}`;
+  // 同年なら月だけ表示（例: "2025年9月 — 7月"）
+  const newestYear = newest.match(/^(\d+)年/);
+  const oldestYear = oldest.match(/^(\d+)年/);
+  if (newestYear && oldestYear && newestYear[1] === oldestYear[1]) {
+    const monthOnly = oldest.replace(/^\d+年/, "");
+    return `${newest} — ${monthOnly}`;
   }
 
-  return `${first} — ${last}`;
+  return `${newest} — ${oldest}`;
 }
 
 export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
