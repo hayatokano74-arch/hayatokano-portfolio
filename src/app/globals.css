@@ -2355,10 +2355,11 @@ button.tl-photo-cell {
 
 .garden-sidebar {
   grid-column: 11 / -1;
-  grid-row: 1 / -1;
   position: sticky;
   top: var(--space-7);
   align-self: start;
+  max-height: calc(100vh - var(--space-7) - var(--space-7));
+  overflow-y: auto;
 }
 
 .garden-content {
