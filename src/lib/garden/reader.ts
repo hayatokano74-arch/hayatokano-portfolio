@@ -55,47 +55,78 @@ function dateFromFilename(filename: string): string | null {
   return null;
 }
 
-/**
- * 本文の先頭にある date: 行を抽出し、本文から除去する。
- * 例: "date:2025-07-15\n本文..." → { date: "2025-07-15", content: "本文..." }
- * frontmatter（---）がある場合は何もしない（gray-matter に任せる）。
- */
-function extractInlineDate(raw: string): { date: string | null; content: string } {
-  // frontmatter がある場合はスキップ
-  if (raw.trimStart().startsWith("---")) {
-    return { date: null, content: raw };
-  }
-
-  // 先頭の date: 行を探す（スペースあり・なし、区切り文字はドット・ハイフン・スラッシュ対応）
-  const match = raw.match(/^date:\s*(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})\s*\n?/);
-  if (match) {
-    return {
-      date: normalizeDate(match[1]),
-      content: raw.slice(match[0].length),
-    };
-  }
-
-  return { date: null, content: raw };
+/** インラインメタデータの抽出結果 */
+interface InlineMeta {
+  title: string | null;
+  date: string | null;
+  content: string;
 }
 
 /**
- * frontmatterを補完（title/dateがなければファイル名・日付から自動生成）
- * 日付の優先順位: frontmatter date → 本文先頭の date: → ファイル名の日付 → Dropbox 更新日時
+ * 本文の先頭にある title: / date: 行を抽出し、本文から除去する。
+ * 例:
+ *   "title:散歩の記録\ndate:2025-07-15\n本文..."
+ *   → { title: "散歩の記録", date: "2025-07-15", content: "本文..." }
+ *
+ * frontmatter（---）がある場合は何もしない（gray-matter に任せる）。
+ * title: と date: は順不同で、先頭の連続した行から抽出する。
+ */
+function extractInlineMeta(raw: string): InlineMeta {
+  // frontmatter がある場合はスキップ
+  if (raw.trimStart().startsWith("---")) {
+    return { title: null, date: null, content: raw };
+  }
+
+  let title: string | null = null;
+  let date: string | null = null;
+  let remaining = raw;
+
+  // 先頭の連続した title:/date: 行を処理（最大2行）
+  for (let i = 0; i < 2; i++) {
+    const dateMatch = remaining.match(/^date:\s*(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})\s*\n?/);
+    if (dateMatch) {
+      date = normalizeDate(dateMatch[1]);
+      remaining = remaining.slice(dateMatch[0].length);
+      continue;
+    }
+
+    const titleMatch = remaining.match(/^title:\s*(.+?)\s*\n/);
+    if (titleMatch) {
+      title = titleMatch[1];
+      remaining = remaining.slice(titleMatch[0].length);
+      continue;
+    }
+
+    break;
+  }
+
+  return { title, date, content: remaining };
+}
+
+/**
+ * frontmatterを補完（title/dateがなければ本文先頭・ファイル名から自動生成）
+ * タイトルの優先順位: frontmatter title → 本文先頭 title: → ファイル名
+ * 日付の優先順位: frontmatter date → 本文先頭 date: → ファイル名の日付 → Dropbox 更新日時
  */
 function completeFrontmatter(
   fm: GardenFrontmatter,
   file: GardenFile,
-  inlineDate: string | null,
+  inline: { title: string | null; date: string | null },
 ): GardenFrontmatter {
   const date =
     fm.date ||
-    inlineDate ||
+    inline.date ||
     dateFromFilename(file.filename) ||
     new Date(file.modifiedAt).toISOString().slice(0, 10);
 
+  const title =
+    fm.title ||
+    inline.title ||
+    titleFromFilename(file.filename);
+
   return {
     ...fm,
-    title: fm.title || titleFromFilename(file.filename),
+    title,
     date,
     tags: fm.tags ?? [],
   };
@@ -105,9 +136,9 @@ function completeFrontmatter(
 async function getFileSlugs(files: GardenFile[]): Promise<Set<string>> {
   const slugs = new Set<string>();
   for (const file of files) {
-    const { date: inlineDate, content: cleaned } = extractInlineDate(file.content);
-    const { data } = matter(cleaned);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file, inlineDate);
+    const inline = extractInlineMeta(file.content);
+    const { data } = matter(inline.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
     slugs.add(titleToSlug(fm.title));
   }
   return slugs;
@@ -118,9 +149,9 @@ async function parseFile(
   file: GardenFile,
   existingSlugs: Set<string>,
 ): Promise<GardenNode> {
-  const { date: inlineDate, content: cleaned } = extractInlineDate(file.content);
-  const { data, content } = matter(cleaned);
-  const fm = completeFrontmatter(data as GardenFrontmatter, file, inlineDate);
+  const inline = extractInlineMeta(file.content);
+  const { data, content } = matter(inline.content);
+  const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
 
   const result = await unified()
     .use(remarkParse)
@@ -180,9 +211,9 @@ export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
   const existingSlugs = await getFileSlugs(files);
 
   for (const file of files) {
-    const { date: inlineDate, content: cleaned } = extractInlineDate(file.content);
-    const { data } = matter(cleaned);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file, inlineDate);
+    const inline = extractInlineMeta(file.content);
+    const { data } = matter(inline.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
     if (titleToSlug(fm.title) === slug) {
       return parseFile(file, existingSlugs);
     }
@@ -227,9 +258,9 @@ export async function getNodeSummaryMap(): Promise<Map<string, { title: string; 
   const files = await getGardenFiles();
 
   for (const file of files) {
-    const { date: inlineDate, content: cleaned } = extractInlineDate(file.content);
-    const { data, content } = matter(cleaned);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file, inlineDate);
+    const inline = extractInlineMeta(file.content);
+    const { data, content } = matter(inline.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
     const slug = titleToSlug(fm.title);
 
     const plainText = content

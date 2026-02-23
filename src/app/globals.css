@@ -2505,6 +2505,18 @@ button.tl-photo-cell {
   outline-offset: 2px;
 }
 
+.garden-section-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.garden-section-chevron {
+  font-size: 0.75em;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
 .garden-section-meta {
   font-size: var(--font-meta);
   letter-spacing: 0.04em;

@@ -58,9 +58,12 @@ export function GardenGrid({ groups, totalNodes, prevNodeCount }: GardenGridProp
               onClick={() => toggle(group.label)}
               type="button"
             >
-              <span>{group.label}</span>
+              <span className="garden-section-label">
+                <span className="garden-section-chevron">{isOpen ? "▾" : "▸"}</span>
+                {group.label}
+              </span>
               <span className="garden-section-meta">
-                {isOpen ? "" : `${group.nodes.length}件`}
+                {group.nodes.length}件
               </span>
             </button>
             {isOpen && (
