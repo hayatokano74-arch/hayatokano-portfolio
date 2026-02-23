@@ -7,6 +7,9 @@ import { getAllNodes } from "@/lib/garden/reader";
 
 export const metadata: Metadata = { title: "Garden" };
 
+/* 60秒ごとに Dropbox から最新データを再取得 */
+export const revalidate = 60;
+
 export default async function GardenPage() {
   const nodes = await getAllNodes();
 

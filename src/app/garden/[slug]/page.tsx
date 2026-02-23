@@ -10,8 +10,14 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+/* 60秒ごとに Dropbox から最新データを再取得 */
+export const revalidate = 60;
+
+/* ビルド時に存在しないページも動的に生成する */
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
-  const slugs = getAllPageSlugs();
+  const slugs = await getAllPageSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
@@ -20,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const decoded = decodeURIComponent(slug);
   const node = await getNodeBySlug(decoded);
   if (node) return { title: node.title };
-  const virtualTitle = getVirtualPageTitle(decoded);
+  const virtualTitle = await getVirtualPageTitle(decoded);
   return { title: virtualTitle ?? decoded };
 }
 
@@ -31,10 +37,10 @@ export default async function GardenNodePage({ params }: Props) {
 
   // MDファイルがなくてもリンクされた時点でページは存在する
   const pageSlug = node?.slug ?? decoded;
-  const pageTitle = node?.title ?? getVirtualPageTitle(decoded) ?? decoded;
+  const pageTitle = node?.title ?? (await getVirtualPageTitle(decoded)) ?? decoded;
 
-  const linkedPages = getLinkedPages(pageSlug);
-  const twoHopGroups = getTwoHopLinks(pageSlug);
+  const linkedPages = await getLinkedPages(pageSlug);
+  const twoHopGroups = await getTwoHopLinks(pageSlug);
 
   return (
     <CanvasShell>

@@ -1,100 +1,57 @@
-/* Markdownファイルの読み込み・パース */
+/* Markdownファイルの読み込み・パース（Dropbox API 経由） */
 
-import fs from "fs";
-import path from "path";
-import { execSync } from "child_process";
 import matter from "gray-matter";
+import { cache } from "react";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { remarkBracketLinks } from "./remark-bracket-links";
 import { titleToSlug } from "./slug";
-import { getAllLinkedSlugs } from "./backlinks";
+import { fetchAllGardenFiles, type GardenFile } from "./dropbox";
 import type { GardenNode, GardenFrontmatter } from "./types";
 
-const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
-
-/** 除外するディレクトリ名（テンプレート等） */
-const EXCLUDED_DIRS = new Set(["templates", ".obsidian"]);
-
-/** content/garden/ 以下の全 .md ファイルを再帰的に収集 */
-function collectMdFiles(dir: string): { filePath: string; filename: string }[] {
-  if (!fs.existsSync(dir)) return [];
-  const results: { filePath: string; filename: string }[] = [];
-
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith(".")) continue;
-    if (entry.isDirectory()) {
-      if (EXCLUDED_DIRS.has(entry.name)) continue;
-      results.push(...collectMdFiles(path.join(dir, entry.name)));
-    } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      results.push({ filePath: path.join(dir, entry.name), filename: entry.name });
-    }
-  }
-
-  return results;
-}
+// --- リクエスト単位のキャッシュ（同一レンダリング内で Dropbox API を1回だけ呼ぶ） ---
+export const getGardenFiles = cache(async (): Promise<GardenFile[]> => {
+  return fetchAllGardenFiles();
+});
 
 /** ファイル名から拡張子を除去してタイトルを推定 */
 function titleFromFilename(filename: string): string {
   return filename.replace(/\.md$/, "");
 }
 
-/**
- * git の最終コミット時刻を取得（Unix秒）。
- * git 未管理やコミット前のファイルは fs.statSync にフォールバック。
- */
-function getGitTimestamp(filePath: string): number {
-  try {
-    const ts = execSync(`git log -1 --format=%ct -- "${filePath}"`, {
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
-    if (ts) return parseInt(ts, 10) * 1000;
-  } catch {
-    // git が使えない環境ではフォールバック
-  }
-  return fs.statSync(filePath).mtime.getTime();
-}
-
-/** ファイルの更新日をYYYY-MM-DD形式で取得（gitコミット時刻ベース） */
-function dateFromFile(filePath: string): string {
-  return new Date(getGitTimestamp(filePath)).toISOString().slice(0, 10);
-}
-
 /** frontmatterを補完（title/dateがなければファイル名・日付から自動生成） */
 function completeFrontmatter(
   fm: GardenFrontmatter,
-  filePath: string,
-  filename: string,
+  file: GardenFile,
 ): GardenFrontmatter {
   return {
     ...fm,
-    title: fm.title || titleFromFilename(filename),
-    date: fm.date || dateFromFile(filePath),
+    title: fm.title || titleFromFilename(file.filename),
+    date: fm.date || new Date(file.modifiedAt).toISOString().slice(0, 10),
     tags: fm.tags ?? [],
   };
 }
 
 /** MDファイルが存在するノードのslugセットを取得 */
-function getFileSlugs(): Set<string> {
-  const files = collectMdFiles(GARDEN_DIR);
+async function getFileSlugs(files: GardenFile[]): Promise<Set<string>> {
   const slugs = new Set<string>();
-  for (const { filePath, filename } of files) {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const { data } = matter(raw);
-    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, filename);
+  for (const file of files) {
+    const { data } = matter(file.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file);
     slugs.add(titleToSlug(fm.title));
   }
   return slugs;
 }
 
 /** Markdownを1ファイルパースしてGardenNodeを返す */
-async function parseFile(filePath: string, filename: string, existingSlugs: Set<string>): Promise<GardenNode> {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { data, content } = matter(raw);
-  const fm = completeFrontmatter(data as GardenFrontmatter, filePath, filename);
+async function parseFile(
+  file: GardenFile,
+  existingSlugs: Set<string>,
+): Promise<GardenNode> {
+  const { data, content } = matter(file.content);
+  const fm = completeFrontmatter(data as GardenFrontmatter, file);
 
   const result = await unified()
     .use(remarkParse)
@@ -119,8 +76,6 @@ async function parseFile(filePath: string, filename: string, existingSlugs: Set<
       ? rawDate.toISOString().slice(0, 10)
       : String(rawDate ?? "");
 
-  const mtime = getGitTimestamp(filePath);
-
   return {
     slug: titleToSlug(fm.title),
     title: fm.title,
@@ -128,18 +83,18 @@ async function parseFile(filePath: string, filename: string, existingSlugs: Set<
     tags: fm.tags ?? [],
     contentHtml,
     excerpt,
-    mtime,
+    mtime: file.modifiedAt,
   };
 }
 
 /** 全ノードを取得（MDファイルが存在するもののみ。日付降順） */
 export async function getAllNodes(): Promise<GardenNode[]> {
-  const files = collectMdFiles(GARDEN_DIR);
+  const files = await getGardenFiles();
   if (files.length === 0) return [];
-  const existingSlugs = getFileSlugs();
+  const existingSlugs = await getFileSlugs(files);
 
   const nodes = await Promise.all(
-    files.map(({ filePath, filename }) => parseFile(filePath, filename, existingSlugs)),
+    files.map((file) => parseFile(file, existingSlugs)),
   );
 
   // 日付降順 → 同日ならファイル更新時刻が新しい方が上
@@ -151,16 +106,15 @@ export async function getAllNodes(): Promise<GardenNode[]> {
 
 /** slugで1ノードを取得（MDファイルが存在するもののみ） */
 export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
-  const files = collectMdFiles(GARDEN_DIR);
+  const files = await getGardenFiles();
   if (files.length === 0) return null;
-  const existingSlugs = getFileSlugs();
+  const existingSlugs = await getFileSlugs(files);
 
-  for (const { filePath, filename } of files) {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const { data } = matter(raw);
-    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, filename);
+  for (const file of files) {
+    const { data } = matter(file.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file);
     if (titleToSlug(fm.title) === slug) {
-      return parseFile(filePath, filename, existingSlugs);
+      return parseFile(file, existingSlugs);
     }
   }
   return null;
@@ -170,9 +124,12 @@ export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
  * 全ページのslugリストを取得（generateStaticParams用）。
  * MDファイルのあるページ + リンクされているが未作成の仮想ページを含む。
  */
-export function getAllPageSlugs(): string[] {
-  const fileSlugs = getFileSlugs();
-  const linkedSlugs = getAllLinkedSlugs();
+export async function getAllPageSlugs(): Promise<string[]> {
+  const files = await getGardenFiles();
+  const fileSlugs = await getFileSlugs(files);
+  // backlinks の getAllLinkedSlugs は遅延importで循環参照を回避
+  const { getAllLinkedSlugs } = await import("./backlinks");
+  const linkedSlugs = await getAllLinkedSlugs();
 
   const all = new Set<string>(fileSlugs);
   for (const slug of linkedSlugs.keys()) {
@@ -185,8 +142,9 @@ export function getAllPageSlugs(): string[] {
  * 仮想ページのタイトルを取得。
  * MDファイルがないがリンクされているページのタイトルを返す。
  */
-export function getVirtualPageTitle(slug: string): string | null {
-  const linkedSlugs = getAllLinkedSlugs();
+export async function getVirtualPageTitle(slug: string): Promise<string | null> {
+  const { getAllLinkedSlugs } = await import("./backlinks");
+  const linkedSlugs = await getAllLinkedSlugs();
   return linkedSlugs.get(slug) ?? null;
 }
 
@@ -194,14 +152,13 @@ export function getVirtualPageTitle(slug: string): string | null {
  * 全ページの概要マップを取得（slug → { title, excerpt }）。
  * リンクカード表示用。MDファイルがあるページのみexcerptを持つ。
  */
-export function getNodeSummaryMap(): Map<string, { title: string; excerpt?: string; date?: string }> {
+export async function getNodeSummaryMap(): Promise<Map<string, { title: string; excerpt?: string; date?: string }>> {
   const map = new Map<string, { title: string; excerpt?: string; date?: string }>();
-  const files = collectMdFiles(GARDEN_DIR);
+  const files = await getGardenFiles();
 
-  for (const { filePath, filename } of files) {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const { data, content } = matter(raw);
-    const fm = completeFrontmatter(data as GardenFrontmatter, filePath, filename);
+  for (const file of files) {
+    const { data, content } = matter(file.content);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file);
     const slug = titleToSlug(fm.title);
 
     const plainText = content

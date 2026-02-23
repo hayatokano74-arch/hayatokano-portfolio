@@ -1,33 +1,10 @@
-/* リンクインデックス生成（Cosense方式） */
+/* リンクインデックス生成（Cosense方式）— Dropbox API 経由 */
 
-import fs from "fs";
-import path from "path";
 import matter from "gray-matter";
 import { cache } from "react";
 import { titleToSlug } from "./slug";
-import { getNodeSummaryMap } from "./reader";
+import { getGardenFiles, getNodeSummaryMap } from "./reader";
 import type { GardenFrontmatter, LinkedPageSummary, TwoHopGroup } from "./types";
-
-const GARDEN_DIR = path.join(process.cwd(), "content", "garden");
-
-/** 除外するディレクトリ名 */
-const EXCLUDED_DIRS = new Set(["templates", ".obsidian"]);
-
-/** content/garden/ 以下の全 .md ファイルを再帰的に収集 */
-function collectMdFiles(dir: string): { filePath: string; filename: string }[] {
-  if (!fs.existsSync(dir)) return [];
-  const results: { filePath: string; filename: string }[] = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith(".")) continue;
-    if (entry.isDirectory()) {
-      if (EXCLUDED_DIRS.has(entry.name)) continue;
-      results.push(...collectMdFiles(path.join(dir, entry.name)));
-    } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      results.push({ filePath: path.join(dir, entry.name), filename: entry.name });
-    }
-  }
-  return results;
-}
 
 /** リンク構文の正規表現 */
 const WIKILINK_RE = /\[\[([^\[\]|]+?)(?:\|[^\[\]]+?)?\]\]/g;
@@ -42,19 +19,17 @@ interface RawLink {
 }
 
 /** 全ファイルをスキャンしてリンク関係を抽出（ブラケットリンク + ハッシュタグ） */
-const scanAllLinks = cache((): RawLink[] => {
-  const files = collectMdFiles(GARDEN_DIR);
+const scanAllLinks = cache(async (): Promise<RawLink[]> => {
+  const files = await getGardenFiles();
   const links: RawLink[] = [];
 
-  for (const { filePath, filename } of files) {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const { data, content } = matter(raw);
+  for (const file of files) {
+    const { data, content } = matter(file.content);
     const fm = data as GardenFrontmatter;
-    // frontmatterがなくてもファイル名からtitleを補完
-    const sourceTitle = fm.title || filename.replace(/\.md$/, "");
+    const sourceTitle = fm.title || file.filename.replace(/\.md$/, "");
     const sourceSlug = titleToSlug(sourceTitle);
 
-    // Obsidian式 [[wikilink]]（[[ページ|表示名]] のページ部分を使用）
+    // Obsidian式 [[wikilink]]
     const wikilinkPositions = new Set<number>();
     for (const match of content.matchAll(WIKILINK_RE)) {
       wikilinkPositions.add(match.index!);
@@ -63,16 +38,15 @@ const scanAllLinks = cache((): RawLink[] => {
       links.push({ sourceSlug, sourceTitle, targetSlug, targetTitle });
     }
 
-    // ブラケットリンク [テキスト]（wikilink内の [ ] と重複しないようスキップ）
+    // ブラケットリンク [テキスト]
     for (const match of content.matchAll(BRACKET_RE)) {
-      // [[wikilink]] の内側の [テキスト] はスキップ
       if (wikilinkPositions.has(match.index! - 1)) continue;
       const targetTitle = match[1];
       const targetSlug = titleToSlug(targetTitle);
       links.push({ sourceSlug, sourceTitle, targetSlug, targetTitle });
     }
 
-    // ハッシュタグ #タグ（ページリンクとして扱う）
+    // ハッシュタグ #タグ
     for (const match of content.matchAll(HASHTAG_RE)) {
       const targetTitle = match[1];
       const targetSlug = titleToSlug(targetTitle);
@@ -83,7 +57,7 @@ const scanAllLinks = cache((): RawLink[] => {
   return links;
 });
 
-/** slug → LinkedPageSummary に変換（ページデータがあれば抜粋・日付付き） */
+/** slug → LinkedPageSummary に変換 */
 function toPageSummary(
   slug: string,
   title: string,
@@ -100,15 +74,10 @@ function toPageSummary(
 
 /**
  * Cosense方式のLinks（1-hop）を取得。
- * 現在ページのリンク先を共有する他のページ + 被リンク元を
- * ページカード（タイトル + 抜粋）として返す。
- *
- * 例: 石巻の朝 → [写真と記憶] で、冬の光も → [写真と記憶] なら、
- *     冬の光がリンクカードとして表示される。
  */
-export const getLinkedPages = cache((currentSlug: string): LinkedPageSummary[] => {
-  const allLinks = scanAllLinks();
-  const summaryMap = getNodeSummaryMap();
+export const getLinkedPages = cache(async (currentSlug: string): Promise<LinkedPageSummary[]> => {
+  const allLinks = await scanAllLinks();
+  const summaryMap = await getNodeSummaryMap();
   const seen = new Set<string>();
   seen.add(currentSlug);
   const results: LinkedPageSummary[] = [];
@@ -146,19 +115,15 @@ export const getLinkedPages = cache((currentSlug: string): LinkedPageSummary[] =
 
 /**
  * Cosense方式の2-hopリンクを取得。
- * Linksセクションで表示済みのページを除外し、
- * さらに遠い関連ページをグループ化して返す。
  */
-export const getTwoHopLinks = cache((currentSlug: string): TwoHopGroup[] => {
-  const allLinks = scanAllLinks();
-  const summaryMap = getNodeSummaryMap();
+export const getTwoHopLinks = cache(async (currentSlug: string): Promise<TwoHopGroup[]> => {
+  const allLinks = await scanAllLinks();
+  const summaryMap = await getNodeSummaryMap();
 
-  // Linksセクションで表示済みのページを除外用に収集
-  const linkedPages = getLinkedPages(currentSlug);
+  const linkedPages = await getLinkedPages(currentSlug);
   const linkedSlugs = new Set<string>(linkedPages.map((p) => p.slug));
   linkedSlugs.add(currentSlug);
 
-  // Linksに表示されたページのforward linksを中継候補として収集
   const hopTargets = new Map<string, string>();
   for (const page of linkedPages) {
     for (const link of allLinks) {
@@ -173,7 +138,6 @@ export const getTwoHopLinks = cache((currentSlug: string): TwoHopGroup[] => {
     }
   }
 
-  // 各中継ターゲットを共有する、まだ表示されていないページを収集
   const groups: TwoHopGroup[] = [];
   for (const [targetSlug, targetTitle] of hopTargets) {
     const seen = new Set<string>();
@@ -206,8 +170,8 @@ export const getTwoHopLinks = cache((currentSlug: string): TwoHopGroup[] => {
  * 全リンクターゲットのslugセットを取得。
  * MDファイルが存在しない仮想ページも含む。
  */
-export const getAllLinkedSlugs = cache((): Map<string, string> => {
-  const allLinks = scanAllLinks();
+export const getAllLinkedSlugs = cache(async (): Promise<Map<string, string>> => {
+  const allLinks = await scanAllLinks();
   const slugToTitle = new Map<string, string>();
   for (const link of allLinks) {
     if (!slugToTitle.has(link.targetSlug)) {

@@ -28,3 +28,4 @@ public/garden-search-index.json
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+content/garden/
