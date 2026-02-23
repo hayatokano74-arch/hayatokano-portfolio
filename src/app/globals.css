@@ -2634,21 +2634,33 @@ button.tl-photo-cell {
   margin-bottom: 0;
 }
 
-/* ページネーション */
+/* ページネーション（12カラムグリッドに配置） */
 .garden-pagination {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
   margin-top: var(--space-9);
   padding-top: var(--space-9);
   border-top: 1px solid var(--border);
 }
 
 .garden-pagination-controls {
+  grid-column: 4 / span 6;
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
+}
+
+.garden-pagination-range {
+  grid-column: 11 / -1;
+  justify-self: end;
+  align-self: center;
+  font-size: var(--font-meta);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .garden-pagination-number,
@@ -2684,12 +2696,6 @@ button.tl-photo-cell {
   height: 36px;
   font-size: var(--font-body);
   color: var(--muted);
-}
-
-.garden-pagination-range {
-  font-size: var(--font-meta);
-  color: var(--muted);
-  letter-spacing: 0.04em;
 }
 
 /* 個別ページ */
@@ -3572,6 +3578,13 @@ button.tl-photo-cell {
 
   .garden-content > * {
     grid-column: 1 / -1;
+  }
+
+  .garden-pagination {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
   }
 
   .garden-detail > * {

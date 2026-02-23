@@ -19,12 +19,10 @@ interface GardenGridProps {
 }
 
 export function GardenGrid({ groups, totalNodes, prevNodeCount }: GardenGridProps) {
-  // 最新グループは展開、それ以降は折りたたみ
-  const [expanded, setExpanded] = useState<Set<string>>(() => {
-    const initial = new Set<string>();
-    if (groups.length > 0) initial.add(groups[0].label);
-    return initial;
-  });
+  // 全グループを展開状態で表示
+  const [expanded, setExpanded] = useState<Set<string>>(
+    () => new Set(groups.map((g) => g.label)),
+  );
 
   if (groups.length === 0) {
     return <p style={{ color: "var(--muted)" }}>まだノードがありません。</p>;
