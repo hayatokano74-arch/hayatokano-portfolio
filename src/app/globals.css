@@ -3027,6 +3027,7 @@ button.tl-photo-cell {
 
   .works-view-toggle {
     font-size: 16px !important;
+    margin-left: auto;
   }
 
   /* ── Works リスト: サマリー ── */
