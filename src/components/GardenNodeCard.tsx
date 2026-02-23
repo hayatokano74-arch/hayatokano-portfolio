@@ -8,6 +8,11 @@ import { GardenBody } from "./GardenBody";
 /**
  * IntersectionObserver で画面に近づいたときだけ本文HTMLをDOMに挿入する。
  * 画面外のエントリは画像リクエストもHTMLパースも発生しない。
+ *
+ * ページ切替時に scrollTo({ top: 0 }) が走るが、React レンダリングと
+ * スクロール完了のタイミングがずれると、上部の要素が「画面外」と誤判定
+ * されることがある。requestAnimationFrame で1フレーム遅延させて
+ * スクロール完了後に observer を登録する。
  */
 function useLazyVisible(rootMargin = "200px") {
   const ref = useRef<HTMLDivElement>(null);
@@ -17,17 +22,26 @@ function useLazyVisible(rootMargin = "200px") {
     const el = ref.current;
     if (!el) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    let observer: IntersectionObserver | null = null;
+
+    // スクロール完了後に observer を登録
+    const rafId = requestAnimationFrame(() => {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setVisible(true);
+            observer?.disconnect();
+          }
+        },
+        { rootMargin },
+      );
+      observer.observe(el);
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer?.disconnect();
+    };
   }, [rootMargin]);
 
   return { ref, visible };
