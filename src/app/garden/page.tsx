@@ -4,7 +4,6 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 import { GardenPageContent } from "@/components/GardenPageContent";
 import { getAllNodes } from "@/lib/garden/reader";
-import type { GardenNode } from "@/lib/garden/types";
 
 export const metadata: Metadata = { title: "Garden" };
 
@@ -14,15 +13,15 @@ export const maxDuration = 60;
 /* 1時間ごとに Dropbox から最新データを再取得（429 防止） */
 export const revalidate = 3600;
 
+/**
+ * Garden ページ（Server Component）
+ *
+ * Dropbox API 失敗時はエラーを投げる（try-catch しない）。
+ * これにより Next.js ISR が前回成功したキャッシュページを配信する。
+ * エラーをキャッチして空配列で描画すると ISR が空ページをキャッシュしてしまう。
+ */
 export default async function GardenPage() {
-  let nodes: GardenNode[] = [];
-  let error: string | null = null;
-  try {
-    nodes = await getAllNodes();
-  } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
-    console.error("[Garden] getAllNodes failed:", error);
-  }
+  const nodes = await getAllNodes();
 
   return (
     <CanvasShell>
