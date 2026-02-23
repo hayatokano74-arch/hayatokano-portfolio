@@ -13,10 +13,12 @@ export const revalidate = 60;
 
 export default async function GardenPage() {
   let nodes: GardenNode[] = [];
+  let error: string | null = null;
   try {
     nodes = await getAllNodes();
-  } catch {
-    // Dropbox 接続エラー時は空で表示
+  } catch (e) {
+    error = e instanceof Error ? e.message : String(e);
+    console.error("[Garden] getAllNodes failed:", error);
   }
 
   return (

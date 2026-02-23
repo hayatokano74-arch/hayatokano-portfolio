@@ -1,5 +1,7 @@
 /* Dropbox API クライアント — Garden ファイルの取得 */
 
+import { unzipSync, strFromU8 } from "fflate";
+
 /** Dropbox から取得したファイル */
 export interface GardenFile {
   /** Dropbox 上のパス */
@@ -48,7 +50,7 @@ async function getAccessToken(): Promise<string> {
   return cachedToken.token;
 }
 
-// --- ファイル一覧取得 ---
+// --- ファイル一覧取得（更新日時の取得に使用） ---
 
 interface DropboxEntry {
   ".tag": "file" | "folder";
@@ -104,7 +106,7 @@ async function listAllEntries(): Promise<DropboxEntry[]> {
   return entries;
 }
 
-// --- ファイルダウンロード ---
+// --- ZIP 一括ダウンロード ---
 
 /** JSON 文字列内の非 ASCII 文字を \uXXXX にエスケープ（HTTP ヘッダー用） */
 function asciiSafeJson(obj: object): string {
@@ -113,23 +115,75 @@ function asciiSafeJson(obj: object): string {
   );
 }
 
-/** 1ファイルの内容をダウンロード */
-async function downloadFile(filePath: string): Promise<string> {
+/**
+ * Dropbox download_zip でフォルダを一括ダウンロードし、
+ * .md ファイルの内容をメモリ上で展開して返す。
+ */
+async function downloadZip(folderPath: string): Promise<Map<string, string>> {
   const token = await getAccessToken();
 
-  const res = await fetch("https://content.dropboxapi.com/2/files/download", {
+  const res = await fetch("https://content.dropboxapi.com/2/files/download_zip", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Dropbox-API-Arg": asciiSafeJson({ path: filePath }),
+      "Dropbox-API-Arg": asciiSafeJson({ path: folderPath }),
     },
   });
 
   if (!res.ok) {
-    throw new Error(`Dropbox download 失敗: ${res.status} — ${filePath}`);
+    const body = await res.text().catch(() => "(no body)");
+    throw new Error(`Dropbox download_zip 失敗: ${res.status} — ${body}`);
   }
 
-  return res.text();
+  const buf = await res.arrayBuffer();
+  const zipData = new Uint8Array(buf);
+  const extracted = unzipSync(zipData);
+
+  // ファイル名 → 内容のマップを構築
+  const files = new Map<string, string>();
+  for (const [path, data] of Object.entries(extracted)) {
+    // .md ファイルのみ（ディレクトリエントリはサイズ0でスキップ）
+    if (path.endsWith(".md") && data.length > 0) {
+      files.set(path, strFromU8(data));
+    }
+  }
+
+  return files;
+}
+
+/** 1ファイルの内容をダウンロード（フォールバック用・リトライ付き） */
+async function downloadFile(filePath: string, retries = 2): Promise<string> {
+  const token = await getAccessToken();
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch("https://content.dropboxapi.com/2/files/download", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Dropbox-API-Arg": asciiSafeJson({ path: filePath }),
+        },
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      if (res.status === 429) {
+        const wait = Math.min(1000 * (attempt + 1), 5000);
+        await new Promise((r) => setTimeout(r, wait));
+        continue;
+      }
+
+      if (!res.ok) {
+        throw new Error(`Dropbox download 失敗: ${res.status} — ${filePath}`);
+      }
+
+      return res.text();
+    } catch (e) {
+      if (attempt === retries) throw e;
+      await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+    }
+  }
+
+  throw new Error(`Dropbox download リトライ超過: ${filePath}`);
 }
 
 // --- 並列実行ユーティリティ ---
@@ -155,32 +209,93 @@ async function parallelLimit<T>(
 
 // --- メインの取得関数 ---
 
-/** 同時ダウンロード上限 */
+/** 同時ダウンロード上限（フォールバック時） */
 const DOWNLOAD_CONCURRENCY = 30;
 
 /** 除外するディレクトリ名 */
 const EXCLUDED_DIRS = new Set(["templates", ".obsidian", ".trash"]);
 
+/** パスが除外対象かどうか判定 */
+function isExcludedPath(path: string): boolean {
+  const segments = path.split("/").filter(Boolean);
+  for (const seg of segments) {
+    if (seg.startsWith(".") || EXCLUDED_DIRS.has(seg)) return true;
+  }
+  return false;
+}
+
 /**
  * Dropbox App フォルダ内の全 Garden ファイルを取得する。
- * テンプレート、.obsidian、隠しファイルは除外。
+ *
+ * 戦略:
+ * 1. list_folder でファイル一覧＆更新日時を取得
+ * 2. download_zip でフォルダを一括ダウンロード（1回の API 呼び出し）
+ * 3. zip 内の .md ファイルを展開して返す
+ * 4. download_zip が失敗した場合は個別ダウンロードにフォールバック
  */
 export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
+  // 1. ファイル一覧取得（更新日時の取得に必要）
   const entries = await listAllEntries();
+  console.log(`[Garden] list_folder: ${entries.length} エントリ`);
 
   // .md ファイルだけをフィルタ（除外ディレクトリ内のものはスキップ）
   const mdEntries = entries.filter((e) => {
     if (e[".tag"] !== "file") return false;
     if (!e.name.endsWith(".md")) return false;
-    // パスの各セグメントを確認
-    const segments = e.path_lower.split("/").filter(Boolean);
-    for (const seg of segments) {
-      if (seg.startsWith(".") || EXCLUDED_DIRS.has(seg)) return false;
-    }
-    return true;
+    return !isExcludedPath(e.path_lower);
   });
 
-  // 同時実行数を制限してダウンロード（Dropbox レート制限対策）
+  console.log(`[Garden] .md ファイル: ${mdEntries.length} 件`);
+
+  // パス → 更新日時のマップ
+  const modifiedMap = new Map<string, number>();
+  for (const e of mdEntries) {
+    modifiedMap.set(
+      e.path_lower,
+      e.server_modified ? new Date(e.server_modified).getTime() : Date.now(),
+    );
+  }
+
+  // 2. download_zip で一括取得を試みる
+  try {
+    const zipFiles = await downloadZip("");
+    console.log(`[Garden] download_zip: ${zipFiles.size} ファイル展開`);
+
+    const files: GardenFile[] = [];
+    for (const [zipPath, content] of zipFiles) {
+      // zip 内のパスからファイル名とDropboxパスを復元
+      // zip パスは "GardenSync/filename.md" or "GardenSync/日記/2025/12/filename.md" の形式
+      const parts = zipPath.split("/");
+      const filename = parts[parts.length - 1];
+
+      // Dropbox パスに変換（zip の先頭フォルダ名を除去）
+      const dropboxPath = "/" + parts.slice(1).join("/");
+      const dropboxPathLower = dropboxPath.toLowerCase();
+
+      // 除外対象のチェック
+      if (isExcludedPath(dropboxPathLower)) continue;
+
+      const modifiedAt = modifiedMap.get(dropboxPathLower) ?? Date.now();
+
+      files.push({
+        path: dropboxPath,
+        filename,
+        content,
+        modifiedAt,
+      });
+    }
+
+    console.log(`[Garden] zip 取得完了: ${files.length} ファイル`);
+    return files;
+  } catch (zipError) {
+    console.warn(
+      `[Garden] download_zip 失敗、個別ダウンロードにフォールバック:`,
+      zipError instanceof Error ? zipError.message : zipError,
+    );
+  }
+
+  // 3. フォールバック: 個別ダウンロード
+  console.log(`[Garden] 個別ダウンロード開始 (${mdEntries.length} 件)`);
   const tasks = mdEntries.map((entry) => async (): Promise<GardenFile> => {
     const content = await downloadFile(entry.path_lower);
     return {
@@ -193,6 +308,7 @@ export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
     };
   });
   const files = await parallelLimit(tasks, DOWNLOAD_CONCURRENCY);
+  console.log(`[Garden] 個別ダウンロード完了: ${files.length} ファイル`);
 
   return files;
 }
