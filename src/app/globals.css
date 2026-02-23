@@ -2741,6 +2741,9 @@ button.tl-photo-cell {
   max-width: 100%;
   height: auto;
   display: block;
+  /* 画面に収まるよう高さを制限（カラム幅は grid-column で決まる） */
+  max-height: min(72vh, 720px);
+  object-fit: contain;
 }
 
 /* LQIP: 背景は不要（画像の左右にぼやけた余白が出るため削除） */
