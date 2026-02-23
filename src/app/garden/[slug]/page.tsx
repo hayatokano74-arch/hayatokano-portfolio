@@ -17,8 +17,13 @@ export const revalidate = 60;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const slugs = await getAllPageSlugs();
-  return slugs.map((slug) => ({ slug }));
+  try {
+    const slugs = await getAllPageSlugs();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    // ビルド時に Dropbox に接続できない場合は空を返す（ISR で動的生成される）
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

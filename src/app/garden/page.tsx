@@ -11,7 +11,13 @@ export const metadata: Metadata = { title: "Garden" };
 export const revalidate = 60;
 
 export default async function GardenPage() {
-  const nodes = await getAllNodes();
+  let nodes;
+  try {
+    nodes = await getAllNodes();
+  } catch {
+    // Dropbox 接続エラー時は空で表示
+    nodes = [];
+  }
 
   return (
     <CanvasShell>

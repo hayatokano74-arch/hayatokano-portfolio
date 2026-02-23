@@ -34,7 +34,8 @@ async function getAccessToken(): Promise<string> {
   });
 
   if (!res.ok) {
-    throw new Error(`Dropbox トークン更新失敗: ${res.status}`);
+    const body = await res.text();
+    throw new Error(`Dropbox トークン更新失敗: ${res.status} — ${body}`);
   }
 
   const data = await res.json();
