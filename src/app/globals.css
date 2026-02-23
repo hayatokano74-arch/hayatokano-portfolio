@@ -195,6 +195,35 @@ body {
 
 html {
   scroll-behavior: smooth;
+  /* サイト全体: スクロール中だけスクロールバーを表示 */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s;
+}
+
+html:hover,
+html.is-scrolling {
+  scrollbar-color: var(--muted) transparent;
+}
+
+/* WebKit: サイト全体のスクロールバー */
+html::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.3s;
+}
+
+html:hover::-webkit-scrollbar-thumb,
+html.is-scrolling::-webkit-scrollbar-thumb {
+  background: var(--muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -57,10 +57,15 @@ export default function RootLayout({
         </a>
         {children}
         <GridDebugOverlay />
-        {/* Service Worker: Garden画像のオフラインキャッシュ */}
+        {/* Service Worker + スクロールバー自動表示 */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `if("serviceWorker"in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js")})}`,
+            __html: [
+              // Service Worker 登録
+              `if("serviceWorker"in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js")})}`,
+              // スクロール時だけスクロールバーを表示（html.is-scrolling）
+              `(function(){var t,h=document.documentElement;window.addEventListener("scroll",function(){h.classList.add("is-scrolling");clearTimeout(t);t=setTimeout(function(){h.classList.remove("is-scrolling")},1200)},{passive:true})})()`,
+            ].join(";"),
           }}
         />
       </body>
