@@ -2685,6 +2685,32 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-5);
 }
 
+/* 最適化画像: picture タグ（rehypeOptimizedImages で生成） */
+.garden-picture {
+  display: block;
+  margin: var(--space-5) 0;
+}
+
+.garden-detail-body img,
+.garden-entry-body img,
+.garden-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* LQIP → 実画像のフェードイン */
+.garden-img {
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* content-visibility で画面外エントリの描画を遅延 */
+.garden-entry-body {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
 /* ページリンク（ブラケットリンク [テキスト]） */
 .garden-link {
   color: var(--fg);
@@ -3522,6 +3548,15 @@ button.tl-photo-cell {
 
   .garden-related-search {
     font-size: 16px; /* iOSのズーム防止 */
+  }
+
+  /* 最適化画像: モバイルでの余白調整 */
+  .garden-picture {
+    margin: var(--space-4) 0;
+  }
+
+  .garden-entry-body {
+    contain-intrinsic-size: auto 200px;
   }
 }
 

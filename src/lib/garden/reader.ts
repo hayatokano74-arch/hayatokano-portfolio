@@ -6,8 +6,96 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import type { Root, Element } from "hast";
+import { visit } from "unist-util-visit";
 import { remarkBracketLinks } from "./remark-bracket-links";
 import { titleToSlug } from "./slug";
+
+/**
+ * garden-images のURLパターン
+ * 例: https://wp.hayatokano.com/garden-images/2024/03/photo.jpg
+ */
+const GARDEN_IMAGE_RE =
+  /^(https?:\/\/wp\.hayatokano\.com\/garden-images\/\d{4}\/\d{2}\/)([^/]+)\.(jpe?g|png|gif|webp)$/i;
+
+/** 最適化済み画像のベースURL */
+const OPT_BASE = "https://wp.hayatokano.com/garden-images-opt";
+
+/**
+ * garden-images の img を picture タグに変換する rehype プラグイン
+ * - WebP srcset（640w / 1920w）+ JPG フォールバック
+ * - LQIP ぼかしプレースホルダー（background-image）
+ * - garden-images 以外の画像は loading="lazy" のみ付与
+ */
+function rehypeOptimizedImages() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element, index, parent) => {
+      if (node.tagName !== "img") return;
+      node.properties = node.properties || {};
+
+      const src = String(node.properties.src || "");
+      const match = src.match(GARDEN_IMAGE_RE);
+
+      if (!match || !parent || index === undefined) {
+        // garden-images 以外 → 従来通り lazy のみ
+        node.properties.loading = "lazy";
+        node.properties.decoding = "async";
+        return;
+      }
+
+      // URLパーツを分解
+      const pathPrefix = match[1]; // "https://wp.hayatokano.com/garden-images/2024/03/"
+      const nameNoExt = match[2];  // "photo"
+      const yearMonth = pathPrefix.replace(
+        /^https?:\/\/wp\.hayatokano\.com\/garden-images\//,
+        "",
+      ); // "2024/03/"
+
+      // 最適化画像のURL
+      const webp1920 = `${OPT_BASE}/${yearMonth}${nameNoExt}_1920.webp`;
+      const webp640 = `${OPT_BASE}/${yearMonth}${nameNoExt}_640.webp`;
+      const lqip = `${OPT_BASE}/${yearMonth}${nameNoExt}_lqip.webp`;
+      const jpg1920 = `${OPT_BASE}/${yearMonth}${nameNoExt}_1920.jpg`;
+
+      // <picture> タグを構築
+      const pictureNode: Element = {
+        type: "element",
+        tagName: "picture",
+        properties: { className: ["garden-picture"] },
+        children: [
+          // <source type="image/webp" srcset="...">
+          {
+            type: "element",
+            tagName: "source",
+            properties: {
+              type: "image/webp",
+              srcSet: `${webp640} 640w, ${webp1920} 1920w`,
+              sizes: "(max-width: 900px) 100vw, 920px",
+            },
+            children: [],
+          },
+          // <img> フォールバック + LQIP背景
+          {
+            type: "element",
+            tagName: "img",
+            properties: {
+              src: jpg1920,
+              alt: node.properties.alt || "",
+              loading: "lazy",
+              decoding: "async",
+              className: ["garden-img"],
+              style: `background-image:url(${lqip});background-size:cover`,
+            },
+            children: [],
+          },
+        ],
+      };
+
+      // 親ノードの children 配列で img → picture に置換
+      (parent as Element).children[index] = pictureNode;
+    });
+  };
+}
 import { fetchAllGardenFiles, type GardenFile } from "./dropbox";
 import type { GardenNode, GardenFrontmatter } from "./types";
 
@@ -175,6 +263,7 @@ async function parseFile(
     .use(remarkParse)
     .use(remarkBracketLinks, { existingSlugs })
     .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeOptimizedImages)
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 

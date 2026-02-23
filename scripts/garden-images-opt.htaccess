@@ -1,0 +1,17 @@
+# garden-images-opt/.htaccess
+# 最適化済み画像に長期キャッシュを設定
+
+# 1年間のブラウザキャッシュ（ファイル名にサイズが含まれるため安全）
+<IfModule mod_headers.c>
+  Header set Cache-Control "public, max-age=31536000, immutable"
+</IfModule>
+
+# WebP の正しい Content-Type を強制
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+</IfModule>
+
+# CORS（Next.js から直接参照するため）
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "https://hayatokano.com"
+</IfModule>
