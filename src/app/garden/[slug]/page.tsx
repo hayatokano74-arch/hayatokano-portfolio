@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
+import { GardenBody } from "@/components/GardenBody";
 import { GardenDetailRelated } from "@/components/GardenDetailRelated";
 import { getNodeBySlug, getAllPageSlugs, getVirtualPageTitle } from "@/lib/garden/reader";
 import { getLinkedPages, getTwoHopLinks } from "@/lib/garden/backlinks";
@@ -56,10 +57,7 @@ export default async function GardenNodePage({ params }: Props) {
         {node && (
           <>
             <time className="garden-detail-date">{node.date}</time>
-            <div
-              className="garden-detail-body"
-              dangerouslySetInnerHTML={{ __html: node.contentHtml }}
-            />
+            <GardenBody html={node.contentHtml} className="garden-detail-body" />
           </>
         )}
 

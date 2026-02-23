@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import type { GardenNode } from "@/lib/garden/types";
+import { GardenBody } from "./GardenBody";
 
 /**
  * IntersectionObserver で画面に近づいたときだけ本文HTMLをDOMに挿入する。
@@ -46,10 +47,7 @@ export function GardenNodeCard({ node, index }: { node: GardenNode; index: numbe
         <h2 className="garden-entry-title">{node.title}</h2>
       </Link>
       {visible && node.contentHtml && (
-        <div
-          className="garden-entry-body"
-          dangerouslySetInnerHTML={{ __html: node.contentHtml }}
-        />
+        <GardenBody html={node.contentHtml} className="garden-entry-body" />
       )}
     </article>
   );

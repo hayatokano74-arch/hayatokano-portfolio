@@ -2735,30 +2735,84 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-5);
 }
 
+/* ── 画像シマーアニメーション ── */
+@keyframes garden-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 /* 最適化画像: picture タグ（rehypeOptimizedImages で生成） */
 .garden-picture {
   display: block;
   margin: var(--space-5) 0;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  /* シマープレースホルダー */
+  background: linear-gradient(
+    90deg,
+    var(--bg-subtle) 25%,
+    var(--bg) 50%,
+    var(--bg-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: garden-shimmer 1.5s ease-in-out infinite;
+}
+
+/* 画像読み込み完了後: シマー停止、コンテナを画像サイズに合わせる */
+.garden-picture:has(.loaded) {
+  aspect-ratio: auto;
+  animation: none;
+  background: transparent;
+  overflow: visible;
 }
 
 .garden-detail-body img,
-.garden-entry-body img,
-.garden-img {
+.garden-entry-body img {
   max-width: 100%;
   height: auto;
   display: block;
-  /* 画面に収まるよう高さを制限（カラム幅は grid-column で決まる） */
   max-height: min(72vh, 720px);
   object-fit: contain;
 }
 
-/* LQIP: 背景は不要（画像の左右にぼやけた余白が出るため削除） */
+/* 最適化画像: 読み込み前は非表示、完了後にフェードイン */
+.garden-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  max-height: min(72vh, 720px);
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity var(--duration-slow) ease;
+}
 
+.garden-img.loaded {
+  opacity: 1;
+}
+
+/* LCP画像（詳細ページ1枚目）: フェード不要、即時表示 */
+.garden-img--eager {
+  opacity: 1;
+  transition: none;
+}
 
 /* content-visibility で画面外エントリの描画を遅延 */
 .garden-entry-body {
   content-visibility: auto;
-  contain-intrinsic-size: auto 300px;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* prefers-reduced-motion: シマー・フェードアニメーション無効 */
+@media (prefers-reduced-motion: reduce) {
+  .garden-picture {
+    animation: none;
+  }
+  .garden-img {
+    opacity: 1;
+    transition: none;
+  }
 }
 
 /* ページリンク（ブラケットリンク [テキスト]） */
@@ -3613,7 +3667,7 @@ button.tl-photo-cell {
   }
 
   .garden-entry-body {
-    contain-intrinsic-size: auto 200px;
+    contain-intrinsic-size: auto 350px;
   }
 }
 

@@ -24,10 +24,16 @@ const OPT_BASE = "https://wp.hayatokano.com/garden-images-opt";
 /**
  * garden-images の img を picture タグに変換する rehype プラグイン
  * - WebP srcset（640w / 1920w）+ JPG フォールバック
- * - LQIP ぼかしプレースホルダー（background-image）
  * - garden-images 以外の画像は loading="lazy" のみ付与
+ *
+ * @param options.fetchPriority true の場合、1枚目の画像に fetchpriority="high" を付与（詳細ページ用）
  */
-function rehypeOptimizedImages() {
+interface OptimizedImagesOptions {
+  fetchPriority?: boolean;
+}
+
+function rehypeOptimizedImages(options?: OptimizedImagesOptions) {
+  const useFetchPriority = options?.fetchPriority ?? false;
   let imageCount = 0;
 
   return (tree: Root) => {
@@ -41,14 +47,9 @@ function rehypeOptimizedImages() {
       imageCount++;
 
       if (!match || !parent || index === undefined) {
-        // garden-images 以外 → 従来通り lazy のみ（ただし1枚目は優先読み込み）
-        if (imageCount === 1) {
-          node.properties.fetchpriority = "high";
-          node.properties.decoding = "async";
-        } else {
-          node.properties.loading = "lazy";
-          node.properties.decoding = "async";
-        }
+        // garden-images 以外 → lazy のみ
+        node.properties.loading = "lazy";
+        node.properties.decoding = "async";
         return;
       }
 
@@ -64,6 +65,9 @@ function rehypeOptimizedImages() {
       const webp1920 = `${OPT_BASE}/${yearMonth}${nameNoExt}_1920.webp`;
       const webp640 = `${OPT_BASE}/${yearMonth}${nameNoExt}_640.webp`;
       const jpg1920 = `${OPT_BASE}/${yearMonth}${nameNoExt}_1920.jpg`;
+
+      // 1枚目かつ fetchPriority 有効 → LCP最適化（詳細ページのみ）
+      const isLCP = useFetchPriority && imageCount === 1;
 
       // <picture> タグを構築
       const pictureNode: Element = {
@@ -82,18 +86,21 @@ function rehypeOptimizedImages() {
             },
             children: [],
           },
-          // <img> フォールバック + LQIP背景
-          // 1枚目の画像は fetchpriority="high" で LCP 改善
+          // <img> フォールバック
           {
             type: "element",
             tagName: "img",
             properties: {
               src: jpg1920,
               alt: node.properties.alt || "",
-              ...(imageCount === 1
+              width: 1920,
+              height: 1280,
+              ...(isLCP
                 ? { fetchpriority: "high", decoding: "async" }
                 : { loading: "lazy", decoding: "async" }),
-              className: ["garden-img"],
+              className: isLCP
+                ? ["garden-img", "garden-img--eager"]
+                : ["garden-img"],
             },
             children: [],
           },
@@ -263,6 +270,7 @@ async function getFileSlugs(files: GardenFile[]): Promise<Set<string>> {
 async function parseFile(
   file: GardenFile,
   existingSlugs: Set<string>,
+  options?: { fetchPriority?: boolean },
 ): Promise<GardenNode> {
   const pre = preprocessContent(file.content, file.filename);
   const { data, content } = matter(pre.content);
@@ -272,7 +280,7 @@ async function parseFile(
     .use(remarkParse)
     .use(remarkBracketLinks, { existingSlugs })
     .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeOptimizedImages)
+    .use(rehypeOptimizedImages, { fetchPriority: options?.fetchPriority })
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 
@@ -331,7 +339,8 @@ export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
     const { data } = matter(pre.content);
     const fm = completeFrontmatter(data as GardenFrontmatter, file, pre);
     if (titleToSlug(fm.title) === slug) {
-      return parseFile(file, existingSlugs);
+      /* 詳細ページ: 1枚目の画像に fetchpriority="high" を付与（LCP最適化） */
+      return parseFile(file, existingSlugs, { fetchPriority: true });
     }
   }
   return null;
