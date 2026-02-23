@@ -7,18 +7,15 @@ import { getAllNodes } from "@/lib/garden/reader";
 
 export const metadata: Metadata = { title: "Garden" };
 
-/* サーバーレス関数の最大実行時間（秒）— 1078+ファイルの Dropbox ダウンロードに必要 */
+/* サーバーレス関数の最大実行時間 */
 export const maxDuration = 60;
-
-/* 1時間ごとに Dropbox から最新データを再取得（429 防止） */
-export const revalidate = 3600;
 
 /**
  * Garden ページ（Server Component）
  *
- * Dropbox API 失敗時はエラーを投げる（try-catch しない）。
- * これにより Next.js ISR が前回成功したキャッシュページを配信する。
- * エラーをキャッチして空配列で描画すると ISR が空ページをキャッシュしてしまう。
+ * データは prebuild で生成されたキャッシュファイル（.garden-cache.json）から読む。
+ * ランタイムで Dropbox API は呼ばない。
+ * コンテンツ更新は再ビルド（git push / Deploy Hook）で反映される。
  */
 export default async function GardenPage() {
   const nodes = await getAllNodes();

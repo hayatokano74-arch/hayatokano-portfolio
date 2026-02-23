@@ -13,9 +13,6 @@ interface Props {
 /* サーバーレス関数の最大実行時間 */
 export const maxDuration = 60;
 
-/* 1時間ごとに Dropbox から最新データを再取得（429 防止） */
-export const revalidate = 3600;
-
 /* ビルド時に存在しないページも動的に生成する */
 export const dynamicParams = true;
 

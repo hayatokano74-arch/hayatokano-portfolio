@@ -1,4 +1,7 @@
-/* Dropbox API クライアント — Garden ファイルの取得 */
+/* Dropbox API クライアント — Garden ファイルの取得 + ファイルキャッシュ */
+
+import fs from "fs";
+import path from "path";
 
 /** Dropbox から取得したファイル */
 export interface GardenFile {
@@ -12,7 +15,57 @@ export interface GardenFile {
   modifiedAt: number;
 }
 
-// --- トークン管理 ---
+// ============================================================
+// ファイルキャッシュ
+// ビルド時に Dropbox から取得したデータを JSON ファイルに保存する。
+// ランタイム（ISR）ではこのファイルから読み取り、Dropbox は呼ばない。
+// ============================================================
+
+/** キャッシュファイルのパス（プロジェクトルート） */
+const CACHE_PATH = path.join(process.cwd(), ".garden-cache.json");
+
+/** /tmp/ のフォールバックパス（Vercel ランタイムで書き込み可能） */
+const TMP_CACHE_PATH = "/tmp/garden-cache.json";
+
+/** キャッシュファイルに書き込む（ビルド時のみ成功） */
+function writeCache(files: GardenFile[]): void {
+  const json = JSON.stringify(files);
+  // プロジェクトルート（ビルド時に書き込み可能、デプロイに含まれる）
+  try {
+    fs.writeFileSync(CACHE_PATH, json, "utf-8");
+    console.log(`[Garden] キャッシュ保存: ${files.length} ファイル → ${CACHE_PATH}`);
+  } catch {
+    // ランタイムでは読み取り専用のため失敗する — 正常
+  }
+  // /tmp/（ランタイムでも書き込み可能、ただし揮発性）
+  try {
+    fs.writeFileSync(TMP_CACHE_PATH, json, "utf-8");
+  } catch {
+    // /tmp/ 書き込み失敗 — 無視
+  }
+}
+
+/** キャッシュファイルから読み取る */
+function readCache(): GardenFile[] | null {
+  for (const p of [CACHE_PATH, TMP_CACHE_PATH]) {
+    try {
+      if (fs.existsSync(p)) {
+        const data = JSON.parse(fs.readFileSync(p, "utf-8")) as GardenFile[];
+        if (data.length > 0) {
+          console.log(`[Garden] キャッシュ読み込み: ${data.length} ファイル ← ${p}`);
+          return data;
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+// ============================================================
+// Dropbox API（ビルド時のみ使用）
+// ============================================================
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -41,14 +94,11 @@ async function getAccessToken(): Promise<string> {
   const data = await res.json();
   cachedToken = {
     token: data.access_token,
-    // 有効期限の5分前に更新する
     expiresAt: Date.now() + (data.expires_in - 300) * 1000,
   };
 
   return cachedToken.token;
 }
-
-// --- ファイル一覧取得 ---
 
 interface DropboxEntry {
   ".tag": "file" | "folder";
@@ -69,7 +119,6 @@ async function dropboxFetch(
     const res = await fetch(url, options);
 
     if (res.status === 429) {
-      // Retry-After ヘッダーがあればそれに従う、なければ指数バックオフ
       const retryAfter = res.headers.get("Retry-After");
       const wait = retryAfter
         ? Number(retryAfter) * 1000
@@ -89,7 +138,7 @@ async function dropboxFetch(
   throw new Error(`Dropbox ${label}: リトライ超過 (429)`);
 }
 
-/** App フォルダ内の全エントリを再帰的に取得（429 リトライ付き） */
+/** App フォルダ内の全エントリを再帰的に取得 */
 async function listAllEntries(): Promise<DropboxEntry[]> {
   const token = await getAccessToken();
   const entries: DropboxEntry[] = [];
@@ -135,8 +184,6 @@ async function listAllEntries(): Promise<DropboxEntry[]> {
   return entries;
 }
 
-// --- ファイルダウンロード ---
-
 /** JSON 文字列内の非 ASCII 文字を \uXXXX にエスケープ（HTTP ヘッダー用） */
 function asciiSafeJson(obj: object): string {
   return JSON.stringify(obj).replace(/[\u0080-\uffff]/g, (c) =>
@@ -160,7 +207,6 @@ async function downloadFile(filePath: string, retries = 2): Promise<string> {
       });
 
       if (res.status === 429) {
-        // レート制限: 少し待ってリトライ
         const wait = Math.min(1000 * (attempt + 1), 5000);
         await new Promise((r) => setTimeout(r, wait));
         continue;
@@ -179,8 +225,6 @@ async function downloadFile(filePath: string, retries = 2): Promise<string> {
 
   throw new Error(`Dropbox download リトライ超過: ${filePath}`);
 }
-
-// --- 並列実行ユーティリティ ---
 
 /** 同時実行数を制限しつつ全タスクを実行する */
 async function parallelLimit<T>(
@@ -201,72 +245,71 @@ async function parallelLimit<T>(
   return results;
 }
 
-// --- スタルキャッシュ（前回成功データを保持） ---
+// ============================================================
+// メインの取得関数
+// ============================================================
 
-let staleCache: { files: GardenFile[]; updatedAt: number } | null = null;
-
-// --- メインの取得関数 ---
-
-/** 同時ダウンロード上限（429 防止のため控えめに） */
+/** 同時ダウンロード上限 */
 const DOWNLOAD_CONCURRENCY = 10;
 
 /** 除外するディレクトリ名 */
 const EXCLUDED_DIRS = new Set(["templates", ".obsidian", ".trash"]);
 
+/** Dropbox から全ファイルを取得（内部用、キャッシュなし） */
+async function fetchFromDropbox(): Promise<GardenFile[]> {
+  const entries = await listAllEntries();
+  console.log(`[Garden] list_folder: ${entries.length} エントリ`);
+
+  const mdEntries = entries.filter((e) => {
+    if (e[".tag"] !== "file") return false;
+    if (!e.name.endsWith(".md")) return false;
+    const segments = e.path_lower.split("/").filter(Boolean);
+    for (const seg of segments) {
+      if (seg.startsWith(".") || EXCLUDED_DIRS.has(seg)) return false;
+    }
+    return true;
+  });
+
+  console.log(`[Garden] .md: ${mdEntries.length} 件 — ダウンロード開始`);
+
+  const tasks = mdEntries.map((entry) => async (): Promise<GardenFile> => {
+    const content = await downloadFile(entry.path_lower);
+    return {
+      path: entry.path_display,
+      filename: entry.name,
+      content,
+      modifiedAt: entry.server_modified
+        ? new Date(entry.server_modified).getTime()
+        : Date.now(),
+    };
+  });
+  const files = await parallelLimit(tasks, DOWNLOAD_CONCURRENCY);
+  console.log(`[Garden] ダウンロード完了: ${files.length} ファイル`);
+
+  return files;
+}
+
 /**
- * Dropbox App フォルダ内の全 Garden ファイルを取得する。
- * テンプレート、.obsidian、隠しファイルは除外。
+ * Garden ファイルを取得する。
  *
- * Dropbox API 失敗時はスタルキャッシュ（前回成功データ）を返す。
- * これにより一時的な 429 / ネットワークエラーでページが空になるのを防ぐ。
+ * 優先順位:
+ *   1. ファイルキャッシュ（ビルド時に生成、デプロイに含まれる）
+ *   2. Dropbox API（キャッシュがない場合のみ、ビルド時に実行される）
+ *
+ * ランタイムではキャッシュファイルが必ず存在するため Dropbox は呼ばれない。
+ * ビルド時は Dropbox から取得 → キャッシュファイルに保存。
  */
 export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
-  try {
-    const entries = await listAllEntries();
-    console.log(`[Garden] list_folder: ${entries.length} エントリ`);
+  // 1. ファイルキャッシュがあればそれを使う（ランタイムはここで終了）
+  const cached = readCache();
+  if (cached) return cached;
 
-    // .md ファイルだけをフィルタ（除外ディレクトリ内のものはスキップ）
-    const mdEntries = entries.filter((e) => {
-      if (e[".tag"] !== "file") return false;
-      if (!e.name.endsWith(".md")) return false;
-      const segments = e.path_lower.split("/").filter(Boolean);
-      for (const seg of segments) {
-        if (seg.startsWith(".") || EXCLUDED_DIRS.has(seg)) return false;
-      }
-      return true;
-    });
+  // 2. キャッシュがない場合のみ Dropbox から取得（ビルド時のみ到達）
+  console.log("[Garden] キャッシュなし — Dropbox から取得します");
+  const files = await fetchFromDropbox();
 
-    console.log(`[Garden] .md: ${mdEntries.length} 件 — ダウンロード開始`);
+  // 3. キャッシュファイルに保存
+  writeCache(files);
 
-    // 同時実行数を制限してダウンロード（Dropbox レート制限対策）
-    const tasks = mdEntries.map((entry) => async (): Promise<GardenFile> => {
-      const content = await downloadFile(entry.path_lower);
-      return {
-        path: entry.path_display,
-        filename: entry.name,
-        content,
-        modifiedAt: entry.server_modified
-          ? new Date(entry.server_modified).getTime()
-          : Date.now(),
-      };
-    });
-    const files = await parallelLimit(tasks, DOWNLOAD_CONCURRENCY);
-    console.log(`[Garden] ダウンロード完了: ${files.length} ファイル`);
-
-    // 成功時にスタルキャッシュを更新
-    staleCache = { files, updatedAt: Date.now() };
-
-    return files;
-  } catch (error) {
-    // Dropbox 失敗時: スタルキャッシュがあればそれを返す
-    if (staleCache && staleCache.files.length > 0) {
-      const ageMin = Math.round((Date.now() - staleCache.updatedAt) / 60000);
-      console.warn(
-        `[Garden] Dropbox 失敗 — スタルキャッシュを使用 (${staleCache.files.length}件, ${ageMin}分前のデータ): ${error instanceof Error ? error.message : error}`,
-      );
-      return staleCache.files;
-    }
-    // キャッシュもない場合は例外を再スロー
-    throw error;
-  }
+  return files;
 }

@@ -14,8 +14,9 @@ out/
 # debug
 npm-debug.log*
 
-# 生成ファイル
+# 生成ファイル（prebuild で自動生成）
 public/garden-search-index.json
+.garden-cache.json
 
 # Obsidian（vault設定はコミットするが、ワークスペース状態は除外）
 .obsidian/workspace.json
