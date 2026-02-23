@@ -21,15 +21,48 @@ function titleFromFilename(filename: string): string {
   return filename.replace(/\.md$/, "");
 }
 
-/** frontmatterを補完（title/dateがなければファイル名・日付から自動生成） */
+/**
+ * ファイル名から日付を抽出する。
+ * 対応パターン: "2025.12.05.md", "2025-12-05.md", "20251205.md"
+ * 見つからなければ null を返す。
+ */
+function dateFromFilename(filename: string): string | null {
+  const base = filename.replace(/\.md$/, "");
+
+  // "2025.12.05" or "2025-12-05"
+  const dotDash = base.match(/^(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})/);
+  if (dotDash) {
+    const [, y, m, d] = dotDash;
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+
+  // "20251205"
+  const compact = base.match(/^(\d{4})(\d{2})(\d{2})/);
+  if (compact) {
+    const [, y, m, d] = compact;
+    return `${y}-${m}-${d}`;
+  }
+
+  return null;
+}
+
+/**
+ * frontmatterを補完（title/dateがなければファイル名・日付から自動生成）
+ * 日付の優先順位: frontmatter date → ファイル名の日付 → Dropbox 更新日時
+ */
 function completeFrontmatter(
   fm: GardenFrontmatter,
   file: GardenFile,
 ): GardenFrontmatter {
+  const date =
+    fm.date ||
+    dateFromFilename(file.filename) ||
+    new Date(file.modifiedAt).toISOString().slice(0, 10);
+
   return {
     ...fm,
     title: fm.title || titleFromFilename(file.filename),
-    date: fm.date || new Date(file.modifiedAt).toISOString().slice(0, 10),
+    date,
     tags: fm.tags ?? [],
   };
 }
