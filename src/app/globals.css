@@ -11,6 +11,7 @@
   --line: #2d2d2d;
   --line-light: #d2d2d2;
   --accent: #0066cc;
+  --media-bg: #e2e2e2;
 
   /* ── ベースライングリッド ──
      全ての垂直方向の寸法（余白・行高・コンポーネント高）は
@@ -86,6 +87,7 @@
   --line: #3a3a3a;
   --line-light: #3a3a3a;
   --accent: #4d9fff;
+  --media-bg: #222;
   --color-success: #6fcf97;
   --color-success-bg: #2ecc7133;
 }

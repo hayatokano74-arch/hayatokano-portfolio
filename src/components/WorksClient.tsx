@@ -38,7 +38,8 @@ export function WorksClient<T extends WorkLike>({
   );
 }
 
-function ThumbRect({ src, alt }: { src?: string; alt?: string }) {
+function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; width?: number; height?: number }) {
+  const isPortrait = (height ?? 0) > (width ?? 0);
   if (src) {
     return (
       <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", background: "var(--media-bg)" }}>
@@ -51,7 +52,7 @@ function ThumbRect({ src, alt }: { src?: string; alt?: string }) {
           placeholder="blur"
           blurDataURL={blurDataURL(1280, 720)}
           style={{
-            objectFit: "cover",
+            objectFit: isPortrait ? "contain" : "cover",
             display: "block",
           }}
         />
@@ -140,7 +141,7 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false 
               prefetch={true}
               className="work-grid-item"
             >
-              <ThumbRect src={thumbSrc} alt={thumbAlt} />
+              <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} />
               <div className="work-grid-divider" />
               <div className="work-grid-info">
                 <span className="work-grid-title">{w.title}</span>
