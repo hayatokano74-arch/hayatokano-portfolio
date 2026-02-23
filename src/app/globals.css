@@ -2562,12 +2562,20 @@ button.tl-photo-cell {
   margin: 0 0 var(--space-4);
 }
 
-/* エントリ抜粋 */
-.garden-entry-excerpt {
+/* エントリ本文 */
+.garden-entry-body {
   font-size: var(--font-body);
   line-height: var(--lh-relaxed);
-  color: var(--muted);
+  color: var(--fg);
   margin: 0;
+}
+
+.garden-entry-body p {
+  margin: 0 0 var(--space-3);
+}
+
+.garden-entry-body p:last-child {
+  margin-bottom: 0;
 }
 
 /* ページネーション */

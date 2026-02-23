@@ -2,19 +2,25 @@
 
 /**
  * Garden一覧ページのClient Component
- * 検索 + 3ヶ月単位のページネーションを管理する。
+ * 検索 + 投稿数ベースのページネーションを管理する。
+ * 月グループは分割せず、約15件ごとにページを区切る。
  */
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import type { GardenNodeSummary } from "@/lib/garden/types";
+import { useSearchParams } from "next/navigation";
+import type { GardenNode } from "@/lib/garden/types";
 import { useGardenSearch } from "@/lib/garden/use-garden-search";
 import { GardenSearch } from "./GardenSearch";
 import { GardenGrid } from "./GardenGrid";
 import { GardenPagination } from "./GardenPagination";
 
-/** 1ページあたりの月数 */
-const MONTHS_PER_PAGE = 3;
+/** 1ページあたりの目標投稿数 */
+const NODES_PER_PAGE = 15;
+
+interface MonthGroup {
+  label: string;
+  nodes: GardenNode[];
+}
 
 /** 年月ラベルを生成 */
 function toYearMonth(dateStr: string): string {
@@ -24,8 +30,8 @@ function toYearMonth(dateStr: string): string {
 }
 
 /** ノードを年月でグループ化（降順前提） */
-function groupByYearMonth(nodes: GardenNodeSummary[]) {
-  const groups: { label: string; nodes: GardenNodeSummary[] }[] = [];
+function groupByYearMonth(nodes: GardenNode[]): MonthGroup[] {
+  const groups: MonthGroup[] = [];
   let currentLabel = "";
 
   for (const node of nodes) {
@@ -41,8 +47,45 @@ function groupByYearMonth(nodes: GardenNodeSummary[]) {
   return groups;
 }
 
-/** ページの期間ラベルを生成（例: "2025年7月 — 9月"） */
-function pageRangeLabel(groups: { label: string }[]): string {
+/**
+ * 月グループを投稿数ベースでページに分割する。
+ * - 月グループは絶対に分割しない（1つの月が2ページにまたがらない）
+ * - 目標投稿数に達したらページを閉じる
+ * - 最後のページが極端に少ない場合は前のページに統合
+ */
+function groupIntoPages(groups: MonthGroup[]): MonthGroup[][] {
+  if (groups.length === 0) return [];
+
+  const pages: MonthGroup[][] = [];
+  let currentPage: MonthGroup[] = [];
+  let currentCount = 0;
+
+  for (const group of groups) {
+    currentPage.push(group);
+    currentCount += group.nodes.length;
+
+    if (currentCount >= NODES_PER_PAGE) {
+      pages.push(currentPage);
+      currentPage = [];
+      currentCount = 0;
+    }
+  }
+
+  // 残りのグループを処理
+  if (currentPage.length > 0) {
+    // 最後のページが少なすぎる場合（5件未満）は前のページに統合
+    if (pages.length > 0 && currentCount < Math.floor(NODES_PER_PAGE / 3)) {
+      pages[pages.length - 1].push(...currentPage);
+    } else {
+      pages.push(currentPage);
+    }
+  }
+
+  return pages;
+}
+
+/** ページの期間ラベルを生成（実在する月のみ表示） */
+function pageRangeLabel(groups: MonthGroup[]): string {
   if (groups.length === 0) return "";
   if (groups.length === 1) return groups[0].label;
 
@@ -60,9 +103,8 @@ function pageRangeLabel(groups: { label: string }[]): string {
   return `${first} — ${last}`;
 }
 
-export function GardenPageContent({ nodes }: { nodes: GardenNodeSummary[] }) {
+export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const initialQuery = searchParams.get("q") ?? "";
   const initialPage = parseInt(searchParams.get("page") ?? "1", 10);
   const [searchQuery, setSearchQuery] = useState<string | null>(initialQuery || null);
@@ -108,29 +150,34 @@ export function GardenPageContent({ nodes }: { nodes: GardenNodeSummary[] }) {
     return nodes.filter((n) => idSet.has(n.title));
   }, [nodes, fullSearchIds]);
 
-  // 全グループ
+  // 全グループ（月単位）
   const allGroups = useMemo(() => groupByYearMonth(filteredNodes), [filteredNodes]);
 
-  // ページネーション計算
-  const totalPages = Math.max(1, Math.ceil(allGroups.length / MONTHS_PER_PAGE));
+  // 投稿数ベースのページ分割
+  const pages = useMemo(() => groupIntoPages(allGroups), [allGroups]);
+
+  const totalPages = Math.max(1, pages.length);
   const safePage = Math.min(Math.max(1, currentPage), totalPages);
 
   // 現在のページに表示するグループ
-  const pageGroups = useMemo(() => {
-    const start = (safePage - 1) * MONTHS_PER_PAGE;
-    return allGroups.slice(start, start + MONTHS_PER_PAGE);
-  }, [allGroups, safePage]);
+  const pageGroups = pages[safePage - 1] ?? [];
+
+  // 前のページまでの合計投稿数（通し番号用）
+  const prevNodeCount = useMemo(() => {
+    let count = 0;
+    for (let i = 0; i < safePage - 1; i++) {
+      for (const group of pages[i]) {
+        count += group.nodes.length;
+      }
+    }
+    return count;
+  }, [pages, safePage]);
 
   // 各ページの期間ラベル（ページネーション UI 用）
-  const pageLabels = useMemo(() => {
-    const labels: string[] = [];
-    for (let i = 0; i < totalPages; i++) {
-      const start = i * MONTHS_PER_PAGE;
-      const groups = allGroups.slice(start, start + MONTHS_PER_PAGE);
-      labels.push(pageRangeLabel(groups));
-    }
-    return labels;
-  }, [allGroups, totalPages]);
+  const pageLabels = useMemo(
+    () => pages.map((pageGroups) => pageRangeLabel(pageGroups)),
+    [pages],
+  );
 
   // ページ切替ハンドラ
   const handlePageChange = useCallback(
@@ -143,7 +190,6 @@ export function GardenPageContent({ nodes }: { nodes: GardenNodeSummary[] }) {
         url.searchParams.set("page", String(page));
       }
       window.history.replaceState({}, "", url.toString());
-      // ページ上部にスクロール
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
     [],
@@ -159,7 +205,7 @@ export function GardenPageContent({ nodes }: { nodes: GardenNodeSummary[] }) {
         onFullSearch={handleFullSearch}
         fullSearchIds={fullSearchIds}
       />
-      <GardenGrid groups={pageGroups} totalNodes={filteredNodes.length} allGroups={allGroups} safePage={safePage} />
+      <GardenGrid groups={pageGroups} totalNodes={filteredNodes.length} prevNodeCount={prevNodeCount} />
       {showPagination && (
         <GardenPagination
           currentPage={safePage}

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { GardenNodeSummary } from "@/lib/garden/types";
+import type { GardenNode } from "@/lib/garden/types";
 import { GardenNodeCard } from "./GardenNodeCard";
 
 interface MonthGroup {
   label: string;
-  nodes: GardenNodeSummary[];
+  nodes: GardenNode[];
 }
 
 interface GardenGridProps {
@@ -14,13 +14,11 @@ interface GardenGridProps {
   groups: MonthGroup[];
   /** 全ノード数（通し番号の計算用） */
   totalNodes: number;
-  /** 現在ページより前のノード数（通し番号のオフセット） */
-  allGroups: MonthGroup[];
-  /** 現在のページ番号 */
-  safePage: number;
+  /** 前のページまでの合計投稿数（通し番号のオフセット） */
+  prevNodeCount: number;
 }
 
-export function GardenGrid({ groups, totalNodes, allGroups, safePage }: GardenGridProps) {
+export function GardenGrid({ groups, totalNodes, prevNodeCount }: GardenGridProps) {
   // 最新グループは展開、それ以降は折りたたみ
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const initial = new Set<string>();
@@ -43,11 +41,6 @@ export function GardenGrid({ groups, totalNodes, allGroups, safePage }: GardenGr
       return next;
     });
   };
-
-  // 前のページまでのノード数を計算（通し番号用）
-  const MONTHS_PER_PAGE = 3;
-  const prevPageMonths = allGroups.slice(0, (safePage - 1) * MONTHS_PER_PAGE);
-  const prevNodeCount = prevPageMonths.reduce((sum, g) => sum + g.nodes.length, 0);
 
   let runningIndex = prevNodeCount;
 
