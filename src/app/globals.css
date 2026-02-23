@@ -500,20 +500,17 @@ button {
   font-size: var(--font-body);
 }
 
-/* スクロール中だけスクロールバーを表示（普段は非表示） */
+/* スクロール中だけスクロールバーを表示（普段は完全非表示） */
 .hide-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.3s;
+  scrollbar-width: none;
 }
 
-.hide-scrollbar:hover,
-.hide-scrollbar:active,
 .hide-scrollbar.is-scrolling {
+  scrollbar-width: thin;
   scrollbar-color: var(--muted) transparent;
 }
 
-/* WebKit: 普段は透明、ホバー/スクロール時に表示 */
+/* WebKit: 普段は非表示、スクロール中のみ表示 */
 .hide-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -525,11 +522,8 @@ button {
 .hide-scrollbar::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 3px;
-  transition: background 0.3s;
 }
 
-.hide-scrollbar:hover::-webkit-scrollbar-thumb,
-.hide-scrollbar:active::-webkit-scrollbar-thumb,
 .hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
   background: var(--muted);
 }
