@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import DOMPurify from "dompurify";
-import { works, type Work } from "@/lib/mock";
+import type { Work } from "@/lib/mock";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 import { blurDataURL } from "@/lib/blur";
 
@@ -24,7 +24,7 @@ function getEmbedUrl(src: string): string | null {
   return null;
 }
 
-export function WorkDetailClient({ work }: { work: Work }) {
+export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { slug: string }[] }) {
   const pathname = usePathname();
   const sp = useSearchParams();
   const [detailOpen, setDetailOpen] = useState(false);
@@ -40,12 +40,13 @@ export function WorkDetailClient({ work }: { work: Work }) {
 
   const mode = localMode;
   const img = localImg;
+  /* WP から取得した実際の works リストで前後を計算（mock ではなく） */
   const currentWorkIndex = Math.max(
     0,
-    works.findIndex((w) => w.slug === work.slug),
+    allWorks.findIndex((w) => w.slug === work.slug),
   );
-  const prevWork = works[(currentWorkIndex - 1 + works.length) % works.length];
-  const nextWork = works[(currentWorkIndex + 1) % works.length];
+  const prevWork = allWorks[(currentWorkIndex - 1 + allWorks.length) % allWorks.length];
+  const nextWork = allWorks[(currentWorkIndex + 1) % allWorks.length];
   const total = work.media.length;
   const prevImage = img <= 1 ? total : img - 1;
   const nextImage = img >= total ? 1 : img + 1;
@@ -277,61 +278,61 @@ export function WorkDetailClient({ work }: { work: Work }) {
 
       {/* ボトムバー: 12カラムグリッドで配置 */}
       <div className="work-detail-bottom" style={{ paddingTop: "var(--space-6)" }}>
-        <div style={{ gridColumn: "1 / span 11", display: "flex", flexDirection: "column", gap: "var(--space-2)", alignItems: "flex-start", minWidth: 0 }}>
-        <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
-          {work.title} | {work.year}
+        <div style={{ gridColumn: "1 / span 4", display: "flex", flexDirection: "column", gap: "var(--space-2)", alignItems: "flex-start", minWidth: 0 }}>
+          <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
+            {work.title} | {work.year}
+          </div>
+          <div className="work-detail-controls" style={{ display: "flex", alignItems: "center", gap: "var(--space-5)", minHeight: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: 1.1, fontWeight: 700 }}>
+            <button
+              type="button"
+              className={`${mode === "gallery" ? "underline-active" : ""} action-link`.trim()}
+              style={{ color: mode === "gallery" ? "var(--fg)" : "var(--muted)", transition: "color 140ms linear", display: "inline-flex", alignItems: "center", lineHeight: 1.1 }}
+              onClick={() => {
+                setLocalMode("gallery");
+                window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
+              }}
+            >
+              gallery
+            </button>
+            <button
+              type="button"
+              className={`${mode === "index" ? "underline-active" : ""} action-link`.trim()}
+              style={{ color: mode === "index" ? "var(--fg)" : "var(--muted)", transition: "color 140ms linear", display: "inline-flex", alignItems: "center", lineHeight: 1.1 }}
+              onClick={() => {
+                setLocalMode("index");
+                window.history.replaceState(null, "", `${pathname}?mode=index`);
+              }}
+            >
+              index
+            </button>
+            <button
+              type="button"
+              className="action-link"
+              style={{
+                fontSize: "var(--font-body)",
+                lineHeight: 1.1,
+                fontWeight: 700,
+                textAlign: "left",
+                padding: 0,
+                border: 0,
+                background: "transparent",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "var(--space-2)",
+              }}
+              onClick={() => setDetailOpen(true)}
+            >
+              <span>詳細</span>
+              <span aria-hidden="true" style={{ fontSize: "0.95em", transform: "translateY(-0.5px)" }}>
+                ↗
+              </span>
+            </button>
+          </div>
         </div>
-        <div className="work-detail-controls" style={{ display: "flex", alignItems: "center", gap: "var(--space-5)", minHeight: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: 1.1, fontWeight: 700, width: "100%" }}>
-          <button
-            type="button"
-            className={`${mode === "gallery" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: mode === "gallery" ? "var(--fg)" : "var(--muted)", transition: "color 140ms linear", display: "inline-flex", alignItems: "center", lineHeight: 1.1 }}
-            onClick={() => {
-              setLocalMode("gallery");
-              window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
-            }}
-          >
-            gallery
-          </button>
-          <button
-            type="button"
-            className={`${mode === "index" ? "underline-active" : ""} action-link`.trim()}
-            style={{ color: mode === "index" ? "var(--fg)" : "var(--muted)", transition: "color 140ms linear", display: "inline-flex", alignItems: "center", lineHeight: 1.1 }}
-            onClick={() => {
-              setLocalMode("index");
-              window.history.replaceState(null, "", `${pathname}?mode=index`);
-            }}
-          >
-            index
-          </button>
-          <button
-            type="button"
-            className="action-link"
-            style={{
-              fontSize: "var(--font-body)",
-              lineHeight: 1.1,
-              fontWeight: 700,
-              textAlign: "left",
-              padding: 0,
-              border: 0,
-              background: "transparent",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "var(--space-2)",
-            }}
-            onClick={() => setDetailOpen(true)}
-          >
-            <span>詳細</span>
-            <span aria-hidden="true" style={{ fontSize: "0.95em", transform: "translateY(-0.5px)" }}>
-              ↗
-            </span>
-          </button>
-          {/* カウンター: 詳細と同じ行の右端 */}
-          <span className="work-detail-counter" style={{ marginLeft: "auto", fontSize: "var(--font-body)", fontWeight: 700 }}>
-            {mode === "gallery" ? `${img} / ${work.media.length}` : null}
-          </span>
-        </div>
-        </div>
+        {/* カウンター: 右端カラムに配置（グリッド12列目） */}
+        <span className="work-detail-counter" style={{ gridColumn: "12 / -1", justifySelf: "end", alignSelf: "end", fontSize: "var(--font-body)", fontWeight: 700, minWidth: 0 }}>
+          {mode === "gallery" ? `${img} / ${work.media.length}` : null}
+        </span>
       </div>
 
       {detailOpen ? (
@@ -381,9 +382,28 @@ export function WorkDetailClient({ work }: { work: Work }) {
 
 function IndexGrid({ work, current, onSelect }: { work: Work; current: number; onSelect: (n: number) => void }) {
   const thumbs = useMemo(() => work.media, [work.media]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  /* スクロール中だけ is-scrolling クラスを付与（CSSでスクロールバー表示） */
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      el.classList.add("is-scrolling");
+      clearTimeout(scrollTimer.current);
+      scrollTimer.current = setTimeout(() => el.classList.remove("is-scrolling"), 1000);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      clearTimeout(scrollTimer.current);
+    };
+  }, []);
 
   return (
     <div
+      ref={scrollRef}
       className="index-grid hide-scrollbar"
       style={{
         gap: "var(--space-6)",

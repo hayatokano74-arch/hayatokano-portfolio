@@ -471,15 +471,38 @@ button {
   font-size: var(--font-body);
 }
 
+/* スクロール中だけスクロールバーを表示（普段は非表示） */
 .hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s;
 }
 
+.hide-scrollbar:hover,
+.hide-scrollbar:active,
+.hide-scrollbar.is-scrolling {
+  scrollbar-color: var(--muted) transparent;
+}
+
+/* WebKit: 普段は透明、ホバー/スクロール時に表示 */
 .hide-scrollbar::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
+  width: 6px;
+}
+
+.hide-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.3s;
+}
+
+.hide-scrollbar:hover::-webkit-scrollbar-thumb,
+.hide-scrollbar:active::-webkit-scrollbar-thumb,
+.hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
+  background: var(--muted);
 }
 
 .works-row > summary::-webkit-details-marker {
