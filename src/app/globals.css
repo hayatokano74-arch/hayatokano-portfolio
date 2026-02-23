@@ -2654,7 +2654,7 @@ button.tl-photo-cell {
 }
 
 .garden-pagination-range {
-  grid-column: 11 / -1;
+  grid-column: 9 / -1;
   justify-self: end;
   align-self: center;
   font-size: var(--font-meta);

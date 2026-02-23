@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { GardenNode } from "@/lib/garden/types";
 import { GardenNodeCard } from "./GardenNodeCard";
 
@@ -19,10 +19,14 @@ interface GardenGridProps {
 }
 
 export function GardenGrid({ groups, totalNodes, prevNodeCount }: GardenGridProps) {
-  // 全グループを展開状態で表示
+  // 全グループを展開状態で表示（ページ切替時にリセット）
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(groups.map((g) => g.label)),
   );
+
+  useEffect(() => {
+    setExpanded(new Set(groups.map((g) => g.label)));
+  }, [groups]);
 
   if (groups.length === 0) {
     return <p style={{ color: "var(--muted)" }}>まだノードがありません。</p>;
