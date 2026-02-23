@@ -144,14 +144,30 @@ async function getFileSlugs(files: GardenFile[]): Promise<Set<string>> {
   return slugs;
 }
 
+/**
+ * 本文の先頭行がタイトル（ファイル名）と一致する場合に除去する。
+ * Ulysses は最初の行をファイル名にするため、本文とタイトルが重複する。
+ */
+function stripTitleLine(content: string, title: string): string {
+  const firstLineEnd = content.indexOf("\n");
+  const firstLine = (firstLineEnd === -1 ? content : content.slice(0, firstLineEnd)).trim();
+  if (firstLine === title) {
+    return firstLineEnd === -1 ? "" : content.slice(firstLineEnd + 1);
+  }
+  return content;
+}
+
 /** Markdownを1ファイルパースしてGardenNodeを返す */
 async function parseFile(
   file: GardenFile,
   existingSlugs: Set<string>,
 ): Promise<GardenNode> {
   const inline = extractInlineMeta(file.content);
-  const { data, content } = matter(inline.content);
+  const { data, content: rawContent } = matter(inline.content);
   const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
+
+  // 本文先頭行がタイトルと同じなら除去（Ulysses のファイル名重複対策）
+  const content = stripTitleLine(rawContent, fm.title);
 
   const result = await unified()
     .use(remarkParse)
@@ -259,8 +275,9 @@ export async function getNodeSummaryMap(): Promise<Map<string, { title: string; 
 
   for (const file of files) {
     const inline = extractInlineMeta(file.content);
-    const { data, content } = matter(inline.content);
+    const { data, content: rawContent } = matter(inline.content);
     const fm = completeFrontmatter(data as GardenFrontmatter, file, inline);
+    const content = stripTitleLine(rawContent, fm.title);
     const slug = titleToSlug(fm.title);
 
     const plainText = content
