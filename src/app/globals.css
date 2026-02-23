@@ -3141,7 +3141,7 @@ button.tl-photo-cell {
   }
 
   .header-title-left {
-    grid-column: 1 / -1;
+    grid-column: 1 / 2;
     width: 100%;
     justify-content: space-between;
     gap: var(--space-4) !important;
@@ -3152,6 +3152,7 @@ button.tl-photo-cell {
     align-items: center;
     justify-content: flex-end;
     grid-column: 2 / 3;
+    grid-row: 1;
   }
 
   .header-category-row {
