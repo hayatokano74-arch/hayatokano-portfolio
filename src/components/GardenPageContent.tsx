@@ -2,8 +2,8 @@
 
 /**
  * Garden一覧ページのClient Component
- * 検索 + 投稿数ベースのページネーションを管理する。
- * 月グループは分割せず、約15件ごとにページを区切る。
+ * 検索 + 投稿数ベースのページネーション + アーカイブサイドバーを管理する。
+ * 月グループは分割せず、約30件ごとにページを区切る。
  */
 
 import { useState, useCallback, useMemo, useEffect } from "react";
@@ -13,9 +13,10 @@ import { useGardenSearch } from "@/lib/garden/use-garden-search";
 import { GardenSearch } from "./GardenSearch";
 import { GardenGrid } from "./GardenGrid";
 import { GardenPagination } from "./GardenPagination";
+import { Header } from "./Header";
 
 /** 1ページあたりの目標投稿数 */
-const NODES_PER_PAGE = 60;
+const NODES_PER_PAGE = 30;
 
 interface MonthGroup {
   label: string;
@@ -84,6 +85,306 @@ function groupIntoPages(groups: MonthGroup[]): MonthGroup[][] {
   return pages;
 }
 
+/* ─── アーカイブツリーのデータ構造 ─── */
+type GardenArchiveMonth = {
+  label: string;       // "2月"
+  groupLabel: string;  // "2026年2月"（MonthGroup.label と一致）
+  count: number;
+  page: number;        // 1始まり
+};
+type GardenArchiveYear = {
+  year: string;
+  count: number;
+  months: GardenArchiveMonth[];
+};
+
+/** pages（MonthGroup[][]）から年→月の2階層ツリーを構築 */
+function buildGardenArchiveTree(pages: MonthGroup[][]): GardenArchiveYear[] {
+  const tree: GardenArchiveYear[] = [];
+  const yearMap = new Map<string, GardenArchiveYear>();
+
+  for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
+    for (const group of pages[pageIdx]) {
+      // "2026年2月" → year="2026", monthLabel="2月"
+      const match = group.label.match(/^(\d+)年(\d+)月$/);
+      if (!match) continue;
+
+      const [, yearStr, monthStr] = match;
+      const nodeCount = group.nodes.length;
+
+      let yearNode = yearMap.get(yearStr);
+      if (!yearNode) {
+        yearNode = { year: yearStr, count: 0, months: [] };
+        yearMap.set(yearStr, yearNode);
+        tree.push(yearNode);
+      }
+      yearNode.count += nodeCount;
+
+      // 同じ月が複数ページにまたがることはないので直接追加
+      yearNode.months.push({
+        label: `${Number(monthStr)}月`,
+        groupLabel: group.label,
+        count: nodeCount,
+        page: pageIdx + 1,
+      });
+    }
+  }
+  return tree;
+}
+
+/* ─── 三角形アイコン ─── */
+function ToggleArrow({ open }: { open: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: "inline-block",
+        width: 8,
+        fontSize: 8,
+        lineHeight: 1,
+        transition: "transform 120ms ease",
+        transform: open ? "rotate(90deg)" : "rotate(0deg)",
+        color: "var(--muted)",
+      }}
+    >
+      ▶
+    </span>
+  );
+}
+
+/* ─── Garden アーカイブサイドバー ─── */
+function GardenArchiveSidebar({
+  pages,
+  currentPage,
+  onPageChange,
+}: {
+  pages: MonthGroup[][];
+  currentPage: number;
+  onPageChange: (page: number) => void;
+}) {
+  const tree = useMemo(() => buildGardenArchiveTree(pages), [pages]);
+
+  const [openKeys, setOpenKeys] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    if (tree.length > 0) initial.add(tree[0].year);
+    return initial;
+  });
+
+  const toggle = useCallback((key: string) => {
+    setOpenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const btnStyle = {
+    border: 0,
+    background: "transparent",
+    padding: 0,
+    cursor: "pointer",
+  } as const;
+
+  return (
+    <aside className="garden-sidebar">
+      <div>
+        {tree.map((yearNode) => {
+          const yearOpen = openKeys.has(yearNode.year);
+          return (
+            <div key={yearNode.year} style={{ marginBottom: "var(--space-3)" }}>
+              <button
+                type="button"
+                onClick={() => toggle(yearNode.year)}
+                aria-expanded={yearOpen}
+                aria-label={`${yearNode.year}年のアーカイブ`}
+                style={{
+                  ...btnStyle,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--space-2)",
+                  fontSize: "var(--font-body)",
+                  lineHeight: "var(--lh-normal)",
+                  fontWeight: 700,
+                  color: "var(--fg)",
+                }}
+              >
+                <ToggleArrow open={yearOpen} />
+                <span>{yearNode.year}</span>
+                <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
+                  ({yearNode.count})
+                </span>
+              </button>
+
+              {yearOpen ? (
+                <div style={{ paddingLeft: "var(--space-3)", marginTop: "var(--space-1)" }}>
+                  {yearNode.months.map((m) => {
+                    const isActive = m.page === currentPage;
+                    return (
+                      <div key={m.groupLabel} style={{ marginBottom: "var(--space-1)" }}>
+                        <button
+                          type="button"
+                          onClick={() => onPageChange(m.page)}
+                          style={{
+                            ...btnStyle,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "var(--space-2)",
+                            fontSize: "var(--font-body)",
+                            lineHeight: "var(--lh-normal)",
+                            fontWeight: isActive ? 700 : 500,
+                            color: isActive ? "var(--fg)" : "var(--muted)",
+                            fontFamily: "inherit",
+                          }}
+                        >
+                          <span>{m.label}</span>
+                          <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
+                            ({m.count})
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
+
+/* ─── Garden モバイル用ボトムドロワーアーカイブ ─── */
+function GardenMobileArchiveDrawer({
+  pages,
+  currentPage,
+  onPageChange,
+  open,
+  onClose,
+}: {
+  pages: MonthGroup[][];
+  currentPage: number;
+  onPageChange: (page: number) => void;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const tree = useMemo(() => buildGardenArchiveTree(pages), [pages]);
+
+  const [openKeys, setOpenKeys] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    if (tree.length > 0) initial.add(tree[0].year);
+    return initial;
+  });
+
+  const toggle = useCallback((key: string) => {
+    setOpenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const btnStyle = {
+    border: 0,
+    background: "transparent",
+    padding: 0,
+    cursor: "pointer",
+  } as const;
+
+  if (!open) return null;
+
+  return (
+    <>
+      <div className="mobile-archive-drawer-backdrop" onClick={onClose} />
+      <div className="mobile-archive-drawer">
+        <div className="mobile-archive-drawer-header">
+          <span style={{ fontSize: "var(--font-heading)", fontWeight: 700 }}>Archive</span>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              ...btnStyle,
+              fontSize: "var(--font-body)",
+              lineHeight: 1,
+              color: "var(--muted)",
+            }}
+            aria-label="閉じる"
+          >
+            ✕
+          </button>
+        </div>
+
+        {tree.map((yearNode) => {
+          const yearOpen = openKeys.has(yearNode.year);
+          return (
+            <div key={yearNode.year} style={{ marginBottom: "var(--space-3)" }}>
+              <button
+                type="button"
+                onClick={() => toggle(yearNode.year)}
+                aria-expanded={yearOpen}
+                aria-label={`${yearNode.year}年のアーカイブ`}
+                style={{
+                  ...btnStyle,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--space-2)",
+                  fontSize: "var(--font-body)",
+                  lineHeight: "var(--lh-normal)",
+                  fontWeight: 700,
+                  color: "var(--fg)",
+                }}
+              >
+                <ToggleArrow open={yearOpen} />
+                <span>{yearNode.year}</span>
+                <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
+                  ({yearNode.count})
+                </span>
+              </button>
+
+              {yearOpen ? (
+                <div style={{ paddingLeft: "var(--space-3)", marginTop: "var(--space-1)" }}>
+                  {yearNode.months.map((m) => {
+                    const isActive = m.page === currentPage;
+                    return (
+                      <div key={m.groupLabel} style={{ marginBottom: "var(--space-1)" }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onPageChange(m.page);
+                            onClose();
+                          }}
+                          style={{
+                            ...btnStyle,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "var(--space-2)",
+                            fontSize: "var(--font-body)",
+                            lineHeight: "var(--lh-normal)",
+                            fontWeight: isActive ? 700 : 500,
+                            color: isActive ? "var(--fg)" : "var(--muted)",
+                            fontFamily: "inherit",
+                          }}
+                        >
+                          <span>{m.label}</span>
+                          <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
+                            ({m.count})
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 /** ページの期間ラベルを生成（実在する月のみ表示） */
 function pageRangeLabel(groups: MonthGroup[]): string {
   if (groups.length === 0) return "";
@@ -109,6 +410,7 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   const initialPage = parseInt(searchParams.get("page") ?? "1", 10);
   const [searchQuery, setSearchQuery] = useState<string | null>(initialQuery || null);
   const [currentPage, setCurrentPage] = useState(isNaN(initialPage) ? 1 : initialPage);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const search = useGardenSearch();
 
   // URL の ?q= パラメータで初期検索を実行
@@ -195,25 +497,64 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
     [],
   );
 
-  // 検索中はページネーション非表示
+  // 検索中はページネーション・アーカイブ非表示
   const showPagination = !searchQuery && totalPages > 1;
+  const showArchive = !searchQuery && pages.length > 1;
+
+  // モバイルアーカイブボタン（Header の titleRight に渡す）
+  const archiveButton = showArchive ? (
+    <button
+      type="button"
+      className="mobile-archive-trigger"
+      onClick={() => setDrawerOpen(true)}
+    >
+      Archive +
+    </button>
+  ) : undefined;
 
   return (
-    <div className="garden-content">
-      <GardenSearch
-        search={search}
-        onFullSearch={handleFullSearch}
-        fullSearchIds={fullSearchIds}
+    <>
+      <Header
+        active="Garden"
+        title="Garden"
+        showCategoryRow={false}
+        showSearch={false}
+        titleRight={archiveButton}
       />
-      <GardenGrid groups={pageGroups} totalNodes={filteredNodes.length} prevNodeCount={prevNodeCount} />
-      {showPagination && (
-        <GardenPagination
+      <div className="garden-layout">
+        <div className="garden-main">
+          <GardenSearch
+            search={search}
+            onFullSearch={handleFullSearch}
+            fullSearchIds={fullSearchIds}
+          />
+          <GardenGrid groups={pageGroups} totalNodes={filteredNodes.length} prevNodeCount={prevNodeCount} />
+          {showPagination && (
+            <GardenPagination
+              currentPage={safePage}
+              totalPages={totalPages}
+              pageLabels={pageLabels}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </div>
+        {showArchive && (
+          <GardenArchiveSidebar
+            pages={pages}
+            currentPage={safePage}
+            onPageChange={handlePageChange}
+          />
+        )}
+      </div>
+      {showArchive && (
+        <GardenMobileArchiveDrawer
+          pages={pages}
           currentPage={safePage}
-          totalPages={totalPages}
-          pageLabels={pageLabels}
           onPageChange={handlePageChange}
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
         />
       )}
-    </div>
+    </>
   );
 }

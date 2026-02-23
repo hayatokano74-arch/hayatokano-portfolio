@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
-import { Header } from "@/components/Header";
 import { GardenPageContent } from "@/components/GardenPageContent";
 import { getAllNodes } from "@/lib/garden/reader";
 
@@ -22,7 +21,6 @@ export default async function GardenPage() {
 
   return (
     <CanvasShell>
-      <Header active="Garden" title="Garden" showCategoryRow={false} showSearch={false} />
       <Suspense>
         <GardenPageContent nodes={nodes} />
       </Suspense>

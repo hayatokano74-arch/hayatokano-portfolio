@@ -2332,6 +2332,35 @@ button.tl-photo-cell {
 /* ═══ Garden ═══ */
 
 /* Gardenコンテンツ全体のグリッドコンテナ */
+/* ── Garden: 12カラムグリッド（メイン + サイドバー） ── */
+.garden-layout {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
+  margin-top: var(--space-5);
+}
+
+.garden-main {
+  grid-column: 1 / span 9;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  column-gap: var(--grid-gutter);
+}
+
+.garden-main > * {
+  grid-column: 4 / span 6;
+  min-width: 0;
+}
+
+.garden-sidebar {
+  grid-column: 11 / -1;
+  grid-row: 1 / -1;
+  position: sticky;
+  top: var(--space-7);
+  align-self: start;
+}
+
 .garden-content {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -3626,6 +3655,18 @@ button.tl-photo-cell {
   }
 
   /* Garden モバイル */
+  .garden-layout {
+    display: block;
+  }
+
+  .garden-main {
+    display: block;
+  }
+
+  .garden-sidebar {
+    display: none;
+  }
+
   .garden-search-input {
     font-size: 16px; /* iOSのズーム防止 */
   }
