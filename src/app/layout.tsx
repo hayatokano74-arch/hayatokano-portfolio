@@ -57,6 +57,12 @@ export default function RootLayout({
         </a>
         {children}
         <GridDebugOverlay />
+        {/* Service Worker: Garden画像のオフラインキャッシュ */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if("serviceWorker"in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js")})}`,
+          }}
+        />
       </body>
     </html>
   );

@@ -28,6 +28,8 @@ const OPT_BASE = "https://wp.hayatokano.com/garden-images-opt";
  * - garden-images 以外の画像は loading="lazy" のみ付与
  */
 function rehypeOptimizedImages() {
+  let imageCount = 0;
+
   return (tree: Root) => {
     visit(tree, "element", (node: Element, index, parent) => {
       if (node.tagName !== "img") return;
@@ -36,10 +38,17 @@ function rehypeOptimizedImages() {
       const src = String(node.properties.src || "");
       const match = src.match(GARDEN_IMAGE_RE);
 
+      imageCount++;
+
       if (!match || !parent || index === undefined) {
-        // garden-images 以外 → 従来通り lazy のみ
-        node.properties.loading = "lazy";
-        node.properties.decoding = "async";
+        // garden-images 以外 → 従来通り lazy のみ（ただし1枚目は優先読み込み）
+        if (imageCount === 1) {
+          node.properties.fetchpriority = "high";
+          node.properties.decoding = "async";
+        } else {
+          node.properties.loading = "lazy";
+          node.properties.decoding = "async";
+        }
         return;
       }
 
@@ -75,14 +84,16 @@ function rehypeOptimizedImages() {
             children: [],
           },
           // <img> フォールバック + LQIP背景
+          // 1枚目の画像は fetchpriority="high" で LCP 改善
           {
             type: "element",
             tagName: "img",
             properties: {
               src: jpg1920,
               alt: node.properties.alt || "",
-              loading: "lazy",
-              decoding: "async",
+              ...(imageCount === 1
+                ? { fetchpriority: "high", decoding: "async" }
+                : { loading: "lazy", decoding: "async" }),
               className: ["garden-img"],
               style: `background-image:url(${lqip});background-size:cover`,
             },
