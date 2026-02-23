@@ -15,7 +15,7 @@ import { GardenGrid } from "./GardenGrid";
 import { GardenPagination } from "./GardenPagination";
 
 /** 1ページあたりの目標投稿数 */
-const NODES_PER_PAGE = 15;
+const NODES_PER_PAGE = 60;
 
 interface MonthGroup {
   label: string;

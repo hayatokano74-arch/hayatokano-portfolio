@@ -21,10 +21,19 @@ function titleFromFilename(filename: string): string {
   return filename.replace(/\.md$/, "");
 }
 
+/** 日付文字列を YYYY-MM-DD に正規化 */
+function normalizeDate(raw: string): string {
+  // ドット区切り → ハイフン区切り
+  const parts = raw.split(/[.\-/]/);
+  if (parts.length === 3) {
+    return `${parts[0]}-${parts[1].padStart(2, "0")}-${parts[2].padStart(2, "0")}`;
+  }
+  return raw;
+}
+
 /**
  * ファイル名から日付を抽出する。
  * 対応パターン: "2025.12.05.md", "2025-12-05.md", "20251205.md"
- * 見つからなければ null を返す。
  */
 function dateFromFilename(filename: string): string | null {
   const base = filename.replace(/\.md$/, "");
@@ -47,15 +56,40 @@ function dateFromFilename(filename: string): string | null {
 }
 
 /**
+ * 本文の先頭にある date: 行を抽出し、本文から除去する。
+ * 例: "date:2025-07-15\n本文..." → { date: "2025-07-15", content: "本文..." }
+ * frontmatter（---）がある場合は何もしない（gray-matter に任せる）。
+ */
+function extractInlineDate(raw: string): { date: string | null; content: string } {
+  // frontmatter がある場合はスキップ
+  if (raw.trimStart().startsWith("---")) {
+    return { date: null, content: raw };
+  }
+
+  // 先頭の date: 行を探す（スペースあり・なし、区切り文字はドット・ハイフン・スラッシュ対応）
+  const match = raw.match(/^date:\s*(\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2})\s*\n?/);
+  if (match) {
+    return {
+      date: normalizeDate(match[1]),
+      content: raw.slice(match[0].length),
+    };
+  }
+
+  return { date: null, content: raw };
+}
+
+/**
  * frontmatterを補完（title/dateがなければファイル名・日付から自動生成）
- * 日付の優先順位: frontmatter date → ファイル名の日付 → Dropbox 更新日時
+ * 日付の優先順位: frontmatter date → 本文先頭の date: → ファイル名の日付 → Dropbox 更新日時
  */
 function completeFrontmatter(
   fm: GardenFrontmatter,
   file: GardenFile,
+  inlineDate: string | null,
 ): GardenFrontmatter {
   const date =
     fm.date ||
+    inlineDate ||
     dateFromFilename(file.filename) ||
     new Date(file.modifiedAt).toISOString().slice(0, 10);
 
@@ -71,8 +105,9 @@ function completeFrontmatter(
 async function getFileSlugs(files: GardenFile[]): Promise<Set<string>> {
   const slugs = new Set<string>();
   for (const file of files) {
-    const { data } = matter(file.content);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file);
+    const { date: inlineDate, content: cleaned } = extractInlineDate(file.content);
+    const { data } = matter(cleaned);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, inlineDate);
     slugs.add(titleToSlug(fm.title));
   }
   return slugs;
@@ -83,8 +118,9 @@ async function parseFile(
   file: GardenFile,
   existingSlugs: Set<string>,
 ): Promise<GardenNode> {
-  const { data, content } = matter(file.content);
-  const fm = completeFrontmatter(data as GardenFrontmatter, file);
+  const { date: inlineDate, content: cleaned } = extractInlineDate(file.content);
+  const { data, content } = matter(cleaned);
+  const fm = completeFrontmatter(data as GardenFrontmatter, file, inlineDate);
 
   const result = await unified()
     .use(remarkParse)
@@ -144,8 +180,9 @@ export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
   const existingSlugs = await getFileSlugs(files);
 
   for (const file of files) {
-    const { data } = matter(file.content);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file);
+    const { date: inlineDate, content: cleaned } = extractInlineDate(file.content);
+    const { data } = matter(cleaned);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, inlineDate);
     if (titleToSlug(fm.title) === slug) {
       return parseFile(file, existingSlugs);
     }
@@ -190,8 +227,9 @@ export async function getNodeSummaryMap(): Promise<Map<string, { title: string; 
   const files = await getGardenFiles();
 
   for (const file of files) {
-    const { data, content } = matter(file.content);
-    const fm = completeFrontmatter(data as GardenFrontmatter, file);
+    const { date: inlineDate, content: cleaned } = extractInlineDate(file.content);
+    const { data, content } = matter(cleaned);
+    const fm = completeFrontmatter(data as GardenFrontmatter, file, inlineDate);
     const slug = titleToSlug(fm.title);
 
     const plainText = content
