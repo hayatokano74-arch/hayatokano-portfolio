@@ -528,7 +528,6 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
             onFullSearch={handleFullSearch}
             fullSearchIds={fullSearchIds}
           />
-          <GardenGrid groups={pageGroups} totalNodes={filteredNodes.length} prevNodeCount={prevNodeCount} />
           {showPagination && (
             <GardenPagination
               currentPage={safePage}
@@ -537,6 +536,7 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
               onPageChange={handlePageChange}
             />
           )}
+          <GardenGrid groups={pageGroups} totalNodes={filteredNodes.length} prevNodeCount={prevNodeCount} />
         </div>
         {showArchive && (
           <GardenArchiveSidebar
