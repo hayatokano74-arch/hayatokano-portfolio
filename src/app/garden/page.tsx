@@ -4,6 +4,7 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 import { GardenPageContent } from "@/components/GardenPageContent";
 import { getAllNodes } from "@/lib/garden/reader";
+import type { GardenNodeSummary } from "@/lib/garden/types";
 
 export const metadata: Metadata = { title: "Garden" };
 
@@ -11,9 +12,11 @@ export const metadata: Metadata = { title: "Garden" };
 export const revalidate = 60;
 
 export default async function GardenPage() {
-  let nodes: Awaited<ReturnType<typeof getAllNodes>> = [];
+  let summaries: GardenNodeSummary[] = [];
   try {
-    nodes = await getAllNodes();
+    const nodes = await getAllNodes();
+    // 一覧ページでは contentHtml を送らない（データ量削減）
+    summaries = nodes.map(({ contentHtml: _, ...rest }) => rest);
   } catch {
     // Dropbox 接続エラー時は空で表示
   }
@@ -22,7 +25,7 @@ export default async function GardenPage() {
     <CanvasShell>
       <Header active="Garden" title="Garden" showCategoryRow={false} showSearch={false} />
       <Suspense>
-        <GardenPageContent nodes={nodes} />
+        <GardenPageContent nodes={summaries} />
       </Suspense>
     </CanvasShell>
   );

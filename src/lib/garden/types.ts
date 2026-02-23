@@ -31,6 +31,9 @@ export interface LinkedPageSummary {
   date?: string;
 }
 
+/** 一覧ページ用の軽量ノード（contentHtml を含まない） */
+export type GardenNodeSummary = Omit<GardenNode, "contentHtml">;
+
 /** 2-hopリンクグループ（中継ページでグループ化） */
 export interface TwoHopGroup {
   /** 中継ページのタイトル（グループ見出し） */

@@ -1,45 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import type { GardenNode } from "@/lib/garden/types";
+import type { GardenNodeSummary } from "@/lib/garden/types";
 import { GardenNodeCard } from "./GardenNodeCard";
 
-/** 年月ラベルを生成（例: "2026年2月"） */
-function toYearMonth(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "日付不明";
-  return `${d.getFullYear()}年${d.getMonth() + 1}月`;
+interface MonthGroup {
+  label: string;
+  nodes: GardenNodeSummary[];
 }
 
-/** ノードを年月でグループ化（降順前提） */
-function groupByYearMonth(nodes: GardenNode[]) {
-  const groups: { label: string; nodes: GardenNode[] }[] = [];
-  let currentLabel = "";
-
-  for (const node of nodes) {
-    const label = toYearMonth(node.date);
-    if (label !== currentLabel) {
-      currentLabel = label;
-      groups.push({ label, nodes: [node] });
-    } else {
-      groups[groups.length - 1].nodes.push(node);
-    }
-  }
-
-  return groups;
+interface GardenGridProps {
+  /** 現在のページに表示するグループ */
+  groups: MonthGroup[];
+  /** 全ノード数（通し番号の計算用） */
+  totalNodes: number;
+  /** 現在ページより前のノード数（通し番号のオフセット） */
+  allGroups: MonthGroup[];
+  /** 現在のページ番号 */
+  safePage: number;
 }
 
-export function GardenGrid({ nodes }: { nodes: GardenNode[] }) {
-  const groups = groupByYearMonth(nodes);
-
-  // 最新月は展開、それ以降は折りたたみ
+export function GardenGrid({ groups, totalNodes, allGroups, safePage }: GardenGridProps) {
+  // 最新グループは展開、それ以降は折りたたみ
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const initial = new Set<string>();
     if (groups.length > 0) initial.add(groups[0].label);
     return initial;
   });
 
-  if (nodes.length === 0) {
+  if (groups.length === 0) {
     return <p style={{ color: "var(--muted)" }}>まだノードがありません。</p>;
   }
 
@@ -55,9 +44,12 @@ export function GardenGrid({ nodes }: { nodes: GardenNode[] }) {
     });
   };
 
-  // 通し番号（古い投稿=01、新しい投稿=最大番号）
-  const total = nodes.length;
-  let runningIndex = 0;
+  // 前のページまでのノード数を計算（通し番号用）
+  const MONTHS_PER_PAGE = 3;
+  const prevPageMonths = allGroups.slice(0, (safePage - 1) * MONTHS_PER_PAGE);
+  const prevNodeCount = prevPageMonths.reduce((sum, g) => sum + g.nodes.length, 0);
+
+  let runningIndex = prevNodeCount;
 
   return (
     <div className="garden-sections">
@@ -84,7 +76,7 @@ export function GardenGrid({ nodes }: { nodes: GardenNode[] }) {
                   <GardenNodeCard
                     key={node.slug}
                     node={node}
-                    index={total - startIndex - i}
+                    index={totalNodes - startIndex - i}
                   />
                 ))}
               </div>

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import type { GardenNode } from "@/lib/garden/types";
+import type { GardenNodeSummary } from "@/lib/garden/types";
 
-export function GardenNodeCard({ node, index }: { node: GardenNode; index: number }) {
+export function GardenNodeCard({ node, index }: { node: GardenNodeSummary; index: number }) {
   const num = String(index).padStart(2, "0");
 
   return (
@@ -13,10 +13,9 @@ export function GardenNodeCard({ node, index }: { node: GardenNode; index: numbe
       <Link href={`/garden/${encodeURIComponent(node.slug)}`} className="garden-entry-title-link action-link">
         <h2 className="garden-entry-title">{node.title}</h2>
       </Link>
-      <div
-        className="garden-entry-body"
-        dangerouslySetInnerHTML={{ __html: node.contentHtml }}
-      />
+      {node.excerpt && (
+        <p className="garden-entry-excerpt">{node.excerpt}</p>
+      )}
     </article>
   );
 }
