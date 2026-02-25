@@ -14,7 +14,7 @@ export default async function WorksPage({
   searchParams?: Promise<{ view?: string; tag?: string; q?: string }>;
 }) {
   const sp = searchParams ? await searchParams : undefined;
-  const view = sp?.view === "list" ? "list" : "grid";
+  const view = sp?.view === "grid" ? "grid" : "list";
   const activeCategory = parseCategory(sp?.tag);
   const q = sp?.q?.toLowerCase() ?? "";
   const works = await getWorks();
