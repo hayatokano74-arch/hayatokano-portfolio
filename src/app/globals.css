@@ -850,8 +850,9 @@ button {
 
 .top-hero-brand-name {
   grid-column: 1 / span 4;
-  font-size: var(--font-brand);
-  font-weight: 900;
+  font-size: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.03em;
   line-height: 1;
   color: #fff;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
