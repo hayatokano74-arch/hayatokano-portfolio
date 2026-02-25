@@ -114,7 +114,7 @@ export function Header({
         <div className="header-title-row">
           <div className="header-title-left">
             {showTitleRow ? (
-              <h1 style={{ fontSize: 44, lineHeight: 1, fontWeight: 700, margin: 0 }}>{title}</h1>
+              <h1 className="page-title">{title}</h1>
             ) : null}
           </div>
 

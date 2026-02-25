@@ -40,7 +40,7 @@ export default async function TextListPage({
   return (
     <CanvasShell>
       <Header active="Text" title="Text" activeCategory={activeCategory} categoryHrefs={categoryHrefs} />
-      <div style={{ marginTop: "var(--space-6)" }}>
+      <div>
         <div className="hrline" />
         {filteredTexts.map((t) => (
           <div key={t.slug}>

@@ -756,7 +756,7 @@ export function TimelineView({
   const groups = groupByDate(items);
 
   return (
-    <div className="timeline-layout" style={{ marginTop: "var(--space-6)" }}>
+    <div className="timeline-layout">
       {/* フィルタタブ */}
       <div className="timeline-filter-tabs-wrap">
         <FilterTabs activeMonth={activeMonth} activeDate={activeDate} activeTag={activeTag} availableTags={availableTags} />
