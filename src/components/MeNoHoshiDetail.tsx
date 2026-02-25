@@ -72,18 +72,20 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           <div className="me-no-hoshi-section is-first">
             <div className="me-no-hoshi-section-label">KEY VISUAL</div>
             <div className="single-col-grid" style={{ marginTop: "var(--space-3)", gap: "var(--space-4)" }}>
-              {keyVisuals.map((visual, idx) => (
+              {keyVisuals.map((visual, idx) => {
+                const isPortrait = visual.image.height > visual.image.width;
+                return (
                 <article key={visual.id}>
                   <div
                     style={{
                       position: "relative",
                       width: "100%",
-                      aspectRatio: `${visual.image.width} / ${visual.image.height}`,
-                      maxHeight: "min(72vh, 820px)",
+                      ...(isPortrait
+                        ? { maxHeight: "min(80vh, 900px)", aspectRatio: `${visual.image.width} / ${visual.image.height}`, margin: "0 auto" }
+                        : { aspectRatio: `${visual.image.width} / ${visual.image.height}` }
+                      ),
                       background: "var(--bg)",
                       overflow: "hidden",
-                      display: "grid",
-                      placeItems: "center",
                     }}
                   >
                     <Image
@@ -94,14 +96,15 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                       sizes="(max-width: 900px) 100vw, 920px"
                       placeholder="blur"
                       blurDataURL={blurDataURL(visual.image.width, visual.image.height)}
-                      style={{ objectFit: "contain", objectPosition: "center" }}
+                      style={{ objectFit: "cover", objectPosition: "center" }}
                     />
                   </div>
                   {visual.caption ? (
                     <div style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{visual.caption}</div>
                   ) : null}
                 </article>
-              ))}
+                );
+              })}
             </div>
             <div style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{post.heroCaption}</div>
           </div>
@@ -119,7 +122,9 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                 gap: "var(--space-5)",
               }}
             >
-              {post.pastWorks.map((work) => (
+              {post.pastWorks.map((work) => {
+                const isPortrait = work.image.height > work.image.width;
+                return (
                 <article key={work.id}>
                   <figure style={{ margin: 0 }}>
                     <Image
@@ -135,8 +140,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                         display: "block",
                         width: "100%",
                         height: "auto",
-                        maxHeight: "min(72vh, 820px)",
-                        objectFit: "contain",
+                        ...(isPortrait ? { maxHeight: "min(80vh, 900px)", objectFit: "contain" } : {}),
                         objectPosition: "left top",
                       }}
                     />
@@ -147,7 +151,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                     ) : null}
                   </figure>
                 </article>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -164,7 +169,9 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                 gap: "var(--space-5)",
               }}
             >
-              {post.archiveWorks.map((work) => (
+              {post.archiveWorks.map((work) => {
+                const isPortrait = work.image.height > work.image.width;
+                return (
                 <article key={work.id}>
                   <figure style={{ margin: 0 }}>
                     <Image
@@ -180,8 +187,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                         display: "block",
                         width: "100%",
                         height: "auto",
-                        maxHeight: "min(72vh, 820px)",
-                        objectFit: "contain",
+                        ...(isPortrait ? { maxHeight: "min(80vh, 900px)", objectFit: "contain" } : {}),
                         objectPosition: "left top",
                       }}
                     />
@@ -192,7 +198,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                     ) : null}
                   </figure>
                 </article>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
