@@ -2390,7 +2390,8 @@ button.tl-photo-cell {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
-  /* ヘッダー→コンテンツのギャップは .header-root の margin-bottom で管理 */
+  /* カテゴリ行なしのため、他ページと同等の総距離を確保 */
+  margin-top: var(--space-12);
 }
 
 .garden-main {
