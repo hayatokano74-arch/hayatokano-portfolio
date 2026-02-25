@@ -41,7 +41,23 @@ export function GardenBody({
       }
     };
 
-    el.querySelectorAll<HTMLImageElement>(".garden-img").forEach(setupImage);
+    /* DOM更新を確実に待ってからセットアップ */
+    requestAnimationFrame(() => {
+      el.querySelectorAll<HTMLImageElement>(".garden-img").forEach(setupImage);
+    });
+
+    /* フォールバック: イベント取りこぼし対策（クライアントサイドナビゲーション時） */
+    const interval = setInterval(() => {
+      const pending = el.querySelectorAll<HTMLImageElement>(
+        ".garden-img:not(.loaded)",
+      );
+      pending.forEach((img) => {
+        if (img.complete) img.classList.add("loaded");
+      });
+      if (pending.length === 0) clearInterval(interval);
+    }, 500);
+
+    return () => clearInterval(interval);
   }, [html]);
 
   return (
