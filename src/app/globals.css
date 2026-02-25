@@ -56,7 +56,7 @@
   --grid-columns: 12;
   --grid-gutter: 1.5rem;
   --grid-margin: clamp(1rem, 4vw, 4rem);
-  --grid-max-width: 1200px;
+  --grid-max-width: 1600px;
 
   /* ── 角丸（デザイントークン） ── */
   --radius-sm: 6px;
@@ -74,7 +74,7 @@
   --color-success-bg: #1a7a3a22;
 
   /* ── ページシェル余白（Fluid） ── */
-  --pad-x: var(--space-12);
+  --pad-x: var(--space-8);
   --pad-y: var(--space-9);
 }
 
@@ -3150,7 +3150,7 @@ button.tl-photo-cell {
 /* ═══ モバイルオーバーライド（ファイル末尾に1ブロックのみ配置） ═══ */
 @media (max-width: 900px) {
   :root {
-    --pad-x: var(--space-7);
+    --pad-x: var(--space-5);
     --pad-y: var(--space-7);
   }
 
