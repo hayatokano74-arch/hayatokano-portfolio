@@ -898,9 +898,9 @@ button {
   border-top: 1px solid var(--line-light);
 }
 
-/* is-first: タイトル(44px) + space-10 = DETAILSの開始位置に揃える */
+/* is-first: タイトル(48px=6x) + space-10 = DETAILSの開始位置に揃える */
 .me-no-hoshi-section.is-first {
-  margin-top: calc(44px + var(--space-10));
+  margin-top: calc(48px + var(--space-10));
   padding-top: 0;
   border-top: 0;
 }
@@ -1032,14 +1032,15 @@ button {
   justify-self: end;
 }
 
-/* ── ヘッダータイトル行: 12カラムグリッド ── */
+/* ── ヘッダータイトル行: 12カラムグリッド ──
+   margin-top は --space-5 に縮小。header-bar の min-height による
+   内部余白（~16px）を相殺し、タイトル上下の視覚的余白を均等にする。 */
 .header-title-row {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
   align-items: center;
-  margin-top: var(--v-row-gap);
-  min-height: var(--space-10);
+  margin-top: var(--space-5);
 }
 
 .header-title-left {
@@ -1133,6 +1134,7 @@ button {
 .works-list-detail {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: auto 1fr;
   column-gap: var(--grid-gutter);
   padding-top: var(--space-5);
   padding-bottom: var(--space-6);
@@ -1140,17 +1142,20 @@ button {
 
 .works-list-spacer {
   grid-column: 1 / span 2;
+  grid-row: 1 / span 2;
 }
 
 /* タグ: デスクトップではbodyと同じカラム位置 */
 .works-list-open-tags {
   grid-column: 3 / span 5;
+  grid-row: 1;
   min-width: 0;
 }
 
 /* works-list-body: ディテール+抜粋+View All */
 .works-list-body {
   grid-column: 3 / span 5;
+  grid-row: 2;
   align-self: start;
   min-width: 0;
   overflow-wrap: anywhere;
@@ -1179,6 +1184,7 @@ button {
 
 .works-list-media {
   grid-column: 9 / -1;
+  grid-row: 1 / span 2;
   min-width: 0;
   overflow: hidden;
 }
@@ -1988,7 +1994,7 @@ button.tl-photo-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100px;
+  min-height: 96px;
   border: 2px dashed color-mix(in srgb, var(--fg) 15%, transparent);
   border-radius: var(--radius-md);
   color: var(--muted);
@@ -2018,8 +2024,8 @@ button.tl-photo-cell {
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 50%;
   background: rgb(0 0 0 / 0.55);
@@ -2329,7 +2335,7 @@ button.tl-photo-cell {
 
 .garden-search-input {
   width: 100%;
-  padding: 10px 36px 10px 36px;
+  padding: var(--space-2) 36px;
   font-size: var(--font-body);
   font-family: inherit;
   color: var(--fg);
@@ -2397,7 +2403,7 @@ button.tl-photo-cell {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: var(--space-1) var(--space-3);
   text-decoration: none;
   color: var(--fg);
   transition: background-color 0.1s ease;
@@ -2425,7 +2431,7 @@ button.tl-photo-cell {
 }
 
 .garden-search-hint {
-  padding: 6px 12px;
+  padding: var(--space-1) var(--space-3);
   font-size: var(--font-meta);
   color: var(--muted);
   border-top: 1px solid var(--line);
@@ -2433,7 +2439,7 @@ button.tl-photo-cell {
 }
 
 .garden-search-empty {
-  padding: 10px 12px;
+  padding: var(--space-2) var(--space-3);
   font-size: var(--font-meta);
   color: var(--muted);
   letter-spacing: 0.04em;
@@ -2453,7 +2459,7 @@ button.tl-photo-cell {
 }
 
 .garden-search-result-clear {
-  padding: 2px 8px;
+  padding: var(--space-1) var(--space-2);
   font-size: var(--font-meta);
   font-family: inherit;
   color: var(--muted);
@@ -2637,8 +2643,9 @@ button.tl-photo-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  height: 36px;
+  /* 高さは 32px = 4x baseline に揃える */
+  min-width: 32px;
+  height: 32px;
   font-size: var(--font-body);
   color: var(--muted);
   border-radius: 4px;
@@ -2660,7 +2667,7 @@ button.tl-photo-cell {
   align-items: center;
   justify-content: center;
   min-width: 24px;
-  height: 36px;
+  height: 32px;
   font-size: var(--font-body);
   color: var(--muted);
 }
@@ -3201,8 +3208,10 @@ button.tl-photo-cell {
   }
 
   /* モバイルのリスト展開: order で並び替え（タグ→写真→本文） */
+  /* デスクトップの explicit grid-row をリセット */
   .works-list-open-tags {
     grid-column: 1 / -1 !important;
+    grid-row: auto !important;
     order: 1;
     display: flex;
     flex-wrap: wrap;
@@ -3215,6 +3224,7 @@ button.tl-photo-cell {
 
   .works-list-media {
     grid-column: 1 / -1;
+    grid-row: auto !important;
     order: 2;
     align-self: start;
     justify-self: stretch;
@@ -3235,6 +3245,7 @@ button.tl-photo-cell {
 
   .works-list-body {
     grid-column: 1 / -1;
+    grid-row: auto !important;
     order: 3;
     display: block !important;
     max-width: none !important;
