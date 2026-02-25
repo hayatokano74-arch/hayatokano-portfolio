@@ -1137,7 +1137,7 @@ button {
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
   align-items: center;
-  margin-top: var(--space-9);
+  margin-top: var(--space-7);
   min-height: var(--space-10);
 }
 
@@ -1153,13 +1153,13 @@ button {
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
   align-items: end;
-  margin-top: var(--space-6);
+  margin-top: var(--space-7);
   min-height: var(--space-8);
 }
 
 /* カテゴリリンク: 左側。カテゴリが増えても折り返しで対応 */
 .header-category-links {
-  grid-column: 1 / span 8;
+  grid-column: 1 / span 10;
   display: flex;
   flex-wrap: wrap;
   gap: var(--grid-gutter);
@@ -1167,18 +1167,18 @@ button {
   align-items: center;
 }
 
-/* Grid/Listトグル: カラム9-10に配置 */
+/* Grid/Listトグル: カラム11に配置 */
 .works-view-toggle {
-  grid-column: 9 / span 2;
+  grid-column: 11;
   display: flex;
   align-items: center;
   justify-self: start;
 }
 
-/* 検索窓: カラム11-12に配置 */
+/* 検索窓: カラム12に配置、幅をカラムに合わせる */
 .header-search {
-  grid-column: 11 / -1;
-  justify-self: end;
+  grid-column: 12;
+  width: 100%;
 }
 
 /* ── Works リストサマリー: 12カラムグリッド ── */

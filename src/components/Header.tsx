@@ -185,7 +185,7 @@ const searchInputStyle = {
 
 function SearchPlaceholder() {
   return (
-    <div className="header-search" style={{ width: 140 }}>
+    <div className="header-search">
       <div style={{ ...searchInputStyle, color: "var(--muted)" }}>search</div>
     </div>
   );
@@ -213,7 +213,7 @@ function SearchInput() {
   }, [router, pathname, sp]);
 
   return (
-    <div className="header-search" style={{ width: 140 }}>
+    <div className="header-search">
       <input
         type="text"
         value={query}

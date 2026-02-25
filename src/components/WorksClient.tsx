@@ -28,7 +28,7 @@ export function WorksClient<T extends WorkLike>({
 }) {
   const detailHref = (slug: string) => `${basePath}/${slug}${detailQuery}`;
   return (
-    <div style={{ marginTop: "var(--space-6)" }}>
+    <div style={{ marginTop: "var(--space-7)" }}>
       {view === "grid" ? (
         <WorksGrid works={works} detailHref={detailHref} showDetails={basePath === "/me-no-hoshi"} />
       ) : (
