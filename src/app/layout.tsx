@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_JP } from "next/font/google";
+import { IBM_Plex_Sans_JP } from "next/font/google";
 import { ThemeScript } from "@/components/ThemeToggle";
 import { GridDebugOverlay } from "@/components/GridDebugOverlay";
 import "./globals.css";
 
-/* 欧文: Inter（クリーン、モダン） */
-const inter = Inter({
+/* 和文: IBM Plex Sans JP（合理的・技術的） */
+const ibmPlexSansJP = IBM_Plex_Sans_JP({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
-});
-
-/* 和文: Noto Sans JP */
-const notoSansJP = Noto_Sans_JP({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-noto",
-  weight: ["400", "500", "600", "700", "900"],
+  variable: "--font-jp",
+  weight: ["400", "500", "600", "700"],
 });
 
 const siteName = "Hayato Kano";
@@ -44,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`} suppressHydrationWarning>
+    <html lang="ja" className={ibmPlexSansJP.variable} suppressHydrationWarning>
       <head>
         {/* 画像ドメインへの接続を事前確立（DNS + TCP + TLS で 100-300ms 短縮） */}
         <link rel="preconnect" href="https://wp.hayatokano.com" />
