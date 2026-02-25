@@ -23,7 +23,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   const tableRows = post.details.filter((row) => row.value);
 
   return (
-    <section className="me-no-hoshi-detail" style={{ marginTop: "var(--space-10)" }}>
+    <section className="me-no-hoshi-detail" style={{ marginTop: "var(--space-7)" }}>
       <div className="me-no-hoshi-meta-column">
         <h1 style={{ margin: 0, fontSize: 44, lineHeight: 1, fontWeight: 700 }}>{post.title}</h1>
 
