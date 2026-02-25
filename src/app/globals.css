@@ -3183,7 +3183,7 @@ button.tl-photo-cell {
 
   .header-title-row {
     grid-template-columns: 1fr auto !important;
-    margin-top: var(--space-10) !important;
+    margin-top: var(--v-row-gap) !important;
     min-height: 0 !important;
   }
 
@@ -3205,7 +3205,7 @@ button.tl-photo-cell {
   .header-category-row {
     grid-template-columns: 1fr !important;
     margin-top: var(--v-row-gap) !important;
-    row-gap: var(--space-4);
+    row-gap: var(--v-row-gap);
   }
 
   .header-category-links {
