@@ -74,7 +74,7 @@
   --color-success-bg: #1a7a3a22;
 
   /* ── ページシェル余白（Fluid） ── */
-  --pad-x: var(--space-6);
+  --pad-x: var(--space-5);
   --pad-y: var(--space-9);
 }
 
