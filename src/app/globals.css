@@ -8,8 +8,8 @@
   --bg-subtle: #e0e0e0;
   --fg: #141414;
   --muted: #9a9a9a;
-  --line: #2d2d2d;
-  --line-light: #d2d2d2;
+  --line: var(--fg);
+  --line-light: var(--fg);
   --accent: #0066cc;
   --media-bg: #e2e2e2;
 
@@ -84,8 +84,8 @@
   --bg-subtle: #242424;
   --fg: #e8e8e8;
   --muted: #888;
-  --line: #3a3a3a;
-  --line-light: #3a3a3a;
+  --line: var(--fg);
+  --line-light: var(--fg);
   --accent: #4d9fff;
   --media-bg: #222;
   --color-success: #6fcf97;
