@@ -3163,7 +3163,7 @@ button.tl-photo-cell {
 @media (max-width: 900px) {
   :root {
     --pad-x: var(--space-4);
-    --pad-y: var(--space-7);
+    --pad-y: var(--space-5);
   }
 
   /* ── ヘッダー ── */
