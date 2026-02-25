@@ -75,7 +75,7 @@
 
   /* ── ページシェル余白（Fluid） ── */
   --pad-x: var(--space-5);
-  --pad-y: var(--space-9);
+  --pad-y: var(--space-7);
 }
 
 /* ── ダークモード ── */
