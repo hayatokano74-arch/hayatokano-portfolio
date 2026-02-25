@@ -574,12 +574,12 @@ button {
 /* ブランド名: 12カラムの1-4列目 */
 .header-brand-name {
   grid-column: 1 / span 4;
-  font-size: 28px;
-  font-weight: 900;
+  font-size: var(--font-body);
+  font-weight: 700;
   line-height: 1;
   color: var(--fg);
   text-decoration: none;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.03em;
 }
 
 /* デスクトップナビ: space-betweenで項目を均等配分、gapなしで狭い画面でも収まる */
@@ -615,7 +615,7 @@ button {
 /* アクティブインジケーター: 削除済み（ドットはテーマ切替に移動） */
 
 .header-nav-num {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 400;
   letter-spacing: 0.02em;
   opacity: 0.5;
@@ -627,7 +627,7 @@ button {
 }
 
 .header-nav-label {
-  font-size: clamp(11px, 1.1vw, var(--font-body));
+  font-size: var(--font-body);
   font-weight: 500;
   letter-spacing: 0.03em;
   line-height: 1;

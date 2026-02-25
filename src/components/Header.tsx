@@ -114,7 +114,7 @@ export function Header({
         <div className="header-title-row">
           <div className="header-title-left" style={{ gap: "var(--space-7)" }}>
             {showTitleRow ? (
-              <h1 style={{ fontSize: "var(--font-heading)", lineHeight: 1, fontWeight: 700, margin: 0 }}>{title}</h1>
+              <h1 style={{ fontSize: 28, lineHeight: 1, fontWeight: 700, margin: 0 }}>{title}</h1>
             ) : null}
 
             {showWorksToggle ? (
