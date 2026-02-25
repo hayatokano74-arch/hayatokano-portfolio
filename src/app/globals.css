@@ -998,8 +998,9 @@ button {
   border-top: 1px solid var(--line-light);
 }
 
+/* is-first: タイトル(44px) + space-10 = DETAILSの開始位置に揃える */
 .me-no-hoshi-section.is-first {
-  margin-top: 0;
+  margin-top: calc(44px + var(--space-10));
   padding-top: 0;
   border-top: 0;
 }
@@ -3704,6 +3705,10 @@ button.tl-photo-cell {
   .me-no-hoshi-section {
     margin-top: var(--space-7);
     padding-top: var(--space-4);
+  }
+
+  .me-no-hoshi-section.is-first {
+    margin-top: 0 !important;
   }
 
   /* Garden モバイル */

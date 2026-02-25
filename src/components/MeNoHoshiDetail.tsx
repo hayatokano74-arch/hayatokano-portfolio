@@ -25,9 +25,9 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   return (
     <section className="me-no-hoshi-detail" style={{ marginTop: "var(--space-10)" }}>
       <div className="me-no-hoshi-meta-column">
-        <h1 style={{ margin: 0, fontSize: "var(--font-heading)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{post.title}</h1>
+        <h1 style={{ margin: 0, fontSize: 44, lineHeight: 1, fontWeight: 700 }}>{post.title}</h1>
 
-        <div style={{ marginTop: "var(--space-10)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", letterSpacing: "0.2em" }}>DETAILS</div>
+        <div style={{ marginTop: "var(--space-10)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.16em", color: "var(--muted)" }}>DETAILS</div>
 
         <div style={{ marginTop: "var(--space-2)", borderTop: "1px solid var(--line-light)" }}>
           {tableRows.map((row) => (
