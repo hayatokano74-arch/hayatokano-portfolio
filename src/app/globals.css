@@ -1158,7 +1158,7 @@ button {
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
   align-items: end;
-  margin-top: var(--space-4);
+  margin-top: var(--space-6);
   min-height: var(--space-8);
 }
 
