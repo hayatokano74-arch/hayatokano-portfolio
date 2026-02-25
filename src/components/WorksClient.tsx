@@ -280,9 +280,11 @@ function WorksList<T extends WorkLike>({
                     justifyContent: "flex-start",
                   }}
                 >
-                  <Link className="action-link" href={detailHref(w.slug)} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    View All
-                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 10L10 2M10 2H4M10 2v6" /></svg>
+                  <Link className="action-link" href={detailHref(w.slug)}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      View All
+                      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 10L10 2M10 2H4M10 2v6" /></svg>
+                    </span>
                   </Link>
                 </div>
               </div>
