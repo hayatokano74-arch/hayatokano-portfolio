@@ -1162,16 +1162,26 @@ button {
   min-height: var(--space-8);
 }
 
-/* カテゴリリンク: グリッドのガターに合わせた間隔で可変数のアイテムに対応 */
+/* カテゴリリンク: 左側。カテゴリが増えても折り返しで対応 */
 .header-category-links {
-  grid-column: 1 / -1;
+  grid-column: 1 / span 8;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--grid-gutter);
+  row-gap: var(--space-2);
   align-items: center;
 }
 
+/* カテゴリ行の右側: Grid/List + search をまとめる */
+.header-category-right {
+  grid-column: 9 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--grid-gutter);
+}
+
 .header-search {
-  grid-column: 11 / -1;
   justify-self: end;
 }
 
@@ -3201,6 +3211,11 @@ button.tl-photo-cell {
     flex-wrap: wrap;
     row-gap: var(--space-2);
     column-gap: var(--space-4);
+    justify-content: flex-start;
+  }
+
+  .header-category-right {
+    grid-column: 1 / -1;
     justify-content: flex-start;
   }
 
