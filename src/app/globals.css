@@ -3642,14 +3642,21 @@ button.tl-photo-cell {
 
   .work-detail-bottom {
     display: flex !important;
-    flex-direction: column;
-    align-items: stretch !important;
+    flex-wrap: wrap;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
     gap: var(--space-3);
   }
 
-  .work-detail-bottom > * {
+  .work-detail-bottom > *:first-child {
     grid-column: unset !important;
-    width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .work-detail-bottom > .work-detail-counter {
+    flex: 0 0 auto;
+    width: auto !important;
   }
 
   .work-detail-overlay-grid {
