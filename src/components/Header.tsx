@@ -140,32 +140,30 @@ export function Header({
             })}
           </div>
 
-          <div className="header-category-right">
-            {showWorksToggle ? (
-              <div className="works-view-toggle" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
-                <Link
-                  href={worksGridHref}
-                  className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
-                  style={{ color: view === "grid" ? "var(--fg)" : "var(--muted)" }}
-                >
-                  Grid
-                </Link>
-                <Link
-                  href={worksListHref}
-                  className={`${view === "list" ? "underline-active" : ""} action-link`.trim()}
-                  style={{ color: view === "list" ? "var(--fg)" : "var(--muted)" }}
-                >
-                  List
-                </Link>
-              </div>
-            ) : null}
+          {showWorksToggle ? (
+            <div className="works-view-toggle" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
+              <Link
+                href={worksGridHref}
+                className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
+                style={{ color: view === "grid" ? "var(--fg)" : "var(--muted)" }}
+              >
+                Grid
+              </Link>
+              <Link
+                href={worksListHref}
+                className={`${view === "list" ? "underline-active" : ""} action-link`.trim()}
+                style={{ color: view === "list" ? "var(--fg)" : "var(--muted)" }}
+              >
+                List
+              </Link>
+            </div>
+          ) : null}
 
-            {showSearch ? (
-              <Suspense fallback={<SearchPlaceholder />}>
-                <SearchInput />
-              </Suspense>
-            ) : null}
-          </div>
+          {showSearch ? (
+            <Suspense fallback={<SearchPlaceholder />}>
+              <SearchInput />
+            </Suspense>
+          ) : null}
         </div>
       ) : null}
     </header>

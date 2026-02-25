@@ -1147,11 +1147,6 @@ button {
   align-items: center;
 }
 
-.works-view-toggle {
-  display: flex;
-  align-items: center;
-}
-
 /* ── ヘッダーカテゴリ行: 12カラムグリッド ── */
 .header-category-row {
   display: grid;
@@ -1172,16 +1167,17 @@ button {
   align-items: center;
 }
 
-/* カテゴリ行の右側: Grid/List + search をまとめる */
-.header-category-right {
-  grid-column: 9 / -1;
+/* Grid/Listトグル: カラム9-10に配置 */
+.works-view-toggle {
+  grid-column: 9 / span 2;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--grid-gutter);
+  justify-self: start;
 }
 
+/* 検索窓: カラム11-12に配置 */
 .header-search {
+  grid-column: 11 / -1;
   justify-self: end;
 }
 
@@ -3214,9 +3210,9 @@ button.tl-photo-cell {
     justify-content: flex-start;
   }
 
-  .header-category-right {
+  .works-view-toggle {
     grid-column: 1 / -1;
-    justify-content: flex-start;
+    justify-self: start;
   }
 
   .header-search {
@@ -3316,11 +3312,6 @@ button.tl-photo-cell {
 
   .work-grid-item {
     grid-column: 1 / -1;
-  }
-
-  .works-view-toggle {
-    font-size: 16px !important;
-    margin-left: auto;
   }
 
   /* ── Works リスト: サマリー ── */
