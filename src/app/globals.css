@@ -3204,7 +3204,7 @@ button.tl-photo-cell {
 
   .header-category-row {
     grid-template-columns: 1fr !important;
-    margin-top: var(--space-6) !important;
+    margin-top: var(--v-row-gap) !important;
     row-gap: var(--space-4);
   }
 
@@ -3680,7 +3680,7 @@ button.tl-photo-cell {
   .me-no-hoshi-detail {
     grid-template-columns: 1fr !important;
     gap: var(--space-6);
-    margin-top: var(--space-7) !important;
+    /* ヘッダー→コンテンツのギャップは .header-root の margin-bottom で統一管理 */
   }
 
   .me-no-hoshi-meta-column,
