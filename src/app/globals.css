@@ -1252,30 +1252,21 @@ button {
   grid-column: 1 / span 2;
 }
 
-/* works-list-body: subgrid で内部テーブルがカラム線に揃う */
+/* タグ: デスクトップではbodyと同じカラム位置 */
+.works-list-open-tags {
+  grid-column: 3 / span 5;
+  min-width: 0;
+}
+
+/* works-list-body: ディテール+抜粋+View All */
 .works-list-body {
   grid-column: 3 / span 5;
-  display: grid;
-  grid-template-columns: subgrid;
   align-self: start;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.works-list-body > * {
-  grid-column: 1 / -1;
-}
-
-/* detail-content は通常ブロック（目の星のカスタム詳細がレイアウト崩れしないように） */
-.works-list-detail-content {
-  grid-column: 1 / -1;
-}
-
-/* リスト内テーブル: 親のsubgridを継承しつつ、各行は横並び(ラベル左・値右) */
-.works-list-body .work-details-table {
-  grid-column: 1 / -1;
-}
-
+/* リスト内テーブル: 各行は横並び(ラベル左・値右) */
 .works-list-body .work-details-row {
   grid-template-columns: 112px minmax(0, 1fr);
   gap: var(--space-2);
@@ -3365,19 +3356,10 @@ button.tl-photo-cell {
     display: none;
   }
 
-  .works-list-body {
-    grid-column: 1;
-    display: block !important;
-    max-width: none !important;
-  }
-
-  .works-list-body .work-details-row {
-    grid-template-columns: 96px minmax(0, 1fr) !important;
-    gap: var(--space-2) !important;
-  }
-
+  /* モバイルのリスト展開: order で並び替え（タグ→写真→本文） */
   .works-list-open-tags {
-    grid-column: 1 !important;
+    grid-column: 1 / -1 !important;
+    order: 1;
     display: flex;
     flex-wrap: wrap;
     white-space: normal;
@@ -3387,21 +3369,9 @@ button.tl-photo-cell {
     display: none;
   }
 
-  .works-list-excerpt {
-    font-size: 12px !important;
-    line-height: var(--lh-relaxed) !important;
-    max-width: 100% !important;
-  }
-
-  .works-list-view {
-    margin-top: var(--space-3) !important;
-    margin-bottom: var(--space-3) !important;
-    font-size: var(--font-body) !important;
-    grid-column: 1 !important;
-  }
-
   .works-list-media {
-    grid-column: 1;
+    grid-column: 1 / -1;
+    order: 2;
     align-self: start;
     justify-self: stretch;
     width: 100%;
@@ -3417,6 +3387,31 @@ button.tl-photo-cell {
     max-width: 100% !important;
     height: auto !important;
     margin-left: 0 !important;
+  }
+
+  .works-list-body {
+    grid-column: 1 / -1;
+    order: 3;
+    display: block !important;
+    max-width: none !important;
+  }
+
+  .works-list-body .work-details-row {
+    grid-template-columns: 96px minmax(0, 1fr) !important;
+    gap: var(--space-2) !important;
+  }
+
+  .works-list-excerpt {
+    font-size: 12px !important;
+    line-height: var(--lh-relaxed) !important;
+    max-width: 100% !important;
+  }
+
+  .works-list-view {
+    margin-top: var(--space-3) !important;
+    margin-bottom: var(--space-3) !important;
+    font-size: var(--font-body) !important;
+    grid-column: 1 !important;
   }
 
   /* ── Text リスト ── */

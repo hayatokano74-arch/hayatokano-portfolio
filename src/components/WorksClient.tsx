@@ -234,34 +234,17 @@ function WorksList<T extends WorkLike>({
               </div>
             </summary>
 
-            {/* ディテール行: 12カラムグリッド */}
+            {/* ディテール行: 12カラムグリッド
+                モバイルでは order で並び替え: タグ→写真→本文(ディテール+抜粋+View All) */}
             <div className="works-list-detail">
               <div className="works-list-spacer" />
-              <div className="works-list-body">
-                {w.tags.length > 0 && (
-                <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-4)" }}>
-                  {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
-                </div>
-                )}
-                {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
-                <div className="works-list-excerpt" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap" }}>{truncateText(w.excerpt, excerptMaxLength)}</div>
-                <div
-                  className="works-list-view"
-                  style={{
-                    marginTop: "var(--space-3)",
-                    marginBottom: "var(--space-3)",
-                    fontSize: "var(--font-body)",
-                    lineHeight: "var(--lh-normal)",
-                    fontWeight: 700,
-                    display: "flex",
-                    justifyContent: "flex-start",
-                  }}
-                >
-                  <Link className="action-link" href={detailHref(w.slug)}>
-                    View All ↗
-                  </Link>
-                </div>
+              {/* タグ: モバイルで order: 1 */}
+              {w.tags.length > 0 && (
+              <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
+                {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
               </div>
+              )}
+              {/* 写真: モバイルで order: 2 */}
               <div className={`works-list-media ${isPortraitLead ? "is-portrait" : ""}`.trim()}>
                 <Link href={detailHref(w.slug)} className="action-link" style={{ display: "block" }}>
                   {thumbSrc ? (
@@ -280,6 +263,27 @@ function WorksList<T extends WorkLike>({
                     <div className="list-media-img" style={{ aspectRatio: "16 / 10" }} />
                   )}
                 </Link>
+              </div>
+              {/* 本文(ディテール+抜粋+View All): モバイルで order: 3 */}
+              <div className="works-list-body">
+                {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
+                <div className="works-list-excerpt" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap" }}>{truncateText(w.excerpt, excerptMaxLength)}</div>
+                <div
+                  className="works-list-view"
+                  style={{
+                    marginTop: "var(--space-3)",
+                    marginBottom: "var(--space-3)",
+                    fontSize: "var(--font-body)",
+                    lineHeight: "var(--lh-normal)",
+                    fontWeight: 700,
+                    display: "flex",
+                    justifyContent: "flex-start",
+                  }}
+                >
+                  <Link className="action-link" href={detailHref(w.slug)}>
+                    View All <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginLeft: 4, verticalAlign: "middle" }}><path d="M2 10L10 2M10 2H4M10 2v6" /></svg>
+                  </Link>
+                </div>
               </div>
             </div>
           </details>
