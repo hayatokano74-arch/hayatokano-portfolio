@@ -56,6 +56,7 @@
     btnSidebarToggle: $('#btn-sidebar-toggle'),
     btnMobileBack: $('#btn-mobile-back'),
     btnPhoto: $('#btn-photo'),
+    btnPreviewToggle: $('#btn-preview-toggle'),
     fileInput: $('#file-input'),
     tabs: $$('.tab'),
     toolbar: $('#md-toolbar'),
@@ -164,6 +165,11 @@
     /* 内部リンクボタン — [[ウィキリンク]] */
     const btnLink = document.getElementById('btn-link')
     if (btnLink) btnLink.addEventListener('click', insertWikiLink)
+
+    /* プレビュートグル（モバイル用、ヘッダー内のボタン） */
+    if (dom.btnPreviewToggle) {
+      dom.btnPreviewToggle.addEventListener('click', togglePreview)
+    }
 
     /* 写真ボタン */
     dom.btnPhoto.addEventListener('click', () => dom.fileInput.click())
@@ -613,6 +619,22 @@
       dom.toolbar.style.display = 'none'
       renderPreview()
     }
+
+    /* プレビュートグルボタンのラベル更新 */
+    if (dom.btnPreviewToggle) {
+      dom.btnPreviewToggle.textContent = tab === 'write' ? 'プレビュー' : '編集'
+      dom.btnPreviewToggle.classList.toggle('active', tab === 'preview')
+    }
+
+    state.currentTab = tab
+  }
+
+  /**
+   * プレビュートグル（モバイル用）
+   */
+  function togglePreview() {
+    const next = (state.currentTab || 'write') === 'write' ? 'preview' : 'write'
+    switchTab(next)
   }
 
   /* ============================================

@@ -132,20 +132,24 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
     <!-- ヘッダー -->
     <div class="editor-header">
       <!-- モバイル用: 戻るボタン（サイドバーを開く） -->
-      <button id="btn-mobile-back" class="mobile-back-btn" title="戻る">‹ 一覧</button>
+      <button id="btn-mobile-back" class="mobile-back-btn" title="一覧に戻る">
+        <span class="back-chevron">‹</span>
+        <span class="back-label">一覧</span>
+      </button>
       <!-- デスクトップ用: サイドバートグル -->
       <button id="btn-sidebar-toggle" class="editor-btn sidebar-toggle">☰</button>
       <div class="editor-meta">
-        <input id="post-title" type="text" placeholder="タイトル（任意）" class="title-input">
+        <input id="post-title" type="text" placeholder="タイトル" class="title-input">
         <span id="post-date" class="meta-date"></span>
         <span id="post-status" class="meta-status">下書き</span>
       </div>
       <div class="editor-actions">
+        <button id="btn-preview-toggle" class="btn-preview-toggle" title="プレビュー切替">プレビュー</button>
         <button id="btn-publish" class="btn-publish">公開</button>
       </div>
     </div>
 
-    <!-- エディタ / プレビュー切替 -->
+    <!-- エディタ / プレビュー切替（デスクトップ用） -->
     <div class="editor-tabs">
       <button class="tab active" data-tab="write">Markdown</button>
       <button class="tab" data-tab="preview">プレビュー</button>

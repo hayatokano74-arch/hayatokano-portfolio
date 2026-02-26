@@ -809,24 +809,34 @@ input {
 }
 
 /* ============================================
- * モバイル対応 — Bear/Ulysses風 全画面パネル切替
+ * デスクトップ: モバイル専用要素を非表示
+ * ============================================ */
+.mobile-back-btn {
+  display: none;
+}
+
+.btn-preview-toggle {
+  display: none;
+}
+
+/* ============================================
+ * モバイル対応 — Bear/iA Writer風 全画面パネル切替
  * ============================================ */
 @media (max-width: 768px) {
 
-  /* --- サイドバー: 全画面オーバーレイ --- */
+  /* ===========================================
+   * サイドバー: 全画面パネル
+   * =========================================== */
   .sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     width: 100%;
     min-width: 0;
     z-index: 50;
     background: var(--bg);
     border-right: none;
     transform: translateX(0);
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.25s ease, opacity 0.25s ease;
   }
 
   .sidebar.hidden {
@@ -835,12 +845,11 @@ input {
     pointer-events: none;
   }
 
-  /* バックドロップ不要（全画面なので）だが互換のため残す */
   .sidebar-backdrop {
     display: none !important;
   }
 
-  /* --- サイドバーヘッダー: モバイル最適化 --- */
+  /* サイドバーヘッダー */
   .sidebar-header {
     padding: 12px 16px;
     min-height: 44px;
@@ -850,150 +859,189 @@ input {
     font-size: 15px;
   }
 
-  /* --- フォルダツリー: コンパクト化 --- */
+  /* フォルダツリー */
   .folder-tree {
-    max-height: 160px;
+    max-height: 180px;
     padding: 4px 0;
   }
 
   .folder-item {
-    padding: 5px 14px;
-    font-size: 12px;
-    gap: 6px;
-    min-height: 32px;
+    padding: 8px 16px;
+    font-size: 14px;
+    gap: 8px;
+    min-height: 40px;
   }
 
-  .folder-item .folder-icon {
-    font-size: 12px;
-  }
+  .folder-item .folder-icon { font-size: 14px; }
+  .folder-item .folder-count { font-size: 11px; }
 
-  .folder-item .folder-count {
-    font-size: 10px;
-  }
+  .folder-level-1 { padding-left: 28px; }
+  .folder-level-2 { padding-left: 40px; }
+  .folder-level-3 { padding-left: 52px; }
 
-  /* 階層インデント: モバイル用に縮小 */
-  .folder-level-1 { padding-left: 26px; }
-  .folder-level-2 { padding-left: 38px; }
-  .folder-level-3 { padding-left: 50px; }
-
-  /* --- 投稿リスト: コンパクト化 --- */
+  /* 投稿リスト */
   .post-item {
-    padding: 8px 14px;
+    padding: 10px 16px;
   }
 
   .post-item-title {
-    font-size: 13px;
-    margin-bottom: 1px;
+    font-size: 14px;
+    margin-bottom: 2px;
   }
 
   .post-item-excerpt {
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.3;
   }
 
   .post-item-date {
-    font-size: 10px;
-    margin-top: 2px;
+    font-size: 11px;
+    margin-top: 3px;
   }
 
-  /* --- サイドバーフッター --- */
+  /* サイドバーフッター */
   .sidebar-footer {
-    padding: 8px 14px;
-    /* iPhoneのホームバー対応 */
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* --- エディタヘッダー: 最小化 --- */
+  /* ===========================================
+   * エディタ: ナビゲーションバー（iOS風）
+   * =========================================== */
   .editor-header {
-    padding: 6px 10px;
-    min-height: 40px;
-    gap: 8px;
+    padding: 0 8px;
+    min-height: 44px;
+    gap: 4px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 5;
   }
 
-  /* モバイル戻るボタン — テキスト付きで目立たせる */
+  /* 戻るボタン: iOS風ナビゲーションリンク */
   .mobile-back-btn {
     display: flex;
-    height: 32px;
     align-items: center;
-    justify-content: center;
-    font-size: 13px;
+    height: 44px;
+    padding: 0 4px;
     color: var(--accent);
-    border-radius: var(--radius);
-    transition: background var(--transition);
     flex-shrink: 0;
-    padding: 0 8px;
-    gap: 2px;
+    gap: 0;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .mobile-back-btn:hover {
-    background: var(--sidebar-hover);
+  .mobile-back-btn .back-chevron {
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+    margin-top: -2px;
   }
 
-  /* デスクトップのサイドバートグルを非表示（戻るボタンに置換） */
+  .mobile-back-btn .back-label {
+    font-size: 15px;
+    font-weight: 400;
+  }
+
+  .mobile-back-btn:active {
+    opacity: 0.5;
+  }
+
+  /* デスクトップのサイドバートグルを非表示 */
   .sidebar-toggle {
     display: none;
   }
 
+  /* タイトル入力 */
   .title-input {
-    font-size: 13px;
+    font-size: 14px;
   }
 
+  /* 日付非表示（スペース節約） */
   .meta-date {
     display: none;
   }
 
+  /* ステータスバッジ非表示（スペース節約） */
   .meta-status {
-    font-size: 10px;
-    padding: 1px 6px;
+    display: none;
+  }
+
+  /* アクションボタン */
+  .editor-actions {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  /* プレビュートグル: モバイルのみ表示 */
+  .btn-preview-toggle {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-preview-toggle.active {
+    background: var(--accent);
+    color: #fff;
   }
 
   .btn-publish {
     padding: 5px 12px;
     font-size: 12px;
+    border-radius: 12px;
   }
 
-  /* --- タブ: コンパクト化 --- */
+  /* タブバー: モバイルでは非表示（プレビュートグルに置換） */
   .editor-tabs {
-    padding: 0 10px;
+    display: none;
   }
 
-  .tab {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  /* --- テキストエリア: 画面最大化 --- */
+  /* ===========================================
+   * テキストエリア: 執筆スペース最大化
+   * =========================================== */
   .editor-textarea {
-    padding: 12px 16px;
+    padding: 16px 18px;
     padding-bottom: 40vh;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.8;
   }
 
   .preview-area {
-    padding: 12px 16px;
-    font-size: 15px;
+    padding: 16px 18px;
+    font-size: 16px;
   }
 
-  /* --- マークダウンツールバー: コンパクト化 --- */
+  /* ===========================================
+   * マークダウンツールバー: ヘッダーと視覚的に区別
+   * =========================================== */
   .md-toolbar {
-    padding: 4px 6px;
-    gap: 1px;
+    padding: 6px 8px;
+    gap: 3px;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--border);
   }
 
   .md-toolbar button {
-    min-width: 30px;
-    height: 28px;
-    font-size: 13px;
+    min-width: 34px;
+    height: 32px;
+    font-size: 14px;
+    border-radius: 6px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+  }
+
+  .md-toolbar button:active {
+    background: var(--sidebar-active);
+    transform: scale(0.95);
   }
 }
 
-/* --- デスクトップでは戻るボタン非表示 --- */
-.mobile-back-btn {
-  display: none;
-}
-
-/* セーフエリア（iPhone ノッチ対応） */
+/* セーフエリア（iPhone ノッチ / ホームバー対応） */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .md-toolbar {
     padding-bottom: calc(6px + env(safe-area-inset-bottom));
