@@ -101,21 +101,24 @@
     /* モーダル */
     createModal()
 
+    /* フォルダピッカー */
+    createFolderPicker()
+
     /* イベント登録 */
     bindEvents()
 
     /* データ読み込み */
     await Promise.all([loadFolders(), loadPosts()])
 
-    /* モバイル: 初期状態でサイドバーを非表示にし、エディタを前面に */
+    /* モバイル: 初期状態でサイドバー（フォルダ＆投稿一覧）を表示 */
     if (window.innerWidth <= 768) {
-      dom.sidebar.classList.add('hidden')
+      dom.sidebar.classList.remove('hidden')
     }
 
-    /* 最新の投稿を選択 */
-    if (state.posts.length > 0) {
+    /* デスクトップ: 最新の投稿を選択 */
+    if (window.innerWidth > 768 && state.posts.length > 0) {
       selectPost(state.posts[0].id)
-    } else {
+    } else if (window.innerWidth > 768) {
       newPost()
     }
   }
@@ -423,6 +426,13 @@
       `
 
       el.addEventListener('click', () => selectPost(post.id))
+
+      /* 右クリック（モバイル: 長押し）→ コンテキストメニュー */
+      el.addEventListener('contextmenu', (e) => {
+        e.preventDefault()
+        showPostContextMenu(e, post)
+      })
+
       dom.postList.appendChild(el)
     })
   }
@@ -919,17 +929,21 @@
     const menu = $('#context-menu')
     menu.innerHTML = `
       <button class="context-menu-item" data-action="add-sub">サブフォルダを追加</button>
+      <button class="context-menu-item" data-action="move">移動</button>
       <button class="context-menu-item" data-action="rename">名前を変更</button>
       <div class="context-menu-sep"></div>
       <button class="context-menu-item danger" data-action="delete">削除</button>
     `
 
-    menu.style.left = e.clientX + 'px'
-    menu.style.top = e.clientY + 'px'
+    positionContextMenu(menu, e.clientX, e.clientY)
     menu.classList.add('show')
 
     menu.querySelector('[data-action="add-sub"]').onclick = () => {
       promptNewFolder(folder.id)
+    }
+
+    menu.querySelector('[data-action="move"]').onclick = () => {
+      moveFolder(folder.id)
     }
 
     menu.querySelector('[data-action="rename"]').onclick = async () => {
@@ -1026,6 +1040,233 @@
           cleanup()
           resolve(null)
         }
+      }
+    })
+  }
+
+  /* ============================================
+   * フォルダピッカー（移動先選択モーダル）
+   * ============================================ */
+  function createFolderPicker() {
+    const overlay = document.createElement('div')
+    overlay.className = 'modal-overlay'
+    overlay.id = 'folder-picker-overlay'
+    overlay.innerHTML = `
+      <div class="modal-box folder-picker-box">
+        <div class="modal-title" id="folder-picker-title">移動先を選択</div>
+        <div class="folder-picker-list" id="folder-picker-list"></div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" id="folder-picker-cancel">キャンセル</button>
+        </div>
+      </div>
+    `
+    document.body.appendChild(overlay)
+  }
+
+  /**
+   * フォルダ選択モーダルを表示
+   * @param {string} title - モーダルタイトル
+   * @param {number[]} excludeIds - 除外するフォルダID
+   * @param {number} currentId - 現在のフォルダID（ハイライト用）
+   * @returns {Promise<number|null>} 選択されたフォルダID（0=ルート, null=キャンセル）
+   */
+  function showFolderPicker(title, excludeIds = [], currentId = -1) {
+    return new Promise((resolve) => {
+      const overlay = $('#folder-picker-overlay')
+      const titleEl = $('#folder-picker-title')
+      const list = $('#folder-picker-list')
+
+      titleEl.textContent = title
+      list.innerHTML = ''
+
+      function cleanup() {
+        overlay.classList.remove('show')
+        $('#folder-picker-cancel').onclick = null
+      }
+
+      /* 「すべて」= ルートレベル（フォルダなし） */
+      const allItem = document.createElement('div')
+      allItem.className = 'folder-picker-item' + (currentId === 0 ? ' current' : '')
+      allItem.textContent = '📁 すべて（フォルダなし）'
+      allItem.addEventListener('click', () => { cleanup(); resolve(0) })
+      list.appendChild(allItem)
+
+      /* フォルダツリーを描画 */
+      const filteredFolders = state.folders.filter((f) => !excludeIds.includes(f.id))
+      const tree = buildFolderTree(filteredFolders)
+      tree.forEach((folder) => renderPickerNode(folder, 0, list, excludeIds, currentId, resolve, cleanup))
+
+      overlay.classList.add('show')
+
+      $('#folder-picker-cancel').onclick = () => { cleanup(); resolve(null) }
+    })
+  }
+
+  function renderPickerNode(folder, level, container, excludeIds, currentId, resolve, cleanup) {
+    if (excludeIds.includes(folder.id)) return
+
+    const el = document.createElement('div')
+    el.className = 'folder-picker-item' + (folder.id === currentId ? ' current' : '')
+    el.style.paddingLeft = (24 + level * 20) + 'px'
+    el.textContent = '📁 ' + folder.name
+    el.addEventListener('click', () => { cleanup(); resolve(folder.id) })
+    container.appendChild(el)
+
+    if (folder.children) {
+      folder.children.forEach((child) => renderPickerNode(child, level + 1, container, excludeIds, currentId, resolve, cleanup))
+    }
+  }
+
+  /* ============================================
+   * 投稿の削除
+   * ============================================ */
+  async function deletePost(id) {
+    const post = state.posts.find((p) => p.id === id)
+    const name = post?.title || formatDate(post?.date) || '無題'
+    if (!confirm(`「${name}」を削除しますか？\nゴミ箱に移動します。`)) return
+
+    try {
+      const res = await fetch(`${API}/posts.php?id=${id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (data.ok) {
+        showSaveIndicator('削除しました')
+        /* 現在編集中の投稿を削除した場合 */
+        if (state.currentPostId === id) {
+          state.currentPostId = null
+          dom.titleInput.value = ''
+          dom.editor.value = ''
+        }
+        await loadPosts()
+        await loadFolders() /* カウント更新 */
+        /* 次の投稿を選択 */
+        if (state.posts.length > 0) {
+          selectPost(state.posts[0].id)
+        } else {
+          newPost()
+        }
+      } else {
+        alert(data.error || '削除に失敗しました')
+      }
+    } catch (e) {
+      alert('通信エラーが発生しました')
+    }
+  }
+
+  /* ============================================
+   * 投稿の移動（フォルダ間）
+   * ============================================ */
+  async function movePost(id) {
+    /* 現在のフォルダを特定 */
+    const post = state.posts.find((p) => p.id === id)
+    const currentFolder = post?.categories?.find((c) => c !== 52) || 0 /* 52 = Garden親 */
+
+    const folderId = await showFolderPicker('移動先フォルダを選択', [], currentFolder)
+    if (folderId === null) return
+
+    try {
+      const res = await fetch(`${API}/posts.php`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, folder: folderId }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        showSaveIndicator('移動しました')
+        await loadPosts()
+        await loadFolders() /* カウント更新 */
+      } else {
+        alert(data.error || '移動に失敗しました')
+      }
+    } catch (e) {
+      alert('通信エラーが発生しました')
+    }
+  }
+
+  /* ============================================
+   * フォルダの移動（親フォルダ変更）
+   * ============================================ */
+  async function moveFolder(folderId) {
+    /* 自分自身と子孫を除外（循環参照防止） */
+    const excludeIds = [folderId, ...getDescendantIds(folderId)]
+
+    /* 現在の親を特定 */
+    const folder = state.folders.find((f) => f.id === folderId)
+    const currentParent = folder?.parent || 0
+
+    const newParent = await showFolderPicker('移動先の親フォルダを選択', excludeIds, currentParent)
+    if (newParent === null) return
+
+    try {
+      const res = await fetch(`${API}/folders.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'move', id: folderId, parent: newParent }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        showSaveIndicator('フォルダを移動しました')
+        /* 移動先の親を展開 */
+        if (newParent > 0) {
+          if (!state.expandedFolders) state.expandedFolders = new Set()
+          state.expandedFolders.add(newParent)
+        }
+        await loadFolders()
+      } else {
+        alert(data.error || 'フォルダの移動に失敗しました')
+      }
+    } catch (e) {
+      alert('通信エラーが発生しました')
+    }
+  }
+
+  /**
+   * 指定フォルダの子孫IDを全て取得（再帰）
+   */
+  function getDescendantIds(folderId) {
+    const ids = []
+    state.folders.forEach((f) => {
+      if (f.parent === folderId) {
+        ids.push(f.id)
+        ids.push(...getDescendantIds(f.id))
+      }
+    })
+    return ids
+  }
+
+  /* ============================================
+   * 投稿コンテキストメニュー
+   * ============================================ */
+  function showPostContextMenu(e, post) {
+    const menu = $('#context-menu')
+    menu.innerHTML = `
+      <button class="context-menu-item" data-action="move">フォルダに移動</button>
+      <div class="context-menu-sep"></div>
+      <button class="context-menu-item danger" data-action="delete">削除</button>
+    `
+
+    positionContextMenu(menu, e.clientX, e.clientY)
+    menu.classList.add('show')
+
+    menu.querySelector('[data-action="move"]').onclick = () => movePost(post.id)
+    menu.querySelector('[data-action="delete"]').onclick = () => deletePost(post.id)
+  }
+
+  /**
+   * コンテキストメニューの位置を画面内に収める
+   */
+  function positionContextMenu(menu, x, y) {
+    menu.style.left = x + 'px'
+    menu.style.top = y + 'px'
+    menu.classList.add('show')
+
+    /* 画面外にはみ出す場合は調整 */
+    requestAnimationFrame(() => {
+      const rect = menu.getBoundingClientRect()
+      if (rect.right > window.innerWidth) {
+        menu.style.left = (window.innerWidth - rect.width - 8) + 'px'
+      }
+      if (rect.bottom > window.innerHeight) {
+        menu.style.top = (window.innerHeight - rect.height - 8) + 'px'
       }
     })
   }

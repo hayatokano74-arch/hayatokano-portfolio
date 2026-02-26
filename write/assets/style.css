@@ -774,6 +774,41 @@ input {
 }
 
 /* ============================================
+ * フォルダピッカー（移動先選択モーダル）
+ * ============================================ */
+.folder-picker-box {
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.folder-picker-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -24px;
+  max-height: 50vh;
+}
+
+.folder-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.folder-picker-item:hover {
+  background: var(--sidebar-hover);
+}
+
+.folder-picker-item.current {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ============================================
  * モバイル対応 — Bear/Ulysses風 全画面パネル切替
  * ============================================ */
 @media (max-width: 768px) {
@@ -875,17 +910,19 @@ input {
     gap: 8px;
   }
 
-  /* モバイル戻るボタン */
+  /* モバイル戻るボタン — テキスト付きで目立たせる */
   .mobile-back-btn {
     display: flex;
-    width: 32px;
     height: 32px;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 13px;
+    color: var(--accent);
     border-radius: var(--radius);
     transition: background var(--transition);
     flex-shrink: 0;
+    padding: 0 8px;
+    gap: 2px;
   }
 
   .mobile-back-btn:hover {

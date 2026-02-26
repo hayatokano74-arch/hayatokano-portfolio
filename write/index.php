@@ -132,7 +132,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
     <!-- ヘッダー -->
     <div class="editor-header">
       <!-- モバイル用: 戻るボタン（サイドバーを開く） -->
-      <button id="btn-mobile-back" class="mobile-back-btn" title="戻る">‹</button>
+      <button id="btn-mobile-back" class="mobile-back-btn" title="戻る">‹ 一覧</button>
       <!-- デスクトップ用: サイドバートグル -->
       <button id="btn-sidebar-toggle" class="editor-btn sidebar-toggle">☰</button>
       <div class="editor-meta">
