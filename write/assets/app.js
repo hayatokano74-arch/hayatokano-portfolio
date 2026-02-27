@@ -314,17 +314,11 @@
       <span class="folder-count">${folder.count || ''}</span>
     `
 
-    /* トグルクリック → 展開/折畳 */
-    const toggle = el.querySelector('.folder-toggle')
-    if (toggle && hasChildren) {
-      toggle.addEventListener('click', (e) => {
-        e.stopPropagation()
-        toggleFolderExpanded(folder.id)
-      })
-    }
-
-    /* フォルダ名クリック → 投稿フィルター */
+    /* フォルダ全体クリック → 展開/折畳 + 投稿フィルター */
     el.addEventListener('click', () => {
+      if (hasChildren) {
+        toggleFolderExpanded(folder.id)
+      }
       state.currentFolderId = folder.id
       loadPosts()
       renderFolders()
@@ -420,14 +414,24 @@
       const excerpt = (post.content || '').replace(/[#*_`>\[\]!\-]/g, '').substring(0, 60)
 
       el.innerHTML = `
-        <div class="post-item-title">${escapeHtml(title)}</div>
-        <div class="post-item-excerpt">${escapeHtml(excerpt)}</div>
-        <div class="post-item-date">${formatDate(post.date)}${post.status === 'publish' ? ' · 公開済' : ''}</div>
+        <div class="post-item-body">
+          <div class="post-item-title">${escapeHtml(title)}</div>
+          <div class="post-item-excerpt">${escapeHtml(excerpt)}</div>
+          <div class="post-item-date">${formatDate(post.date)}${post.status === 'publish' ? ' · 公開済' : ''}</div>
+        </div>
+        <button class="post-item-more" type="button" title="操作">⋯</button>
       `
 
-      el.addEventListener('click', () => selectPost(post.id))
+      /* テキスト部分クリック → 投稿を選択 */
+      el.querySelector('.post-item-body').addEventListener('click', () => selectPost(post.id))
 
-      /* 右クリック（モバイル: 長押し）→ コンテキストメニュー */
+      /* ⋯ボタン → メニュー表示（スマホ対応） */
+      el.querySelector('.post-item-more').addEventListener('click', (e) => {
+        e.stopPropagation()
+        showPostContextMenu(e, post)
+      })
+
+      /* 右クリック → メニュー（デスクトップ） */
       el.addEventListener('contextmenu', (e) => {
         e.preventDefault()
         showPostContextMenu(e, post)
