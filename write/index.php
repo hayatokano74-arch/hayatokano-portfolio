@@ -74,7 +74,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Garden</title>
-  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/style.css?v=3">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#1a1a1a">
   <link rel="manifest" href="data:application/json,{}">
@@ -132,10 +132,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
     <!-- ヘッダー -->
     <div class="editor-header">
       <!-- モバイル用: 戻るボタン（サイドバーを開く） -->
-      <button id="btn-mobile-back" class="mobile-back-btn" title="一覧に戻る">
-        <span class="back-chevron">‹</span>
-        <span class="back-label">一覧</span>
-      </button>
+      <button id="btn-mobile-back" class="mobile-back-btn" title="一覧に戻る">‹ 一覧</button>
       <!-- デスクトップ用: サイドバートグル -->
       <button id="btn-sidebar-toggle" class="editor-btn sidebar-toggle">☰</button>
       <div class="editor-meta">
@@ -144,14 +141,13 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
         <span id="post-status" class="meta-status">下書き</span>
       </div>
       <div class="editor-actions">
-        <button id="btn-preview-toggle" class="btn-preview-toggle" title="プレビュー切替">プレビュー</button>
-        <button id="btn-publish" class="btn-publish">公開</button>
+        <button id="btn-publish" class="btn-publish" type="button">公開</button>
       </div>
     </div>
 
-    <!-- エディタ / プレビュー切替（デスクトップ用） -->
+    <!-- エディタ / プレビュー切替 -->
     <div class="editor-tabs">
-      <button class="tab active" data-tab="write">Markdown</button>
+      <button class="tab active" data-tab="write">編集</button>
       <button class="tab" data-tab="preview">プレビュー</button>
     </div>
 
@@ -189,7 +185,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   </main>
 </div>
 
-<script src="/assets/app.js"></script>
+<script src="/assets/app.js?v=3"></script>
 <?php endif; ?>
 </body>
 </html>
