@@ -7,6 +7,9 @@ const wpPattern =
 
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    viewTransition: true,
+  },
   images: {
     remotePatterns: [
       ...wpPattern,

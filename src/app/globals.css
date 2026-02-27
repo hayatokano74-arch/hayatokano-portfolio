@@ -101,6 +101,25 @@
   --color-success-bg: #2ecc7133;
 }
 
+/* ── View Transitions（ページ遷移のクロスフェード） ── */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-normal);
+  animation-timing-function: ease;
+}
+
+/* アニメーション不要設定を尊重 */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0s;
+  }
+}
+
 /* スキップナビ（a11y: キーボードユーザー向け、通常は画面外に隠す） */
 .skip-nav {
   position: absolute;
