@@ -264,6 +264,8 @@ body {
   font-size: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* テーマ切替のスムーズなトランジション */
+  transition: background-color var(--duration-slow) ease, color var(--duration-slow) ease;
 }
 
 * {
@@ -284,6 +286,8 @@ button {
   padding: var(--pad-y) var(--pad-x);
   display: flex;
   flex-direction: column;
+  /* テーマ切替トランジション */
+  transition: background-color var(--duration-slow) ease;
 }
 
 /* Works詳細: shellが自前で高さ管理するため、page-shellをviewport内に収める */
@@ -425,10 +429,12 @@ button {
 .footer-link {
   text-decoration: underline;
   text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-thickness var(--duration-fast) ease;
 }
 
 .footer-link:hover {
-  opacity: 0.5;
+  text-decoration-thickness: 2px;
 }
 
 .footer-copy {
@@ -685,12 +691,17 @@ button {
   font-size: 10px;
   font-weight: 400;
   letter-spacing: 0.02em;
-  opacity: 0.5;
+  opacity: 0.4;
   font-variant-numeric: tabular-nums;
+  transition: opacity var(--duration-fast) ease;
+}
+
+.header-nav-item:hover .header-nav-num {
+  opacity: 0.7;
 }
 
 .header-nav-item.is-active .header-nav-num {
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .header-nav-label {
@@ -1269,11 +1280,12 @@ button {
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   padding: var(--space-2) var(--space-5);
-  transition: border-color var(--duration-fast) ease;
+  transition: border-color var(--duration-fast) ease, background-color var(--duration-fast) ease;
 }
 
 .works-list-view .action-link:hover {
   border-color: var(--fg);
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
 }
 
 .works-list-media {
@@ -1399,6 +1411,18 @@ button {
   column-gap: var(--grid-gutter);
   padding-top: var(--space-5);
   padding-bottom: var(--space-6);
+  animation: accord-open var(--duration-normal) ease-out;
+}
+
+@keyframes accord-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .news-accord-spacer {
@@ -1854,6 +1878,16 @@ button.tl-photo-cell {
 @keyframes page-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* 画像の読み込みフェードイン */
+@keyframes img-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+img[loading="lazy"] {
+  animation: img-fade-in var(--duration-slow) ease both;
 }
 
 .page-transition {
