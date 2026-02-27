@@ -397,17 +397,23 @@ button {
   display: flex;
   align-items: baseline;
   gap: var(--space-7);
-  padding-top: var(--space-5);
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
 }
 
-.site-footer-inner a:hover {
-  color: var(--fg);
+.footer-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--muted);
 }
 
-.site-footer-inner span:last-child {
+.footer-link:hover {
+  color: var(--fg);
+  text-decoration-color: var(--fg);
+}
+
+.footer-copy {
   margin-left: auto;
 }
 
