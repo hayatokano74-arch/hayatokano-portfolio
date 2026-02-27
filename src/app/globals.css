@@ -399,18 +399,16 @@ button {
   gap: var(--space-7);
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
-  color: var(--muted);
+  color: var(--fg);
 }
 
 .footer-link {
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: var(--muted);
 }
 
 .footer-link:hover {
-  color: var(--fg);
-  text-decoration-color: var(--fg);
+  opacity: 0.5;
 }
 
 .footer-copy {
