@@ -439,7 +439,12 @@ button {
 
 @media (max-width: 900px) {
   .site-footer-inner {
-    gap: var(--space-5);
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .footer-copy {
+    margin-left: 0;
   }
 }
 
