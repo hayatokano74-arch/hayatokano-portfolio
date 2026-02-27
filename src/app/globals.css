@@ -1010,7 +1010,7 @@ button {
 
 /* ── About: 12カラムグリッド ── */
 .about-layout {
-  margin-top: var(--space-12);
+  margin-top: var(--space-9);
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
@@ -1030,6 +1030,8 @@ button {
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
   justify-self: end;
+  /* テキスト行送り(line-height:2.0)の上端余白と写真の上端を揃える */
+  padding-top: 7px;
 }
 
 /* ── ヘッダータイトル行: 12カラムグリッド ──

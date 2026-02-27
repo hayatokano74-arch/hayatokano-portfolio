@@ -300,16 +300,38 @@ async function fetchFromDropbox(): Promise<GardenFile[]> {
  * ビルド時は Dropbox から取得 → キャッシュファイルに保存。
  */
 export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
-  // 1. ファイルキャッシュがあればそれを使う（ランタイムはここで終了）
+  // 1. WordPress API から Garden カテゴリの投稿を取得
+  let wpFiles: GardenFile[] = [];
+  try {
+    const { fetchGardenFromWP } = await import("./wordpress");
+    wpFiles = await fetchGardenFromWP();
+  } catch (e) {
+    console.log("[Garden] WP取得スキップ:", e);
+  }
+
+  // 2. Dropbox キャッシュから既存投稿を取得
   const cached = readCache();
-  if (cached) return cached;
+  const dropboxFiles = cached || [];
 
-  // 2. キャッシュがない場合のみ Dropbox から取得（ビルド時のみ到達）
-  console.log("[Garden] キャッシュなし — Dropbox から取得します");
-  const files = await fetchFromDropbox();
+  // 3. WP投稿とDropboxを統合（WPが優先、パスで重複排除）
+  const merged = new Map<string, GardenFile>();
+  for (const f of dropboxFiles) {
+    merged.set(f.filename, f);
+  }
+  for (const f of wpFiles) {
+    merged.set(f.filename, f); /* WP投稿で上書き */
+  }
 
-  // 3. キャッシュファイルに保存
-  writeCache(files);
+  const allFiles = Array.from(merged.values());
+  console.log(`[Garden] 統合: Dropbox=${dropboxFiles.length} + WP=${wpFiles.length} → ${allFiles.length} ファイル`);
 
-  return files;
+  // 4. キャッシュがなかった場合のみ Dropbox から取得（ビルド時のフォールバック）
+  if (!cached && wpFiles.length === 0) {
+    console.log("[Garden] キャッシュなし — Dropbox から取得します");
+    const files = await fetchFromDropbox();
+    writeCache(files);
+    return files;
+  }
+
+  return allFiles;
 }
