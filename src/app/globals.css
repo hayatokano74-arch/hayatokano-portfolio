@@ -242,6 +242,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: "Helvetica Neue", Helvetica, Arial, var(--font-jp), "Hiragino Sans", sans-serif;
+  font-size: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -365,7 +366,7 @@ button {
 
 .action-link {
   color: var(--muted);
-  transition: color var(--duration-fast) linear;
+  transition: color var(--duration-fast) ease;
 }
 
 .action-link:hover,
@@ -397,8 +398,8 @@ button {
   display: flex;
   align-items: baseline;
   gap: var(--space-7);
-  font-size: var(--font-meta);
-  letter-spacing: 0.08em;
+  font-size: var(--font-body);
+  letter-spacing: 0.02em;
   color: var(--fg);
 }
 
@@ -810,7 +811,7 @@ button {
   inset: 0;
   background-size: cover;
   background-position: center;
-  transition: opacity 0.5s ease;
+  transition: opacity var(--duration-slow) ease;
   pointer-events: none;
   z-index: 0;
 }
@@ -1114,6 +1115,9 @@ button {
   gap: var(--grid-gutter);
   row-gap: var(--space-2);
   align-items: center;
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 500;
 }
 
 /* Grid/Listトグル: カラム11に配置 */
@@ -1122,6 +1126,10 @@ button {
   display: flex;
   align-items: center;
   justify-self: start;
+  gap: var(--space-4);
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 500;
 }
 
 /* 検索窓: カラム12に配置、幅をカラムに合わせる */
@@ -1146,12 +1154,18 @@ button {
 .works-list-summary-date {
   grid-column: 1 / span 2;
   min-width: 0;
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 700;
 }
 
 .works-list-summary-title {
   grid-column: 3 / span 6;
   min-width: 0;
   overflow-wrap: anywhere;
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 700;
 }
 
 .works-list-summary-tags {
@@ -1160,6 +1174,9 @@ button {
   overflow-wrap: anywhere;
   display: flex;
   gap: var(--space-4);
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 600;
 }
 
 /* サムネイル: 最終列の右端に揃える（ページ右辺と一致） */
@@ -1189,6 +1206,9 @@ button {
   grid-column: 3 / span 5;
   grid-row: 1;
   min-width: 0;
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 700;
 }
 
 /* works-list-body: ディテール+抜粋+View All */
@@ -1207,6 +1227,22 @@ button {
 }
 
 /* View All ボタン: ピル型ボーダー */
+.works-list-excerpt {
+  font-size: var(--font-body);
+  line-height: var(--lh-relaxed);
+  white-space: pre-wrap;
+}
+
+.works-list-view {
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-3);
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 700;
+  display: flex;
+  justify-content: flex-start;
+}
+
 .works-list-view .action-link {
   display: block;
   width: 100%;
@@ -1405,7 +1441,7 @@ button {
   font-size: var(--font-meta);
   line-height: var(--lh-normal);
   color: var(--muted);
-  transition: color var(--duration-fast) linear;
+  transition: color var(--duration-fast) ease;
 }
 
 .timeline-post-tag:hover {
@@ -2382,7 +2418,7 @@ button.tl-photo-cell {
   border: 1px solid var(--line);
   border-radius: 4px;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--duration-normal) ease;
 }
 
 .garden-search-input::placeholder {
@@ -2412,7 +2448,7 @@ button.tl-photo-cell {
   border: none;
   cursor: pointer;
   border-radius: 2px;
-  transition: color 0.15s ease;
+  transition: color var(--duration-fast) ease;
 }
 
 .garden-search-clear:hover {
@@ -2445,7 +2481,7 @@ button.tl-photo-cell {
   padding: var(--space-1) var(--space-3);
   text-decoration: none;
   color: var(--fg);
-  transition: background-color 0.1s ease;
+  transition: background-color var(--duration-fast) ease;
 }
 
 .garden-search-item:hover,
@@ -2506,7 +2542,7 @@ button.tl-photo-cell {
   border: 1px solid var(--line);
   border-radius: 2px;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
 .garden-search-result-clear:hover {
@@ -2547,7 +2583,7 @@ button.tl-photo-cell {
   padding: var(--space-3) 0;
   border-bottom: 1px solid var(--line);
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color var(--duration-normal) ease;
 }
 
 .garden-section-heading:hover {
@@ -2568,7 +2604,7 @@ button.tl-photo-cell {
 .garden-section-chevron {
   font-size: 0.75em;
   display: inline-block;
-  transition: transform 0.15s ease;
+  transition: transform var(--duration-fast) ease;
 }
 
 .garden-section-meta {
@@ -2834,7 +2870,7 @@ button.tl-photo-cell {
   text-decoration: underline;
   text-decoration-color: var(--muted);
   text-underline-offset: 3px;
-  transition: text-decoration-color 0.2s ease;
+  transition: text-decoration-color var(--duration-normal) ease;
 }
 
 .garden-link:hover {
@@ -2848,7 +2884,7 @@ button.tl-photo-cell {
   text-decoration: underline;
   text-decoration-color: var(--muted);
   text-underline-offset: 3px;
-  transition: text-decoration-color 0.2s ease;
+  transition: text-decoration-color var(--duration-normal) ease;
 }
 
 .garden-hashtag:hover {

@@ -45,7 +45,7 @@ function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; wi
       <div style={{ position: "relative", width: "100%", aspectRatio: "3 / 2", background: "var(--media-bg)" }}>
         <Image
           src={src}
-          alt={alt ?? ""}
+          alt={alt || ""}
           fill
           loading="lazy"
           sizes="(max-width: 900px) 100vw, (max-width: 1400px) 33vw, 420px"
@@ -133,7 +133,7 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false 
         {works.map((w) => {
           const lead = w.media[0];
           const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
-          const thumbAlt = w.thumbnail?.alt ?? lead?.alt;
+          const thumbAlt = w.thumbnail?.alt ?? lead?.alt ?? w.title;
           return (
             <Link
               key={w.slug}
@@ -205,16 +205,16 @@ function WorksList<T extends WorkLike>({
           {(() => {
             const lead = w.media[0];
             const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
-            const thumbAlt = w.thumbnail?.alt ?? lead?.alt;
+            const thumbAlt = w.thumbnail?.alt ?? lead?.alt ?? w.title;
             const isPortraitLead = (lead?.height ?? 0) > (lead?.width ?? 0);
             return (
           <details className="works-row">
             {/* サマリー行: 12カラムグリッド */}
             <summary className="works-list-summary">
-              <div className="works-list-summary-date" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.date}</div>
-              <div className="works-list-summary-title" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{w.title}</div>
+              <div className="works-list-summary-date">{w.date}</div>
+              <div className="works-list-summary-title">{w.title}</div>
               {w.tags.length > 0 && (
-              <div className="works-list-summary-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 600 }}>
+              <div className="works-list-summary-tags">
                 {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
               </div>
               )}
@@ -222,7 +222,7 @@ function WorksList<T extends WorkLike>({
                 {thumbSrc ? (
                   <Image
                     src={thumbSrc}
-                    alt={thumbAlt ?? ""}
+                    alt={thumbAlt}
                     width={32}
                     height={32}
                     loading="lazy"
@@ -240,7 +240,7 @@ function WorksList<T extends WorkLike>({
               <div className="works-list-spacer" />
               {/* タグ: モバイルで order: 1 */}
               {w.tags.length > 0 && (
-              <div className="works-list-open-tags" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
+              <div className="works-list-open-tags">
                 {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
               </div>
               )}
@@ -250,7 +250,7 @@ function WorksList<T extends WorkLike>({
                   {thumbSrc ? (
                     <Image
                       src={thumbSrc}
-                      alt={thumbAlt ?? ""}
+                      alt={thumbAlt}
                       width={lead?.width ?? 1280}
                       height={lead?.height ?? 720}
                       loading="lazy"
@@ -267,19 +267,8 @@ function WorksList<T extends WorkLike>({
               {/* 本文(ディテール+抜粋+View All): モバイルで order: 3 */}
               <div className="works-list-body">
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
-                <div className="works-list-excerpt" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap" }}>{truncateText(w.excerpt, excerptMaxLength)}</div>
-                <div
-                  className="works-list-view"
-                  style={{
-                    marginTop: "var(--space-3)",
-                    marginBottom: "var(--space-3)",
-                    fontSize: "var(--font-body)",
-                    lineHeight: "var(--lh-normal)",
-                    fontWeight: 700,
-                    display: "flex",
-                    justifyContent: "flex-start",
-                  }}
-                >
+                <div className="works-list-excerpt">{truncateText(w.excerpt, excerptMaxLength)}</div>
+                <div className="works-list-view">
                   <Link className="action-link" href={detailHref(w.slug)}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                       View All

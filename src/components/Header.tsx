@@ -127,7 +127,7 @@ export function Header({
       {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (
         <div className="header-category-row">
-          <div className="header-category-links" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
+          <div className="header-category-links">
             {Object.keys(categoryHrefs ?? {}).filter((item) => categoryHrefs?.[item]).map((item) => {
               const className = item === activeCategory ? "underline-active" : "";
               const style = { color: item === activeCategory ? "var(--fg)" : "var(--muted)" } as const;
@@ -141,7 +141,7 @@ export function Header({
           </div>
 
           {showWorksToggle ? (
-            <div className="works-view-toggle" style={{ gap: "var(--space-4)", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 500 }}>
+            <div className="works-view-toggle">
               <Link
                 href={worksGridHref}
                 className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
