@@ -105,6 +105,19 @@ export function Header({
             <div style={{ marginTop: "var(--space-7)" }}>
               <ThemeDot />
             </div>
+            <div className="mobile-menu-footer">
+              <a href="mailto:info@hayatokano.com" className="mobile-menu-footer-link">
+                info@hayatokano.com
+              </a>
+              <a
+                href="https://www.instagram.com/_hayatokano/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mobile-menu-footer-link"
+              >
+                Instagram
+              </a>
+            </div>
           </nav>
         </div>
       ) : null}

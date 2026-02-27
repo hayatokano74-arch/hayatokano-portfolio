@@ -294,6 +294,11 @@ button {
   box-sizing: border-box;
 }
 
+/* Works詳細ではフッターを非表示 */
+.page-shell:has(.work-detail-shell) .site-footer {
+  display: none;
+}
+
 /* Works 詳細: トップバー・ボトムバー共通 12カラムグリッド */
 .work-detail-top {
   display: grid;
@@ -438,13 +443,8 @@ button {
 }
 
 @media (max-width: 900px) {
-  .site-footer-inner {
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .footer-copy {
-    margin-left: 0;
+  .site-footer {
+    display: none;
   }
 }
 
@@ -779,6 +779,25 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.mobile-menu-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mobile-menu-footer-link {
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mobile-menu-footer-link:hover {
+  color: var(--fg);
 }
 
 .mobile-nav-item {
