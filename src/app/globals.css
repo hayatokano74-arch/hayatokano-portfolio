@@ -262,6 +262,8 @@ button {
 .page-shell {
   min-height: 100dvh;
   padding: var(--pad-y) var(--pad-x);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Works詳細: shellが自前で高さ管理するため、page-shellをviewport内に収める */
@@ -386,7 +388,8 @@ button {
 
 /* ── サイトフッター ── */
 .site-footer {
-  margin-top: var(--space-12);
+  margin-top: auto;
+  padding-top: var(--space-12);
   padding-bottom: var(--space-4);
 }
 
