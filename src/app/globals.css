@@ -384,6 +384,36 @@ button {
   border-top: 1px solid var(--line);
 }
 
+/* ── サイトフッター ── */
+.site-footer {
+  margin-top: var(--space-12);
+  padding-bottom: var(--space-4);
+}
+
+.site-footer-inner {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-7);
+  padding-top: var(--space-5);
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.site-footer-inner a:hover {
+  color: var(--fg);
+}
+
+.site-footer-inner span:last-child {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .site-footer-inner {
+    gap: var(--space-5);
+  }
+}
+
 /* ── Works グリッド（投稿数ベースのレスポンシブ） ── */
 .works-grid {
   display: grid;
