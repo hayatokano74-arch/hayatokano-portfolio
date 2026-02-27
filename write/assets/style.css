@@ -354,6 +354,28 @@ input {
   min-width: 0;
 }
 
+/* フォルダ ⋯ボタン */
+.folder-item-more {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--muted);
+  border-radius: var(--radius);
+  transition: background var(--transition);
+  -webkit-tap-highlight-color: transparent;
+  margin-left: auto;
+}
+
+.folder-item-more:hover {
+  background: var(--sidebar-hover);
+  color: var(--fg);
+}
+
+/* 投稿 ⋯ボタン */
 .post-item-more {
   flex-shrink: 0;
   width: 32px;

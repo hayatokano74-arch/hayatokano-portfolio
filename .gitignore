@@ -25,6 +25,9 @@ public/garden-search-index.json
 .obsidian/hotkeys.json
 .obsidian/plugins/
 
+# secrets
+write/api/config.php
+
 # misc
 .DS_Store
 *.tsbuildinfo

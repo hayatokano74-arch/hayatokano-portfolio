@@ -307,11 +307,16 @@
       ? `<span class="folder-toggle ${state.expandedFolders && state.expandedFolders.has(folder.id) ? 'expanded' : ''}">▶</span>`
       : '<span class="folder-toggle-spacer"></span>'
 
+    const moreHtml = folder.id !== 0
+      ? '<button class="folder-item-more" type="button" title="操作">⋯</button>'
+      : ''
+
     el.innerHTML = `
       ${toggleHtml}
       <span class="folder-icon">📁</span>
       <span class="folder-name">${escapeHtml(folder.name)}</span>
       <span class="folder-count">${folder.count || ''}</span>
+      ${moreHtml}
     `
 
     /* フォルダ全体クリック → 展開/折畳 + 投稿フィルター */
@@ -324,7 +329,16 @@
       renderFolders()
     })
 
-    /* 右クリック → コンテキストメニュー */
+    /* ⋯ボタン → コンテキストメニュー（スマホ対応） */
+    const moreBtn = el.querySelector('.folder-item-more')
+    if (moreBtn) {
+      moreBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        showFolderContextMenu(e, folder)
+      })
+    }
+
+    /* 右クリック → コンテキストメニュー（デスクトップ） */
     if (folder.id !== 0) {
       el.addEventListener('contextmenu', (e) => {
         e.preventDefault()

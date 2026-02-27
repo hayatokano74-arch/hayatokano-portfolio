@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Garden — プレビュー</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-theme="dark">
+
+<!-- ログイン画面 -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <h1 class="login-title">Garden</h1>
+    <form class="login-form" onsubmit="event.preventDefault(); document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='flex';">
+      <input
+        type="password"
+        placeholder="PIN"
+        class="login-input"
+        autofocus
+        inputmode="numeric"
+        pattern="[0-9]*"
+      >
+      <label class="login-remember">
+        <input type="checkbox" checked>
+        <span>このデバイスを記憶する（30日間）</span>
+      </label>
+      <button type="submit" class="login-btn">Enter</button>
+    </form>
+  </div>
+</div>
+
+<!-- エディタ本体（ログイン後表示） -->
+<div id="app" style="display:none;">
+
+  <!-- サイドバー -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Garden</span>
+      <button class="sidebar-btn" title="新規">+</button>
+    </div>
+    <div class="folder-tree">
+      <div class="folder-item active"><span class="folder-icon">📁</span><span>すべて</span><span class="folder-count">12</span></div>
+      <div class="folder-item"><span class="folder-icon">📁</span><span>日記</span><span class="folder-count">8</span></div>
+      <div class="folder-item"><span class="folder-icon">📁</span><span>メモ</span><span class="folder-count">3</span></div>
+      <div class="folder-item"><span class="folder-icon">📁</span><span>読書</span><span class="folder-count">1</span></div>
+      <div class="folder-item"><span class="folder-icon">+</span><span>フォルダを追加</span></div>
+    </div>
+    <div class="post-list">
+      <div class="post-item active">
+        <div class="post-item-title">庭に触れる</div>
+        <div class="post-item-excerpt">朝の光が窓から差し込んで、庭の木々が揺れている...</div>
+        <div class="post-item-date">2026.02.26</div>
+      </div>
+      <div class="post-item">
+        <div class="post-item-title">2026.02.25</div>
+        <div class="post-item-excerpt">今日は曇りだった。午後から少し散歩に出た...</div>
+        <div class="post-item-date">2026.02.25 · 公開済</div>
+      </div>
+      <div class="post-item">
+        <div class="post-item-title">読書メモ: 建築と日常</div>
+        <div class="post-item-excerpt">安藤忠雄の言葉を借りれば、建築とは...</div>
+        <div class="post-item-date">2026.02.24</div>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="sidebar-btn-sm" title="テーマ切替" onclick="document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'">◐</button>
+      <button class="sidebar-btn-sm" title="ログアウト">←</button>
+    </div>
+  </aside>
+
+  <!-- メインエディタ -->
+  <main class="editor-area">
+    <div class="editor-header">
+      <button class="editor-btn sidebar-toggle">☰</button>
+      <div class="editor-meta">
+        <input type="text" placeholder="タイトル（任意）" class="title-input" value="庭に触れる">
+        <span class="meta-date">2026.02.26</span>
+        <span class="meta-status">下書き</span>
+      </div>
+      <div class="editor-actions">
+        <button class="btn-publish">公開</button>
+      </div>
+    </div>
+    <div class="editor-tabs">
+      <button class="tab active" data-tab="write">Markdown</button>
+      <button class="tab" data-tab="preview">プレビュー</button>
+    </div>
+    <div class="editor-scroll">
+      <textarea class="editor-textarea" spellcheck="false">朝の光が窓から差し込んで、庭の木々が揺れている。
+
+冬の終わりに近づくと、空気の匂いが少しだけ変わる。土の匂い、草の匂い。まだ寒いけれど、どこかに春の気配がある。
+
+## 庭の記録
+
+今日は梅の花が三輪ほど開いていた。去年より少し早い気がする。
+
+> 庭は毎日少しずつ変わっていく。その変化に気づけるかどうかは、こちらの目の問題だ。
+
+写真を撮った。光の加減がよかった。
+
+---
+
+午後は読書。窓際に座って、コーヒーを飲みながら。</textarea>
+    </div>
+    <div class="md-toolbar">
+      <button>#</button>
+      <button>*</button>
+      <button>_</button>
+      <button>+</button>
+      <button>-</button>
+      <button>``</button>
+      <button>[]</button>
+      <button>&gt;</button>
+      <button>!</button>
+      <button>—</button>
+      <button>📷</button>
+    </div>
+  </main>
+</div>
+
+<script>
+/* タイプライターモード */
+;(function() {
+  const textarea = document.querySelector('.editor-textarea')
+  const scrollContainer = document.querySelector('.editor-scroll')
+  if (!textarea || !scrollContainer) return
+
+  /* ミラーdiv（カーソル位置計測用） */
+  const mirror = document.createElement('div')
+  mirror.style.cssText = `
+    position: absolute; top: 0; left: 0; right: 0;
+    visibility: hidden; white-space: pre-wrap; word-wrap: break-word;
+    pointer-events: none; overflow: hidden;
+  `
+  scrollContainer.style.position = 'relative'
+  scrollContainer.appendChild(mirror)
+
+  function scrollToCursor() {
+    const cs = getComputedStyle(textarea)
+    mirror.style.fontFamily = cs.fontFamily
+    mirror.style.fontSize = cs.fontSize
+    mirror.style.lineHeight = cs.lineHeight
+    mirror.style.letterSpacing = cs.letterSpacing
+    mirror.style.padding = cs.padding
+    mirror.style.width = textarea.offsetWidth + 'px'
+
+    const textBefore = textarea.value.substring(0, textarea.selectionEnd)
+    mirror.textContent = textBefore
+    if (textBefore.endsWith('\n') || textBefore === '') {
+      mirror.textContent += '\u200b'
+    }
+
+    const cursorY = mirror.scrollHeight
+    const containerHeight = scrollContainer.clientHeight
+    scrollContainer.scrollTop = Math.max(0, cursorY - containerHeight / 2)
+  }
+
+  textarea.addEventListener('input', scrollToCursor)
+  textarea.addEventListener('keyup', scrollToCursor)
+  textarea.addEventListener('click', scrollToCursor)
+  textarea.addEventListener('focus', scrollToCursor)
+})()
+</script>
+</body>
+</html>

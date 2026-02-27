@@ -1,0 +1,43 @@
+# Garden Write — セキュリティ設定
+
+# config.php への直接アクセスをブロック
+<Files "config.php">
+    Require all denied
+</Files>
+
+# トークンファイルへの直接アクセスをブロック
+<Files ".tokens.json">
+    Require all denied
+</Files>
+
+# .htaccess 自体へのアクセスをブロック
+<Files ".htaccess">
+    Require all denied
+</Files>
+
+# ディレクトリリスティング無効
+Options -Indexes
+
+# セキュリティヘッダー
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# URL書き換え（SPA対応）
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # APIリクエストはそのまま通す
+    RewriteRule ^api/ - [L]
+
+    # 静的ファイルはそのまま通す
+    RewriteRule ^assets/ - [L]
+
+    # それ以外は index.php に
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . index.php [L]
+</IfModule>
