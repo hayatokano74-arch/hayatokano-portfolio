@@ -6,7 +6,7 @@ export function Footer() {
           info@hayatokano.com
         </a>
         <a
-          href="https://instagram.com/hayatokano"
+          href="https://www.instagram.com/_hayatokano/"
           target="_blank"
           rel="noopener noreferrer"
           className="footer-link"

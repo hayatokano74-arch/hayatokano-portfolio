@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Contact" };
 
 const links = [
   { label: "MAIL", value: "info@hayatokano.com", href: "mailto:info@hayatokano.com" },
-  { label: "INSTAGRAM", value: "@hayatokano", href: "https://instagram.com/hayatokano" },
+  { label: "INSTAGRAM", value: "@hayatokano", href: "https://www.instagram.com/_hayatokano/" },
 ] as const;
 
 export default function ContactPage() {
