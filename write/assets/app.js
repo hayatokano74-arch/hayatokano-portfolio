@@ -319,17 +319,15 @@
   function applyLineWidth(width) {
     /* 0 またはMAXは全幅 */
     if (!width || width >= LINE_WIDTH_MAX) {
-      dom.editor.style.setProperty('--editor-width', '100%')
+      dom.editor.style.maxWidth = ''
       const valueEl = $('#settings-width-value')
       if (valueEl) valueEl.textContent = '全幅'
     } else {
       /* ch単位 + パディング分を加算 */
-      dom.editor.style.setProperty('--editor-width', `calc(${width}ch + 96px)`)
+      dom.editor.style.maxWidth = `calc(${width}ch + 96px)`
       const valueEl = $('#settings-width-value')
       if (valueEl) valueEl.textContent = width + '文字'
     }
-    /* CSS変数をtextarea自体に適用 */
-    dom.editor.style.maxWidth = `var(--editor-width, 100%)`
   }
 
   /* ============================================

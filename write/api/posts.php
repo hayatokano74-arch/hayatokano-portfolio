@@ -70,15 +70,36 @@ function wp_request($endpoint, $method = 'GET', $body = null) {
  * WP投稿データを統一フォーマットに変換
  */
 function normalize_post($wp_post) {
+    $content = $wp_post['content']['raw'] ?? $wp_post['content']['rendered'] ?? '';
+    $content = strip_wp_blocks($content);
+
     return [
         'id' => $wp_post['id'],
         'title' => $wp_post['title']['rendered'] ?? $wp_post['title'] ?? '',
-        'content' => $wp_post['content']['raw'] ?? $wp_post['content']['rendered'] ?? '',
+        'content' => $content,
         'status' => $wp_post['status'] ?? 'draft',
         'date' => $wp_post['date'] ?? '',
         'modified' => $wp_post['modified'] ?? '',
         'categories' => $wp_post['categories'] ?? [],
     ];
+}
+
+/**
+ * WordPress Gutenberg ブロックマークアップを除去
+ */
+function strip_wp_blocks($content) {
+    /* ブロックコメント除去: <!-- wp:paragraph --> 等 */
+    $content = preg_replace('/<!--\s*\/?wp:\w+[^>]*-->\n?/', '', $content);
+
+    /* ブロックエディタ由来の <p> タグをプレーンテキストに変換 */
+    if (strpos($content, '<p>') !== false) {
+        $content = str_replace('</p>', "\n\n", $content);
+        $content = preg_replace('/<p[^>]*>/', '', $content);
+        $content = preg_replace('/<br\s*\/?>/', "\n", $content);
+        $content = strip_tags($content);
+    }
+
+    return trim($content);
 }
 
 /* ============================================
