@@ -74,7 +74,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Garden</title>
-  <link rel="stylesheet" href="assets/style.css?v=13">
+  <link rel="stylesheet" href="assets/style.css?v=14">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#1a1a1a">
   <link rel="manifest" href="data:application/json,{}">
@@ -186,7 +186,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   </main>
 </div>
 
-<script src="assets/app.js?v=13"></script>
+<script src="assets/app.js?v=14"></script>
 <?php endif; ?>
 </body>
 </html>

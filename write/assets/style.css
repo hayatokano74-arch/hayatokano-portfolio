@@ -561,12 +561,6 @@ input {
   flex: 1;
   overflow-y: auto;
   position: relative;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-}
-
-.editor-scroll::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
 }
 
 /* タイプライターモード:
@@ -590,6 +584,12 @@ input {
   outline: none;
   resize: none;
   -webkit-text-size-adjust: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.editor-textarea::-webkit-scrollbar {
+  display: none;
 }
 
 .editor-textarea::placeholder {
