@@ -243,6 +243,19 @@
         <input type="range" class="settings-slider" id="settings-width-slider"
           min="${LINE_WIDTH_MIN}" max="${LINE_WIDTH_MAX}" step="${LINE_WIDTH_STEP}" value="${LINE_WIDTH_MAX}">
       </div>
+      <div class="settings-group">
+        <div class="settings-label">
+          <span>並び順</span>
+        </div>
+        <select class="settings-select" id="settings-sort">
+          <option value="modified-desc">更新日（新しい順）</option>
+          <option value="modified-asc">更新日（古い順）</option>
+          <option value="date-desc">作成日（新しい順）</option>
+          <option value="date-asc">作成日（古い順）</option>
+          <option value="title-asc">タイトル（A→Z）</option>
+          <option value="title-desc">タイトル（Z→A）</option>
+        </select>
+      </div>
     `
     /* サイドバーフッターの相対位置に配置 */
     const sidebarFooter = document.querySelector('.sidebar-footer')
@@ -263,6 +276,13 @@
       const width = parseInt(e.target.value, 10)
       applyLineWidth(width)
       localStorage.setItem('garden-line-width', width)
+    })
+
+    /* 並び順 */
+    const sortSelect = popover.querySelector('#settings-sort')
+    sortSelect.addEventListener('change', (e) => {
+      localStorage.setItem('garden-sort', e.target.value)
+      loadPosts()
     })
 
     /* ポップオーバー内クリックは閉じない */
@@ -308,6 +328,11 @@
     const widthSlider = $('#settings-width-slider')
     if (fontSlider) fontSlider.value = size
     if (widthSlider) widthSlider.value = width || LINE_WIDTH_MAX
+
+    /* 並び順の復元 */
+    const savedSort = localStorage.getItem('garden-sort') || 'modified-desc'
+    const sortSelect = $('#settings-sort')
+    if (sortSelect) sortSelect.value = savedSort
   }
 
   function applyFontSize(size) {
@@ -594,6 +619,13 @@
       if (state.currentFolderId && state.currentFolderId !== 0) {
         params.set('folder', state.currentFolderId)
       }
+
+      /* 並び順を適用 */
+      const sortPref = localStorage.getItem('garden-sort') || 'modified-desc'
+      const [orderby, order] = sortPref.split('-')
+      params.set('orderby', orderby)
+      params.set('order', order)
+
       const res = await fetch(`${API}/posts.php?${params}`)
       const data = await res.json()
       if (data.ok) {

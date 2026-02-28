@@ -109,10 +109,16 @@ switch ($method) {
 
     /* --- 一覧取得 --- */
     case 'GET':
+        /* 並び順（デフォルト: 更新日の新しい順） */
+        $allowedOrderby = ['modified', 'date', 'title'];
+        $allowedOrder = ['asc', 'desc'];
+        $orderby = in_array($_GET['orderby'] ?? '', $allowedOrderby) ? $_GET['orderby'] : 'modified';
+        $order = in_array($_GET['order'] ?? '', $allowedOrder) ? $_GET['order'] : 'desc';
+
         $params = [
             'per_page' => 100,
-            'orderby' => 'modified',
-            'order' => 'desc',
+            'orderby' => $orderby,
+            'order' => $order,
             'status' => 'draft,publish',
             'context' => 'edit',
         ];
