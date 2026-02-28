@@ -58,6 +58,7 @@
     btnSidebarToggle: $('#btn-sidebar-toggle'),
     btnMobileBack: $('#btn-mobile-back'),
     btnPhoto: $('#btn-photo'),
+    btnFullscreen: $('#btn-fullscreen'),
     fileInput: $('#file-input'),
     tabs: $$('.tab'),
     toolbar: $('#md-toolbar'),
@@ -183,6 +184,15 @@
     /* 写真ボタン */
     dom.btnPhoto.addEventListener('click', () => dom.fileInput.click())
     dom.fileInput.addEventListener('change', onFileSelect)
+
+    /* 全画面ボタン */
+    if (dom.btnFullscreen) {
+      dom.btnFullscreen.addEventListener('click', toggleFullscreen)
+    }
+
+    /* Fullscreen API: ブラウザ側の全画面変更を検知 */
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange)
 
     /* タイプライターモード: カーソル位置をスクロール */
     dom.editor.addEventListener('input', typewriterScroll)
@@ -429,14 +439,18 @@
   }
 
   function applyLineWidth(width) {
+    const titleInput = dom.titleInput
     /* 0 またはMAXは全幅 */
     if (!width || width >= LINE_WIDTH_MAX) {
       dom.editor.style.maxWidth = ''
+      if (titleInput) titleInput.style.maxWidth = ''
       const valueEl = $('#settings-width-value')
       if (valueEl) valueEl.textContent = '全幅'
     } else {
       /* ch単位 + パディング分を加算 */
-      dom.editor.style.maxWidth = `calc(${width}ch + 96px)`
+      const maxW = `calc(${width}ch + 96px)`
+      dom.editor.style.maxWidth = maxW
+      if (titleInput) titleInput.style.maxWidth = maxW
       const valueEl = $('#settings-width-value')
       if (valueEl) valueEl.textContent = width + '文字'
     }
@@ -1166,6 +1180,43 @@
     } catch (e) {
       textarea.value = textarea.value.replace(placeholder, '')
       alert('画像アップロード中にエラーが発生しました')
+    }
+  }
+
+  /* ============================================
+   * 全画面モード
+   * ============================================ */
+  function toggleFullscreen() {
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement
+    if (fsEl) {
+      /* 全画面解除 */
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen()
+      }
+    } else {
+      /* 全画面開始 */
+      const el = document.documentElement
+      const request = el.requestFullscreen || el.webkitRequestFullscreen
+      if (request) {
+        request.call(el).catch(() => {
+          /* Fullscreen API 非対応: CSSのみで切替 */
+          document.getElementById('app').classList.toggle('fullscreen')
+        })
+      } else {
+        document.getElementById('app').classList.toggle('fullscreen')
+      }
+    }
+  }
+
+  function onFullscreenChange() {
+    const app = document.getElementById('app')
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement
+    if (fsEl) {
+      app.classList.add('fullscreen')
+    } else {
+      app.classList.remove('fullscreen')
     }
   }
 

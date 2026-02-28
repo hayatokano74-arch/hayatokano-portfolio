@@ -74,7 +74,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Garden</title>
-  <link rel="stylesheet" href="assets/style.css?v=14">
+  <link rel="stylesheet" href="assets/style.css?v=15">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#1a1a1a">
   <link rel="manifest" href="data:application/json,{}">
@@ -137,7 +137,6 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
       <!-- デスクトップ用: サイドバートグル -->
       <button id="btn-sidebar-toggle" class="editor-btn sidebar-toggle">☰</button>
       <div class="editor-meta">
-        <input id="post-title" type="text" placeholder="タイトル" class="title-input">
         <span id="post-date" class="meta-date"></span>
         <span id="post-status" class="meta-status">下書き</span>
       </div>
@@ -154,6 +153,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
 
     <!-- テキストエリア（タイプライターモード） -->
     <div id="editor-scroll" class="editor-scroll">
+      <input id="post-title" type="text" placeholder="タイトル" class="editor-title-input">
       <textarea
         id="editor"
         class="editor-textarea"
@@ -178,6 +178,8 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
       <button data-insert="!">!</button>
       <button data-insert="---">—</button>
       <button id="btn-photo" data-action="photo">📷</button>
+      <span class="toolbar-spacer"></span>
+      <button id="btn-fullscreen" data-action="fullscreen" title="全画面">⤢</button>
     </div>
 
     <!-- 画像アップロード（非表示） -->
@@ -186,7 +188,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   </main>
 </div>
 
-<script src="assets/app.js?v=14"></script>
+<script src="assets/app.js?v=15"></script>
 <?php endif; ?>
 </body>
 </html>

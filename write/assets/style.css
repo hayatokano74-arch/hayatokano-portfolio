@@ -482,15 +482,26 @@ input {
   min-width: 0;
 }
 
-.title-input {
-  flex: 1;
-  font-size: 14px;
-  min-width: 0;
-  padding: 4px 0;
+/* タイトル入力（エディタ内） */
+.editor-title-input {
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 48px 0;
+  font-family: var(--font-editor);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  outline: none;
 }
 
-.title-input::placeholder {
+.editor-title-input::placeholder {
   color: var(--muted);
+  font-weight: 400;
 }
 
 .meta-date {
@@ -572,7 +583,7 @@ input {
   width: 100%;
   margin: 0 auto;
   min-height: 100%;
-  padding: 32px 48px;
+  padding: 12px 48px;
   padding-bottom: 50vh; /* カーソルが最下行でも中央に来るよう余白 */
   font-family: var(--font-editor);
   font-size: 16px;
@@ -987,9 +998,9 @@ input {
     display: none;
   }
 
-  .title-input {
-    font-size: 14px;
-    min-width: 0;
+  .editor-title-input {
+    padding: 16px 18px 0;
+    font-size: 20px;
   }
 
   .meta-date { display: none; }
@@ -1017,7 +1028,7 @@ input {
 
   /* --- テキストエリア --- */
   .editor-textarea {
-    padding: 16px 18px;
+    padding: 8px 18px;
     padding-bottom: 40vh;
     font-size: 16px;
     line-height: 1.8;
@@ -1224,6 +1235,26 @@ input {
   background-repeat: no-repeat;
   background-position: right 8px center;
   padding-right: 24px;
+}
+
+/* ============================================
+ * 全画面モード
+ * ============================================ */
+#app.fullscreen .sidebar {
+  display: none;
+}
+
+#app.fullscreen .editor-header {
+  display: none;
+}
+
+#app.fullscreen .editor-tabs {
+  display: none;
+}
+
+/* ツールバーのスペーサー（全画面ボタンを右寄せ） */
+.toolbar-spacer {
+  flex: 1;
 }
 
 /* ============================================
