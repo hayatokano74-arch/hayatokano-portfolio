@@ -31,6 +31,7 @@
     saving: false,
     autosaveTimer: null,
     typewriter: TYPEWRITER_MODE,
+    sidebarView: 'folders', /* 'folders' | 'posts' */
   }
 
   /* ============================================
@@ -114,16 +115,22 @@
     /* データ読み込み */
     await Promise.all([loadFolders(), loadPosts()])
 
-    /* モバイル: 初期状態でサイドバー（フォルダ＆投稿一覧）を表示 */
+    /* 初期状態: フォルダビュー */
+    dom.sidebar.classList.add('view-folders')
+
+    /* モバイル: サイドバーを表示（フォルダ一覧から始まる） */
     if (window.innerWidth <= 768) {
       dom.sidebar.classList.remove('hidden')
     }
 
-    /* デスクトップ: 最新の投稿を選択 */
-    if (window.innerWidth > 768 && state.posts.length > 0) {
-      selectPost(state.posts[0].id)
-    } else if (window.innerWidth > 768) {
-      newPost()
+    /* デスクトップ: 「すべて」フォルダに入って最新の投稿を選択 */
+    if (window.innerWidth > 768) {
+      enterFolder(0)
+      if (state.posts.length > 0) {
+        selectPost(state.posts[0].id)
+      } else {
+        newPost()
+      }
     }
   }
 
@@ -132,7 +139,13 @@
    * ============================================ */
   function bindEvents() {
     /* 新規投稿 */
-    dom.btnNew.addEventListener('click', newPost)
+    dom.btnNew.addEventListener('click', () => {
+      /* フォルダビューにいる場合は「すべて」に入る */
+      if (state.sidebarView === 'folders') {
+        enterFolder(0)
+      }
+      newPost()
+    })
 
     /* 公開 */
     dom.btnPublish.addEventListener('click', publishPost)
@@ -344,6 +357,54 @@
   }
 
   /* ============================================
+   * サイドバー ドリルダウンナビ
+   * ============================================ */
+
+  /**
+   * フォルダに入る（投稿ビューに切替）
+   */
+  function enterFolder(folderId) {
+    state.currentFolderId = folderId
+    state.sidebarView = 'posts'
+
+    /* サイドバーのビュー切替 */
+    dom.sidebar.classList.remove('view-folders')
+    dom.sidebar.classList.add('view-posts')
+
+    /* ヘッダーを「‹ フォルダ名」に変更 */
+    const folderName = folderId === 0
+      ? 'すべて'
+      : (state.folders.find((f) => f.id === folderId)?.name || '')
+    const title = dom.sidebar.querySelector('.sidebar-title')
+    title.textContent = '‹ ' + folderName
+    title.classList.add('clickable')
+    title.onclick = (e) => {
+      e.stopPropagation()
+      exitFolder()
+    }
+
+    /* 投稿を読み込み */
+    loadPosts()
+  }
+
+  /**
+   * フォルダビューに戻る
+   */
+  function exitFolder() {
+    state.sidebarView = 'folders'
+
+    /* サイドバーのビュー切替 */
+    dom.sidebar.classList.remove('view-posts')
+    dom.sidebar.classList.add('view-folders')
+
+    /* ヘッダーを「Garden」に戻す */
+    const title = dom.sidebar.querySelector('.sidebar-title')
+    title.textContent = 'Garden'
+    title.classList.remove('clickable')
+    title.onclick = null
+  }
+
+  /* ============================================
    * フォルダ
    * ============================================ */
   async function loadFolders() {
@@ -451,14 +512,18 @@
       ${moreHtml}
     `
 
-    /* フォルダ全体クリック → 展開/折畳 + 投稿フィルター */
-    el.addEventListener('click', () => {
-      if (hasChildren) {
+    /* 展開トグル（▶）クリック → 子フォルダの展開/折畳のみ */
+    const toggle = el.querySelector('.folder-toggle')
+    if (toggle) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation()
         toggleFolderExpanded(folder.id)
-      }
-      state.currentFolderId = folder.id
-      loadPosts()
-      renderFolders()
+      })
+    }
+
+    /* フォルダ行クリック → ドリルダウン（投稿ビューに切替） */
+    el.addEventListener('click', () => {
+      enterFolder(folder.id)
     })
 
     /* ⋯ボタン → コンテキストメニュー（スマホ対応） */

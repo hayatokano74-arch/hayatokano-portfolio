@@ -213,12 +213,31 @@ input {
   background: var(--sidebar-hover);
 }
 
-/* フォルダツリー */
+/* フォルダツリー（ドリルダウンナビ: フォルダビューで全幅表示） */
 .folder-tree {
+  flex: 1;
   padding: 8px 0;
-  border-bottom: 1px solid var(--border);
   overflow-y: auto;
-  max-height: 180px;
+}
+
+/* サイドバービュー切替 */
+.sidebar.view-posts .folder-tree {
+  display: none;
+}
+
+.sidebar.view-folders .post-list {
+  display: none;
+}
+
+/* 戻るボタン付きタイトル */
+.sidebar-title.clickable {
+  cursor: pointer;
+  transition: opacity var(--transition);
+  user-select: none;
+}
+
+.sidebar-title.clickable:hover {
+  opacity: 0.7;
 }
 
 .folder-item {
@@ -906,7 +925,6 @@ input {
 
   /* フォルダ・投稿: タップしやすいサイズ */
   .folder-tree {
-    max-height: 200px;
     padding: 4px 0;
   }
 
