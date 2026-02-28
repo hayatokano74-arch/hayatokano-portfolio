@@ -20,7 +20,7 @@
   --radius: 4px;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  --font-editor: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', Georgia, serif;
+  --font-editor: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
   --transition: 0.15s ease;
 }
 
@@ -549,7 +549,9 @@ input {
    JSがカーソル行を画面の縦中央にスクロールする。 */
 
 .editor-textarea {
-  width: 100%;
+  display: block;
+  max-width: var(--editor-width, 100%);
+  margin: 0 auto;
   min-height: 100%;
   padding: 32px 48px;
   padding-bottom: 50vh; /* カーソルが最下行でも中央に来るよう余白 */
@@ -1050,6 +1052,92 @@ input {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
+}
+
+/* ============================================
+ * 設定ポップオーバー
+ * ============================================ */
+.settings-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 16px;
+  width: 240px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 16px;
+  z-index: 100;
+  display: none;
+}
+
+.settings-popover.show {
+  display: block;
+}
+
+.settings-popover-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: var(--fg);
+}
+
+.settings-group {
+  margin-bottom: 14px;
+}
+
+.settings-group:last-child {
+  margin-bottom: 0;
+}
+
+.settings-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.settings-value {
+  font-size: 11px;
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.settings-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--fg);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.settings-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.settings-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--fg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 /* ============================================

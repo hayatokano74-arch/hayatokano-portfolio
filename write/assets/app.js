@@ -53,8 +53,7 @@
     btnPublish: $('#btn-publish'),
     btnTheme: $('#btn-theme'),
     btnLogout: $('#btn-logout'),
-    btnFontDown: $('#btn-font-down'),
-    btnFontUp: $('#btn-font-up'),
+    btnSettings: $('#btn-settings'),
     btnSidebarToggle: $('#btn-sidebar-toggle'),
     btnMobileBack: $('#btn-mobile-back'),
     btnPhoto: $('#btn-photo'),
@@ -97,6 +96,9 @@
     document.body.appendChild(backdrop)
     backdrop.addEventListener('click', toggleSidebar)
 
+    /* 設定ポップオーバー */
+    createSettingsPopover()
+
     /* コンテキストメニュー */
     createContextMenu()
 
@@ -138,10 +140,9 @@
     /* テーマ切替 */
     dom.btnTheme.addEventListener('click', toggleTheme)
 
-    /* フォントサイズ調整 */
-    dom.btnFontDown.addEventListener('click', () => changeFontSize(-1))
-    dom.btnFontUp.addEventListener('click', () => changeFontSize(1))
-    initFontSize()
+    /* 設定ポップオーバー */
+    dom.btnSettings.addEventListener('click', toggleSettings)
+    initEditorSettings()
 
     /* ログアウト */
     dom.btnLogout.addEventListener('click', logout)
@@ -194,24 +195,128 @@
     localStorage.setItem('garden-theme', next)
   }
 
-  /* フォントサイズ調整 */
-  const FONT_SIZES = [12, 14, 16, 18, 20, 22, 24]
+  /* ============================================
+   * 設定ポップオーバー
+   * ============================================ */
+  const FONT_SIZE_MIN = 12
+  const FONT_SIZE_MAX = 24
+  const FONT_SIZE_STEP = 2
   const DEFAULT_FONT_SIZE = 16
 
-  function initFontSize() {
-    const saved = parseInt(localStorage.getItem('garden-font-size'), 10)
-    const size = FONT_SIZES.includes(saved) ? saved : DEFAULT_FONT_SIZE
-    dom.editor.style.fontSize = size + 'px'
+  const LINE_WIDTH_MIN = 30
+  const LINE_WIDTH_MAX = 100
+  const LINE_WIDTH_STEP = 5
+  const DEFAULT_LINE_WIDTH = 0 /* 0 = 全幅 */
+
+  function createSettingsPopover() {
+    const popover = document.createElement('div')
+    popover.className = 'settings-popover'
+    popover.id = 'settings-popover'
+    popover.innerHTML = `
+      <div class="settings-popover-title">設定</div>
+      <div class="settings-group">
+        <div class="settings-label">
+          <span>文字サイズ</span>
+          <span class="settings-value" id="settings-font-value">16px</span>
+        </div>
+        <input type="range" class="settings-slider" id="settings-font-slider"
+          min="${FONT_SIZE_MIN}" max="${FONT_SIZE_MAX}" step="${FONT_SIZE_STEP}" value="${DEFAULT_FONT_SIZE}">
+      </div>
+      <div class="settings-group">
+        <div class="settings-label">
+          <span>行幅</span>
+          <span class="settings-value" id="settings-width-value">全幅</span>
+        </div>
+        <input type="range" class="settings-slider" id="settings-width-slider"
+          min="${LINE_WIDTH_MIN}" max="${LINE_WIDTH_MAX}" step="${LINE_WIDTH_STEP}" value="${LINE_WIDTH_MAX}">
+      </div>
+    `
+    /* サイドバーフッターの相対位置に配置 */
+    const sidebarFooter = document.querySelector('.sidebar-footer')
+    sidebarFooter.style.position = 'relative'
+    sidebarFooter.appendChild(popover)
+
+    /* スライダーイベント */
+    const fontSlider = popover.querySelector('#settings-font-slider')
+    const widthSlider = popover.querySelector('#settings-width-slider')
+
+    fontSlider.addEventListener('input', (e) => {
+      const size = parseInt(e.target.value, 10)
+      applyFontSize(size)
+      localStorage.setItem('garden-font-size', size)
+    })
+
+    widthSlider.addEventListener('input', (e) => {
+      const width = parseInt(e.target.value, 10)
+      applyLineWidth(width)
+      localStorage.setItem('garden-line-width', width)
+    })
+
+    /* ポップオーバー内クリックは閉じない */
+    popover.addEventListener('click', (e) => e.stopPropagation())
   }
 
-  function changeFontSize(direction) {
-    const current = parseInt(dom.editor.style.fontSize, 10) || DEFAULT_FONT_SIZE
-    const idx = FONT_SIZES.indexOf(current)
-    const nextIdx = idx + direction
-    if (nextIdx < 0 || nextIdx >= FONT_SIZES.length) return
-    const next = FONT_SIZES[nextIdx]
-    dom.editor.style.fontSize = next + 'px'
-    localStorage.setItem('garden-font-size', next)
+  function toggleSettings(e) {
+    e.stopPropagation()
+    const popover = $('#settings-popover')
+    const isOpen = popover.classList.contains('show')
+
+    if (isOpen) {
+      popover.classList.remove('show')
+      document.removeEventListener('click', closeSettingsOnOutsideClick)
+    } else {
+      popover.classList.add('show')
+      /* 外側クリックで閉じる */
+      setTimeout(() => {
+        document.addEventListener('click', closeSettingsOnOutsideClick)
+      }, 0)
+    }
+  }
+
+  function closeSettingsOnOutsideClick() {
+    const popover = $('#settings-popover')
+    popover.classList.remove('show')
+    document.removeEventListener('click', closeSettingsOnOutsideClick)
+  }
+
+  function initEditorSettings() {
+    /* フォントサイズ復元 */
+    const savedSize = parseInt(localStorage.getItem('garden-font-size'), 10)
+    const size = (savedSize >= FONT_SIZE_MIN && savedSize <= FONT_SIZE_MAX) ? savedSize : DEFAULT_FONT_SIZE
+    applyFontSize(size)
+
+    /* 行幅復元 */
+    const savedWidth = parseInt(localStorage.getItem('garden-line-width'), 10)
+    const width = (savedWidth >= LINE_WIDTH_MIN && savedWidth <= LINE_WIDTH_MAX) ? savedWidth : DEFAULT_LINE_WIDTH
+    applyLineWidth(width)
+
+    /* スライダーの初期値を設定（ポップオーバー生成後） */
+    const fontSlider = $('#settings-font-slider')
+    const widthSlider = $('#settings-width-slider')
+    if (fontSlider) fontSlider.value = size
+    if (widthSlider) widthSlider.value = width || LINE_WIDTH_MAX
+  }
+
+  function applyFontSize(size) {
+    dom.editor.style.fontSize = size + 'px'
+    const valueEl = $('#settings-font-value')
+    if (valueEl) valueEl.textContent = size + 'px'
+  }
+
+  function applyLineWidth(width) {
+    /* 0 またはMAXは全幅 */
+    if (!width || width >= LINE_WIDTH_MAX) {
+      dom.editor.style.setProperty('--editor-width', '100%')
+      const valueEl = $('#settings-width-value')
+      if (valueEl) valueEl.textContent = '全幅'
+    } else {
+      /* ch単位 + パディング分を加算 */
+      dom.editor.style.setProperty('--editor-width', `calc(${width}ch + 96px)`)
+      const valueEl = $('#settings-width-value')
+      if (valueEl) valueEl.textContent = width + '文字'
+    }
+    /* CSS変数をtextarea自体に適用 */
+    dom.editor.style.maxWidth = `var(--editor-width, 100%)`
   }
 
   /* ============================================
