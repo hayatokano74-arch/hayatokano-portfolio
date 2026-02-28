@@ -198,6 +198,7 @@
     dom.fileInput.addEventListener('change', onFileSelect)
 
     /* タイプライターモード: カーソル位置をスクロール */
+    dom.editor.addEventListener('input', typewriterScroll)
     dom.editor.addEventListener('keyup', typewriterScroll)
     dom.editor.addEventListener('click', typewriterScroll)
 
@@ -1107,6 +1108,8 @@
     mirror.style.letterSpacing = cs.letterSpacing
     mirror.style.padding = cs.padding
     mirror.style.width = textarea.offsetWidth + 'px'
+    mirror.style.maxWidth = cs.maxWidth
+    mirror.style.boxSizing = 'border-box'
 
     /* カーソルまでのテキストをミラーに入れて高さを計測 */
     const textBefore = textarea.value.substring(0, textarea.selectionEnd)
@@ -1122,8 +1125,15 @@
     /* スクロール: カーソル行が画面の縦中央に来るように */
     const containerHeight = scrollContainer.clientHeight
     const targetScroll = cursorY - containerHeight / 2
+    const clampedScroll = Math.max(0, targetScroll)
 
-    scrollContainer.scrollTop = Math.max(0, targetScroll)
+    /* 差が小さい場合はスキップ（ガタつき防止） */
+    if (Math.abs(scrollContainer.scrollTop - clampedScroll) < 4) return
+
+    scrollContainer.scrollTo({
+      top: clampedScroll,
+      behavior: 'smooth',
+    })
   }
 
   /* ============================================
