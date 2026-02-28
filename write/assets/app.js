@@ -18,7 +18,7 @@
   /* ============================================
    * 定数・状態
    * ============================================ */
-  const API = '/api'
+  const API = 'api'
   const AUTOSAVE_DELAY = 3000
   const TYPEWRITER_MODE = true
 
