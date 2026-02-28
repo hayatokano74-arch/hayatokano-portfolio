@@ -115,17 +115,24 @@
     /* データ読み込み */
     await Promise.all([loadFolders(), loadPosts()])
 
+    /* 前回開いていたフォルダを復元 */
+    const savedFolder = parseInt(localStorage.getItem('garden-folder'), 10)
+    const restoreFolder = (!isNaN(savedFolder) && savedFolder >= 0) ? savedFolder : 0
+
     /* 初期状態: フォルダビュー */
     dom.sidebar.classList.add('view-folders')
 
-    /* モバイル: サイドバーを表示（フォルダ一覧から始まる） */
+    /* モバイル: サイドバーを表示（前回のフォルダがあればそこに入る） */
     if (window.innerWidth <= 768) {
       dom.sidebar.classList.remove('hidden')
+      if (restoreFolder > 0) {
+        enterFolder(restoreFolder)
+      }
     }
 
-    /* デスクトップ: 「すべて」フォルダに入って最新の投稿を選択 */
+    /* 前回のフォルダに入って最新の投稿を選択 */
     if (window.innerWidth > 768) {
-      enterFolder(0)
+      enterFolder(restoreFolder)
       if (state.posts.length > 0) {
         selectPost(state.posts[0].id)
       } else {
@@ -389,6 +396,7 @@
   function enterFolder(folderId) {
     state.currentFolderId = folderId
     state.sidebarView = 'posts'
+    localStorage.setItem('garden-folder', folderId)
 
     /* サイドバーのビュー切替 */
     dom.sidebar.classList.remove('view-folders')
