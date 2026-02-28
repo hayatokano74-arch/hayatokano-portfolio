@@ -53,6 +53,8 @@
     btnPublish: $('#btn-publish'),
     btnTheme: $('#btn-theme'),
     btnLogout: $('#btn-logout'),
+    btnFontDown: $('#btn-font-down'),
+    btnFontUp: $('#btn-font-up'),
     btnSidebarToggle: $('#btn-sidebar-toggle'),
     btnMobileBack: $('#btn-mobile-back'),
     btnPhoto: $('#btn-photo'),
@@ -136,6 +138,11 @@
     /* テーマ切替 */
     dom.btnTheme.addEventListener('click', toggleTheme)
 
+    /* フォントサイズ調整 */
+    dom.btnFontDown.addEventListener('click', () => changeFontSize(-1))
+    dom.btnFontUp.addEventListener('click', () => changeFontSize(1))
+    initFontSize()
+
     /* ログアウト */
     dom.btnLogout.addEventListener('click', logout)
 
@@ -185,6 +192,26 @@
     const next = current === 'dark' ? 'light' : 'dark'
     document.body.setAttribute('data-theme', next)
     localStorage.setItem('garden-theme', next)
+  }
+
+  /* フォントサイズ調整 */
+  const FONT_SIZES = [12, 14, 16, 18, 20, 22, 24]
+  const DEFAULT_FONT_SIZE = 16
+
+  function initFontSize() {
+    const saved = parseInt(localStorage.getItem('garden-font-size'), 10)
+    const size = FONT_SIZES.includes(saved) ? saved : DEFAULT_FONT_SIZE
+    dom.editor.style.fontSize = size + 'px'
+  }
+
+  function changeFontSize(direction) {
+    const current = parseInt(dom.editor.style.fontSize, 10) || DEFAULT_FONT_SIZE
+    const idx = FONT_SIZES.indexOf(current)
+    const nextIdx = idx + direction
+    if (nextIdx < 0 || nextIdx >= FONT_SIZES.length) return
+    const next = FONT_SIZES[nextIdx]
+    dom.editor.style.fontSize = next + 'px'
+    localStorage.setItem('garden-font-size', next)
   }
 
   /* ============================================

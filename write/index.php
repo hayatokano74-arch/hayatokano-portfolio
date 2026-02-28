@@ -74,7 +74,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Garden</title>
-  <link rel="stylesheet" href="/assets/style.css?v=5">
+  <link rel="stylesheet" href="/assets/style.css?v=6">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#1a1a1a">
   <link rel="manifest" href="data:application/json,{}">
@@ -121,6 +121,8 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
     <div id="folder-tree" class="folder-tree"></div>
     <div id="post-list" class="post-list"></div>
     <div class="sidebar-footer">
+      <button id="btn-font-down" class="sidebar-btn-sm" title="文字を小さく">A-</button>
+      <button id="btn-font-up" class="sidebar-btn-sm" title="文字を大きく">A+</button>
       <button id="btn-theme" class="sidebar-btn-sm" title="テーマ切替">◐</button>
       <button id="btn-logout" class="sidebar-btn-sm" title="ログアウト">←</button>
     </div>
@@ -185,7 +187,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   </main>
 </div>
 
-<script src="/assets/app.js?v=5"></script>
+<script src="/assets/app.js?v=6"></script>
 <?php endif; ?>
 </body>
 </html>
