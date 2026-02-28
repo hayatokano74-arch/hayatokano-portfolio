@@ -71,19 +71,6 @@
     const savedTheme = localStorage.getItem('garden-theme') || 'dark'
     document.body.setAttribute('data-theme', savedTheme)
 
-    /* タイプライターモード用: ミラーdiv作成（カーソル位置計測用） */
-    if (state.typewriter) {
-      const mirror = document.createElement('div')
-      mirror.id = 'typewriter-mirror'
-      mirror.setAttribute('aria-hidden', 'true')
-      mirror.style.cssText = `
-        position: absolute; top: 0; left: 0; right: 0;
-        visibility: hidden; white-space: pre-wrap; word-wrap: break-word;
-        pointer-events: none; overflow: hidden;
-      `
-      dom.editorScroll.appendChild(mirror)
-    }
-
     /* 保存インジケーター追加 */
     const indicator = document.createElement('div')
     indicator.className = 'save-indicator'
@@ -252,6 +239,12 @@
           min="${LINE_WIDTH_MIN}" max="${LINE_WIDTH_MAX}" step="${LINE_WIDTH_STEP}" value="${LINE_WIDTH_MAX}">
       </div>
       <div class="settings-group">
+        <div class="settings-toggle" id="settings-typewriter-toggle">
+          <span class="settings-toggle-label">タイプライターモード</span>
+          <span class="settings-switch on" id="settings-typewriter-switch"></span>
+        </div>
+      </div>
+      <div class="settings-group">
         <div class="settings-label">
           <span>並び順</span>
         </div>
@@ -277,19 +270,29 @@
     fontSlider.addEventListener('input', (e) => {
       const size = parseInt(e.target.value, 10)
       applyFontSize(size)
-      localStorage.setItem('garden-font-size', size)
+      saveSettingsToServer({ fontSize: size })
     })
 
     widthSlider.addEventListener('input', (e) => {
       const width = parseInt(e.target.value, 10)
       applyLineWidth(width)
-      localStorage.setItem('garden-line-width', width)
+      saveSettingsToServer({ lineWidth: width })
+    })
+
+    /* タイプライターモード切替 */
+    const twToggle = popover.querySelector('#settings-typewriter-toggle')
+    twToggle.addEventListener('click', () => {
+      state.typewriter = !state.typewriter
+      const sw = popover.querySelector('#settings-typewriter-switch')
+      sw.classList.toggle('on', state.typewriter)
+      applyTypewriterMode(state.typewriter)
+      saveSettingsToServer({ typewriter: state.typewriter })
     })
 
     /* 並び順 */
     const sortSelect = popover.querySelector('#settings-sort')
     sortSelect.addEventListener('change', (e) => {
-      localStorage.setItem('garden-sort', e.target.value)
+      saveSettingsToServer({ sort: e.target.value })
       loadPosts()
     })
 
@@ -320,27 +323,103 @@
     document.removeEventListener('click', closeSettingsOnOutsideClick)
   }
 
-  function initEditorSettings() {
-    /* フォントサイズ復元 */
-    const savedSize = parseInt(localStorage.getItem('garden-font-size'), 10)
-    const size = (savedSize >= FONT_SIZE_MIN && savedSize <= FONT_SIZE_MAX) ? savedSize : DEFAULT_FONT_SIZE
-    applyFontSize(size)
+  /* 設定の保存デバウンスタイマー */
+  let settingsSaveTimer = null
 
-    /* 行幅復元 */
-    const savedWidth = parseInt(localStorage.getItem('garden-line-width'), 10)
-    const width = (savedWidth >= LINE_WIDTH_MIN && savedWidth <= LINE_WIDTH_MAX) ? savedWidth : DEFAULT_LINE_WIDTH
-    applyLineWidth(width)
+  /**
+   * サーバーに設定を保存（デバウンス付き）
+   */
+  function saveSettingsToServer(partial) {
+    clearTimeout(settingsSaveTimer)
+    settingsSaveTimer = setTimeout(async () => {
+      try {
+        await fetch(`${API}/settings.php`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(partial),
+        })
+      } catch (e) {
+        console.error('設定保存エラー:', e)
+      }
+    }, 500)
+  }
 
-    /* スライダーの初期値を設定（ポップオーバー生成後） */
+  /**
+   * サーバーから設定を読み込んで適用
+   */
+  async function initEditorSettings() {
+    /* まずデフォルト値を適用（即座に表示） */
+    applyFontSize(DEFAULT_FONT_SIZE)
+    applyLineWidth(DEFAULT_LINE_WIDTH)
+
+    /* サーバーから設定を取得 */
+    try {
+      const res = await fetch(`${API}/settings.php`)
+      const data = await res.json()
+      if (data.ok && data.settings) {
+        const s = data.settings
+
+        /* フォントサイズ */
+        const size = (s.fontSize >= FONT_SIZE_MIN && s.fontSize <= FONT_SIZE_MAX) ? s.fontSize : DEFAULT_FONT_SIZE
+        applyFontSize(size)
+        const fontSlider = $('#settings-font-slider')
+        if (fontSlider) fontSlider.value = size
+
+        /* 行幅 */
+        const width = (s.lineWidth >= LINE_WIDTH_MIN && s.lineWidth <= LINE_WIDTH_MAX) ? s.lineWidth : DEFAULT_LINE_WIDTH
+        applyLineWidth(width)
+        const widthSlider = $('#settings-width-slider')
+        if (widthSlider) widthSlider.value = width || LINE_WIDTH_MAX
+
+        /* タイプライターモード */
+        state.typewriter = s.typewriter !== false
+        const twSwitch = $('#settings-typewriter-switch')
+        if (twSwitch) twSwitch.classList.toggle('on', state.typewriter)
+        applyTypewriterMode(state.typewriter)
+
+        /* 並び順 */
+        const sortSelect = $('#settings-sort')
+        if (sortSelect) sortSelect.value = s.sort || 'modified-desc'
+
+        return
+      }
+    } catch (e) {
+      console.error('設定読み込みエラー:', e)
+    }
+
+    /* サーバー取得に失敗した場合はデフォルト値のまま */
     const fontSlider = $('#settings-font-slider')
     const widthSlider = $('#settings-width-slider')
-    if (fontSlider) fontSlider.value = size
-    if (widthSlider) widthSlider.value = width || LINE_WIDTH_MAX
+    if (fontSlider) fontSlider.value = DEFAULT_FONT_SIZE
+    if (widthSlider) widthSlider.value = LINE_WIDTH_MAX
+  }
 
-    /* 並び順の復元 */
-    const savedSort = localStorage.getItem('garden-sort') || 'modified-desc'
-    const sortSelect = $('#settings-sort')
-    if (sortSelect) sortSelect.value = savedSort
+  /**
+   * タイプライターモードの適用/解除
+   */
+  function applyTypewriterMode(enabled) {
+    if (enabled) {
+      /* ミラーdivがなければ作成 */
+      if (!document.getElementById('typewriter-mirror')) {
+        const mirror = document.createElement('div')
+        mirror.id = 'typewriter-mirror'
+        mirror.setAttribute('aria-hidden', 'true')
+        mirror.style.cssText = `
+          position: absolute; top: 0; left: 0; right: 0;
+          visibility: hidden; white-space: pre-wrap; word-wrap: break-word;
+          pointer-events: none; overflow: hidden;
+        `
+        dom.editorScroll.appendChild(mirror)
+      }
+      /* 下部余白を追加（カーソルが最下行でも中央に来る） */
+      dom.editor.style.paddingBottom = '50vh'
+    } else {
+      /* ミラーdivを削除 */
+      const mirror = document.getElementById('typewriter-mirror')
+      if (mirror) mirror.remove()
+      /* 下部余白を通常に戻す */
+      dom.editor.style.paddingBottom = '32px'
+    }
   }
 
   function applyFontSize(size) {
@@ -629,8 +708,9 @@
         params.set('folder', state.currentFolderId)
       }
 
-      /* 並び順を適用 */
-      const sortPref = localStorage.getItem('garden-sort') || 'modified-desc'
+      /* 並び順を適用（設定ポップオーバーの現在値を使用） */
+      const sortSelect = $('#settings-sort')
+      const sortPref = sortSelect ? sortSelect.value : 'modified-desc'
       const [orderby, order] = sortPref.split('-')
       params.set('orderby', orderby)
       params.set('order', order)

@@ -561,6 +561,12 @@ input {
   flex: 1;
   overflow-y: auto;
   position: relative;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.editor-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 /* タイプライターモード:
@@ -1156,6 +1162,50 @@ input {
   border: none;
   border-radius: 50%;
   cursor: pointer;
+}
+
+/* トグルスイッチ */
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-toggle-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.settings-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+
+.settings-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--bg);
+  border-radius: 50%;
+  transition: transform var(--transition);
+}
+
+.settings-switch.on {
+  background: var(--accent);
+}
+
+.settings-switch.on::after {
+  transform: translateX(16px);
 }
 
 .settings-select {

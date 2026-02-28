@@ -13,6 +13,11 @@ SetEnvIf Request_URI ".*" Ngx_Cache_NoCacheMode=on
     Require all denied
 </Files>
 
+# 設定ファイルへの直接アクセスをブロック
+<Files ".settings.json">
+    Require all denied
+</Files>
+
 # .htaccess 自体へのアクセスをブロック
 <Files ".htaccess">
     Require all denied
