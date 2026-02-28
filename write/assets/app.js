@@ -480,9 +480,7 @@
       childContainer.className = 'folder-children'
       childContainer.dataset.parentId = folder.id
 
-      /* 展開状態を復元 */
-      const expanded = state.expandedFolders && state.expandedFolders.has(folder.id)
-      if (!expanded) childContainer.classList.add('hidden')
+      /* フォルダツリーは常に展開 */
 
       folder.children.forEach((child) => renderFolderNode(child, level + 1, childContainer))
       container.appendChild(childContainer)
@@ -495,7 +493,7 @@
     el.dataset.folderId = folder.id
 
     const toggleHtml = hasChildren
-      ? `<span class="folder-toggle ${state.expandedFolders && state.expandedFolders.has(folder.id) ? 'expanded' : ''}">▶</span>`
+      ? '<span class="folder-toggle expanded">▶</span>'
       : '<span class="folder-toggle-spacer"></span>'
 
     const moreHtml = folder.id !== 0
