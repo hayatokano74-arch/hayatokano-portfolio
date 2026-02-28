@@ -577,6 +577,7 @@ input {
   flex: 1;
   overflow-y: auto;
   position: relative;
+  scrollbar-gutter: stable; /* スクロールバー出現時のガタつき防止 */
 }
 
 /* タイプライターモード:
