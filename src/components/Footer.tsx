@@ -13,6 +13,14 @@ export function Footer() {
         >
           Instagram
         </a>
+        <a
+          href="https://x.com/_oshica"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="footer-link"
+        >
+          X
+        </a>
         <span className="footer-copy">© {new Date().getFullYear()} Hayato Kano</span>
       </div>
     </footer>

@@ -106,17 +106,28 @@ export function Header({
               <ThemeDot />
             </div>
             <div className="mobile-menu-footer">
-              <a href="mailto:info@hayatokano.com" className="mobile-menu-footer-link">
-                info@hayatokano.com
-              </a>
-              <a
-                href="https://www.instagram.com/_hayatokano/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mobile-menu-footer-link"
-              >
-                Instagram
-              </a>
+              <div className="mobile-menu-footer-links">
+                <a href="mailto:info@hayatokano.com" className="mobile-menu-footer-link">
+                  info@hayatokano.com
+                </a>
+                <a
+                  href="https://www.instagram.com/_hayatokano/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mobile-menu-footer-link"
+                >
+                  Instagram
+                </a>
+                <a
+                  href="https://x.com/_oshica"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mobile-menu-footer-link"
+                >
+                  X
+                </a>
+              </div>
+              <span className="mobile-menu-footer-copy">© {new Date().getFullYear()} Hayato Kano</span>
             </div>
           </nav>
         </div>

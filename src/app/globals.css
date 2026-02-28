@@ -779,6 +779,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  height: 100%;
 }
 
 .mobile-menu-footer {
@@ -786,6 +787,11 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.mobile-menu-footer-links {
+  display: flex;
+  gap: var(--space-5);
 }
 
 .mobile-menu-footer-link {
@@ -798,6 +804,12 @@ button {
 
 .mobile-menu-footer-link:hover {
   color: var(--fg);
+}
+
+.mobile-menu-footer-copy {
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
 }
 
 .mobile-nav-item {
