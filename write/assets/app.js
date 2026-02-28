@@ -439,18 +439,15 @@
   }
 
   function applyLineWidth(width) {
-    const titleInput = dom.titleInput
+    const content = $('#editor-content')
     /* 0 またはMAXは全幅 */
     if (!width || width >= LINE_WIDTH_MAX) {
-      dom.editor.style.maxWidth = ''
-      if (titleInput) titleInput.style.maxWidth = ''
+      if (content) content.style.maxWidth = ''
       const valueEl = $('#settings-width-value')
       if (valueEl) valueEl.textContent = '全幅'
     } else {
-      /* ch単位 + パディング分を加算 */
-      const maxW = `calc(${width}ch + 96px)`
-      dom.editor.style.maxWidth = maxW
-      if (titleInput) titleInput.style.maxWidth = maxW
+      /* ch単位 + パディング分を加算（ラッパーで統一制御） */
+      if (content) content.style.maxWidth = `calc(${width}ch + 96px)`
       const valueEl = $('#settings-width-value')
       if (valueEl) valueEl.textContent = width + '文字'
     }
