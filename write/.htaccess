@@ -1,5 +1,8 @@
 # Garden Write — セキュリティ設定
 
+# Xserver Nginx キャッシュ無効化（開発中の変更を即時反映）
+SetEnvIf Request_URI ".*" Ngx_Cache_NoCacheMode=on
+
 # config.php への直接アクセスをブロック
 <Files "config.php">
     Require all denied
