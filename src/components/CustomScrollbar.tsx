@@ -3,38 +3,40 @@
 import { useEffect, useRef, useCallback } from "react";
 
 /**
- * 結露スクロールバー
+ * カスタムスクロールバー
  *
- * スクロール開始 → 細かい水滴が散らばって現れ、集まって1本のバーに凝縮
- * スクロール中   → きれいな実線バーとして表示
- * スクロール停止 → バーが水滴に分解し、溶けるように消える
+ * スクロール開始 → 細い線がふわっと現れる
+ * スクロール中   → スクロール位置になめらかに追従（有機的な遅延）
+ * スクロール停止 → ゆっくり溶けるように消える
+ *
+ * レイアウトに影響しないオーバーレイ方式。
  */
 
-/* パーティクル1粒 */
-type Particle = {
-  /* 散乱位置（ランダム） */
-  sx: number;
-  sy: number;
-  /* 半径 */
-  r: number;
-  /* 個別の遅延（凝縮・溶解タイミングをずらす） */
-  delay: number;
-};
-
-const PARTICLE_COUNT = 80;
-const BAR_WIDTH = 4;
-const BAR_RADIUS = 2;
-const RAIL_RIGHT = 6; // 右端からバー中心までの距離
+const BAR_WIDTH = 3;
+const BAR_RADIUS = 1.5;
+const RAIL_RIGHT = 4;
 const MIN_BAR_HEIGHT = 30;
-const FADE_OUT_DELAY = 1200;
+const FADE_OUT_DELAY = 1000;
+/* 追従の滑らかさ（0に近いほど遅延が大きい） */
+const LERP_SPEED = 0.12;
 
 export function CustomScrollbar() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Particle[]>([]);
   const rafRef = useRef<number>(0);
-  const phaseRef = useRef<"hidden" | "condensing" | "visible" | "dissolving">("hidden");
-  const progressRef = useRef(0);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  /* 現在の描画状態 */
+  const stateRef = useRef({
+    opacity: 0,
+    /* 実際に描画されているバーのY座標と高さ（補間中の値） */
+    currentY: 0,
+    currentH: MIN_BAR_HEIGHT,
+    /* 目標位置（スクロール位置から計算） */
+    targetY: 0,
+    targetH: MIN_BAR_HEIGHT,
+    /* フェーズ */
+    phase: "hidden" as "hidden" | "visible" | "fading",
+  });
 
   /* CSS変数 --accent の色を取得 */
   const getColor = useCallback(() => {
@@ -42,11 +44,11 @@ export function CustomScrollbar() {
     return style.getPropertyValue("--accent").trim() || "#0066cc";
   }, []);
 
-  /* スクロール位置からバーのY座標と高さを計算 */
-  const getBarMetrics = useCallback(() => {
+  /* スクロール位置からバーの目標値を計算 */
+  const updateTarget = useCallback(() => {
     const doc = document.documentElement;
     const scrollH = doc.scrollHeight - doc.clientHeight;
-    if (scrollH <= 0) return { barY: 0, barH: 0, viewH: doc.clientHeight };
+    if (scrollH <= 0) return;
 
     const viewH = doc.clientHeight;
     const ratio = viewH / doc.scrollHeight;
@@ -54,42 +56,9 @@ export function CustomScrollbar() {
     const scrollRatio = doc.scrollTop / scrollH;
     const barY = scrollRatio * (viewH - barH);
 
-    return { barY, barH, viewH };
+    stateRef.current.targetY = barY;
+    stateRef.current.targetH = barH;
   }, []);
-
-  /* パーティクルを生成 */
-  const initParticles = useCallback(() => {
-    const { barY, barH, viewH } = getBarMetrics();
-    const particles: Particle[] = [];
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const t = i / (PARTICLE_COUNT - 1);
-      const baseY = barY + t * barH;
-      particles.push({
-        /* 散乱位置: バー位置を中心にランダムにばらける */
-        sx: (Math.random() - 0.5) * 30,
-        sy: baseY + (Math.random() - 0.5) * viewH * 0.25,
-        r: 0.5 + Math.random() * 1.5,
-        delay: Math.random() * 0.3,
-      });
-    }
-
-    particlesRef.current = particles;
-  }, [getBarMetrics]);
-
-  /* 溶解時に散乱位置をリフレッシュ */
-  const refreshScatter = useCallback(() => {
-    const { barY, barH, viewH } = getBarMetrics();
-    const particles = particlesRef.current;
-
-    for (let i = 0; i < particles.length; i++) {
-      const t = i / (particles.length - 1);
-      const baseY = barY + t * barH;
-      particles[i].sx = (Math.random() - 0.5) * 30;
-      particles[i].sy = baseY + (Math.random() - 0.5) * viewH * 0.15;
-      particles[i].delay = Math.random() * 0.4;
-    }
-  }, [getBarMetrics]);
 
   /* 描画ループ */
   const draw = useCallback(() => {
@@ -99,11 +68,11 @@ export function CustomScrollbar() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const phase = phaseRef.current;
+    const s = stateRef.current;
     const dpr = window.devicePixelRatio || 1;
 
     /* Canvas サイズ */
-    const canvasW = BAR_WIDTH + RAIL_RIGHT * 2 + 30; // 散乱分の余裕
+    const canvasW = BAR_WIDTH + RAIL_RIGHT * 2;
     const canvasH = window.innerHeight;
     if (canvas.width !== canvasW * dpr || canvas.height !== canvasH * dpr) {
       canvas.width = canvasW * dpr;
@@ -115,125 +84,73 @@ export function CustomScrollbar() {
 
     ctx.clearRect(0, 0, canvasW, canvasH);
 
-    if (phase === "hidden") {
+    /* 不透明度の更新 */
+    if (s.phase === "visible") {
+      s.opacity = Math.min(1, s.opacity + 0.08);
+    } else if (s.phase === "fading") {
+      s.opacity = Math.max(0, s.opacity - 0.02);
+      if (s.opacity <= 0) {
+        s.phase = "hidden";
+      }
+    }
+
+    if (s.phase === "hidden") {
       rafRef.current = requestAnimationFrame(draw);
       return;
     }
 
+    /* 位置のなめらかな補間（lerp） */
+    s.currentY += (s.targetY - s.currentY) * LERP_SPEED;
+    s.currentH += (s.targetH - s.currentH) * LERP_SPEED;
+
+    /* バー描画 */
     const color = getColor();
-    const { barY, barH } = getBarMetrics();
+    const bx = RAIL_RIGHT;
+    const by = s.currentY;
+    const bw = BAR_WIDTH;
+    const bh = s.currentH;
+    const r = BAR_RADIUS;
 
-    /* バーの中心X（Canvas右端からRAIL_RIGHT離れた位置） */
-    const barCX = canvasW - RAIL_RIGHT;
+    ctx.globalAlpha = s.opacity * 0.6;
+    ctx.fillStyle = color;
 
-    /* --- 進行度の更新 --- */
-    const condensSpeed = 0.06;
-    const dissolveSpeed = 0.03;
-
-    if (phase === "condensing" || phase === "visible") {
-      progressRef.current = Math.min(1, progressRef.current + condensSpeed);
-      if (progressRef.current >= 1) phaseRef.current = "visible";
-    } else if (phase === "dissolving") {
-      progressRef.current = Math.max(0, progressRef.current - dissolveSpeed);
-      if (progressRef.current <= 0) {
-        phaseRef.current = "hidden";
-      }
-    }
-
-    const p = progressRef.current;
-
-    /* --- パーティクル描画 --- */
-    const particles = particlesRef.current;
-
-    /* パーティクルは凝縮途中と溶解途中にだけ見える */
-    const showParticles = p < 1 && (phase === "condensing" || phase === "dissolving");
-    if (showParticles) {
-      for (const pt of particles) {
-        /* 各パーティクルの個別進行度（delay でタイミングをずらす） */
-        const localP = Math.max(0, Math.min(1, (p - pt.delay) / (1 - pt.delay)));
-        const easedLocal =
-          phase === "dissolving"
-            ? localP * localP /* ease-in: ゆっくり溶ける */
-            : 1 - (1 - localP) * (1 - localP); /* ease-out: すっと集まる */
-
-        /* 散乱位置 → バー中心へ補間 */
-        const t = particles.indexOf(pt) / (particles.length - 1);
-        const targetY = barY + t * barH;
-
-        const px = barCX + pt.sx * (1 - easedLocal);
-        const py = targetY + (pt.sy - targetY) * (1 - easedLocal);
-
-        /* 集まるほど透明に（バーに吸収される演出） */
-        const particleAlpha = phase === "dissolving"
-          ? (1 - easedLocal) * 0.8
-          : (1 - easedLocal) * 0.6;
-
-        if (particleAlpha > 0.01) {
-          ctx.beginPath();
-          ctx.arc(px, py, pt.r, 0, Math.PI * 2);
-          ctx.fillStyle = color;
-          ctx.globalAlpha = particleAlpha;
-          ctx.fill();
-        }
-      }
-    }
-
-    /* --- 実線バー描画 --- */
-    /* バーの不透明度: 凝縮が進むほど濃くなる */
-    const barAlpha = phase === "dissolving"
-      ? p * 0.9
-      : Math.min(1, p * 1.5) * 0.8;
-
-    if (barAlpha > 0.01) {
-      ctx.globalAlpha = barAlpha;
-      ctx.fillStyle = color;
-
-      /* 角丸の実線バー */
-      const bx = barCX - BAR_WIDTH / 2;
-      const by = barY;
-      const bw = BAR_WIDTH;
-      const bh = barH;
-      const r = BAR_RADIUS;
-
-      ctx.beginPath();
-      ctx.moveTo(bx + r, by);
-      ctx.lineTo(bx + bw - r, by);
-      ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
-      ctx.lineTo(bx + bw, by + bh - r);
-      ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
-      ctx.lineTo(bx + r, by + bh);
-      ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
-      ctx.lineTo(bx, by + r);
-      ctx.quadraticCurveTo(bx, by, bx + r, by);
-      ctx.closePath();
-      ctx.fill();
-    }
+    ctx.beginPath();
+    ctx.moveTo(bx + r, by);
+    ctx.lineTo(bx + bw - r, by);
+    ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+    ctx.lineTo(bx + bw, by + bh - r);
+    ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+    ctx.lineTo(bx + r, by + bh);
+    ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+    ctx.lineTo(bx, by + r);
+    ctx.quadraticCurveTo(bx, by, bx + r, by);
+    ctx.closePath();
+    ctx.fill();
 
     ctx.globalAlpha = 1;
     rafRef.current = requestAnimationFrame(draw);
-  }, [getColor, getBarMetrics]);
+  }, [getColor]);
 
   useEffect(() => {
-    initParticles();
+    const s = stateRef.current;
+
+    /* 初期位置を設定 */
+    updateTarget();
+    s.currentY = s.targetY;
+    s.currentH = s.targetH;
 
     const onScroll = () => {
-      const phase = phaseRef.current;
+      updateTarget();
 
-      if (phase === "hidden" || phase === "dissolving") {
-        initParticles();
-        phaseRef.current = "condensing";
-        progressRef.current = phase === "dissolving" ? progressRef.current : 0;
+      if (s.phase === "hidden" || s.phase === "fading") {
+        s.phase = "visible";
       }
 
       /* 停止タイマーリセット */
       clearTimeout(scrollTimerRef.current);
       scrollTimerRef.current = setTimeout(() => {
-        if (
-          phaseRef.current === "condensing" ||
-          phaseRef.current === "visible"
-        ) {
-          refreshScatter();
-          phaseRef.current = "dissolving";
+        if (s.phase === "visible") {
+          s.phase = "fading";
         }
       }, FADE_OUT_DELAY);
     };
@@ -246,7 +163,7 @@ export function CustomScrollbar() {
       cancelAnimationFrame(rafRef.current);
       clearTimeout(scrollTimerRef.current);
     };
-  }, [initParticles, refreshScatter, draw]);
+  }, [updateTarget, draw]);
 
   return (
     <canvas

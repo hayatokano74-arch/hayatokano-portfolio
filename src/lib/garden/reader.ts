@@ -1,7 +1,6 @@
 /* Markdownファイルの読み込み・パース（Dropbox API 経由） */
 
 import matter from "gray-matter";
-import { cache } from "react";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
@@ -115,10 +114,22 @@ function rehypeOptimizedImages(options?: OptimizedImagesOptions) {
 import { fetchAllGardenFiles, type GardenFile } from "./dropbox";
 import type { GardenNode, GardenFrontmatter } from "./types";
 
-// --- リクエスト単位のキャッシュ（同一レンダリング内で Dropbox API を1回だけ呼ぶ） ---
-export const getGardenFiles = cache(async (): Promise<GardenFile[]> => {
-  return fetchAllGardenFiles();
-});
+// --- モジュールレベルキャッシュ（TTL付き） ---
+// ビルド時: 全ページが数秒で処理されるため確実にヒット（API呼び出し1回に削減）
+// ISR時: TTL経過後に新鮮なデータを再取得
+const CACHE_TTL_MS = 60_000; // 60秒
+let _gardenCache: GardenFile[] | null = null;
+let _gardenCachedAt = 0;
+
+export async function getGardenFiles(): Promise<GardenFile[]> {
+  const now = Date.now();
+  if (_gardenCache && now - _gardenCachedAt < CACHE_TTL_MS) {
+    return _gardenCache;
+  }
+  _gardenCache = await fetchAllGardenFiles();
+  _gardenCachedAt = now;
+  return _gardenCache;
+}
 
 /** ファイル名から拡張子を除去してタイトルを推定 */
 function titleFromFilename(filename: string): string {
