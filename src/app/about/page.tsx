@@ -97,7 +97,7 @@ export default async function AboutPage() {
                 sizes="(max-width: 900px) 100vw, 920px"
                 placeholder="blur"
                 blurDataURL={blurDataURL(photo.width, photo.height)}
-                style={{ objectFit: "contain", objectPosition: "center" }}
+                style={{ objectFit: "contain", objectPosition: "right center" }}
               />
             </div>
           ))}

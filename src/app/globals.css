@@ -82,7 +82,8 @@
      全て 8px ベースライン倍数。 */
   --v-row-gap: var(--space-7);         /* 行間ギャップ: 32-40px (4-5×baseline) */
   --v-header-content-gap: var(--space-7); /* ヘッダー→コンテンツ: 32-40px */
-  --v-title-content-gap: var(--space-9);  /* タイトル行→コンテンツ本文: 40-48px（全ページ統一） */
+  --v-gap-with-category: var(--space-9);  /* カテゴリ行ありページ（Works等）のタイトル→コンテンツ: 40-48px */
+  --v-gap-no-category: var(--space-12);   /* カテゴリ行なしページ（News,Contact等）のタイトル→コンテンツ: 56-72px */
 
   /* ── ページタイトル（フォントサイズ） ── */
   --font-page-title: clamp(40px, 2.14rem + 1.43vw, 48px); /* 5×→6× baseline */
@@ -1113,7 +1114,7 @@ button {
 
 /* ── About: 12カラムグリッド ── */
 .about-layout {
-  margin-top: var(--v-title-content-gap);
+  margin-top: var(--v-gap-with-category);
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
@@ -1389,7 +1390,8 @@ button {
 
 /* ── News: アコーディオン（12カラムグリッド） ── */
 .news-accordion {
-  margin-top: var(--v-title-content-gap);
+  /* カテゴリ行なし: 大きめのギャップ。header-root の margin-bottom とマージン相殺で大きい方が適用される */
+  margin-top: var(--v-gap-no-category);
 }
 
 .news-accord-item {
@@ -1688,7 +1690,8 @@ button.tl-photo-cell {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
-  margin-top: var(--v-title-content-gap);
+  /* カテゴリ行なし: 大きめのギャップ */
+  margin-top: var(--v-gap-no-category);
 }
 
 .contact-content {
@@ -2427,7 +2430,8 @@ img[loading="lazy"] {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
-  margin-top: var(--v-title-content-gap);
+  /* カテゴリ行なし: 大きめのギャップ */
+  margin-top: var(--v-gap-no-category);
 }
 
 .garden-main {
