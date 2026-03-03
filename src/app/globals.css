@@ -224,7 +224,8 @@ body {
 
 html {
   scroll-behavior: smooth;
-  /* スクロールバー: 常にスペースを確保（レイアウトシフト防止）、普段は透明 */
+  /* 常にスクロールバーのスペースを確保（レイアウトシフト防止） */
+  overflow-y: scroll;
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
 }
@@ -251,40 +252,10 @@ html.is-scrolling::-webkit-scrollbar-thumb {
   background: var(--muted);
 }
 
-/* ── 水平プログレスライン（画面上端） ── */
-.scroll-progress-line {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: var(--accent);
-  transform-origin: left;
-  transform: scaleX(0);
-  animation: scroll-progress linear;
-  animation-timeline: scroll();
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-html.is-scrolling .scroll-progress-line {
-  opacity: 1;
-}
-
-@keyframes scroll-progress {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-  .scroll-progress-line {
-    animation: none;
-    display: none;
   }
 }
 

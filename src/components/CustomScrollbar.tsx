@@ -1,12 +1,8 @@
 /**
- * 水平プログレスライン
+ * スクロールバー関連コンポーネント（現在は未使用）
  *
- * 画面上端に 2px のラインを表示。
- * スクロール位置に応じて左→右へ伸びる（CSS animation-timeline: scroll()）。
- * スクロール中のみ表示、停止後フェードアウト（is-scrolling クラス連動）。
- *
- * JS 不要の純粋な CSS 駆動。レイアウトに影響なし。
+ * layout.tsx からの参照を維持するため、空のコンポーネントとして残す。
  */
 export function CustomScrollbar() {
-  return <div aria-hidden="true" className="scroll-progress-line" />;
+  return null;
 }
