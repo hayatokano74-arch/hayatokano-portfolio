@@ -223,12 +223,16 @@ body {
 
 html {
   scroll-behavior: smooth;
-  /* スクロールバー: 6px幅を確保（レイアウト維持）、常に透明（非表示） */
+  /* スクロールバー: 常にスペースを確保（レイアウトシフト防止）、普段は透明 */
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
 }
 
-/* WebKit: 6px幅を確保、常に透明 */
+html.is-scrolling {
+  scrollbar-color: var(--muted) transparent;
+}
+
+/* WebKit: 常に6px確保、普段はサム透明、スクロール中だけ表示 */
 html::-webkit-scrollbar {
   width: 6px;
 }
@@ -239,6 +243,11 @@ html::-webkit-scrollbar-track {
 
 html::-webkit-scrollbar-thumb {
   background: transparent;
+  border-radius: 3px;
+}
+
+html.is-scrolling::-webkit-scrollbar-thumb {
+  background: var(--muted);
 }
 
 /* ── 水平プログレスライン（画面上端） ── */
