@@ -1688,8 +1688,19 @@ button.tl-photo-cell {
   /* margin-top 不要: .page-shell の gap で管理 */
 }
 
-.contact-content {
+/* フォーム・イントロは7列（読みやすい幅） */
+.contact-intro,
+.contact-form-area {
   grid-column: 1 / span 7;
+}
+
+/* hrline・info行は全幅（ヘッダーと揃える） */
+.contact-full-width {
+  grid-column: 1 / -1;
+}
+
+.contact-form-area {
+  margin-bottom: var(--space-11);
 }
 
 /* ── Contact フォーム ── */
@@ -3605,7 +3616,9 @@ img[loading="lazy"] {
     grid-template-columns: 1fr !important;
   }
 
-  .contact-content {
+  .contact-intro,
+  .contact-form-area,
+  .contact-full-width {
     grid-column: 1 / -1;
   }
 
