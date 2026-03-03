@@ -1389,7 +1389,8 @@ button {
 
 /* ── News: アコーディオン（12カラムグリッド） ── */
 .news-accordion {
-  /* margin-top 不要: .page-shell の gap で管理 */
+  /* カテゴリ行がないページのため、タイトルとの間隔を追加 */
+  margin-top: var(--space-5);
 }
 
 .news-accord-item {
