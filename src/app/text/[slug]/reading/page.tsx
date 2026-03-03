@@ -20,7 +20,7 @@ export default async function ReadingMode({
 
   return (
     <CanvasShell>
-      <div className="text-detail-layout flex items-start justify-between" style={{ gap: "var(--space-8)", marginTop: "var(--space-7)" }}>
+      <div className="text-detail-layout flex items-start justify-between" style={{ gap: "var(--space-8)" }}>
         <div className="text-detail-rail" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
           <Link
             href={`/text/${post.slug}`}

@@ -73,33 +73,25 @@ export default async function AboutPage() {
           )}
         </div>
 
-        {/* 右カラム: 写真（縦一列） */}
+        {/* 右カラム: 写真（縦一列）— me-no-hoshi と同じ width/height 方式 */}
         <div className="about-photos">
           {about.photos.map((photo, idx) => (
-            <div
+            <Image
               key={idx}
+              src={photo.src}
+              alt="Hayato Kano"
+              width={photo.width}
+              height={photo.height}
+              priority={idx === 0}
+              sizes="(max-width: 900px) 100vw, 920px"
+              placeholder="blur"
+              blurDataURL={blurDataURL(photo.width, photo.height)}
               style={{
-                position: "relative",
+                display: "block",
                 width: "100%",
-                aspectRatio: `${photo.width} / ${photo.height}`,
-                maxHeight: "min(72vh, 820px)",
-                overflow: "hidden",
-                display: "grid",
-                placeItems: "center",
-                marginLeft: "auto",
+                height: "auto",
               }}
-            >
-              <Image
-                src={photo.src}
-                alt="Hayato Kano"
-                fill
-                priority={idx === 0}
-                sizes="(max-width: 900px) 100vw, 920px"
-                placeholder="blur"
-                blurDataURL={blurDataURL(photo.width, photo.height)}
-                style={{ objectFit: "contain", objectPosition: "right center" }}
-              />
-            </div>
+            />
           ))}
         </div>
       </div>
