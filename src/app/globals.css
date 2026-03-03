@@ -11,7 +11,6 @@
   --line: var(--fg);
   --line-light: var(--fg);
   --accent: #0066cc;
-  --scrollbar-thumb: #0066cc;
   --media-bg: #e2e2e2;
 
   /* ── ベースライングリッド ──
@@ -97,7 +96,6 @@
   --line: var(--fg);
   --line-light: var(--fg);
   --accent: #4d9fff;
-  --scrollbar-thumb: #f5c518;
   --media-bg: #222;
   --color-success: #6fcf97;
   --color-success-bg: #2ecc7133;
@@ -561,7 +559,7 @@ button {
 }
 
 .hide-scrollbar.is-scrolling {
-  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-color: var(--accent) transparent;
 }
 
 /* WebKit: 常に6px確保、スクロール中だけサム表示 */
@@ -579,7 +577,7 @@ button {
 }
 
 .hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+  background: var(--accent);
 }
 
 .works-row > summary::-webkit-details-marker {

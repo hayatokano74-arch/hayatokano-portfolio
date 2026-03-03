@@ -5,47 +5,41 @@ import { useEffect, useRef, useCallback } from "react";
 /**
  * 結露スクロールバー
  *
- * スクロール開始 → 右端に水滴がランダムに現れ、集まって1本のバーに凝縮
+ * スクロール開始 → 細かい水滴が散らばって現れ、集まって1本のバーに凝縮
+ * スクロール中   → きれいな実線バーとして表示
  * スクロール停止 → バーが水滴に分解し、溶けるように消える
- *
- * Canvas で描画。ネイティブスクロールバーは CSS で非表示にする。
  */
 
-/* 水滴1粒のデータ */
-type Droplet = {
-  /* 現在位置 */
-  x: number;
-  y: number;
-  /* 集合先（バー上の位置） */
-  tx: number;
-  ty: number;
-  /* 散乱時のランダム位置 */
+/* パーティクル1粒 */
+type Particle = {
+  /* 散乱位置（ランダム） */
   sx: number;
   sy: number;
   /* 半径 */
   r: number;
-  /* 不透明度 */
-  alpha: number;
+  /* 個別の遅延（凝縮・溶解タイミングをずらす） */
+  delay: number;
 };
 
-const DROPLET_COUNT = 28;
+const PARTICLE_COUNT = 80;
 const BAR_WIDTH = 4;
-const RAIL_MARGIN = 6; // 右端からの距離
+const BAR_RADIUS = 2;
+const RAIL_RIGHT = 6; // 右端からバー中心までの距離
 const MIN_BAR_HEIGHT = 30;
-const FADE_OUT_DELAY = 1200; // スクロール停止後にフェードアウトするまでの ms
+const FADE_OUT_DELAY = 1200;
 
 export function CustomScrollbar() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const dropletsRef = useRef<Droplet[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
   const rafRef = useRef<number>(0);
   const phaseRef = useRef<"hidden" | "condensing" | "visible" | "dissolving">("hidden");
-  const progressRef = useRef(0); // 0→1 凝縮/溶解の進行度
+  const progressRef = useRef(0);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const themeRef = useRef<"light" | "dark">("light");
 
-  /* テーマ色の取得 */
+  /* CSS変数 --accent の色を取得 */
   const getColor = useCallback(() => {
-    return themeRef.current === "dark" ? "#f5c518" : "#0066cc";
+    const style = getComputedStyle(document.documentElement);
+    return style.getPropertyValue("--accent").trim() || "#0066cc";
   }, []);
 
   /* スクロール位置からバーのY座標と高さを計算 */
@@ -63,54 +57,41 @@ export function CustomScrollbar() {
     return { barY, barH, viewH };
   }, []);
 
-  /* 水滴の初期化 */
-  const initDroplets = useCallback(() => {
+  /* パーティクルを生成 */
+  const initParticles = useCallback(() => {
     const { barY, barH, viewH } = getBarMetrics();
-    const cx = 0; // Canvas 内でのX中心
-    const droplets: Droplet[] = [];
+    const particles: Particle[] = [];
 
-    for (let i = 0; i < DROPLET_COUNT; i++) {
-      const t = i / (DROPLET_COUNT - 1);
-      // バー上の位置
-      const ty = barY + t * barH;
-      const tx = cx;
-      // 散乱位置（右端付近にランダム）
-      const sx = cx + (Math.random() - 0.5) * 20;
-      const sy = ty + (Math.random() - 0.5) * viewH * 0.3;
-      // 初期サイズ
-      const r = 1 + Math.random() * 2.5;
-
-      droplets.push({ x: sx, y: sy, tx, ty, sx, sy, r, alpha: 0 });
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const t = i / (PARTICLE_COUNT - 1);
+      const baseY = barY + t * barH;
+      particles.push({
+        /* 散乱位置: バー位置を中心にランダムにばらける */
+        sx: (Math.random() - 0.5) * 30,
+        sy: baseY + (Math.random() - 0.5) * viewH * 0.25,
+        r: 0.5 + Math.random() * 1.5,
+        delay: Math.random() * 0.3,
+      });
     }
 
-    dropletsRef.current = droplets;
+    particlesRef.current = particles;
   }, [getBarMetrics]);
 
-  /* バー位置を更新（スクロール中に呼ぶ） */
-  const updateBarTarget = useCallback(() => {
-    const { barY, barH } = getBarMetrics();
-    const droplets = dropletsRef.current;
-    const cx = 0;
+  /* 溶解時に散乱位置をリフレッシュ */
+  const refreshScatter = useCallback(() => {
+    const { barY, barH, viewH } = getBarMetrics();
+    const particles = particlesRef.current;
 
-    for (let i = 0; i < droplets.length; i++) {
-      const t = i / (droplets.length - 1);
-      droplets[i].tx = cx;
-      droplets[i].ty = barY + t * barH;
+    for (let i = 0; i < particles.length; i++) {
+      const t = i / (particles.length - 1);
+      const baseY = barY + t * barH;
+      particles[i].sx = (Math.random() - 0.5) * 30;
+      particles[i].sy = baseY + (Math.random() - 0.5) * viewH * 0.15;
+      particles[i].delay = Math.random() * 0.4;
     }
   }, [getBarMetrics]);
 
-  /* 散乱位置を再設定（溶解開始時） */
-  const scatterDroplets = useCallback(() => {
-    const { viewH } = getBarMetrics();
-    const droplets = dropletsRef.current;
-
-    for (const d of droplets) {
-      d.sx = d.x + (Math.random() - 0.5) * 24;
-      d.sy = d.y + (Math.random() - 0.5) * viewH * 0.15;
-    }
-  }, [getBarMetrics]);
-
-  /* メインの描画ループ */
+  /* 描画ループ */
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -121,151 +102,151 @@ export function CustomScrollbar() {
     const phase = phaseRef.current;
     const dpr = window.devicePixelRatio || 1;
 
-    // Canvas サイズをウィンドウに合わせる
-    const w = BAR_WIDTH + RAIL_MARGIN * 2;
-    const h = window.innerHeight;
-    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
-      ctx.scale(dpr, dpr);
+    /* Canvas サイズ */
+    const canvasW = BAR_WIDTH + RAIL_RIGHT * 2 + 30; // 散乱分の余裕
+    const canvasH = window.innerHeight;
+    if (canvas.width !== canvasW * dpr || canvas.height !== canvasH * dpr) {
+      canvas.width = canvasW * dpr;
+      canvas.height = canvasH * dpr;
+      canvas.style.width = `${canvasW}px`;
+      canvas.style.height = `${canvasH}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, canvasW, canvasH);
 
     if (phase === "hidden") {
       rafRef.current = requestAnimationFrame(draw);
       return;
     }
 
-    const droplets = dropletsRef.current;
     const color = getColor();
-    const speed = 0.08;
+    const { barY, barH } = getBarMetrics();
 
-    // 進行度の更新
+    /* バーの中心X（Canvas右端からRAIL_RIGHT離れた位置） */
+    const barCX = canvasW - RAIL_RIGHT;
+
+    /* --- 進行度の更新 --- */
+    const condensSpeed = 0.06;
+    const dissolveSpeed = 0.03;
+
     if (phase === "condensing" || phase === "visible") {
-      progressRef.current = Math.min(1, progressRef.current + speed);
+      progressRef.current = Math.min(1, progressRef.current + condensSpeed);
+      if (progressRef.current >= 1) phaseRef.current = "visible";
     } else if (phase === "dissolving") {
-      progressRef.current = Math.max(0, progressRef.current - speed * 0.5);
-      if (progressRef.current <= 0.01) {
+      progressRef.current = Math.max(0, progressRef.current - dissolveSpeed);
+      if (progressRef.current <= 0) {
         phaseRef.current = "hidden";
-        for (const d of droplets) d.alpha = 0;
       }
     }
 
     const p = progressRef.current;
-    // イージング: 凝縮は ease-out、溶解は ease-in
-    const easedP =
-      phase === "dissolving" ? p * p : 1 - (1 - p) * (1 - p);
 
-    const centerX = RAIL_MARGIN + BAR_WIDTH / 2;
+    /* --- パーティクル描画 --- */
+    const particles = particlesRef.current;
 
-    for (const d of droplets) {
-      if (phase === "condensing" || phase === "visible") {
-        // 散乱位置 → バー位置へ補間
-        d.x = d.sx + (d.tx - d.sx + centerX) * easedP;
-        d.y = d.sy + (d.ty - d.sy) * easedP;
-        d.alpha = Math.min(1, p * 2); // 素早くフェードイン
-      } else if (phase === "dissolving") {
-        // バー位置 → 散乱位置へ補間（逆方向）
-        d.x = d.sx + (d.tx - d.sx + centerX) * easedP;
-        d.y = d.sy + (d.ty - d.sy) * easedP;
-        d.alpha = Math.min(1, p * 1.5);
-      }
+    /* パーティクルは凝縮途中と溶解途中にだけ見える */
+    const showParticles = p < 1 && (phase === "condensing" || phase === "dissolving");
+    if (showParticles) {
+      for (const pt of particles) {
+        /* 各パーティクルの個別進行度（delay でタイミングをずらす） */
+        const localP = Math.max(0, Math.min(1, (p - pt.delay) / (1 - pt.delay)));
+        const easedLocal =
+          phase === "dissolving"
+            ? localP * localP /* ease-in: ゆっくり溶ける */
+            : 1 - (1 - localP) * (1 - localP); /* ease-out: すっと集まる */
 
-      // 描画
-      if (d.alpha > 0.01) {
-        ctx.beginPath();
-        // 凝縮するほど半径が均一化
-        const drawR = d.r * (1 - easedP * 0.5) + BAR_WIDTH / 2 * easedP;
-        ctx.arc(d.x, d.y, Math.max(0.5, drawR), 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.globalAlpha = d.alpha * 0.7;
-        ctx.fill();
+        /* 散乱位置 → バー中心へ補間 */
+        const t = particles.indexOf(pt) / (particles.length - 1);
+        const targetY = barY + t * barH;
+
+        const px = barCX + pt.sx * (1 - easedLocal);
+        const py = targetY + (pt.sy - targetY) * (1 - easedLocal);
+
+        /* 集まるほど透明に（バーに吸収される演出） */
+        const particleAlpha = phase === "dissolving"
+          ? (1 - easedLocal) * 0.8
+          : (1 - easedLocal) * 0.6;
+
+        if (particleAlpha > 0.01) {
+          ctx.beginPath();
+          ctx.arc(px, py, pt.r, 0, Math.PI * 2);
+          ctx.fillStyle = color;
+          ctx.globalAlpha = particleAlpha;
+          ctx.fill();
+        }
       }
     }
 
-    // 凝縮しきったら連結線を描く
-    if (easedP > 0.7 && phase !== "dissolving") {
-      ctx.beginPath();
-      ctx.globalAlpha = (easedP - 0.7) / 0.3 * 0.5;
-      ctx.lineWidth = BAR_WIDTH;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = color;
+    /* --- 実線バー描画 --- */
+    /* バーの不透明度: 凝縮が進むほど濃くなる */
+    const barAlpha = phase === "dissolving"
+      ? p * 0.9
+      : Math.min(1, p * 1.5) * 0.8;
 
-      const sorted = [...droplets].sort((a, b) => a.ty - b.ty);
-      ctx.moveTo(sorted[0].x, sorted[0].y);
-      for (let i = 1; i < sorted.length; i++) {
-        ctx.lineTo(sorted[i].x, sorted[i].y);
-      }
-      ctx.stroke();
+    if (barAlpha > 0.01) {
+      ctx.globalAlpha = barAlpha;
+      ctx.fillStyle = color;
+
+      /* 角丸の実線バー */
+      const bx = barCX - BAR_WIDTH / 2;
+      const by = barY;
+      const bw = BAR_WIDTH;
+      const bh = barH;
+      const r = BAR_RADIUS;
+
+      ctx.beginPath();
+      ctx.moveTo(bx + r, by);
+      ctx.lineTo(bx + bw - r, by);
+      ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+      ctx.lineTo(bx + bw, by + bh - r);
+      ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+      ctx.lineTo(bx + r, by + bh);
+      ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+      ctx.lineTo(bx, by + r);
+      ctx.quadraticCurveTo(bx, by, bx + r, by);
+      ctx.closePath();
+      ctx.fill();
     }
 
     ctx.globalAlpha = 1;
     rafRef.current = requestAnimationFrame(draw);
-  }, [getColor]);
+  }, [getColor, getBarMetrics]);
 
   useEffect(() => {
-    // テーマ監視
-    const updateTheme = () => {
-      const theme = document.documentElement.getAttribute("data-theme");
-      themeRef.current = theme === "dark" ? "dark" : "light";
-    };
-    updateTheme();
-    const observer = new MutationObserver(updateTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
+    initParticles();
 
-    // 水滴を初期化
-    initDroplets();
-
-    // スクロールイベント
     const onScroll = () => {
       const phase = phaseRef.current;
 
       if (phase === "hidden" || phase === "dissolving") {
-        // 新しく凝縮開始
-        initDroplets();
+        initParticles();
         phaseRef.current = "condensing";
-        progressRef.current = 0;
+        progressRef.current = phase === "dissolving" ? progressRef.current : 0;
       }
 
-      // バー位置を更新
-      updateBarTarget();
-
-      // 凝縮済みなら visible へ
-      if (phaseRef.current === "condensing" && progressRef.current >= 0.95) {
-        phaseRef.current = "visible";
-      }
-
-      // 停止タイマーをリセット
+      /* 停止タイマーリセット */
       clearTimeout(scrollTimerRef.current);
       scrollTimerRef.current = setTimeout(() => {
         if (
           phaseRef.current === "condensing" ||
           phaseRef.current === "visible"
         ) {
-          scatterDroplets();
+          refreshScatter();
           phaseRef.current = "dissolving";
         }
       }, FADE_OUT_DELAY);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-
-    // 描画ループ開始
     rafRef.current = requestAnimationFrame(draw);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(rafRef.current);
       clearTimeout(scrollTimerRef.current);
-      observer.disconnect();
     };
-  }, [initDroplets, updateBarTarget, scatterDroplets, draw]);
+  }, [initParticles, refreshScatter, draw]);
 
   return (
     <canvas
