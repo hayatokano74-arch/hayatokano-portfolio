@@ -3,20 +3,30 @@
 import { useEffect, useRef, useCallback } from "react";
 
 /**
- * カスタムスクロールバー
+ * カスタムスクロールバー（B案: 極細レール + ミニサム）
  *
- * スクロール開始 → 細い線がふわっと現れる
- * スクロール中   → スクロール位置になめらかに追従（有機的な遅延）
- * スクロール停止 → ゆっくり溶けるように消える
+ * レール: 右端に常時表示される 1px の極薄ライン（ページの長さを暗示）
+ * サム:   スクロール中だけ現れる 2px 幅のアクセント色バー
+ *         lerp 補間でなめらかに追従し、停止後にフェードアウト
  *
  * レイアウトに影響しないオーバーレイ方式。
  */
 
-const BAR_WIDTH = 3;
-const BAR_RADIUS = 1.5;
-const RAIL_RIGHT = 4;
-const MIN_BAR_HEIGHT = 30;
-const FADE_OUT_DELAY = 1000;
+/* レール（常時表示の背景ライン） */
+const RAIL_WIDTH = 1;
+const RAIL_RIGHT_MARGIN = 5;
+const RAIL_OPACITY = 0.06;
+
+/* サム（スクロール中のインジケーター） */
+const THUMB_WIDTH = 2;
+const THUMB_RADIUS = 1;
+const MIN_THUMB_HEIGHT = 30;
+const THUMB_MAX_OPACITY = 0.7;
+
+/* タイミング */
+const FADE_OUT_DELAY = 1200;
+const FADE_IN_SPEED = 0.1;
+const FADE_OUT_SPEED = 0.015;
 /* 追従の滑らかさ（0に近いほど遅延が大きい） */
 const LERP_SPEED = 0.12;
 
@@ -27,24 +37,26 @@ export function CustomScrollbar() {
 
   /* 現在の描画状態 */
   const stateRef = useRef({
-    opacity: 0,
-    /* 実際に描画されているバーのY座標と高さ（補間中の値） */
+    thumbOpacity: 0,
+    /* 実際に描画されているサムのY座標と高さ（補間中の値） */
     currentY: 0,
-    currentH: MIN_BAR_HEIGHT,
+    currentH: MIN_THUMB_HEIGHT,
     /* 目標位置（スクロール位置から計算） */
     targetY: 0,
-    targetH: MIN_BAR_HEIGHT,
+    targetH: MIN_THUMB_HEIGHT,
     /* フェーズ */
     phase: "hidden" as "hidden" | "visible" | "fading",
   });
 
-  /* CSS変数 --accent の色を取得 */
-  const getColor = useCallback(() => {
+  /* CSS変数の色を取得 */
+  const getColors = useCallback(() => {
     const style = getComputedStyle(document.documentElement);
-    return style.getPropertyValue("--accent").trim() || "#0066cc";
+    const accent = style.getPropertyValue("--accent").trim() || "#0066cc";
+    const fg = style.getPropertyValue("--fg").trim() || "#141414";
+    return { accent, fg };
   }, []);
 
-  /* スクロール位置からバーの目標値を計算 */
+  /* スクロール位置からサムの目標値を計算 */
   const updateTarget = useCallback(() => {
     const doc = document.documentElement;
     const scrollH = doc.scrollHeight - doc.clientHeight;
@@ -52,13 +64,39 @@ export function CustomScrollbar() {
 
     const viewH = doc.clientHeight;
     const ratio = viewH / doc.scrollHeight;
-    const barH = Math.max(MIN_BAR_HEIGHT, viewH * ratio);
+    const thumbH = Math.max(MIN_THUMB_HEIGHT, viewH * ratio);
     const scrollRatio = doc.scrollTop / scrollH;
-    const barY = scrollRatio * (viewH - barH);
+    const thumbY = scrollRatio * (viewH - thumbH);
 
-    stateRef.current.targetY = barY;
-    stateRef.current.targetH = barH;
+    stateRef.current.targetY = thumbY;
+    stateRef.current.targetH = thumbH;
   }, []);
+
+  /* 角丸矩形を描画するヘルパー */
+  const drawRoundedRect = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      r: number
+    ) => {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.fill();
+    },
+    []
+  );
 
   /* 描画ループ */
   const draw = useCallback(() => {
@@ -71,8 +109,8 @@ export function CustomScrollbar() {
     const s = stateRef.current;
     const dpr = window.devicePixelRatio || 1;
 
-    /* Canvas サイズ */
-    const canvasW = BAR_WIDTH + RAIL_RIGHT * 2;
+    /* Canvas サイズ（レール + サム + マージンが収まる幅） */
+    const canvasW = RAIL_RIGHT_MARGIN + THUMB_WIDTH + 4;
     const canvasH = window.innerHeight;
     if (canvas.width !== canvasW * dpr || canvas.height !== canvasH * dpr) {
       canvas.width = canvasW * dpr;
@@ -84,52 +122,44 @@ export function CustomScrollbar() {
 
     ctx.clearRect(0, 0, canvasW, canvasH);
 
-    /* 不透明度の更新 */
+    const { accent, fg } = getColors();
+
+    /* ── レール（常時表示） ── */
+    const railX = canvasW - RAIL_RIGHT_MARGIN - RAIL_WIDTH;
+    const railTop = 8;
+    const railBottom = canvasH - 8;
+    ctx.globalAlpha = RAIL_OPACITY;
+    ctx.fillStyle = fg;
+    ctx.fillRect(railX, railTop, RAIL_WIDTH, railBottom - railTop);
+
+    /* ── サムの不透明度更新 ── */
     if (s.phase === "visible") {
-      s.opacity = Math.min(1, s.opacity + 0.08);
+      s.thumbOpacity = Math.min(1, s.thumbOpacity + FADE_IN_SPEED);
     } else if (s.phase === "fading") {
-      s.opacity = Math.max(0, s.opacity - 0.02);
-      if (s.opacity <= 0) {
+      s.thumbOpacity = Math.max(0, s.thumbOpacity - FADE_OUT_SPEED);
+      if (s.thumbOpacity <= 0) {
         s.phase = "hidden";
       }
     }
 
-    if (s.phase === "hidden") {
-      rafRef.current = requestAnimationFrame(draw);
-      return;
+    /* ── サム描画（スクロール中のみ） ── */
+    if (s.phase !== "hidden") {
+      /* 位置のなめらかな補間（lerp） */
+      s.currentY += (s.targetY - s.currentY) * LERP_SPEED;
+      s.currentH += (s.targetH - s.currentH) * LERP_SPEED;
+
+      const thumbX = canvasW - RAIL_RIGHT_MARGIN - THUMB_WIDTH / 2 - RAIL_WIDTH / 2;
+      const thumbY = s.currentY;
+      const thumbH = s.currentH;
+
+      ctx.globalAlpha = s.thumbOpacity * THUMB_MAX_OPACITY;
+      ctx.fillStyle = accent;
+      drawRoundedRect(ctx, thumbX, thumbY, THUMB_WIDTH, thumbH, THUMB_RADIUS);
     }
-
-    /* 位置のなめらかな補間（lerp） */
-    s.currentY += (s.targetY - s.currentY) * LERP_SPEED;
-    s.currentH += (s.targetH - s.currentH) * LERP_SPEED;
-
-    /* バー描画 */
-    const color = getColor();
-    const bx = RAIL_RIGHT;
-    const by = s.currentY;
-    const bw = BAR_WIDTH;
-    const bh = s.currentH;
-    const r = BAR_RADIUS;
-
-    ctx.globalAlpha = s.opacity * 0.6;
-    ctx.fillStyle = color;
-
-    ctx.beginPath();
-    ctx.moveTo(bx + r, by);
-    ctx.lineTo(bx + bw - r, by);
-    ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
-    ctx.lineTo(bx + bw, by + bh - r);
-    ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
-    ctx.lineTo(bx + r, by + bh);
-    ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
-    ctx.lineTo(bx, by + r);
-    ctx.quadraticCurveTo(bx, by, bx + r, by);
-    ctx.closePath();
-    ctx.fill();
 
     ctx.globalAlpha = 1;
     rafRef.current = requestAnimationFrame(draw);
-  }, [getColor]);
+  }, [getColors, drawRoundedRect]);
 
   useEffect(() => {
     const s = stateRef.current;
