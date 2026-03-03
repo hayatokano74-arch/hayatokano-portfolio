@@ -225,31 +225,12 @@ body {
 
 html {
   scroll-behavior: smooth;
-  /* スクロールバー: 常にスペースを確保（レイアウトシフト防止）、普段は透明 */
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
+  /* ネイティブスクロールバーを非表示（カスタムスクロールバーで代替） */
+  scrollbar-width: none;
 }
 
-html.is-scrolling {
-  scrollbar-color: var(--scrollbar-thumb) transparent;
-}
-
-/* WebKit: 常に6px確保、普段はサム透明、スクロール中だけ表示 */
 html::-webkit-scrollbar {
-  width: 6px;
-}
-
-html::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-html::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 3px;
-}
-
-html.is-scrolling::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
