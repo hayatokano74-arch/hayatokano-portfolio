@@ -3,95 +3,119 @@
 import { useEffect, useRef, useCallback } from "react";
 
 /**
- * カスタムスクロールバー（B案: 極細レール + ミニサム）
+ * 月の満ち欠けスクロールインジケーター
  *
- * レール: 右端に常時表示される 1px の極薄ライン（ページの長さを暗示）
- * サム:   スクロール中だけ現れる 2px 幅のアクセント色バー
- *         lerp 補間でなめらかに追従し、停止後にフェードアウト
+ * 画面右下に小さな月を表示。
+ * ページ上端 = 新月（暗い円） → ページ下端 = 満月（accent色）
+ * scrollHeight が変動しても lerp で滑らかに月相が調整される。
  *
  * レイアウトに影響しないオーバーレイ方式。
  */
 
-/* レール（常時表示の背景ライン） */
-const RAIL_WIDTH = 1;
-const RAIL_RIGHT_MARGIN = 5;
-const RAIL_OPACITY = 0.06;
+const MOON_RADIUS = 9;
+const MARGIN_RIGHT = 20;
+const MARGIN_BOTTOM = 20;
 
-/* サム（スクロール中のインジケーター） */
-const THUMB_WIDTH = 2;
-const THUMB_RADIUS = 1;
-const MIN_THUMB_HEIGHT = 30;
-const THUMB_MAX_OPACITY = 0.7;
+/* 不透明度 */
+const DARK_SIDE_OPACITY = 0.07;
+const LIT_SIDE_OPACITY = 0.5;
 
 /* タイミング */
-const FADE_OUT_DELAY = 1200;
-const FADE_IN_SPEED = 0.1;
+const FADE_OUT_DELAY = 1500;
+const FADE_IN_SPEED = 0.08;
 const FADE_OUT_SPEED = 0.015;
-/* 追従の滑らかさ（0に近いほど遅延が大きい） */
-const LERP_SPEED = 0.12;
+const PHASE_LERP = 0.08;
 
 export function CustomScrollbar() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  /* 現在の描画状態 */
   const stateRef = useRef({
-    thumbOpacity: 0,
-    /* 実際に描画されているサムのY座標と高さ（補間中の値） */
-    currentY: 0,
-    currentH: MIN_THUMB_HEIGHT,
-    /* 目標位置（スクロール位置から計算） */
-    targetY: 0,
-    targetH: MIN_THUMB_HEIGHT,
-    /* フェーズ */
-    phase: "hidden" as "hidden" | "visible" | "fading",
+    opacity: 0,
+    currentPhase: 0,
+    targetPhase: 0,
+    visPhase: "hidden" as "hidden" | "visible" | "fading",
   });
 
-  /* CSS変数の色を取得 */
+  /* CSS変数から色を取得 */
   const getColors = useCallback(() => {
     const style = getComputedStyle(document.documentElement);
-    const accent = style.getPropertyValue("--accent").trim() || "#0066cc";
-    const fg = style.getPropertyValue("--fg").trim() || "#141414";
-    return { accent, fg };
+    return {
+      accent: style.getPropertyValue("--accent").trim() || "#0066cc",
+      fg: style.getPropertyValue("--fg").trim() || "#141414",
+    };
   }, []);
 
-  /* スクロール位置からサムの目標値を計算 */
+  /* スクロール位置から月相の目標値を計算 */
   const updateTarget = useCallback(() => {
     const doc = document.documentElement;
-    const scrollH = doc.scrollHeight - doc.clientHeight;
-    if (scrollH <= 0) return;
-
-    const viewH = doc.clientHeight;
-    const ratio = viewH / doc.scrollHeight;
-    const thumbH = Math.max(MIN_THUMB_HEIGHT, viewH * ratio);
-    const scrollRatio = doc.scrollTop / scrollH;
-    const thumbY = scrollRatio * (viewH - thumbH);
-
-    stateRef.current.targetY = thumbY;
-    stateRef.current.targetH = thumbH;
+    const scrollable = doc.scrollHeight - doc.clientHeight;
+    stateRef.current.targetPhase =
+      scrollable > 0 ? doc.scrollTop / scrollable : 0;
   }, []);
 
-  /* 角丸矩形を描画するヘルパー */
-  const drawRoundedRect = useCallback(
+  /**
+   * 月を描画
+   * phase: 0 = 新月, 0.5 = 半月（右半分）, 1 = 満月
+   * 北半球の上弦の月のように右から満ちていく
+   */
+  const drawMoon = useCallback(
     (
       ctx: CanvasRenderingContext2D,
-      x: number,
-      y: number,
-      w: number,
-      h: number,
-      r: number
+      cx: number,
+      cy: number,
+      r: number,
+      phase: number,
+      litColor: string,
+      darkColor: string,
+      masterOpacity: number
     ) => {
+      /* 暗い側（円のシルエット） */
+      ctx.globalAlpha = masterOpacity * DARK_SIDE_OPACITY;
+      ctx.fillStyle = darkColor;
       ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      /* 新月：これ以上描画不要 */
+      if (phase < 0.005) return;
+
+      /* 満月：円全体を明るく */
+      if (phase > 0.995) {
+        ctx.globalAlpha = masterOpacity * LIT_SIDE_OPACITY;
+        ctx.fillStyle = litColor;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
+
+      /* 中間の月相 */
+      ctx.globalAlpha = masterOpacity * LIT_SIDE_OPACITY;
+      ctx.fillStyle = litColor;
+      ctx.beginPath();
+
+      /* 右半球の弧（上→右→下） */
+      ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+
+      /* 明暗境界線（ターミネーター）: 楕円弧で月相を表現
+         phase < 0.5 → 楕円が右に膨らむ（三日月）
+         phase = 0.5 → 直線（半月）
+         phase > 0.5 → 楕円が左に膨らむ（十三夜） */
+      const ellipseRx = r * Math.abs(1 - 2 * phase);
+      const counterclockwise = phase >= 0.5;
+      ctx.ellipse(
+        cx,
+        cy,
+        ellipseRx,
+        r,
+        0,
+        Math.PI / 2,
+        -Math.PI / 2,
+        counterclockwise
+      );
+
       ctx.closePath();
       ctx.fill();
     },
@@ -102,86 +126,74 @@ export function CustomScrollbar() {
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const s = stateRef.current;
     const dpr = window.devicePixelRatio || 1;
 
-    /* Canvas サイズ（レール + サム + マージンが収まる幅） */
-    const canvasW = RAIL_RIGHT_MARGIN + THUMB_WIDTH + 4;
-    const canvasH = window.innerHeight;
-    if (canvas.width !== canvasW * dpr || canvas.height !== canvasH * dpr) {
-      canvas.width = canvasW * dpr;
-      canvas.height = canvasH * dpr;
-      canvas.style.width = `${canvasW}px`;
-      canvas.style.height = `${canvasH}px`;
+    /* Canvas サイズ（月 + 余白） */
+    const size = MOON_RADIUS * 2 + 4;
+    if (canvas.width !== size * dpr || canvas.height !== size * dpr) {
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      canvas.style.width = `${size}px`;
+      canvas.style.height = `${size}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    ctx.clearRect(0, 0, canvasW, canvasH);
+    ctx.clearRect(0, 0, size, size);
+
+    /* フェード処理 */
+    if (s.visPhase === "visible") {
+      s.opacity = Math.min(1, s.opacity + FADE_IN_SPEED);
+    } else if (s.visPhase === "fading") {
+      s.opacity = Math.max(0, s.opacity - FADE_OUT_SPEED);
+      if (s.opacity <= 0) s.visPhase = "hidden";
+    }
+
+    if (s.visPhase === "hidden") {
+      rafRef.current = requestAnimationFrame(draw);
+      return;
+    }
+
+    /* 月相の滑らかな補間（lerp） */
+    s.currentPhase += (s.targetPhase - s.currentPhase) * PHASE_LERP;
 
     const { accent, fg } = getColors();
-
-    /* ── レール（常時表示） ── */
-    const railX = canvasW - RAIL_RIGHT_MARGIN - RAIL_WIDTH;
-    const railTop = 8;
-    const railBottom = canvasH - 8;
-    ctx.globalAlpha = RAIL_OPACITY;
-    ctx.fillStyle = fg;
-    ctx.fillRect(railX, railTop, RAIL_WIDTH, railBottom - railTop);
-
-    /* ── サムの不透明度更新 ── */
-    if (s.phase === "visible") {
-      s.thumbOpacity = Math.min(1, s.thumbOpacity + FADE_IN_SPEED);
-    } else if (s.phase === "fading") {
-      s.thumbOpacity = Math.max(0, s.thumbOpacity - FADE_OUT_SPEED);
-      if (s.thumbOpacity <= 0) {
-        s.phase = "hidden";
-      }
-    }
-
-    /* ── サム描画（スクロール中のみ） ── */
-    if (s.phase !== "hidden") {
-      /* 位置のなめらかな補間（lerp） */
-      s.currentY += (s.targetY - s.currentY) * LERP_SPEED;
-      s.currentH += (s.targetH - s.currentH) * LERP_SPEED;
-
-      const thumbX = canvasW - RAIL_RIGHT_MARGIN - THUMB_WIDTH / 2 - RAIL_WIDTH / 2;
-      const thumbY = s.currentY;
-      const thumbH = s.currentH;
-
-      ctx.globalAlpha = s.thumbOpacity * THUMB_MAX_OPACITY;
-      ctx.fillStyle = accent;
-      drawRoundedRect(ctx, thumbX, thumbY, THUMB_WIDTH, thumbH, THUMB_RADIUS);
-    }
+    drawMoon(
+      ctx,
+      size / 2,
+      size / 2,
+      MOON_RADIUS,
+      s.currentPhase,
+      accent,
+      fg,
+      s.opacity
+    );
 
     ctx.globalAlpha = 1;
     rafRef.current = requestAnimationFrame(draw);
-  }, [getColors, drawRoundedRect]);
+  }, [getColors, drawMoon]);
 
   useEffect(() => {
     const s = stateRef.current;
 
     /* 初期位置を設定 */
     updateTarget();
-    s.currentY = s.targetY;
-    s.currentH = s.targetH;
+    s.currentPhase = s.targetPhase;
 
     const onScroll = () => {
       updateTarget();
 
-      if (s.phase === "hidden" || s.phase === "fading") {
-        s.phase = "visible";
+      if (s.visPhase === "hidden" || s.visPhase === "fading") {
+        s.visPhase = "visible";
       }
 
       /* 停止タイマーリセット */
       clearTimeout(scrollTimerRef.current);
       scrollTimerRef.current = setTimeout(() => {
-        if (s.phase === "visible") {
-          s.phase = "fading";
-        }
+        if (s.visPhase === "visible") s.visPhase = "fading";
       }, FADE_OUT_DELAY);
     };
 
@@ -201,8 +213,8 @@ export function CustomScrollbar() {
       aria-hidden="true"
       style={{
         position: "fixed",
-        top: 0,
-        right: 0,
+        bottom: MARGIN_BOTTOM,
+        right: MARGIN_RIGHT,
         zIndex: 9998,
         pointerEvents: "none",
       }}
