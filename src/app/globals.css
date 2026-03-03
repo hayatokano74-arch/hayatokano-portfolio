@@ -628,12 +628,6 @@ button {
   position: relative;
 }
 
-/* カテゴリ行がないページ（About, News, Contact, Garden, Timeline）では
-   ヘッダーとコンテンツの間にわずかな追加余白を確保する。
-   page-shell の gap(space-7) + この margin-bottom(space-3) = 48-56px */
-.header-root:not(:has(.header-category-row)) {
-  margin-bottom: var(--space-3);
-}
 
 /* グリッドセルのオーバーフロー防止（全グリッドの子要素に適用） */
 .works-list-summary > *,
