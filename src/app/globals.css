@@ -223,13 +223,18 @@ body {
 
 html {
   scroll-behavior: smooth;
-  /* ネイティブスクロールバーを透明化（幅は維持してレイアウトに影響させない） */
+  /* スクロールバー: 常にスペースを確保（レイアウトシフト防止）、普段は透明 */
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
 }
 
+html.is-scrolling {
+  scrollbar-color: var(--muted) transparent;
+}
+
+/* WebKit: 常に6px確保、普段はサム透明、スクロール中だけ表示 */
 html::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 html::-webkit-scrollbar-track {
@@ -238,6 +243,11 @@ html::-webkit-scrollbar-track {
 
 html::-webkit-scrollbar-thumb {
   background: transparent;
+  border-radius: 3px;
+}
+
+html.is-scrolling::-webkit-scrollbar-thumb {
+  background: var(--muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
