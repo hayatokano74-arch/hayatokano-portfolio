@@ -81,7 +81,7 @@
      ヘッダー各行とコンテンツ間の垂直方向の間隔を統一する。
      全て 8px ベースライン倍数。 */
   --v-row-gap: var(--space-7);         /* 行間ギャップ: 32-40px (4-5×baseline) */
-  --v-header-content-gap: var(--space-7); /* ヘッダー→コンテンツ: 32-40px */
+  --v-header-content-gap: var(--space-7); /* ヘッダー→コンテンツ: 32-40px（page-shell gap で使用） */
   /* ヘッダー→コンテンツの間隔は .page-shell の gap で一元管理 */
 
   /* ── ページタイトル（フォントサイズ） ── */
@@ -626,7 +626,13 @@ button {
 
 .header-root {
   position: relative;
-  /* margin-bottom 不要: .page-shell の gap で管理 */
+}
+
+/* カテゴリ行がないページ（About, News, Contact, Garden, Timeline）では
+   ヘッダーとコンテンツの間隔を広げて、カテゴリ行分の視覚的余白を確保する。
+   page-shell の gap(space-7) + この margin-bottom(space-6) = space-12 相当 */
+.header-root:not(:has(.header-category-row)) {
+  margin-bottom: var(--space-6);
 }
 
 /* グリッドセルのオーバーフロー防止（全グリッドの子要素に適用） */
