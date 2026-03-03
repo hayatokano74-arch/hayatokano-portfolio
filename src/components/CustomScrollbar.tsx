@@ -6,19 +6,23 @@ import { useEffect, useRef, useCallback } from "react";
  * 月の満ち欠けスクロールインジケーター
  *
  * 画面右下に小さな月を表示。
- * ページ上端 = 新月（暗い円） → ページ下端 = 満月（accent色）
+ * ページ上端 = 新月 → スクロールで満ちていく → ページ下端 = 満月
  * scrollHeight が変動しても lerp で滑らかに月相が調整される。
  *
  * レイアウトに影響しないオーバーレイ方式。
  */
 
-const MOON_RADIUS = 9;
+const MOON_RADIUS = 12;
 const MARGIN_RIGHT = 20;
 const MARGIN_BOTTOM = 20;
 
+/* 月の色 */
+const MOON_COLOR = "#E8C86A";
+
 /* 不透明度 */
-const DARK_SIDE_OPACITY = 0.07;
-const LIT_SIDE_OPACITY = 0.5;
+const DARK_SIDE_OPACITY = 0.15;
+const LIT_SIDE_OPACITY = 0.85;
+const OUTLINE_OPACITY = 0.2;
 
 /* タイミング */
 const FADE_OUT_DELAY = 1500;
@@ -42,7 +46,6 @@ export function CustomScrollbar() {
   const getColors = useCallback(() => {
     const style = getComputedStyle(document.documentElement);
     return {
-      accent: style.getPropertyValue("--accent").trim() || "#0066cc",
       fg: style.getPropertyValue("--fg").trim() || "#141414",
     };
   }, []);
@@ -57,8 +60,8 @@ export function CustomScrollbar() {
 
   /**
    * 月を描画
-   * phase: 0 = 新月, 0.5 = 半月（右半分）, 1 = 満月
-   * 北半球の上弦の月のように右から満ちていく
+   * phase: 0 = 新月, 0.5 = 上弦の半月, 1 = 満月
+   * 右から満ちていく（北半球の上弦）
    */
   const drawMoon = useCallback(
     (
@@ -67,10 +70,17 @@ export function CustomScrollbar() {
       cy: number,
       r: number,
       phase: number,
-      litColor: string,
       darkColor: string,
       masterOpacity: number
     ) => {
+      /* 輪郭線（月の形を常に示す） */
+      ctx.globalAlpha = masterOpacity * OUTLINE_OPACITY;
+      ctx.strokeStyle = MOON_COLOR;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+
       /* 暗い側（円のシルエット） */
       ctx.globalAlpha = masterOpacity * DARK_SIDE_OPACITY;
       ctx.fillStyle = darkColor;
@@ -84,25 +94,25 @@ export function CustomScrollbar() {
       /* 満月：円全体を明るく */
       if (phase > 0.995) {
         ctx.globalAlpha = masterOpacity * LIT_SIDE_OPACITY;
-        ctx.fillStyle = litColor;
+        ctx.fillStyle = MOON_COLOR;
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.fill();
         return;
       }
 
-      /* 中間の月相 */
+      /* 中間の月相: 右から満ちていく */
       ctx.globalAlpha = masterOpacity * LIT_SIDE_OPACITY;
-      ctx.fillStyle = litColor;
+      ctx.fillStyle = MOON_COLOR;
       ctx.beginPath();
 
       /* 右半球の弧（上→右→下） */
       ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
 
       /* 明暗境界線（ターミネーター）: 楕円弧で月相を表現
-         phase < 0.5 → 楕円が右に膨らむ（三日月）
-         phase = 0.5 → 直線（半月）
-         phase > 0.5 → 楕円が左に膨らむ（十三夜） */
+         phase < 0.5 → 三日月（右側の薄い光）
+         phase = 0.5 → 半月（右半分）
+         phase > 0.5 → 十三夜（ほぼ満月） */
       const ellipseRx = r * Math.abs(1 - 2 * phase);
       const counterclockwise = phase >= 0.5;
       ctx.ellipse(
@@ -133,7 +143,7 @@ export function CustomScrollbar() {
     const dpr = window.devicePixelRatio || 1;
 
     /* Canvas サイズ（月 + 余白） */
-    const size = MOON_RADIUS * 2 + 4;
+    const size = MOON_RADIUS * 2 + 6;
     if (canvas.width !== size * dpr || canvas.height !== size * dpr) {
       canvas.width = size * dpr;
       canvas.height = size * dpr;
@@ -160,14 +170,13 @@ export function CustomScrollbar() {
     /* 月相の滑らかな補間（lerp） */
     s.currentPhase += (s.targetPhase - s.currentPhase) * PHASE_LERP;
 
-    const { accent, fg } = getColors();
+    const { fg } = getColors();
     drawMoon(
       ctx,
       size / 2,
       size / 2,
       MOON_RADIUS,
       s.currentPhase,
-      accent,
       fg,
       s.opacity
     );
