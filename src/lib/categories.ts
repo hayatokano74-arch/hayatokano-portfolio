@@ -23,6 +23,12 @@ export function parseTags(sp?: { tags?: string; tag?: string }): string[] {
   return [];
 }
 
+/** URLの ?years=2021,2024 をパースして配列にする */
+export function parseYears(sp?: { years?: string }): string[] {
+  if (sp?.years) return sp.years.split(",").filter(Boolean);
+  return [];
+}
+
 /** 選択中のタグ配列をURLパラメータ文字列に変換する */
 export function buildTagsParam(tags: string[]): string {
   if (tags.length === 0) return "";
@@ -31,21 +37,43 @@ export function buildTagsParam(tags: string[]): string {
 
 /** フィルターグループの型定義 */
 export type FilterGroup = {
+  /** グループ名（表示用） */
   label: string;
+  /** URLパラメータキー（tags, years等） */
+  paramKey: string;
   options: { value: string; count: number }[];
 };
 
-/** 投稿のタグ一覧からフィルターグループを構築する */
+/** 値リストからフィルターグループを構築する汎用関数 */
+function buildGroup(
+  label: string,
+  paramKey: string,
+  values: string[],
+  sort: "alpha" | "desc" = "alpha",
+): FilterGroup {
+  const counts = new Map<string, number>();
+  for (const v of values) {
+    counts.set(v, (counts.get(v) ?? 0) + 1);
+  }
+  const entries = [...counts.entries()];
+  if (sort === "desc") {
+    entries.sort(([a], [b]) => b.localeCompare(a));
+  } else {
+    entries.sort(([a], [b]) => a.localeCompare(b));
+  }
+  const options = entries.map(([value, count]) => ({ value, count }));
+  return { label, paramKey, options };
+}
+
+/** カテゴリ + Year のフィルターグループを構築する */
 export function buildFilterGroups(
   allTags: string[],
-  groupLabel = "Category",
+  allYears: string[],
 ): FilterGroup[] {
-  const counts = new Map<string, number>();
-  for (const tag of allTags) {
-    counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  const groups: FilterGroup[] = [];
+  groups.push(buildGroup("Category", "tags", allTags, "alpha"));
+  if (allYears.length > 0) {
+    groups.push(buildGroup("Year", "years", allYears, "desc"));
   }
-  const options = [...counts.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([value, count]) => ({ value, count }));
-  return [{ label: groupLabel, options }];
+  return groups;
 }

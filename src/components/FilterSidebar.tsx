@@ -3,18 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FilterGroup } from "@/lib/categories";
-import { buildTagsParam } from "@/lib/categories";
+
+/** 各グループの選択状態: { tags: ["Video"], years: ["2021"] } */
+export type SelectedFilters = Record<string, string[]>;
+
+/** フィルターパラメータキーの一覧 */
+const FILTER_PARAM_KEYS = ["tags", "tag", "years"];
 
 export function FilterSidebar({
   groups,
-  selectedTags,
+  selected,
   basePath,
   currentSearchParams,
   open,
   onClose,
 }: {
   groups: FilterGroup[];
-  selectedTags: string[];
+  selected: SelectedFilters;
   basePath: string;
   currentSearchParams: Record<string, string>;
   open: boolean;
@@ -22,17 +27,26 @@ export function FilterSidebar({
 }) {
   const router = useRouter();
 
-  /* タグの選択・解除 → URLを更新 */
-  const toggleTag = (tag: string) => {
-    const next = selectedTags.includes(tag)
-      ? selectedTags.filter((t) => t !== tag)
-      : [...selectedTags, tag];
+  /* 選択中の合計数 */
+  const totalSelected = Object.values(selected).reduce((sum, arr) => sum + arr.length, 0);
+
+  /* 特定グループ内の値をトグル → URLを更新 */
+  const toggleValue = (paramKey: string, value: string) => {
+    const current = selected[paramKey] ?? [];
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
 
     const params = new URLSearchParams();
+    /* フィルター以外のパラメータ（view, q等）を維持 */
     for (const [k, v] of Object.entries(currentSearchParams)) {
-      if (k !== "tags" && k !== "tag") params.set(k, v);
+      if (!FILTER_PARAM_KEYS.includes(k)) params.set(k, v);
     }
-    if (next.length > 0) params.set("tags", next.join(","));
+    /* 全グループの選択状態を反映 */
+    for (const group of groups) {
+      const vals = group.paramKey === paramKey ? next : (selected[group.paramKey] ?? []);
+      if (vals.length > 0) params.set(group.paramKey, vals.join(","));
+    }
     const qs = params.toString();
     router.push(qs ? `${basePath}?${qs}` : basePath);
   };
@@ -41,7 +55,7 @@ export function FilterSidebar({
   const clearAll = () => {
     const params = new URLSearchParams();
     for (const [k, v] of Object.entries(currentSearchParams)) {
-      if (k !== "tags" && k !== "tag") params.set(k, v);
+      if (!FILTER_PARAM_KEYS.includes(k)) params.set(k, v);
     }
     const qs = params.toString();
     router.push(qs ? `${basePath}?${qs}` : basePath);
@@ -60,7 +74,7 @@ export function FilterSidebar({
         className={`filter-sidebar ${open ? "is-open" : ""}`}
         aria-label="フィルター"
       >
-        {/* ヘッダー: タイトル + 閉じるボタン（＋回転×パターン、モバイルメニューと統一） */}
+        {/* ヘッダー */}
         <div className="filter-sidebar-header">
           <span className="filter-sidebar-title">Filters</span>
           <button
@@ -72,7 +86,7 @@ export function FilterSidebar({
         </div>
 
         {/* クリアリンク */}
-        {selectedTags.length > 0 && (
+        {totalSelected > 0 && (
           <button
             type="button"
             className="filter-clear-all"
@@ -85,10 +99,10 @@ export function FilterSidebar({
         {/* フィルターグループ */}
         {groups.map((group) => (
           <FilterAccordion
-            key={group.label}
+            key={group.paramKey}
             group={group}
-            selectedTags={selectedTags}
-            onToggle={toggleTag}
+            selectedValues={selected[group.paramKey] ?? []}
+            onToggle={(value) => toggleValue(group.paramKey, value)}
           />
         ))}
       </aside>
@@ -99,12 +113,12 @@ export function FilterSidebar({
 /* アコーディオングループ */
 function FilterAccordion({
   group,
-  selectedTags,
+  selectedValues,
   onToggle,
 }: {
   group: FilterGroup;
-  selectedTags: string[];
-  onToggle: (tag: string) => void;
+  selectedValues: string[];
+  onToggle: (value: string) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
 
@@ -122,21 +136,18 @@ function FilterAccordion({
 
       {expanded && (
         <div className="filter-group-options">
-          {group.options.map((opt) => {
-            const checked = selectedTags.includes(opt.value);
-            return (
-              <label key={opt.value} className="filter-option">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => onToggle(opt.value)}
-                  className="filter-checkbox"
-                />
-                <span className="filter-option-label">{opt.value}</span>
-                <span className="filter-option-count">({opt.count})</span>
-              </label>
-            );
-          })}
+          {group.options.map((opt) => (
+            <label key={opt.value} className="filter-option">
+              <input
+                type="checkbox"
+                checked={selectedValues.includes(opt.value)}
+                onChange={() => onToggle(opt.value)}
+                className="filter-checkbox"
+              />
+              <span className="filter-option-label">{opt.value}</span>
+              <span className="filter-option-count">({opt.count})</span>
+            </label>
+          ))}
         </div>
       )}
     </div>

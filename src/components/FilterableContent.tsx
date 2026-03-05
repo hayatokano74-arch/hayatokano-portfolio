@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { FilterSidebar } from "@/components/FilterSidebar";
+import { FilterSidebar, type SelectedFilters } from "@/components/FilterSidebar";
 import type { FilterGroup } from "@/lib/categories";
 
 /* フィルター開閉状態を共有するContext */
@@ -25,25 +25,23 @@ export function useFilterContext() {
 /**
  * フィルターシステムのプロバイダー。
  * Context だけを提供し、レイアウトには関与しない。
- * サイドバー+コンテンツの配置は FilterLayout で行う。
  */
 export function FilterProvider({
-  selectedTags,
+  selected,
   children,
 }: {
-  selectedTags: string[];
+  selected: SelectedFilters;
   children: ReactNode;
 }) {
   const [filterOpen, setFilterOpen] = useState(false);
   const onFilterToggle = () => setFilterOpen((prev) => !prev);
 
+  /* 全グループの選択合計数 */
+  const filterCount = Object.values(selected).reduce((sum, arr) => sum + arr.length, 0);
+
   return (
     <FilterContext.Provider
-      value={{
-        filterOpen,
-        onFilterToggle,
-        filterCount: selectedTags.length,
-      }}
+      value={{ filterOpen, onFilterToggle, filterCount }}
     >
       {children}
     </FilterContext.Provider>
@@ -56,27 +54,24 @@ export function FilterProvider({
  */
 export function FilterLayout({
   groups,
-  selectedTags,
+  selected,
   basePath,
   currentSearchParams,
   children,
 }: {
   groups: FilterGroup[];
-  selectedTags: string[];
+  selected: SelectedFilters;
   basePath: string;
   currentSearchParams: Record<string, string>;
   children: ReactNode;
 }) {
   const { filterOpen } = useFilterContext();
-  const onClose = () => {
-    /* Context の onFilterToggle を呼ぶ（閉じる方向） */
-  };
 
   return (
     <div className={`filter-layout ${filterOpen ? "is-open" : ""}`}>
       <FilterSidebarWrapper
         groups={groups}
-        selectedTags={selectedTags}
+        selected={selected}
         basePath={basePath}
         currentSearchParams={currentSearchParams}
       />
@@ -90,12 +85,12 @@ export function FilterLayout({
 /** サイドバーのラッパー（FilterContext から開閉を取得） */
 function FilterSidebarWrapper({
   groups,
-  selectedTags,
+  selected,
   basePath,
   currentSearchParams,
 }: {
   groups: FilterGroup[];
-  selectedTags: string[];
+  selected: SelectedFilters;
   basePath: string;
   currentSearchParams: Record<string, string>;
 }) {
@@ -104,7 +99,7 @@ function FilterSidebarWrapper({
   return (
     <FilterSidebar
       groups={groups}
-      selectedTags={selectedTags}
+      selected={selected}
       basePath={basePath}
       currentSearchParams={currentSearchParams}
       open={filterOpen}
