@@ -3330,7 +3330,7 @@ img[loading="lazy"] {
 
 /* ── フィルタードロップダウン: 検索バーの直下にインライン展開 ── */
 .filter-dropdown {
-  padding-bottom: var(--v-block);
+  padding-bottom: var(--v-header-content-gap);
   border-bottom: 1px solid var(--line);
 }
 
