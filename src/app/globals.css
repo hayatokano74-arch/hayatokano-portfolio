@@ -82,7 +82,7 @@
      ヘッダー各行とコンテンツ間の垂直方向の間隔を統一する。
      全て 8px ベースライン倍数。 */
   --v-row-gap: var(--space-7);         /* 行間ギャップ: 32-40px (4-5×baseline) */
-  --v-header-content-gap: var(--space-8); /* ヘッダー→コンテンツ: 36-48px（page-shell gap で使用） */
+  --v-header-content-gap: var(--space-9); /* ヘッダー→コンテンツ: 36px（page-shell gap で使用） */
   /* ヘッダー→コンテンツの間隔は .page-shell の gap で一元管理 */
 
   /* ── 垂直マージン階層（セマンティックトークン） ──
@@ -3330,7 +3330,7 @@ img[loading="lazy"] {
 
 /* ── フィルタードロップダウン: 検索バーの直下にインライン展開 ── */
 .filter-dropdown {
-  padding: var(--v-block) 0;
+  padding-bottom: var(--v-block);
   border-bottom: 1px solid var(--line);
 }
 
@@ -3355,24 +3355,6 @@ img[loading="lazy"] {
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: var(--v-element);
-}
-
-/* ── フィルタークリア: 検索バー内テキストリンク ── */
-.filter-clear-link {
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--muted);
-  font-size: var(--font-meta);
-  font-family: inherit;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color var(--duration-fast) ease;
-}
-
-.filter-clear-link:hover {
-  color: var(--fg);
 }
 
 .filter-option {

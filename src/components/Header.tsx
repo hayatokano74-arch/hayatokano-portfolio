@@ -27,7 +27,6 @@ export function Header({
   titleRight,
   /* フィルターモード用 */
   showFilterButton = false,
-  basePath = "/works",
 }: {
   active: Section;
   title: HeaderTitle;
@@ -45,7 +44,6 @@ export function Header({
   titleRight?: React.ReactNode;
   /* フィルターモード用 */
   showFilterButton?: boolean;
-  basePath?: string;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -170,15 +168,8 @@ export function Header({
                   </Suspense>
                 ) : null}
 
-                {/* 右端ツールグループ: Clear + Filter + セパレーター + Grid/List */}
+                {/* 右端ツールグループ: Filter + セパレーター + Grid/List */}
                 <div className="filter-bar-tools">
-                  {/* フィルタークリア: 選択中のみ表示 */}
-                  {filterCount > 0 && (
-                    <Suspense fallback={null}>
-                      <ClearFiltersLink basePath={basePath} />
-                    </Suspense>
-                  )}
-
                   {/* フィルターアイコン */}
                   <button
                     type="button"
@@ -344,28 +335,5 @@ function SearchInput() {
         style={searchInputStyle}
       />
     </div>
-  );
-}
-
-/** フィルタークリアリンク: フィルターパラメータだけ除去してURLを更新 */
-const FILTER_PARAM_KEYS = ["tags", "tag", "years"];
-
-function ClearFiltersLink({ basePath }: { basePath: string }) {
-  const router = useRouter();
-  const sp = useSearchParams();
-
-  const handleClear = () => {
-    const params = new URLSearchParams();
-    sp.forEach((v, k) => {
-      if (!FILTER_PARAM_KEYS.includes(k)) params.set(k, v);
-    });
-    const qs = params.toString();
-    router.push(qs ? `${basePath}?${qs}` : basePath);
-  };
-
-  return (
-    <button type="button" className="filter-clear-link" onClick={handleClear}>
-      Clear
-    </button>
   );
 }

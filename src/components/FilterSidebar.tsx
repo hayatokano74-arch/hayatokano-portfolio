@@ -29,9 +29,6 @@ export function FilterSidebar({
 }) {
   const router = useRouter();
 
-  /* 選択中の合計数 */
-  const totalSelected = Object.values(selected).reduce((sum, arr) => sum + arr.length, 0);
-
   /* 特定グループ内の値をトグル → URLを更新 */
   const toggleValue = (paramKey: string, value: string) => {
     const current = selected[paramKey] ?? [];
@@ -48,16 +45,6 @@ export function FilterSidebar({
     for (const group of groups) {
       const vals = group.paramKey === paramKey ? next : (selected[group.paramKey] ?? []);
       if (vals.length > 0) params.set(group.paramKey, vals.join(","));
-    }
-    const qs = params.toString();
-    router.push(qs ? `${basePath}?${qs}` : basePath);
-  };
-
-  /* 全クリア */
-  const clearAll = () => {
-    const params = new URLSearchParams();
-    for (const [k, v] of Object.entries(currentSearchParams)) {
-      if (!FILTER_PARAM_KEYS.includes(k)) params.set(k, v);
     }
     const qs = params.toString();
     router.push(qs ? `${basePath}?${qs}` : basePath);
