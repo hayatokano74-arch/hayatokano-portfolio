@@ -516,15 +516,10 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
     <>
       <Header
         active="Garden"
-        title="Garden"
+        title={<>Garden<span className="page-title-count">{nodes.length}</span></>}
         showCategoryRow={false}
         showSearch={false}
-        titleRight={
-          <>
-            <span className="page-title-count">({nodes.length})</span>
-            {archiveButton}
-          </>
-        }
+        titleRight={archiveButton}
       />
       <div className="garden-layout">
         <div className="garden-main">

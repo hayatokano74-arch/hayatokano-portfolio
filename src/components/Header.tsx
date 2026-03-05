@@ -8,7 +8,7 @@ import { NAV_ITEMS, type Section } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 import { useFilterContext } from "@/components/FilterableContent";
 
-type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "Garden" | "News" | "About" | "Contact" | (string & {});
+type HeaderTitle = React.ReactNode;
 
 export function Header({
   active,
