@@ -1079,12 +1079,13 @@ button {
 
 /* 投稿数表示: タイトル直後にスーパースクリプト風（参考: Design Waterloo） */
 .page-title-count {
-  font-size: 0.65em;
-  color: var(--muted);
+  font-size: 0.75em;
+  color: var(--fg);
+  opacity: 0.25;
   vertical-align: super;
   letter-spacing: -0.02em;
   margin-left: 0.05em;
-  font-weight: 300;
+  font-weight: 400;
 }
 
 /* ── モバイルアーカイブドロワー ── */
