@@ -157,65 +157,70 @@ export function Header({
       {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (
         <div className={`header-category-row ${showFilterButton ? "is-filter-mode" : ""}`}>
-          {/* フィルターモード: フィルターアイコン統合検索バー + Grid/List */}
+          {/* フィルターモード: 全機能を1本のバーに統合 */}
           {showFilterButton ? (
             <>
               <div className="header-filter-search">
-                {/* フィルターアイコン: 検索バー左端に統合 */}
-                <button
-                  type="button"
-                  className={`filter-search-trigger ${filterOpen ? "is-open" : ""}`}
-                  onClick={onFilterToggle}
-                  aria-expanded={filterOpen}
-                  aria-label="フィルターを開閉"
-                >
-                  {/* スライダーアイコン（調整/フィルター） */}
-                  <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <circle cx="5" cy="4" r="1.5" fill="currentColor" />
-                    <circle cx="11" cy="8" r="1.5" fill="currentColor" />
-                    <circle cx="7" cy="12" r="1.5" fill="currentColor" />
-                  </svg>
-                  {filterCount > 0 && <span className="filter-badge" />}
-                </button>
-
                 {/* 検索入力 */}
                 {showSearch ? (
                   <Suspense fallback={<SearchPlaceholder />}>
                     <SearchInput />
                   </Suspense>
                 ) : null}
-              </div>
 
-              {showWorksToggle ? (
-                <div className="works-view-toggle">
-                  <Link
-                    href={worksGridHref}
-                    className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
-                    aria-label="グリッド表示"
+                {/* 右端ツールグループ: Grid/List + セパレーター + Filter */}
+                <div className="filter-bar-tools">
+                  {showWorksToggle ? (
+                    <>
+                      <Link
+                        href={worksGridHref}
+                        className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
+                        aria-label="グリッド表示"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
+                          <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
+                          <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" />
+                          <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
+                        </svg>
+                      </Link>
+                      <Link
+                        href={worksListHref}
+                        className={`view-toggle-seg ${view === "list" ? "is-active" : ""}`}
+                        aria-label="リスト表示"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor" />
+                          <rect x="1" y="7" width="14" height="2" rx="0.5" fill="currentColor" />
+                          <rect x="1" y="12" width="14" height="2" rx="0.5" fill="currentColor" />
+                        </svg>
+                      </Link>
+
+                      {/* セパレーター */}
+                      <span className="filter-bar-separator" aria-hidden="true" />
+                    </>
+                  ) : null}
+
+                  {/* フィルターアイコン */}
+                  <button
+                    type="button"
+                    className={`filter-search-trigger ${filterOpen ? "is-open" : ""}`}
+                    onClick={onFilterToggle}
+                    aria-expanded={filterOpen}
+                    aria-label="フィルターを開閉"
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
-                      <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
-                      <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" />
-                      <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <circle cx="5" cy="4" r="1.5" fill="currentColor" />
+                      <circle cx="11" cy="8" r="1.5" fill="currentColor" />
+                      <circle cx="7" cy="12" r="1.5" fill="currentColor" />
                     </svg>
-                  </Link>
-                  <Link
-                    href={worksListHref}
-                    className={`view-toggle-seg ${view === "list" ? "is-active" : ""}`}
-                    aria-label="リスト表示"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor" />
-                      <rect x="1" y="7" width="14" height="2" rx="0.5" fill="currentColor" />
-                      <rect x="1" y="12" width="14" height="2" rx="0.5" fill="currentColor" />
-                    </svg>
-                  </Link>
+                    {filterCount > 0 && <span className="filter-badge" />}
+                  </button>
                 </div>
-              ) : null}
+              </div>
             </>
           ) : (
             /* 従来モード: カテゴリリンク + Grid/List + 検索 */
