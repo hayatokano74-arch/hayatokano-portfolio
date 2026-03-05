@@ -1072,10 +1072,23 @@ button {
   opacity: 0.7;
 }
 
-/* ── モバイルアーカイブドロワー ── */
+/* ── タイトル行右側 ── */
 .header-title-right {
-  display: none;
+  grid-column: -4 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: var(--space-3);
 }
+
+/* 投稿数表示: タイトル行右上 */
+.page-title-count {
+  font-size: var(--font-body);
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+/* ── モバイルアーカイブドロワー ── */
 
 .mobile-archive-trigger {
   border: 0;
@@ -1177,6 +1190,12 @@ button {
   display: flex;
   align-items: center;
 }
+
+/* titleRight がある場合: 左を9カラム、右を3カラムに分割 */
+.header-title-row:has(.header-title-right) .header-title-left {
+  grid-column: 1 / span 9;
+}
+
 
 /* ページタイトル: fluid サイズ（モバイル48px → デスクトップ96px） */
 .page-title {

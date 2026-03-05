@@ -519,7 +519,12 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         title="Garden"
         showCategoryRow={false}
         showSearch={false}
-        titleRight={archiveButton}
+        titleRight={
+          <>
+            <span className="page-title-count">({nodes.length})</span>
+            {archiveButton}
+          </>
+        }
       />
       <div className="garden-layout">
         <div className="garden-main">
