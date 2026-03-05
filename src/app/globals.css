@@ -3366,9 +3366,9 @@ img[loading="lazy"] {
   border: none;
   background: none;
   color: var(--fg);
-  font-size: var(--font-meta);
+  font-size: var(--font-body);
   font-family: inherit;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: opacity var(--duration-fast) ease;
   opacity: 0.6;
