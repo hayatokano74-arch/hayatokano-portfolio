@@ -1210,12 +1210,12 @@ button {
   font-weight: 500;
 }
 
-/* Grid/Listトグル: カラム11に配置 */
+/* Grid/Listトグル: カラム11-12に配置、右端揃え */
 .works-view-toggle {
-  grid-column: 11;
+  grid-column: 11 / -1;
   display: flex;
   align-items: center;
-  justify-self: start;
+  justify-self: end;
   gap: var(--space-4);
   font-size: var(--font-body);
   line-height: var(--lh-normal);
@@ -3237,17 +3237,17 @@ img[loading="lazy"] {
 /* ═══ フィルターシステム ═══ */
 
 /* カテゴリ行: フィルターモード時のレイアウト（12カラムグリッド）
-   検索(col 1-8) / Filters(col 9-10) / Grid·List(col 11-12) */
+   検索(col 1-9) / Filters(col 10) / Grid·List(col 11-12, 右端揃え) */
 .header-filter-search {
-  grid-column: 1 / span 8;
+  grid-column: 1 / span 9;
   width: 100%;
 }
 
 .header-filter-button-cell {
-  grid-column: 9 / span 2;
+  grid-column: 10;
   display: flex;
   align-items: center;
-  justify-self: end;
+  justify-self: center;
 }
 
 /* ── Filtersボタン: pill形状 ── */
@@ -3375,18 +3375,17 @@ img[loading="lazy"] {
 
 /* ── Clear all ── */
 .filter-clear-all {
-  display: block;
+  display: inline-block;
   padding: 0;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
   border: none;
   background: none;
   color: var(--muted);
   font-size: var(--font-meta);
   font-family: inherit;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  transition: color var(--duration-fast) ease;
 }
 
 .filter-clear-all:hover {
@@ -3395,7 +3394,7 @@ img[loading="lazy"] {
 
 /* ── フィルターグループ ── */
 .filter-group {
-  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--muted);
 }
 
 .filter-group-header {
@@ -3403,56 +3402,74 @@ img[loading="lazy"] {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: var(--space-2) 0;
+  padding: var(--space-4) 0;
   border: none;
-  border-bottom: 1px solid var(--line);
   background: none;
   color: var(--fg);
-  font-size: var(--font-meta);
-  font-weight: 700;
+  font-size: var(--font-body);
+  font-weight: 600;
   font-family: inherit;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   cursor: pointer;
 }
 
+/* chevron: 小さなSVG風の矢印（参考サイトのスタイル） */
 .filter-chevron {
-  font-size: var(--font-meta);
-  color: var(--muted);
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transition: transform var(--duration-fast) ease;
+}
+
+.filter-chevron.is-expanded {
+  transform: rotate(-135deg);
+}
+
+.filter-chevron.is-collapsed {
+  transform: rotate(45deg);
 }
 
 /* ── チェックボックスオプション ── */
 .filter-group-options {
-  padding-top: var(--space-2);
+  padding-bottom: var(--space-4);
 }
 
 .filter-option {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) 0;
+  gap: var(--space-3);
+  padding: 6px 0;
   cursor: pointer;
   font-size: var(--font-body);
-  line-height: var(--lh-normal);
+  line-height: var(--lh-tight);
 }
 
-/* カスタムチェックボックス: サイトのモノクロトーンに合わせる */
+/* チェックボックス: 参考サイトスタイル（薄いグレーボーダー、角丸3px） */
 .filter-checkbox {
   appearance: none;
   -webkit-appearance: none;
-  width: var(--space-4);
-  height: var(--space-4);
-  border: 1px solid var(--fg);
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--muted);
+  border-radius: 3px;
   background: transparent;
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
+  transition: border-color var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+
+.filter-checkbox:hover {
+  border-color: var(--fg);
 }
 
 .filter-checkbox:checked {
   background: var(--fg);
+  border-color: var(--fg);
 }
 
+/* チェックマーク */
 .filter-checkbox:checked::after {
   content: "";
   position: absolute;
@@ -3461,7 +3478,7 @@ img[loading="lazy"] {
   width: 5px;
   height: 9px;
   border: solid var(--bg);
-  border-width: 0 2px 2px 0;
+  border-width: 0 1.5px 1.5px 0;
   transform: rotate(45deg);
 }
 
@@ -3475,9 +3492,11 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
+/* 件数: 括弧付き、右揃え */
 .filter-option-count {
   color: var(--muted);
   font-size: var(--font-meta);
+  font-style: italic;
 }
 
 /* ═══ モバイルオーバーライド（ファイル末尾に1ブロックのみ配置） ═══ */

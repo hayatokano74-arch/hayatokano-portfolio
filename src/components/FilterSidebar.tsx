@@ -131,7 +131,7 @@ function FilterAccordion({
         aria-expanded={expanded}
       >
         <span>{group.label}</span>
-        <span className="filter-chevron">{expanded ? "▲" : "▼"}</span>
+        <span className={`filter-chevron ${expanded ? "is-expanded" : "is-collapsed"}`} />
       </button>
 
       {expanded && (
