@@ -1077,14 +1077,14 @@ button {
   display: none;
 }
 
-/* 投稿数表示: タイトル直後にスーパースクリプト風 */
+/* 投稿数表示: タイトル直後にスーパースクリプト風（参考: Design Waterloo） */
 .page-title-count {
-  font-size: 0.4em;
+  font-size: 0.65em;
   color: var(--muted);
   vertical-align: super;
-  letter-spacing: 0.02em;
-  margin-left: 0.1em;
-  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-left: 0.05em;
+  font-weight: 300;
 }
 
 /* ── モバイルアーカイブドロワー ── */
