@@ -2,6 +2,15 @@ import Image from "next/image";
 import type { MeNoHoshiPost } from "@/lib/meNoHoshi";
 import { blurDataURL } from "@/lib/blur";
 
+/** WPコメント除去 + 先頭・末尾の <br> を除去 */
+function cleanWpHtml(html: string): string {
+  return html
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/^(\s*<br\s*\/?>)+/i, "")
+    .replace(/(<br\s*\/?>)+\s*$/i, "")
+    .trim();
+}
+
 export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   const hero = post.media[0];
   const keyVisuals =
@@ -25,21 +34,19 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   return (
     <section className="me-no-hoshi-detail">
       <div className="me-no-hoshi-meta-column">
-        <h1 className="page-title">{post.title}</h1>
-
         <div style={{ fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.16em", color: "var(--muted)" }}>DETAILS</div>
 
-        <dl className="work-details-dl" style={{ marginTop: "var(--v-element)" }}>
+        <div style={{ marginTop: "var(--v-element)" }}>
           {tableRows.map((row) => (
             <div
               key={row.key}
               className="work-details-row"
             >
-              <dt style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>{row.label}</dt>
-              <dd style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>{row.value}</dd>
+              <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>{row.label}</div>
+              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>{row.value}</div>
             </div>
           ))}
-        </dl>
+        </div>
 
         {post.bio ? (
           <div
@@ -52,7 +59,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             <div
               className="mnh-rich-text"
               style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}
-              dangerouslySetInnerHTML={{ __html: post.bio }}
+              dangerouslySetInnerHTML={{ __html: cleanWpHtml(post.bio) }}
             />
           </div>
         ) : null}
@@ -62,7 +69,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           <div
             className="mnh-rich-text"
             style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}
-            dangerouslySetInnerHTML={{ __html: post.statement }}
+            dangerouslySetInnerHTML={{ __html: cleanWpHtml(post.statement) }}
           />
         </div>
         <div style={{ marginTop: "var(--v-block)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>

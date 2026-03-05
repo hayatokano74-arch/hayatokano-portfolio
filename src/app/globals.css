@@ -3357,23 +3357,25 @@ img[loading="lazy"] {
   margin-bottom: var(--v-element);
 }
 
-/* ── Clear all ── */
+/* ── Clear: グリッド内右端に配置 ── */
 .filter-clear-all {
-  display: inline-block;
+  grid-column: -3 / -1;
+  justify-self: end;
+  align-self: start;
   padding: 0;
-  margin-top: var(--space-3);
   border: none;
   background: none;
-  color: var(--muted);
+  color: var(--fg);
   font-size: var(--font-meta);
   font-family: inherit;
   letter-spacing: 0.04em;
   cursor: pointer;
-  transition: color var(--duration-fast) ease;
+  transition: opacity var(--duration-fast) ease;
+  opacity: 0.6;
 }
 
 .filter-clear-all:hover {
-  color: var(--fg);
+  opacity: 1;
 }
 
 .filter-option {

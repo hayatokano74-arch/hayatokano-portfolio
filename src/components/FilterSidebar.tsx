@@ -77,18 +77,18 @@ export function FilterSidebar({
             onToggle={(value) => toggleValue(group.paramKey, value)}
           />
         ))}
-      </div>
 
-      {/* Clear all: 選択中のみ表示 */}
-      {totalSelected > 0 && (
-        <button
-          type="button"
-          className="filter-clear-all"
-          onClick={clearAll}
-        >
-          Clear all
-        </button>
-      )}
+        {/* Clear: グリッド内右端に配置、選択中のみ表示 */}
+        {totalSelected > 0 && (
+          <button
+            type="button"
+            className="filter-clear-all"
+            onClick={clearAll}
+          >
+            × Clear
+          </button>
+        )}
+      </div>
     </div>
   );
 }
