@@ -6,8 +6,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type Category } from "@/lib/categories";
 import { NAV_ITEMS, type Section } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
+import { useFilterContext } from "@/components/FilterableContent";
 
-type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "Garden" | "News" | "About" | "Contact";
+type HeaderTitle = "Works" | "Text" | "目の星" | "Time Line" | "Garden" | "News" | "About" | "Contact" | (string & {});
 
 export function Header({
   active,
@@ -24,6 +25,8 @@ export function Header({
   activeCategory = "Video",
   categoryHrefs,
   titleRight,
+  /* フィルターモード用 */
+  showFilterButton = false,
 }: {
   active: Section;
   title: HeaderTitle;
@@ -39,10 +42,13 @@ export function Header({
   activeCategory?: Category;
   categoryHrefs?: Partial<Record<Category, string>>;
   titleRight?: React.ReactNode;
+  /* フィルターモード用 */
+  showFilterButton?: boolean;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const view = worksView;
+  const { filterOpen, onFilterToggle, filterCount } = useFilterContext();
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -151,43 +157,90 @@ export function Header({
       {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (
         <div className="header-category-row">
-          <div className="header-category-links">
-            {Object.keys(categoryHrefs ?? {}).filter((item) => categoryHrefs?.[item]).map((item) => {
-              const className = item === activeCategory ? "underline-active" : "";
-              const style = { color: item === activeCategory ? "var(--fg)" : "var(--muted)" } as const;
-              const href = categoryHrefs![item]!;
-              return (
-                <Link key={item} href={href} className={`${className} action-link`.trim()} style={style}>
-                  {item}
-                </Link>
-              );
-            })}
-          </div>
+          {/* フィルターモード: 検索 + Filtersボタン + Grid/List */}
+          {showFilterButton ? (
+            <>
+              {showSearch ? (
+                <div className="header-filter-search">
+                  <Suspense fallback={<SearchPlaceholder />}>
+                    <SearchInput />
+                  </Suspense>
+                </div>
+              ) : null}
 
-          {showWorksToggle ? (
-            <div className="works-view-toggle">
-              <Link
-                href={worksGridHref}
-                className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
-                style={{ color: view === "grid" ? "var(--fg)" : "var(--muted)" }}
-              >
-                Grid
-              </Link>
-              <Link
-                href={worksListHref}
-                className={`${view === "list" ? "underline-active" : ""} action-link`.trim()}
-                style={{ color: view === "list" ? "var(--fg)" : "var(--muted)" }}
-              >
-                List
-              </Link>
-            </div>
-          ) : null}
+              <div className="header-filter-button-cell">
+                <button
+                  type="button"
+                  className={`filter-toggle-btn ${filterOpen ? "is-open" : ""}`}
+                  onClick={onFilterToggle}
+                  aria-expanded={filterOpen}
+                  aria-label="フィルターを開閉"
+                >
+                  Filters{filterCount > 0 ? ` (${filterCount})` : ""}
+                </button>
+              </div>
 
-          {showSearch ? (
-            <Suspense fallback={<SearchPlaceholder />}>
-              <SearchInput />
-            </Suspense>
-          ) : null}
+              {showWorksToggle ? (
+                <div className="works-view-toggle">
+                  <Link
+                    href={worksGridHref}
+                    className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
+                    style={{ color: view === "grid" ? "var(--fg)" : "var(--muted)" }}
+                  >
+                    Grid
+                  </Link>
+                  <Link
+                    href={worksListHref}
+                    className={`${view === "list" ? "underline-active" : ""} action-link`.trim()}
+                    style={{ color: view === "list" ? "var(--fg)" : "var(--muted)" }}
+                  >
+                    List
+                  </Link>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            /* 従来モード: カテゴリリンク + Grid/List + 検索 */
+            <>
+              <div className="header-category-links">
+                {Object.keys(categoryHrefs ?? {}).filter((item) => categoryHrefs?.[item]).map((item) => {
+                  const className = item === activeCategory ? "underline-active" : "";
+                  const style = { color: item === activeCategory ? "var(--fg)" : "var(--muted)" } as const;
+                  const href = categoryHrefs![item]!;
+                  return (
+                    <Link key={item} href={href} className={`${className} action-link`.trim()} style={style}>
+                      {item}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {showWorksToggle ? (
+                <div className="works-view-toggle">
+                  <Link
+                    href={worksGridHref}
+                    className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
+                    style={{ color: view === "grid" ? "var(--fg)" : "var(--muted)" }}
+                  >
+                    Grid
+                  </Link>
+                  <Link
+                    href={worksListHref}
+                    className={`${view === "list" ? "underline-active" : ""} action-link`.trim()}
+                    style={{ color: view === "list" ? "var(--fg)" : "var(--muted)" }}
+                  >
+                    List
+                  </Link>
+                </div>
+              ) : null}
+
+              {showSearch ? (
+                <Suspense fallback={<SearchPlaceholder />}>
+                  <SearchInput />
+                </Suspense>
+              ) : null}
+            </>
+          )}
         </div>
       ) : null}
     </header>

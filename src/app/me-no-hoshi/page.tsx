@@ -1,24 +1,28 @@
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
+import { FilterableContent } from "@/components/FilterableContent";
 import { WorksClient } from "@/components/WorksClient";
 
 export const metadata: Metadata = { title: "目の星" };
-import { buildCategoryMenu, parseCategory } from "@/lib/categories";
+import { parseTags, buildFilterGroups } from "@/lib/categories";
 import { getMeNoHoshiPosts, type MeNoHoshiPost } from "@/lib/meNoHoshi";
 
 export default async function MeNoHoshiPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ view?: string; tag?: string; q?: string }>;
+  searchParams?: Promise<{ view?: string; tags?: string; tag?: string; q?: string }>;
 }) {
   const sp = searchParams ? await searchParams : undefined;
   const view = sp?.view === "list" ? "list" : "grid";
-  const activeCategory = parseCategory(sp?.tag);
+  const selectedTags = parseTags(sp);
   const q = sp?.q?.toLowerCase() ?? "";
   const posts = await getMeNoHoshiPosts();
-  let filteredPosts =
-    activeCategory === "All" ? posts : posts.filter((post) => post.tags.includes(activeCategory));
+
+  /* フィルタリング: 複数タグ選択対応 */
+  let filteredPosts = selectedTags.length > 0
+    ? posts.filter((post) => selectedTags.some((t) => post.tags.includes(t)))
+    : posts;
   if (q) {
     filteredPosts = filteredPosts.filter((post) =>
       post.title.toLowerCase().includes(q) ||
@@ -26,43 +30,51 @@ export default async function MeNoHoshiPage({
       post.statement.toLowerCase().includes(q)
     );
   }
-  /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
-  const categoryMenu = buildCategoryMenu(posts.flatMap((p) => p.tags));
-  const categoryHrefs = Object.fromEntries(
-    categoryMenu.map((category) => {
-      const params = new URLSearchParams();
-      params.set("view", view);
-      if (category !== "All") params.set("tag", category);
-      return [category, `/me-no-hoshi?${params.toString()}`];
-    }),
-  ) as Record<string, string>;
-  const toggleParams = new URLSearchParams();
-  if (activeCategory !== "All") toggleParams.set("tag", activeCategory);
-  const worksGridHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleParams), view: "grid" }).toString()}`;
-  const worksListHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleParams), view: "list" }).toString()}`;
+
+  /* フィルターグループ構築 */
+  const filterGroups = buildFilterGroups(posts.flatMap((p) => p.tags), "Category");
+
+  /* 現在のURLパラメータ */
+  const spRecord: Record<string, string> = {};
+  if (sp?.view) spRecord.view = sp.view;
+  if (sp?.q) spRecord.q = sp.q;
+  if (sp?.tags) spRecord.tags = sp.tags;
+
+  /* Grid/Listトグル用のURL */
+  const toggleBase = new URLSearchParams();
+  if (selectedTags.length > 0) toggleBase.set("tags", selectedTags.join(","));
+  if (q) toggleBase.set("q", q);
+  const worksGridHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "grid" }).toString()}`;
+  const worksListHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "list" }).toString()}`;
 
   return (
     <CanvasShell>
-      <Header
-        active="目の星"
-        title="目の星"
-        brandLabel="目の星 menohoshi"
-        brandHref="/me-no-hoshi"
-        showTitleRow={false}
-        showWorksToggle
-        worksView={view}
-        worksGridHref={worksGridHref}
-        worksListHref={worksListHref}
-        activeCategory={activeCategory}
-        categoryHrefs={categoryHrefs}
-      />
-      <WorksClient
-        works={filteredPosts}
-        view={view}
+      <FilterableContent
+        groups={filterGroups}
+        selectedTags={selectedTags}
         basePath="/me-no-hoshi"
-        detailQuery=""
-        renderListDetail={(post) => <MeNoHoshiListDetails post={post} />}
-      />
+        currentSearchParams={spRecord}
+      >
+        <Header
+          active="目の星"
+          title="目の星"
+          brandLabel="目の星 menohoshi"
+          brandHref="/me-no-hoshi"
+          showTitleRow={false}
+          showWorksToggle
+          worksView={view}
+          worksGridHref={worksGridHref}
+          worksListHref={worksListHref}
+          showFilterButton
+        />
+        <WorksClient
+          works={filteredPosts}
+          view={view}
+          basePath="/me-no-hoshi"
+          detailQuery=""
+          renderListDetail={(post) => <MeNoHoshiListDetails post={post} />}
+        />
+      </FilterableContent>
     </CanvasShell>
   );
 }

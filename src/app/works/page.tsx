@@ -1,25 +1,29 @@
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
+import { FilterableContent } from "@/components/FilterableContent";
 
 export const metadata: Metadata = { title: "Works" };
 import { WorksClient } from "@/components/WorksClient";
 import { getWorks } from "@/lib/works";
-import { buildCategoryMenu, parseCategory } from "@/lib/categories";
+import { parseTags, buildFilterGroups } from "@/lib/categories";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 
 export default async function WorksPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ view?: string; tag?: string; q?: string }>;
+  searchParams?: Promise<{ view?: string; tags?: string; tag?: string; q?: string }>;
 }) {
   const sp = searchParams ? await searchParams : undefined;
   const view = sp?.view === "grid" ? "grid" : "list";
-  const activeCategory = parseCategory(sp?.tag);
+  const selectedTags = parseTags(sp);
   const q = sp?.q?.toLowerCase() ?? "";
   const works = await getWorks();
-  let filteredWorks =
-    activeCategory === "All" ? works : works.filter((work) => work.tags.includes(activeCategory));
+
+  /* フィルタリング: 複数タグ選択対応 */
+  let filteredWorks = selectedTags.length > 0
+    ? works.filter((work) => selectedTags.some((t) => work.tags.includes(t)))
+    : works;
   if (q) {
     filteredWorks = filteredWorks.filter((work) =>
       work.title.toLowerCase().includes(q) ||
@@ -27,34 +31,42 @@ export default async function WorksPage({
       work.excerpt.toLowerCase().includes(q)
     );
   }
-  /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
-  const categoryMenu = buildCategoryMenu(works.flatMap((w) => w.tags));
-  const categoryHrefs = Object.fromEntries(
-    categoryMenu.map((category) => {
-      const params = new URLSearchParams();
-      params.set("view", view);
-      if (category !== "All") params.set("tag", category);
-      return [category, `/works?${params.toString()}`];
-    }),
-  ) as Record<string, string>;
-  const worksToggleParams = new URLSearchParams();
-  if (activeCategory !== "All") worksToggleParams.set("tag", activeCategory);
-  const worksGridHref = `/works?${new URLSearchParams({ ...Object.fromEntries(worksToggleParams), view: "grid" }).toString()}`;
-  const worksListHref = `/works?${new URLSearchParams({ ...Object.fromEntries(worksToggleParams), view: "list" }).toString()}`;
+
+  /* フィルターグループ構築 */
+  const filterGroups = buildFilterGroups(works.flatMap((w) => w.tags), "Category");
+
+  /* 現在のURLパラメータ */
+  const spRecord: Record<string, string> = {};
+  if (sp?.view) spRecord.view = sp.view;
+  if (sp?.q) spRecord.q = sp.q;
+  if (sp?.tags) spRecord.tags = sp.tags;
+
+  /* Grid/Listトグル用のURL */
+  const toggleBase = new URLSearchParams();
+  if (selectedTags.length > 0) toggleBase.set("tags", selectedTags.join(","));
+  if (q) toggleBase.set("q", q);
+  const worksGridHref = `/works?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "grid" }).toString()}`;
+  const worksListHref = `/works?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "list" }).toString()}`;
 
   return (
     <CanvasShell>
-      <Header
-        active="Works"
-        title="Works"
-        showWorksToggle
-        worksView={view}
-        worksGridHref={worksGridHref}
-        worksListHref={worksListHref}
-        activeCategory={activeCategory}
-        categoryHrefs={categoryHrefs}
-      />
-      <WorksClient works={filteredWorks} view={view} renderListDetail={(work) => <WorkDetailsTable details={work.details} />} />
+      <FilterableContent
+        groups={filterGroups}
+        selectedTags={selectedTags}
+        basePath="/works"
+        currentSearchParams={spRecord}
+      >
+        <Header
+          active="Works"
+          title="Works"
+          showWorksToggle
+          worksView={view}
+          worksGridHref={worksGridHref}
+          worksListHref={worksListHref}
+          showFilterButton
+        />
+        <WorksClient works={filteredWorks} view={view} renderListDetail={(work) => <WorkDetailsTable details={work.details} />} />
+      </FilterableContent>
     </CanvasShell>
   );
 }
