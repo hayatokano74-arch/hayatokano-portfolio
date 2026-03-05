@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FilterGroup } from "@/lib/categories";
 
@@ -10,13 +9,16 @@ export type SelectedFilters = Record<string, string[]>;
 /** フィルターパラメータキーの一覧 */
 const FILTER_PARAM_KEYS = ["tags", "tag", "years"];
 
+/**
+ * フィルタードロップダウン: 検索バーの直下に展開するインラインパネル。
+ * 12カラムグリッドに沿ってフィルターグループを横並びに配置。
+ */
 export function FilterSidebar({
   groups,
   selected,
   basePath,
   currentSearchParams,
   open,
-  onClose,
 }: {
   groups: FilterGroup[];
   selected: SelectedFilters;
@@ -61,57 +63,38 @@ export function FilterSidebar({
     router.push(qs ? `${basePath}?${qs}` : basePath);
   };
 
+  if (!open) return null;
+
   return (
-    <>
-      {/* オーバーレイ背景 */}
-      <div
-        className={`filter-overlay-backdrop ${open ? "is-visible" : ""}`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      <aside
-        className={`filter-sidebar ${open ? "is-open" : ""}`}
-        aria-label="フィルター"
-      >
-        {/* ヘッダー */}
-        <div className="filter-sidebar-header">
-          <span className="filter-sidebar-title">Filters</span>
-          <button
-            type="button"
-            className="filter-sidebar-close"
-            onClick={onClose}
-            aria-label="フィルターを閉じる"
-          />
-        </div>
-
-        {/* クリアリンク */}
-        {totalSelected > 0 && (
-          <button
-            type="button"
-            className="filter-clear-all"
-            onClick={clearAll}
-          >
-            Clear all
-          </button>
-        )}
-
-        {/* フィルターグループ */}
+    <div className="filter-dropdown">
+      {/* フィルターグループ: 12カラムグリッドで横並び */}
+      <div className="filter-dropdown-grid">
         {groups.map((group) => (
-          <FilterAccordion
+          <FilterColumn
             key={group.paramKey}
             group={group}
             selectedValues={selected[group.paramKey] ?? []}
             onToggle={(value) => toggleValue(group.paramKey, value)}
           />
         ))}
-      </aside>
-    </>
+      </div>
+
+      {/* Clear all: 選択中のみ表示 */}
+      {totalSelected > 0 && (
+        <button
+          type="button"
+          className="filter-clear-all"
+          onClick={clearAll}
+        >
+          Clear all
+        </button>
+      )}
+    </div>
   );
 }
 
-/* アコーディオングループ */
-function FilterAccordion({
+/* フィルターカラム（アコーディオンなし、常に展開） */
+function FilterColumn({
   group,
   selectedValues,
   onToggle,
@@ -120,36 +103,23 @@ function FilterAccordion({
   selectedValues: string[];
   onToggle: (value: string) => void;
 }) {
-  const [expanded, setExpanded] = useState(true);
-
   return (
-    <div className="filter-group">
-      <button
-        type="button"
-        className="filter-group-header"
-        onClick={() => setExpanded((prev) => !prev)}
-        aria-expanded={expanded}
-      >
-        <span>{group.label}</span>
-        <span className={`filter-chevron ${expanded ? "is-expanded" : "is-collapsed"}`} />
-      </button>
-
-      {expanded && (
-        <div className="filter-group-options">
-          {group.options.map((opt) => (
-            <label key={opt.value} className="filter-option">
-              <input
-                type="checkbox"
-                checked={selectedValues.includes(opt.value)}
-                onChange={() => onToggle(opt.value)}
-                className="filter-checkbox"
-              />
-              <span className="filter-option-label">{opt.value}</span>
-              <span className="filter-option-count">({opt.count})</span>
-            </label>
-          ))}
-        </div>
-      )}
+    <div className="filter-dropdown-column">
+      <div className="filter-dropdown-label">{group.label}</div>
+      <div className="filter-dropdown-options">
+        {group.options.map((opt) => (
+          <label key={opt.value} className="filter-option">
+            <input
+              type="checkbox"
+              checked={selectedValues.includes(opt.value)}
+              onChange={() => onToggle(opt.value)}
+              className="filter-checkbox"
+            />
+            <span className="filter-option-label">{opt.value}</span>
+            <span className="filter-option-count">({opt.count})</span>
+          </label>
+        ))}
+      </div>
     </div>
   );
 }

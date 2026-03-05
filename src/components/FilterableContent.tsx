@@ -49,8 +49,8 @@ export function FilterProvider({
 }
 
 /**
- * サイドバー + コンテンツのレイアウト。
- * ヘッダーの下に配置する。
+ * フィルタードロップダウン + コンテンツのレイアウト。
+ * ヘッダーの下に配置する。ドロップダウンは検索バーの直下にインライン展開。
  */
 export function FilterLayout({
   groups,
@@ -65,45 +65,21 @@ export function FilterLayout({
   currentSearchParams: Record<string, string>;
   children: ReactNode;
 }) {
-  const { filterOpen } = useFilterContext();
+  const { filterOpen, onFilterToggle } = useFilterContext();
 
   return (
-    <div className={`filter-layout ${filterOpen ? "is-open" : ""}`}>
-      <FilterSidebarWrapper
+    <div className="filter-layout">
+      <FilterSidebar
         groups={groups}
         selected={selected}
         basePath={basePath}
         currentSearchParams={currentSearchParams}
+        open={filterOpen}
+        onClose={onFilterToggle}
       />
       <div className="filter-content">
         {children}
       </div>
     </div>
-  );
-}
-
-/** サイドバーのラッパー（FilterContext から開閉を取得） */
-function FilterSidebarWrapper({
-  groups,
-  selected,
-  basePath,
-  currentSearchParams,
-}: {
-  groups: FilterGroup[];
-  selected: SelectedFilters;
-  basePath: string;
-  currentSearchParams: Record<string, string>;
-}) {
-  const { filterOpen, onFilterToggle } = useFilterContext();
-
-  return (
-    <FilterSidebar
-      groups={groups}
-      selected={selected}
-      basePath={basePath}
-      currentSearchParams={currentSearchParams}
-      open={filterOpen}
-      onClose={onFilterToggle}
-    />
   );
 }

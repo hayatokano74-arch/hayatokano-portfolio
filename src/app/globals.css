@@ -3319,7 +3319,7 @@ img[loading="lazy"] {
   background: var(--fg);
 }
 
-/* ── サイドバー + コンテンツレイアウト ── */
+/* ── ドロップダウン + コンテンツレイアウト ── */
 .filter-layout {
   position: relative;
 }
@@ -3328,97 +3328,40 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
-/* ── サイドバー: 固定オーバーレイ（左からスライドイン） ── */
-.filter-sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: clamp(240px, 20vw, 320px);
-  background: var(--bg);
-  z-index: 150;
-  padding: var(--space-7) var(--pad-x);
-  overflow-y: auto;
-  border-right: 1px solid var(--line);
-  transform: translateX(-100%);
-  transition: transform var(--duration-slow) ease;
+/* ── フィルタードロップダウン: 検索バーの直下にインライン展開 ── */
+.filter-dropdown {
+  padding: var(--v-block) 0;
+  border-bottom: 1px solid var(--line);
 }
 
-.filter-sidebar.is-open {
-  transform: translateX(0);
+/* グリッド: 12カラムに沿ってグループを横並び */
+.filter-dropdown-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
 }
 
-/* サイドバーヘッダー */
-.filter-sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-7);
+/* 各カラム: グループ数に応じて自動配分（2グループ → 各6カラム） */
+.filter-dropdown-column {
+  grid-column: span 6;
+  min-width: 0;
 }
 
-/* タイトル: サイト全体のメタラベルスタイル（DETAILS等と同じ） */
-.filter-sidebar-title {
+/* グループラベル: メタラベルスタイル */
+.filter-dropdown-label {
   font-size: var(--font-meta);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-}
-
-/* 閉じるボタン: サイトのモバイルメニューと同じ ＋→× 回転パターン */
-.filter-sidebar-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  position: relative;
-}
-
-.filter-sidebar-close::before,
-.filter-sidebar-close::after {
-  content: "";
-  position: absolute;
-  background: var(--fg);
-  top: 50%;
-  left: 50%;
-}
-
-/* 横線（45度回転で×の一画） */
-.filter-sidebar-close::before {
-  width: 20px;
-  height: 2px;
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-/* 縦線（45度回転で×の一画） */
-.filter-sidebar-close::after {
-  width: 2px;
-  height: 20px;
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-/* ── オーバーレイ背景（クリックで閉じる） ── */
-.filter-overlay-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 149;
-  background: rgba(0, 0, 0, 0.15);
-}
-
-.filter-overlay-backdrop.is-visible {
-  display: block;
+  color: var(--muted);
+  margin-bottom: var(--v-element);
 }
 
 /* ── Clear all ── */
 .filter-clear-all {
   display: inline-block;
   padding: 0;
-  margin-bottom: var(--space-5);
+  margin-top: var(--space-3);
   border: none;
   background: none;
   color: var(--muted);
@@ -3431,50 +3374,6 @@ img[loading="lazy"] {
 
 .filter-clear-all:hover {
   color: var(--fg);
-}
-
-/* ── フィルターグループ ── */
-.filter-group {
-  border-bottom: 1px solid var(--muted);
-}
-
-.filter-group-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: var(--space-4) 0;
-  border: none;
-  background: none;
-  color: var(--fg);
-  font-size: var(--font-body);
-  font-weight: 500;
-  font-family: inherit;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-}
-
-/* chevron: ミニマルな矢印 */
-.filter-chevron {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-right: 1.5px solid var(--muted);
-  border-bottom: 1.5px solid var(--muted);
-  transition: transform var(--duration-fast) ease;
-}
-
-.filter-chevron.is-expanded {
-  transform: rotate(-135deg);
-}
-
-.filter-chevron.is-collapsed {
-  transform: rotate(45deg);
-}
-
-/* ── チェックボックスオプション ── */
-.filter-group-options {
-  padding-bottom: var(--space-4);
 }
 
 .filter-option {
@@ -3616,11 +3515,14 @@ img[loading="lazy"] {
     grid-column: 1 / -1;
   }
 
-  /* サイドバー: モバイルではフルスクリーンオーバーレイ */
-  .filter-sidebar {
-    width: 100%;
-    border-right: none;
-    padding: var(--space-7) var(--pad-x);
+  /* ドロップダウン: モバイルでは1カラムに */
+  .filter-dropdown-grid {
+    grid-template-columns: 1fr;
+    row-gap: var(--space-4);
+  }
+
+  .filter-dropdown-column {
+    grid-column: 1 / -1;
   }
 
   .desktop-main-nav {
