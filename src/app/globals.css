@@ -3517,6 +3517,11 @@ img[loading="lazy"] {
     grid-column: 1 / -1;
   }
 
+  /* フィルターモード内の検索は表示する（通常モードのdisplay:noneを上書き） */
+  .header-filter-search .header-search {
+    display: block;
+  }
+
   /* ドロップダウン: モバイルでは1カラムに */
   .filter-dropdown-grid {
     grid-template-columns: 1fr;
