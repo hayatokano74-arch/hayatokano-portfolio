@@ -3607,20 +3607,13 @@ img[loading="lazy"] {
     display: none;
   }
 
-  /* フィルターモード: モバイル — 1本のバーを維持、検索だけ非表示 */
+  /* フィルターモード: モバイルでも検索バー+アイコンを表示 */
   .header-category-row.is-filter-mode {
     grid-template-columns: 1fr !important;
   }
 
   .header-filter-search {
     grid-column: 1 / -1;
-    border-bottom: none;
-    justify-content: flex-start;
-  }
-
-  /* モバイルでは検索入力を非表示（ツールアイコンだけ残す） */
-  .header-filter-search .header-search {
-    display: none;
   }
 
   /* サイドバー: モバイルではフルスクリーンオーバーレイ */

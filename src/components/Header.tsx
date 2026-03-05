@@ -168,10 +168,32 @@ export function Header({
                   </Suspense>
                 ) : null}
 
-                {/* 右端ツールグループ: Grid/List + セパレーター + Filter */}
+                {/* 右端ツールグループ: Filter + セパレーター + Grid/List */}
                 <div className="filter-bar-tools">
+                  {/* フィルターアイコン */}
+                  <button
+                    type="button"
+                    className={`filter-search-trigger ${filterOpen ? "is-open" : ""}`}
+                    onClick={onFilterToggle}
+                    aria-expanded={filterOpen}
+                    aria-label="フィルターを開閉"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <circle cx="5" cy="4" r="1.5" fill="currentColor" />
+                      <circle cx="11" cy="8" r="1.5" fill="currentColor" />
+                      <circle cx="7" cy="12" r="1.5" fill="currentColor" />
+                    </svg>
+                    {filterCount > 0 && <span className="filter-badge" />}
+                  </button>
+
                   {showWorksToggle ? (
                     <>
+                      {/* セパレーター */}
+                      <span className="filter-bar-separator" aria-hidden="true" />
+
                       <Link
                         href={worksGridHref}
                         className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
@@ -195,30 +217,8 @@ export function Header({
                           <rect x="1" y="12" width="14" height="2" rx="0.5" fill="currentColor" />
                         </svg>
                       </Link>
-
-                      {/* セパレーター */}
-                      <span className="filter-bar-separator" aria-hidden="true" />
                     </>
                   ) : null}
-
-                  {/* フィルターアイコン */}
-                  <button
-                    type="button"
-                    className={`filter-search-trigger ${filterOpen ? "is-open" : ""}`}
-                    onClick={onFilterToggle}
-                    aria-expanded={filterOpen}
-                    aria-label="フィルターを開閉"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <circle cx="5" cy="4" r="1.5" fill="currentColor" />
-                      <circle cx="11" cy="8" r="1.5" fill="currentColor" />
-                      <circle cx="7" cy="12" r="1.5" fill="currentColor" />
-                    </svg>
-                    {filterCount > 0 && <span className="filter-badge" />}
-                  </button>
                 </div>
               </div>
             </>
