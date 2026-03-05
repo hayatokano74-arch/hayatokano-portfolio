@@ -27,27 +27,25 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
       <div className="me-no-hoshi-meta-column">
         <h1 className="page-title">{post.title}</h1>
 
-        <div style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.16em", color: "var(--muted)" }}>DETAILS</div>
+        <div style={{ fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.16em", color: "var(--muted)" }}>DETAILS</div>
 
-        <div style={{ marginTop: "var(--v-element)", borderTop: "1px solid var(--line-light)" }}>
+        <dl className="work-details-dl" style={{ marginTop: "var(--v-element)" }}>
           {tableRows.map((row) => (
             <div
               key={row.key}
               className="work-details-row"
             >
-              <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>{row.label}</div>
-              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>{row.value}</div>
+              <dt style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>{row.label}</dt>
+              <dd style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>{row.value}</dd>
             </div>
           ))}
-        </div>
+        </dl>
 
         {post.bio ? (
           <div
             style={{
               marginTop: "var(--v-heading)",
-              paddingTop: "var(--space-4)",
-              paddingBottom: "var(--space-4)",
-              borderBottom: "1px solid var(--line-light)",
+              paddingTop: "var(--v-block)",
             }}
           >
             <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
@@ -59,11 +57,14 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           </div>
         ) : null}
 
-        <div
-          className="mnh-rich-text"
-          style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}
-          dangerouslySetInnerHTML={{ __html: post.statement }}
-        />
+        <div style={{ marginTop: "var(--v-heading)" }}>
+          <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>TEXT</div>
+          <div
+            className="mnh-rich-text"
+            style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}
+            dangerouslySetInnerHTML={{ __html: post.statement }}
+          />
+        </div>
         <div style={{ marginTop: "var(--v-block)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>
       </div>
 

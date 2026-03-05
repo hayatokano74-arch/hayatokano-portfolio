@@ -353,7 +353,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
             <div className="work-detail-overlay-content">
               <WorkDetailsTable details={work.details} />
               {work.details.bio ? (
-                <div style={{ marginTop: "var(--v-heading)", paddingTop: "var(--space-4)" }}>
+                <div style={{ marginTop: "var(--v-heading)", paddingTop: "var(--v-block)" }}>
                   <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
                   <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
                 </div>

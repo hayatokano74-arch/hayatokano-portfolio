@@ -36,7 +36,7 @@ export default async function AboutPage() {
                     fontSize: "var(--font-meta)",
                     letterSpacing: "0.16em",
                     color: "var(--muted)",
-                    paddingTop: i === 0 ? 0 : "var(--v-heading)",
+                    paddingTop: i === 0 ? 0 : "var(--v-section)",
                     paddingBottom: "var(--v-element)",
                   }}
                 >
