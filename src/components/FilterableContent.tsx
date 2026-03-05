@@ -22,7 +22,39 @@ export function useFilterContext() {
   return useContext(FilterContext);
 }
 
-export function FilterableContent({
+/**
+ * フィルターシステムのプロバイダー。
+ * Context だけを提供し、レイアウトには関与しない。
+ * サイドバー+コンテンツの配置は FilterLayout で行う。
+ */
+export function FilterProvider({
+  selectedTags,
+  children,
+}: {
+  selectedTags: string[];
+  children: ReactNode;
+}) {
+  const [filterOpen, setFilterOpen] = useState(false);
+  const onFilterToggle = () => setFilterOpen((prev) => !prev);
+
+  return (
+    <FilterContext.Provider
+      value={{
+        filterOpen,
+        onFilterToggle,
+        filterCount: selectedTags.length,
+      }}
+    >
+      {children}
+    </FilterContext.Provider>
+  );
+}
+
+/**
+ * サイドバー + コンテンツのレイアウト。
+ * ヘッダーの下に配置する。
+ */
+export function FilterLayout({
   groups,
   selectedTags,
   basePath,
@@ -35,33 +67,48 @@ export function FilterableContent({
   currentSearchParams: Record<string, string>;
   children: ReactNode;
 }) {
-  const [filterOpen, setFilterOpen] = useState(false);
-
-  const onFilterToggle = () => setFilterOpen((prev) => !prev);
-  const onClose = () => setFilterOpen(false);
+  const { filterOpen } = useFilterContext();
+  const onClose = () => {
+    /* Context の onFilterToggle を呼ぶ（閉じる方向） */
+  };
 
   return (
-    <FilterContext.Provider
-      value={{
-        filterOpen,
-        onFilterToggle,
-        filterCount: selectedTags.length,
-      }}
-    >
-      {/* サイドバー + コンテンツ */}
-      <div className={`filter-layout ${filterOpen ? "is-open" : ""}`}>
-        <FilterSidebar
-          groups={groups}
-          selectedTags={selectedTags}
-          basePath={basePath}
-          currentSearchParams={currentSearchParams}
-          open={filterOpen}
-          onClose={onClose}
-        />
-        <div className="filter-content">
-          {children}
-        </div>
+    <div className={`filter-layout ${filterOpen ? "is-open" : ""}`}>
+      <FilterSidebarWrapper
+        groups={groups}
+        selectedTags={selectedTags}
+        basePath={basePath}
+        currentSearchParams={currentSearchParams}
+      />
+      <div className="filter-content">
+        {children}
       </div>
-    </FilterContext.Provider>
+    </div>
+  );
+}
+
+/** サイドバーのラッパー（FilterContext から開閉を取得） */
+function FilterSidebarWrapper({
+  groups,
+  selectedTags,
+  basePath,
+  currentSearchParams,
+}: {
+  groups: FilterGroup[];
+  selectedTags: string[];
+  basePath: string;
+  currentSearchParams: Record<string, string>;
+}) {
+  const { filterOpen, onFilterToggle } = useFilterContext();
+
+  return (
+    <FilterSidebar
+      groups={groups}
+      selectedTags={selectedTags}
+      basePath={basePath}
+      currentSearchParams={currentSearchParams}
+      open={filterOpen}
+      onClose={onFilterToggle}
+    />
   );
 }

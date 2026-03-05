@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
-import { FilterableContent } from "@/components/FilterableContent";
+import { FilterProvider, FilterLayout } from "@/components/FilterableContent";
 
 export const metadata: Metadata = { title: "Works" };
 import { WorksClient } from "@/components/WorksClient";
@@ -50,12 +50,7 @@ export default async function WorksPage({
 
   return (
     <CanvasShell>
-      <FilterableContent
-        groups={filterGroups}
-        selectedTags={selectedTags}
-        basePath="/works"
-        currentSearchParams={spRecord}
-      >
+      <FilterProvider selectedTags={selectedTags}>
         <Header
           active="Works"
           title="Works"
@@ -65,8 +60,15 @@ export default async function WorksPage({
           worksListHref={worksListHref}
           showFilterButton
         />
-        <WorksClient works={filteredWorks} view={view} renderListDetail={(work) => <WorkDetailsTable details={work.details} />} />
-      </FilterableContent>
+        <FilterLayout
+          groups={filterGroups}
+          selectedTags={selectedTags}
+          basePath="/works"
+          currentSearchParams={spRecord}
+        >
+          <WorksClient works={filteredWorks} view={view} renderListDetail={(work) => <WorkDetailsTable details={work.details} />} />
+        </FilterLayout>
+      </FilterProvider>
     </CanvasShell>
   );
 }

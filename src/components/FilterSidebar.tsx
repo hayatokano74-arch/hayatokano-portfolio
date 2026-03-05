@@ -29,12 +29,10 @@ export function FilterSidebar({
       : [...selectedTags, tag];
 
     const params = new URLSearchParams();
-    /* 既存パラメータ（view, q等）を維持 */
     for (const [k, v] of Object.entries(currentSearchParams)) {
       if (k !== "tags" && k !== "tag") params.set(k, v);
     }
-    const tagsParam = buildTagsParam(next);
-    if (tagsParam) params.set("tags", next.join(","));
+    if (next.length > 0) params.set("tags", next.join(","));
     const qs = params.toString();
     router.push(qs ? `${basePath}?${qs}` : basePath);
   };
@@ -51,20 +49,18 @@ export function FilterSidebar({
 
   return (
     <>
-      {/* モバイルオーバーレイ背景 */}
-      {open && (
-        <div
-          className="filter-overlay-backdrop"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+      {/* オーバーレイ背景 */}
+      <div
+        className={`filter-overlay-backdrop ${open ? "is-visible" : ""}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       <aside
         className={`filter-sidebar ${open ? "is-open" : ""}`}
         aria-label="フィルター"
       >
-        {/* モバイル用ヘッダー */}
+        {/* ヘッダー: タイトル + 閉じるボタン */}
         <div className="filter-sidebar-header">
           <span className="filter-sidebar-title">Filters</span>
           <button

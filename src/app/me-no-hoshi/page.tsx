@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
-import { FilterableContent } from "@/components/FilterableContent";
+import { FilterProvider, FilterLayout } from "@/components/FilterableContent";
 import { WorksClient } from "@/components/WorksClient";
 
 export const metadata: Metadata = { title: "目の星" };
@@ -49,12 +49,7 @@ export default async function MeNoHoshiPage({
 
   return (
     <CanvasShell>
-      <FilterableContent
-        groups={filterGroups}
-        selectedTags={selectedTags}
-        basePath="/me-no-hoshi"
-        currentSearchParams={spRecord}
-      >
+      <FilterProvider selectedTags={selectedTags}>
         <Header
           active="目の星"
           title="目の星"
@@ -67,14 +62,21 @@ export default async function MeNoHoshiPage({
           worksListHref={worksListHref}
           showFilterButton
         />
-        <WorksClient
-          works={filteredPosts}
-          view={view}
+        <FilterLayout
+          groups={filterGroups}
+          selectedTags={selectedTags}
           basePath="/me-no-hoshi"
-          detailQuery=""
-          renderListDetail={(post) => <MeNoHoshiListDetails post={post} />}
-        />
-      </FilterableContent>
+          currentSearchParams={spRecord}
+        >
+          <WorksClient
+            works={filteredPosts}
+            view={view}
+            basePath="/me-no-hoshi"
+            detailQuery=""
+            renderListDetail={(post) => <MeNoHoshiListDetails post={post} />}
+          />
+        </FilterLayout>
+      </FilterProvider>
     </CanvasShell>
   );
 }
