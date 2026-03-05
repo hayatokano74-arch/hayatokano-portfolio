@@ -75,7 +75,7 @@
 
   /* ── ページシェル余白（Fluid） ── */
   --pad-x: var(--space-5);
-  --pad-y: var(--space-1);
+  --pad-y: var(--space-3);
   --v-nav-title-gap: clamp(100px, 8vw, 148px); /* ナビバー→ページタイトル間 */
 
   /* ── 垂直リズム（セマンティックトークン） ──
@@ -1210,15 +1210,15 @@ button {
   font-weight: 500;
 }
 
-/* Grid/Listトグル: ピル型セグメントコントロール（Filtersボタンと高さ統一: 32px） */
+/* Grid/Listトグル: ピル型セグメントコントロール（Filtersボタンと高さ統一） */
 .works-view-toggle {
   grid-column: 12;
   display: inline-flex;
   align-items: center;
   justify-self: end;
   gap: 0;
-  height: 32px;
-  border: 1px solid var(--line);
+  height: var(--space-8);
+  border: 1px solid var(--muted);
   border-radius: var(--radius-pill);
   padding: 2px;
   background: transparent;
@@ -1229,8 +1229,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 26px;
+  width: calc(var(--space-8) - 6px);
+  height: calc(var(--space-8) - 6px);
   border-radius: calc(var(--radius-pill) - 3px);
   color: var(--muted);
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
@@ -3280,9 +3280,9 @@ img[loading="lazy"] {
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  height: 32px;
+  height: var(--space-8);
   padding: 0 var(--space-4);
-  border: 1px solid var(--line);
+  border: 1px solid var(--muted);
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--muted);
@@ -3434,16 +3434,17 @@ img[loading="lazy"] {
   background: none;
   color: var(--fg);
   font-size: var(--font-body);
-  font-weight: 600;
+  font-weight: 500;
   font-family: inherit;
+  letter-spacing: 0.02em;
   cursor: pointer;
 }
 
-/* chevron: 小さなSVG風の矢印（参考サイトのスタイル） */
+/* chevron: ミニマルな矢印 */
 .filter-chevron {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-right: 1.5px solid var(--muted);
   border-bottom: 1.5px solid var(--muted);
   transition: transform var(--duration-fast) ease;
@@ -3466,7 +3467,7 @@ img[loading="lazy"] {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: 6px 0;
+  padding: var(--space-1) 0;
   cursor: pointer;
   font-size: var(--font-body);
   line-height: var(--lh-tight);
@@ -3530,7 +3531,7 @@ img[loading="lazy"] {
 @media (max-width: 900px) {
   :root {
     --pad-x: var(--space-4);
-    --pad-y: var(--space-1);
+    --pad-y: var(--space-2);
   }
 
   /* ── ヘッダー ── */
