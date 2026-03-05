@@ -1210,16 +1210,39 @@ button {
   font-weight: 500;
 }
 
-/* Grid/Listトグル: カラム11-12に配置、右端揃え */
+/* Grid/Listトグル: ピル型セグメントコントロール */
 .works-view-toggle {
   grid-column: 11 / -1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-self: end;
-  gap: var(--space-4);
-  font-size: var(--font-body);
-  line-height: var(--lh-normal);
-  font-weight: 500;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+  background: transparent;
+}
+
+/* 各セグメント */
+.view-toggle-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  border-radius: calc(var(--radius-pill) - 2px);
+  color: var(--muted);
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  text-decoration: none;
+}
+
+.view-toggle-seg:hover {
+  color: var(--fg);
+}
+
+.view-toggle-seg.is-active {
+  background: var(--fg);
+  color: var(--bg);
 }
 
 /* 検索窓: カラム12に配置、幅をカラムに合わせる */

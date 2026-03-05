@@ -184,17 +184,28 @@ export function Header({
                 <div className="works-view-toggle">
                   <Link
                     href={worksGridHref}
-                    className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
-                    style={{ color: view === "grid" ? "var(--fg)" : "var(--muted)" }}
+                    className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
+                    aria-label="グリッド表示"
                   >
-                    Grid
+                    {/* グリッドアイコン: 4マス */}
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
+                      <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
+                      <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" />
+                      <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
+                    </svg>
                   </Link>
                   <Link
                     href={worksListHref}
-                    className={`${view === "list" ? "underline-active" : ""} action-link`.trim()}
-                    style={{ color: view === "list" ? "var(--fg)" : "var(--muted)" }}
+                    className={`view-toggle-seg ${view === "list" ? "is-active" : ""}`}
+                    aria-label="リスト表示"
                   >
-                    List
+                    {/* リストアイコン: 3本線 */}
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor" />
+                      <rect x="1" y="7" width="14" height="2" rx="0.5" fill="currentColor" />
+                      <rect x="1" y="12" width="14" height="2" rx="0.5" fill="currentColor" />
+                    </svg>
                   </Link>
                 </div>
               ) : null}
@@ -219,17 +230,26 @@ export function Header({
                 <div className="works-view-toggle">
                   <Link
                     href={worksGridHref}
-                    className={`${view === "grid" ? "underline-active" : ""} action-link`.trim()}
-                    style={{ color: view === "grid" ? "var(--fg)" : "var(--muted)" }}
+                    className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
+                    aria-label="グリッド表示"
                   >
-                    Grid
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
+                      <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
+                      <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" />
+                      <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
+                    </svg>
                   </Link>
                   <Link
                     href={worksListHref}
-                    className={`${view === "list" ? "underline-active" : ""} action-link`.trim()}
-                    style={{ color: view === "list" ? "var(--fg)" : "var(--muted)" }}
+                    className={`view-toggle-seg ${view === "list" ? "is-active" : ""}`}
+                    aria-label="リスト表示"
                   >
-                    List
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor" />
+                      <rect x="1" y="7" width="14" height="2" rx="0.5" fill="currentColor" />
+                      <rect x="1" y="12" width="14" height="2" rx="0.5" fill="currentColor" />
+                    </svg>
                   </Link>
                 </div>
               ) : null}
