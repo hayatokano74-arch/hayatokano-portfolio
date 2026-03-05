@@ -170,7 +170,7 @@ export function Header({
                   aria-label="フィルターを開閉"
                 >
                   {/* スライダーアイコン（調整/フィルター） */}
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                     <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                     <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                     <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
