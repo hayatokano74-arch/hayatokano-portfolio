@@ -156,7 +156,7 @@ export function Header({
 
       {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (
-        <div className="header-category-row">
+        <div className={`header-category-row ${showFilterButton ? "is-filter-mode" : ""}`}>
           {/* フィルターモード: 検索 + Filtersボタン + Grid/List */}
           {showFilterButton ? (
             <>

@@ -1210,13 +1210,14 @@ button {
   font-weight: 500;
 }
 
-/* Grid/Listトグル: ピル型セグメントコントロール */
+/* Grid/Listトグル: ピル型セグメントコントロール（Filtersボタンと高さ統一: 32px） */
 .works-view-toggle {
   grid-column: 12;
   display: inline-flex;
   align-items: center;
   justify-self: end;
   gap: 0;
+  height: 32px;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   padding: 2px;
@@ -1228,9 +1229,9 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 28px;
-  border-radius: calc(var(--radius-pill) - 2px);
+  width: 30px;
+  height: 26px;
+  border-radius: calc(var(--radius-pill) - 3px);
   color: var(--muted);
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
   text-decoration: none;
@@ -3270,35 +3271,38 @@ img[loading="lazy"] {
   grid-column: 11;
   display: flex;
   align-items: center;
-  justify-self: center;
+  justify-self: end;
 }
 
-/* ── Filtersボタン: pill形状 ── */
+/* ── Filtersボタン: Grid/Listトグルと統一したpill形状 ── */
 .filter-toggle-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-4);
-  border: 1px solid var(--fg);
+  height: 32px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: transparent;
-  color: var(--fg);
-  font-size: var(--font-body);
+  color: var(--muted);
+  font-size: var(--font-meta);
   font-family: inherit;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease, border-color var(--duration-fast) ease;
   white-space: nowrap;
 }
 
 .filter-toggle-btn:hover {
-  background: var(--fg);
-  color: var(--bg);
+  color: var(--fg);
+  border-color: var(--fg);
 }
 
 .filter-toggle-btn.is-open {
   background: var(--fg);
   color: var(--bg);
+  border-color: var(--fg);
 }
 
 /* ── サイドバー + コンテンツレイアウト ── */
@@ -3580,7 +3584,7 @@ img[loading="lazy"] {
   }
 
   .works-view-toggle {
-    grid-column: 1 / -1;
+    grid-column: auto;
     justify-self: start;
   }
 
@@ -3588,13 +3592,19 @@ img[loading="lazy"] {
     display: none;
   }
 
-  /* フィルターモード: モバイル対応 */
+  /* フィルターモード: モバイル対応 — FiltersとGrid/Listを横並びで左端 */
+  .header-category-row.is-filter-mode {
+    grid-template-columns: auto auto 1fr !important;
+    justify-content: start;
+    gap: var(--space-3);
+  }
+
   .header-filter-search {
     display: none;
   }
 
   .header-filter-button-cell {
-    grid-column: 1 / -1;
+    grid-column: auto;
     justify-self: start;
   }
 
