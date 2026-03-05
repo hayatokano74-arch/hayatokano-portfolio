@@ -1212,7 +1212,7 @@ button {
 
 /* Grid/Listトグル: ピル型セグメントコントロール */
 .works-view-toggle {
-  grid-column: 11 / -1;
+  grid-column: 12;
   display: inline-flex;
   align-items: center;
   justify-self: end;
@@ -3260,14 +3260,14 @@ img[loading="lazy"] {
 /* ═══ フィルターシステム ═══ */
 
 /* カテゴリ行: フィルターモード時のレイアウト（12カラムグリッド）
-   検索(col 1-9) / Filters(col 10) / Grid·List(col 11-12, 右端揃え) */
+   検索(col 1-10) / Filters(col 11) / Grid·List(col 12, 右端揃え) */
 .header-filter-search {
-  grid-column: 1 / span 9;
+  grid-column: 1 / span 10;
   width: 100%;
 }
 
 .header-filter-button-cell {
-  grid-column: 10;
+  grid-column: 11;
   display: flex;
   align-items: center;
   justify-self: center;
@@ -3283,7 +3283,7 @@ img[loading="lazy"] {
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--fg);
-  font-size: var(--font-meta);
+  font-size: var(--font-body);
   font-family: inherit;
   letter-spacing: 0.08em;
   cursor: pointer;

@@ -272,7 +272,7 @@ const searchInputStyle = {
   border: 0,
   borderBottom: "1px solid var(--line)",
   background: "transparent",
-  fontSize: "var(--font-meta)",
+  fontSize: "var(--font-body)",
   lineHeight: "var(--lh-normal)",
   color: "var(--fg)",
   padding: 0,
