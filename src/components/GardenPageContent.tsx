@@ -516,7 +516,7 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
     <>
       <Header
         active="Garden"
-        title={<>Garden<span className="page-title-count">{nodes.length}</span></>}
+        title={<>Garden<span className="page-title-count">({nodes.length})</span></>}
         showCategoryRow={false}
         showSearch={false}
         titleRight={archiveButton}

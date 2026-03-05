@@ -66,7 +66,7 @@ export default async function WorksPage({
       <FilterProvider selected={selected}>
         <Header
           active="Works"
-          title={<>Works<span className="page-title-count">{filteredWorks.length}</span></>}
+          title={<>Works<span className="page-title-count">({filteredWorks.length})</span></>}
           showWorksToggle
           worksView={view}
           worksGridHref={worksGridHref}
