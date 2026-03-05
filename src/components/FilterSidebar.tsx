@@ -60,7 +60,7 @@ export function FilterSidebar({
         className={`filter-sidebar ${open ? "is-open" : ""}`}
         aria-label="フィルター"
       >
-        {/* ヘッダー: タイトル + 閉じるボタン */}
+        {/* ヘッダー: タイトル + 閉じるボタン（＋回転×パターン、モバイルメニューと統一） */}
         <div className="filter-sidebar-header">
           <span className="filter-sidebar-title">Filters</span>
           <button
@@ -68,9 +68,7 @@ export function FilterSidebar({
             className="filter-sidebar-close"
             onClick={onClose}
             aria-label="フィルターを閉じる"
-          >
-            ×
-          </button>
+          />
         </div>
 
         {/* クリアリンク */}

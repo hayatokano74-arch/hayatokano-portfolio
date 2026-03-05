@@ -3236,18 +3236,18 @@ img[loading="lazy"] {
 
 /* ═══ フィルターシステム ═══ */
 
-/* カテゴリ行: フィルターモード時のレイアウト
-   検索(col 1-9) / Filters(col 10) / Grid·List(col 11-12) */
+/* カテゴリ行: フィルターモード時のレイアウト（12カラムグリッド）
+   検索(col 1-8) / Filters(col 9-10) / Grid·List(col 11-12) */
 .header-filter-search {
-  grid-column: 1 / span 9;
+  grid-column: 1 / span 8;
   width: 100%;
 }
 
 .header-filter-button-cell {
-  grid-column: 10;
+  grid-column: 9 / span 2;
   display: flex;
   align-items: center;
-  justify-self: start;
+  justify-self: end;
 }
 
 /* ── Filtersボタン: pill形状 ── */
@@ -3255,7 +3255,7 @@ img[loading="lazy"] {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 4px 16px;
+  padding: var(--space-1) var(--space-4);
   border: 1px solid var(--fg);
   border-radius: var(--radius-pill);
   background: transparent;
@@ -3278,9 +3278,7 @@ img[loading="lazy"] {
   color: var(--bg);
 }
 
-/* ── サイドバー + コンテンツレイアウト ──
-   デスクトップ: サイドバーは fixed 位置で左端にオーバーレイ
-   コンテンツは常に全幅 */
+/* ── サイドバー + コンテンツレイアウト ── */
 .filter-layout {
   position: relative;
 }
@@ -3289,16 +3287,16 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
-/* ── サイドバー: 固定オーバーレイ ── */
+/* ── サイドバー: 固定オーバーレイ（左からスライドイン） ── */
 .filter-sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 280px;
+  width: clamp(240px, 20vw, 320px);
   background: var(--bg);
   z-index: 150;
-  padding: var(--space-7) var(--space-5);
+  padding: var(--space-7) var(--pad-x);
   overflow-y: auto;
   border-right: 1px solid var(--line);
   transform: translateX(-100%);
@@ -3309,37 +3307,57 @@ img[loading="lazy"] {
   transform: translateX(0);
 }
 
-/* サイドバーヘッダー: 常に表示 */
+/* サイドバーヘッダー */
 .filter-sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-7);
 }
 
+/* タイトル: サイト全体のメタラベルスタイル（DETAILS等と同じ） */
 .filter-sidebar-title {
-  font-size: var(--font-heading);
+  font-size: var(--font-meta);
   font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
+/* 閉じるボタン: サイトのモバイルメニューと同じ ＋→× 回転パターン */
 .filter-sidebar-close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: none;
-  color: var(--fg);
-  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  padding: 0;
   cursor: pointer;
-  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  position: relative;
 }
 
-.filter-sidebar-close:hover {
+.filter-sidebar-close::before,
+.filter-sidebar-close::after {
+  content: "";
+  position: absolute;
   background: var(--fg);
-  color: var(--bg);
+  top: 50%;
+  left: 50%;
+}
+
+/* 横線（45度回転で×の一画） */
+.filter-sidebar-close::before {
+  width: 20px;
+  height: 2px;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* 縦線（45度回転で×の一画） */
+.filter-sidebar-close::after {
+  width: 2px;
+  height: 20px;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 /* ── オーバーレイ背景（クリックで閉じる） ── */
@@ -3348,7 +3366,7 @@ img[loading="lazy"] {
   position: fixed;
   inset: 0;
   z-index: 149;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .filter-overlay-backdrop.is-visible {
@@ -3390,14 +3408,16 @@ img[loading="lazy"] {
   border-bottom: 1px solid var(--line);
   background: none;
   color: var(--fg);
-  font-size: var(--font-body);
-  font-weight: 600;
+  font-size: var(--font-meta);
+  font-weight: 700;
   font-family: inherit;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
 .filter-chevron {
-  font-size: 10px;
+  font-size: var(--font-meta);
   color: var(--muted);
 }
 
@@ -3416,12 +3436,38 @@ img[loading="lazy"] {
   line-height: var(--lh-normal);
 }
 
+/* カスタムチェックボックス: サイトのモノクロトーンに合わせる */
 .filter-checkbox {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--fg);
+  appearance: none;
+  -webkit-appearance: none;
+  width: var(--space-4);
+  height: var(--space-4);
+  border: 1px solid var(--fg);
+  background: transparent;
   cursor: pointer;
   flex-shrink: 0;
+  position: relative;
+}
+
+.filter-checkbox:checked {
+  background: var(--fg);
+}
+
+.filter-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.filter-checkbox:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
 }
 
 .filter-option-label {
@@ -3514,6 +3560,7 @@ img[loading="lazy"] {
   .filter-sidebar {
     width: 100%;
     border-right: none;
+    padding: var(--space-7) var(--pad-x);
   }
 
   .desktop-main-nav {
