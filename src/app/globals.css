@@ -1250,6 +1250,7 @@ button {
 .header-search {
   grid-column: 12;
   width: 100%;
+  border-bottom: 1px solid var(--line);
 }
 
 /* ── Works リストサマリー: 12カラムグリッド ── */
@@ -3261,48 +3262,55 @@ img[loading="lazy"] {
 /* ═══ フィルターシステム ═══ */
 
 /* カテゴリ行: フィルターモード時のレイアウト（12カラムグリッド）
-   検索(col 1-10) / Filters(col 11) / Grid·List(col 12, 右端揃え) */
+   フィルターアイコン統合検索バー(col 1-11) / Grid·List(col 12, 右端揃え) */
 .header-filter-search {
-  grid-column: 1 / span 10;
-  width: 100%;
-}
-
-.header-filter-button-cell {
-  grid-column: 11;
+  grid-column: 1 / span 11;
   display: flex;
   align-items: center;
-  justify-self: end;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--line);
 }
 
-/* ── Filtersボタン: Grid/Listトグルと統一したpill形状 ── */
-.filter-toggle-btn {
-  display: inline-flex;
+/* 検索バー内の .header-search はborder不要（親が管理） */
+.header-filter-search .header-search {
+  border-bottom: none;
+}
+
+/* ── フィルターアイコン: 検索バー右端に統合 ── */
+.filter-search-trigger {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  height: var(--space-8);
-  padding: 0 var(--space-4);
-  border: 1px solid var(--muted);
-  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+  order: 1;
+  width: var(--space-7);
+  height: var(--space-7);
+  border: none;
   background: transparent;
   color: var(--muted);
-  font-size: var(--font-meta);
-  font-family: inherit;
-  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background var(--duration-fast) ease, color var(--duration-fast) ease, border-color var(--duration-fast) ease;
-  white-space: nowrap;
+  position: relative;
+  transition: color var(--duration-fast) ease;
+  padding: 0;
 }
 
-.filter-toggle-btn:hover {
+.filter-search-trigger:hover {
   color: var(--fg);
-  border-color: var(--fg);
 }
 
-.filter-toggle-btn.is-open {
+.filter-search-trigger.is-open {
+  color: var(--fg);
+}
+
+/* フィルター選択数バッジ: アイコン右上のドット */
+.filter-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
 }
 
 /* ── サイドバー + コンテンツレイアウト ── */
@@ -3593,7 +3601,7 @@ img[loading="lazy"] {
     display: none;
   }
 
-  /* フィルターモード: モバイル対応 — FiltersとGrid/Listを横並びで左端 */
+  /* フィルターモード: モバイル — アイコン+Grid/List横並び */
   .header-category-row.is-filter-mode {
     grid-template-columns: auto auto 1fr !important;
     justify-content: start;
@@ -3601,12 +3609,14 @@ img[loading="lazy"] {
   }
 
   .header-filter-search {
-    display: none;
+    grid-column: auto;
+    border-bottom: none;
+    gap: 0;
   }
 
-  .header-filter-button-cell {
-    grid-column: auto;
-    justify-self: start;
+  /* モバイルでは検索入力を非表示（アイコンだけ残す） */
+  .header-filter-search .header-search {
+    display: none;
   }
 
   /* サイドバー: モバイルではフルスクリーンオーバーレイ */

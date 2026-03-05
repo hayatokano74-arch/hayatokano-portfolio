@@ -157,27 +157,36 @@ export function Header({
       {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (
         <div className={`header-category-row ${showFilterButton ? "is-filter-mode" : ""}`}>
-          {/* フィルターモード: 検索 + Filtersボタン + Grid/List */}
+          {/* フィルターモード: フィルターアイコン統合検索バー + Grid/List */}
           {showFilterButton ? (
             <>
-              {showSearch ? (
-                <div className="header-filter-search">
-                  <Suspense fallback={<SearchPlaceholder />}>
-                    <SearchInput />
-                  </Suspense>
-                </div>
-              ) : null}
-
-              <div className="header-filter-button-cell">
+              <div className="header-filter-search">
+                {/* フィルターアイコン: 検索バー左端に統合 */}
                 <button
                   type="button"
-                  className={`filter-toggle-btn ${filterOpen ? "is-open" : ""}`}
+                  className={`filter-search-trigger ${filterOpen ? "is-open" : ""}`}
                   onClick={onFilterToggle}
                   aria-expanded={filterOpen}
                   aria-label="フィルターを開閉"
                 >
-                  Filters{filterCount > 0 ? ` (${filterCount})` : ""}
+                  {/* スライダーアイコン（調整/フィルター） */}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <circle cx="5" cy="4" r="1.5" fill="currentColor" />
+                    <circle cx="11" cy="8" r="1.5" fill="currentColor" />
+                    <circle cx="7" cy="12" r="1.5" fill="currentColor" />
+                  </svg>
+                  {filterCount > 0 && <span className="filter-badge" />}
                 </button>
+
+                {/* 検索入力 */}
+                {showSearch ? (
+                  <Suspense fallback={<SearchPlaceholder />}>
+                    <SearchInput />
+                  </Suspense>
+                ) : null}
               </div>
 
               {showWorksToggle ? (
@@ -187,7 +196,6 @@ export function Header({
                     className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
                     aria-label="グリッド表示"
                   >
-                    {/* グリッドアイコン: 4マス */}
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                       <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
                       <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
@@ -200,7 +208,6 @@ export function Header({
                     className={`view-toggle-seg ${view === "list" ? "is-active" : ""}`}
                     aria-label="リスト表示"
                   >
-                    {/* リストアイコン: 3本線 */}
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                       <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor" />
                       <rect x="1" y="7" width="14" height="2" rx="0.5" fill="currentColor" />
@@ -270,7 +277,6 @@ export function Header({
 const searchInputStyle = {
   width: "100%",
   border: 0,
-  borderBottom: "1px solid var(--line)",
   background: "transparent",
   fontSize: "var(--font-body)",
   lineHeight: "var(--lh-normal)",
