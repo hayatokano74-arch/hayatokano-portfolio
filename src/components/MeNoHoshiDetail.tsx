@@ -27,9 +27,9 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
       <div className="me-no-hoshi-meta-column">
         <h1 className="page-title">{post.title}</h1>
 
-        <div style={{ marginTop: "var(--space-10)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.16em", color: "var(--muted)" }}>DETAILS</div>
+        <div style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.16em", color: "var(--muted)" }}>DETAILS</div>
 
-        <div style={{ marginTop: "var(--space-2)", borderTop: "1px solid var(--line-light)" }}>
+        <div style={{ marginTop: "var(--v-element)", borderTop: "1px solid var(--line-light)" }}>
           {tableRows.map((row) => (
             <div
               key={row.key}
@@ -44,7 +44,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
         {post.bio ? (
           <div
             style={{
-              marginTop: "var(--space-6)",
+              marginTop: "var(--v-heading)",
               paddingTop: "var(--space-4)",
               paddingBottom: "var(--space-4)",
               borderBottom: "1px solid var(--line-light)",
@@ -53,7 +53,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
             <div
               className="mnh-rich-text"
-              style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}
+              style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}
               dangerouslySetInnerHTML={{ __html: post.bio }}
             />
           </div>
@@ -61,17 +61,17 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
 
         <div
           className="mnh-rich-text"
-          style={{ marginTop: post.bio ? "var(--space-6)" : "var(--space-8)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}
+          style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}
           dangerouslySetInnerHTML={{ __html: post.statement }}
         />
-        <div style={{ marginTop: "var(--space-5)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>
+        <div style={{ marginTop: "var(--v-block)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>
       </div>
 
       <div className="me-no-hoshi-visual-column">
         {post.showKeyVisuals && (
           <div className="me-no-hoshi-section is-first">
             <div className="me-no-hoshi-section-label">KEY VISUAL</div>
-            <div className="single-col-grid" style={{ marginTop: "var(--space-3)", gap: "var(--space-4)" }}>
+            <div className="single-col-grid" style={{ marginTop: "var(--v-element)", gap: "var(--space-4)" }}>
               {keyVisuals.map((visual, idx) => {
                 const isPortrait = visual.image.height > visual.image.width;
                 return (
@@ -100,13 +100,13 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                     />
                   </div>
                   {visual.caption ? (
-                    <div style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{visual.caption}</div>
+                    <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{visual.caption}</div>
                   ) : null}
                 </article>
                 );
               })}
             </div>
-            <div style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{post.heroCaption}</div>
+            <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{post.heroCaption}</div>
           </div>
         )}
 
@@ -117,7 +117,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             <div
               className="me-no-hoshi-past-grid"
               style={{
-                marginTop: "var(--space-3)",
+                marginTop: "var(--v-element)",
                 display: "grid",
                 gap: "var(--space-5)",
               }}
@@ -145,7 +145,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                       }}
                     />
                     {(work.title || work.year) ? (
-                      <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
+                      <figcaption style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
                         {work.title}{work.title && work.year ? ` | ${work.year}` : work.year}
                       </figcaption>
                     ) : null}
@@ -164,7 +164,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             <div
               className="me-no-hoshi-archive-grid"
               style={{
-                marginTop: "var(--space-3)",
+                marginTop: "var(--v-element)",
                 display: "grid",
                 gap: "var(--space-5)",
               }}
@@ -192,7 +192,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                       }}
                     />
                     {(work.title || work.year) ? (
-                      <figcaption style={{ marginTop: "var(--space-2)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
+                      <figcaption style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", color: "var(--muted)" }}>
                         {work.title}{work.title && work.year ? ` | ${work.year}` : work.year}
                       </figcaption>
                     ) : null}

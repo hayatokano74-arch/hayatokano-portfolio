@@ -52,12 +52,12 @@ export default async function TextDetail({
 
         {/* 中央: 本文（列4-9、6列分 ≈ 従来の640px） */}
         <div className="text-detail-main">
-          <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--space-5)" }}>{post.title}</div>
+          <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, marginBottom: "var(--v-block)" }}>{post.title}</div>
           {post.sections?.length ? (
             <div>
               {post.sections.map((section) => (
-                <section key={section.id} id={section.id} style={{ scrollMarginTop: "var(--space-10)", marginBottom: "var(--space-9)" }}>
-                  <h2 style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, margin: "0 0 var(--space-3)" }}>
+                <section key={section.id} id={section.id} style={{ scrollMarginTop: "var(--space-10)", marginBottom: "var(--v-section)" }}>
+                  <h2 style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, margin: "0 0 var(--v-element)" }}>
                     {section.heading}
                   </h2>
                   <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", whiteSpace: "pre-wrap", fontWeight: 500 }}>

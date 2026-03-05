@@ -353,18 +353,18 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
             <div className="work-detail-overlay-content">
               <WorkDetailsTable details={work.details} />
               {work.details.bio ? (
-                <div style={{ marginTop: "var(--space-6)", paddingTop: "var(--space-4)" }}>
+                <div style={{ marginTop: "var(--v-heading)", paddingTop: "var(--space-4)" }}>
                   <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
-                  <div style={{ marginTop: "var(--space-3)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
+                  <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
                 </div>
               ) : null}
               <div
                 className="work-excerpt-html"
-                style={{ marginTop: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
+                style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) }}
               />
               {work.tags.length > 0 && (
-              <div style={{ marginTop: "var(--space-5)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
+              <div style={{ marginTop: "var(--v-block)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
                 {work.tags.map((tag, idx) => (
                   <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
                     {tag.toLowerCase()}

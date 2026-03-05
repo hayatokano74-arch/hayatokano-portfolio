@@ -21,7 +21,7 @@ export default async function AboutPage() {
               lineHeight: "var(--lh-relaxed)",
               fontWeight: 500,
               whiteSpace: "pre-wrap",
-              marginBottom: "var(--space-11)",
+              marginBottom: "var(--v-page)",
             }}
           >
             {about.statement}
@@ -36,8 +36,8 @@ export default async function AboutPage() {
                     fontSize: "var(--font-meta)",
                     letterSpacing: "0.16em",
                     color: "var(--muted)",
-                    paddingTop: i === 0 ? 0 : "var(--space-7)",
-                    paddingBottom: "var(--space-3)",
+                    paddingTop: i === 0 ? 0 : "var(--v-heading)",
+                    paddingBottom: "var(--v-element)",
                   }}
                 >
                   {row.content}
