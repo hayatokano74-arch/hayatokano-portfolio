@@ -82,7 +82,7 @@
      ヘッダー各行とコンテンツ間の垂直方向の間隔を統一する。
      全て 8px ベースライン倍数。 */
   --v-row-gap: var(--space-7);         /* 行間ギャップ: 32-40px (4-5×baseline) */
-  --v-header-content-gap: var(--space-7); /* ヘッダー→コンテンツ: 32-40px（page-shell gap で使用） */
+  --v-header-content-gap: var(--space-8); /* ヘッダー→コンテンツ: 36-48px（page-shell gap で使用） */
   /* ヘッダー→コンテンツの間隔は .page-shell の gap で一元管理 */
 
   /* ── 垂直マージン階層（セマンティックトークン） ──
@@ -3357,25 +3357,24 @@ img[loading="lazy"] {
   margin-bottom: var(--v-element);
 }
 
-/* ── Clear: グリッド内右端に配置 ── */
+/* ── Clear all filters: ドロップダウン上部にボーダー付きボタン ── */
 .filter-clear-all {
-  grid-column: -3 / -1;
-  justify-self: end;
-  align-self: start;
-  padding: 0;
-  border: none;
+  display: block;
+  margin-bottom: var(--v-element);
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
   background: none;
   color: var(--fg);
   font-size: var(--font-body);
   font-family: inherit;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: opacity var(--duration-fast) ease;
-  opacity: 0.6;
+  transition: border-color var(--duration-fast) ease;
 }
 
 .filter-clear-all:hover {
-  opacity: 1;
+  border-color: var(--fg);
 }
 
 .filter-option {
