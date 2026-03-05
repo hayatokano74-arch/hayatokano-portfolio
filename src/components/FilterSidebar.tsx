@@ -67,17 +67,6 @@ export function FilterSidebar({
 
   return (
     <div className="filter-dropdown">
-      {/* Clear: ドロップダウン上部に配置、選択中のみ表示 */}
-      {totalSelected > 0 && (
-        <button
-          type="button"
-          className="filter-clear-all"
-          onClick={clearAll}
-        >
-          Clear all filters
-        </button>
-      )}
-
       {/* フィルターグループ: 12カラムグリッドで横並び */}
       <div className="filter-dropdown-grid">
         {groups.map((group) => (

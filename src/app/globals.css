@@ -3330,7 +3330,6 @@ img[loading="lazy"] {
 
 /* ── フィルタードロップダウン: 検索バーの直下にインライン展開 ── */
 .filter-dropdown {
-  position: relative;
   padding: var(--v-block) 0;
   border-bottom: 1px solid var(--line);
 }
@@ -3358,25 +3357,22 @@ img[loading="lazy"] {
   margin-bottom: var(--v-element);
 }
 
-/* ── Clear all filters: ドロップダウン右上に絶対配置（レイアウトに影響しない） ── */
-.filter-clear-all {
-  position: absolute;
-  top: var(--v-block);
-  right: 0;
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+/* ── フィルタークリア: 検索バー内テキストリンク ── */
+.filter-clear-link {
+  padding: 0;
+  border: none;
   background: none;
-  color: var(--fg);
+  color: var(--muted);
   font-size: var(--font-meta);
   font-family: inherit;
   letter-spacing: 0.04em;
+  white-space: nowrap;
   cursor: pointer;
-  transition: border-color var(--duration-fast) ease;
+  transition: color var(--duration-fast) ease;
 }
 
-.filter-clear-all:hover {
-  border-color: var(--fg);
+.filter-clear-link:hover {
+  color: var(--fg);
 }
 
 .filter-option {
