@@ -1210,30 +1210,21 @@ button {
   font-weight: 500;
 }
 
-/* Grid/Listトグル: ピル型セグメントコントロール（Filtersボタンと高さ統一） */
+/* Grid/Listトグル: アイコンのみ、色の濃淡で状態表現 */
 .works-view-toggle {
   grid-column: 12;
   display: inline-flex;
   align-items: center;
   justify-self: end;
-  gap: 0;
-  height: var(--space-8);
-  border: 1px solid var(--muted);
-  border-radius: var(--radius-pill);
-  padding: 2px;
-  background: transparent;
+  gap: var(--space-2);
 }
 
-/* 各セグメント */
 .view-toggle-seg {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--space-8) - 6px);
-  height: calc(var(--space-8) - 6px);
-  border-radius: calc(var(--radius-pill) - 3px);
   color: var(--muted);
-  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  transition: color var(--duration-fast) ease;
   text-decoration: none;
 }
 
@@ -1242,8 +1233,7 @@ button {
 }
 
 .view-toggle-seg.is-active {
-  background: var(--fg);
-  color: var(--bg);
+  color: var(--fg);
 }
 
 /* 検索窓: カラム12に配置、幅をカラムに合わせる */
