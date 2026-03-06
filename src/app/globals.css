@@ -1452,11 +1452,7 @@ button {
 }
 
 .news-accord-item {
-  border-top: 1px solid var(--line);
-}
-
-.news-accord-item:last-child {
-  border-bottom: 1px solid var(--line);
+  /* hrline で区切り（Worksリストと統一） */
 }
 
 /* News サマリー: 12カラムグリッド */

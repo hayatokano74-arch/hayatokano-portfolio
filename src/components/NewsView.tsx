@@ -25,8 +25,10 @@ function NoImagePlaceholder() {
 export function NewsView({ items }: { items: NewsItem[] }) {
   return (
     <div className="news-accordion">
+      <div className="hrline" />
       {items.map((item) => (
-        <details key={item.id} className="news-accord-item" name="news">
+        <div key={item.id}>
+        <details className="news-accord-item" name="news">
           {/* サマリー行: 12カラムグリッド */}
           <summary className="news-accord-summary">
             <div className="news-accord-date" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, color: "var(--muted)" }}>
@@ -82,6 +84,8 @@ export function NewsView({ items }: { items: NewsItem[] }) {
             </div>
           </div>
         </details>
+        <div className="hrline" />
+        </div>
       ))}
     </div>
   );

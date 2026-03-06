@@ -10,7 +10,7 @@ export default async function NewsPage() {
   const news = await getNews();
   return (
     <CanvasShell>
-      <Header active="News" title="News" showCategoryRow={false} />
+      <Header active="News" title={<>News<span className="page-title-count">({news.length})</span></>} showCategoryRow={false} />
       <NewsView items={news} />
     </CanvasShell>
   );
