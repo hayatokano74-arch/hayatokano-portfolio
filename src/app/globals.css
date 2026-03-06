@@ -1340,10 +1340,21 @@ button {
   overflow-wrap: anywhere;
 }
 
-/* リスト内テーブル: 各行は横並び(ラベル左・値右) */
+/* リスト内テーブル: gridに戻す（リーダーライン無効） */
 .works-list-body .work-details-row {
+  display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
   gap: var(--space-2);
+}
+
+.works-list-body .work-details-row::after {
+  content: none;
+}
+
+.works-list-body .work-details-value {
+  text-align: left;
+  max-width: none;
+  order: unset;
 }
 
 /* View All ボタン: ピル型ボーダー */
@@ -1845,13 +1856,22 @@ button.tl-photo-cell {
   padding-bottom: var(--space-2);
 }
 
+/* NOTON帳票風: ラベル — リーダーライン — 値（右寄せ） */
 .work-details-row {
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
+  display: flex;
   align-items: baseline;
-  gap: var(--space-2);
   padding-top: 4px;
-  padding-bottom: 0;
+  padding-bottom: 4px;
+}
+
+/* ラベルと値の間を下線で埋めるリーダーライン */
+.work-details-row::after {
+  content: "";
+  order: 1;
+  flex: 1;
+  border-bottom: 1px solid var(--line-light);
+  margin: 0 var(--space-2);
+  min-width: 8px;
 }
 
 /* Contact ページ用: 列幅同じ、gap と padding が異なる */
@@ -1882,16 +1902,18 @@ button.tl-photo-cell {
   font-size: var(--font-meta);
   letter-spacing: 0.16em;
   color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  order: 0;
 }
 
-/* NOTON帳票風: 値セルのみ下線（gap分左に延長しラベル直後まで到達） */
 .work-details-value {
   font-size: var(--font-body);
   line-height: var(--lh-normal);
-  border-bottom: 1px solid var(--line-light);
-  padding-bottom: 4px;
-  margin-left: calc(-1 * var(--space-2));
-  padding-left: var(--space-2);
+  text-align: right;
+  flex-shrink: 0;
+  order: 2;
+  max-width: 75%;
 }
 
 /* ── Works 詳細オーバーレイ: 12カラムグリッド ── */
@@ -1950,12 +1972,20 @@ button.tl-photo-cell {
   gap: 0;
 }
 
+.work-detail-overlay-content .work-details-row::after {
+  content: none;
+}
+
 .work-detail-overlay-content .work-details-label {
   grid-column: 1;
+  order: unset;
 }
 
 .work-detail-overlay-content .work-details-value {
   grid-column: 2 / -1;
+  text-align: left;
+  max-width: none;
+  order: unset;
 }
 
 /* ── スケルトンローディングアニメーション ── */
