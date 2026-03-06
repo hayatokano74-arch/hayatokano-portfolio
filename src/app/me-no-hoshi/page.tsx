@@ -32,7 +32,10 @@ export default async function MeNoHoshiPage({
     filteredPosts = filteredPosts.filter((post) =>
       post.title.toLowerCase().includes(q) ||
       post.tags.some((tag) => tag.toLowerCase().includes(q)) ||
-      post.statement.toLowerCase().includes(q)
+      post.statement.toLowerCase().includes(q) ||
+      post.year.includes(q) ||
+      post.date.includes(q) ||
+      post.details.some((d) => d.value?.toLowerCase().includes(q) || d.label?.toLowerCase().includes(q))
     );
   }
 
@@ -108,8 +111,8 @@ function MeNoHoshiListDetails({ post }: { post: MeNoHoshiPost }) {
             key={row.key}
             className="work-details-row"
           >
-            <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>{row.label}</div>
-            <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>{row.value}</div>
+            <div className="work-details-label">{row.label}:</div>
+            <div className="work-details-value">{row.value}</div>
           </div>
         ))}
       </div>

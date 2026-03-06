@@ -42,8 +42,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
               key={row.key}
               className="work-details-row"
             >
-              <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>{row.label}</div>
-              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)" }}>{row.value}</div>
+              <div className="work-details-label">{row.label}:</div>
+              <div className="work-details-value">{row.value}</div>
             </div>
           ))}
         </div>

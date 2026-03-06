@@ -33,7 +33,10 @@ export default async function WorksPage({
     filteredWorks = filteredWorks.filter((work) =>
       work.title.toLowerCase().includes(q) ||
       work.tags.some((tag) => tag.toLowerCase().includes(q)) ||
-      work.excerpt.toLowerCase().includes(q)
+      work.excerpt.toLowerCase().includes(q) ||
+      work.year.includes(q) ||
+      work.date.includes(q) ||
+      Object.values(work.details).some((v) => typeof v === "string" && v.toLowerCase().includes(q))
     );
   }
 
