@@ -1340,21 +1340,9 @@ button {
   overflow-wrap: anywhere;
 }
 
-/* リスト内テーブル: gridに戻す（リーダーライン無効） */
+/* リスト内テーブル: NOTON帳票スタイル継承 */
 .works-list-body .work-details-row {
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
   gap: var(--space-2);
-}
-
-.works-list-body .work-details-row::after {
-  content: none;
-}
-
-.works-list-body .work-details-value {
-  text-align: left;
-  max-width: none;
-  order: unset;
 }
 
 /* View All ボタン: ピル型ボーダー */
@@ -3711,7 +3699,6 @@ img[loading="lazy"] {
   }
 
   .works-list-body .work-details-row {
-    grid-template-columns: 96px minmax(0, 1fr) !important;
     gap: var(--space-2) !important;
   }
 
