@@ -42,14 +42,31 @@ export default async function AboutPage() {
                 >
                   {row.content}:
                 </div>
-                <div className="hrline" />
               </div>
             ) : (
               <div key={i}>
-                <div className="work-details-row">
-                  <div className="work-details-label">{row.year}</div>
-                  <div className="work-details-value">{row.content}</div>
+                <div className="cv-detail-row">
+                  <div
+                    style={{
+                      fontSize: "var(--font-body)",
+                      lineHeight: "var(--lh-normal)",
+                      fontWeight: 700,
+                      color: "var(--muted)",
+                    }}
+                  >
+                    {row.year}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "var(--font-body)",
+                      lineHeight: "var(--lh-normal)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {row.content}
+                  </div>
                 </div>
+                <div className="hrline" />
               </div>
             ),
           )}
