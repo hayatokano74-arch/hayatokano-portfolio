@@ -1340,8 +1340,9 @@ button {
   overflow-wrap: anywhere;
 }
 
-/* リスト内テーブル: NOTON帳票スタイル継承 */
+/* リスト内テーブル: 各行は横並び(ラベル左・値右) */
 .works-list-body .work-details-row {
+  grid-template-columns: 112px minmax(0, 1fr);
   gap: var(--space-2);
 }
 
@@ -1844,12 +1845,14 @@ button.tl-photo-cell {
   padding-bottom: var(--space-2);
 }
 
-/* NOTON帳票風: ラベル左 — 値右寄せ（下線がラベル直後〜右端まで） */
 .work-details-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
   align-items: baseline;
+  border-bottom: 1px solid var(--line-light);
+  gap: var(--space-2);
   padding-top: 4px;
-  padding-bottom: 0;
+  padding-bottom: 4px;
 }
 
 /* Contact ページ用: 列幅同じ、gap と padding が異なる */
@@ -1880,18 +1883,11 @@ button.tl-photo-cell {
   font-size: var(--font-meta);
   letter-spacing: 0.16em;
   color: var(--muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-  padding-right: var(--space-2);
 }
 
 .work-details-value {
   font-size: var(--font-body);
   line-height: var(--lh-normal);
-  flex: 1;
-  text-align: right;
-  border-bottom: 1px solid var(--line-light);
-  padding-bottom: 4px;
 }
 
 /* ── Works 詳細オーバーレイ: 12カラムグリッド ── */
@@ -1952,15 +1948,10 @@ button.tl-photo-cell {
 
 .work-detail-overlay-content .work-details-label {
   grid-column: 1;
-  padding-right: 0;
 }
 
 .work-detail-overlay-content .work-details-value {
   grid-column: 2 / -1;
-  flex: unset;
-  text-align: left;
-  border-bottom: 1px solid var(--line-light);
-  padding-bottom: 4px;
 }
 
 /* ── スケルトンローディングアニメーション ── */
@@ -3686,6 +3677,7 @@ img[loading="lazy"] {
   }
 
   .works-list-body .work-details-row {
+    grid-template-columns: 96px minmax(0, 1fr) !important;
     gap: var(--space-2) !important;
   }
 
