@@ -1849,6 +1849,7 @@ button.tl-photo-cell {
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
   align-items: baseline;
+  border-bottom: 1px solid var(--line-light);
   gap: var(--space-2);
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1887,8 +1888,6 @@ button.tl-photo-cell {
 .work-details-value {
   font-size: var(--font-body);
   line-height: var(--lh-normal);
-  border-bottom: 1px solid var(--line-light);
-  padding-bottom: 4px;
 }
 
 /* ── Works 詳細オーバーレイ: 12カラムグリッド ── */
