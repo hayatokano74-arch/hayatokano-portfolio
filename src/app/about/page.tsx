@@ -40,7 +40,7 @@ export default async function AboutPage() {
                     paddingBottom: "var(--v-element)",
                   }}
                 >
-                  {row.content}
+                  {row.content}:
                 </div>
                 <div className="hrline" />
               </div>

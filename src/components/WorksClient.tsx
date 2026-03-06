@@ -199,6 +199,12 @@ function WorksList<T extends WorkLike>({
 }) {
   return (
     <div>
+      {/* NOTON帳票風: ヘッダーラベル行 */}
+      <div className="works-list-header">
+        <div className="works-list-header-label" style={{ gridColumn: "1 / span 2" }}>DATE:</div>
+        <div className="works-list-header-label" style={{ gridColumn: "3 / span 6" }}>TITLE:</div>
+        <div className="works-list-header-label" style={{ gridColumn: "9 / span 3" }}>TAGS:</div>
+      </div>
       <div className="hrline" />
       {works.map((w) => (
         <div key={w.slug}>

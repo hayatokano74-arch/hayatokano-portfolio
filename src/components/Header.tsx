@@ -294,7 +294,7 @@ const searchInputStyle = {
 function SearchPlaceholder() {
   return (
     <div className="header-search">
-      <div style={{ ...searchInputStyle, color: "var(--muted)" }}>search</div>
+      <div style={{ ...searchInputStyle, color: "var(--muted)" }}>SEARCH:</div>
     </div>
   );
 }
@@ -330,7 +330,7 @@ function SearchInput() {
           if (e.key === "Enter") commit(query);
         }}
         onBlur={() => commit(query)}
-        placeholder="search"
+        placeholder="SEARCH:"
         aria-label="作品を検索"
         style={searchInputStyle}
       />

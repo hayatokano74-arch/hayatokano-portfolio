@@ -48,7 +48,7 @@ export function WorkDetailsTable({ details }: { details: Work["details"] }) {
       <div className="work-details-table-header">DETAILS</div>
       {rows.map((row) => (
         <div key={row.label} className="work-details-row">
-          <div className="work-details-label">{row.label}</div>
+          <div className="work-details-label">{row.label}:</div>
           <div className="work-details-value">{row.value}</div>
         </div>
       ))}

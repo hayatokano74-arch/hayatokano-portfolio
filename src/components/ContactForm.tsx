@@ -33,7 +33,7 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="contact-form">
       <div className="contact-field">
-        <label className="contact-label" htmlFor="contact-name">NAME</label>
+        <label className="contact-label" htmlFor="contact-name">NAME:</label>
         <input
           id="contact-name"
           type="text"
@@ -46,7 +46,7 @@ export function ContactForm() {
       </div>
 
       <div className="contact-field">
-        <label className="contact-label" htmlFor="contact-email">EMAIL</label>
+        <label className="contact-label" htmlFor="contact-email">EMAIL:</label>
         <input
           id="contact-email"
           type="email"
@@ -59,7 +59,7 @@ export function ContactForm() {
       </div>
 
       <div className="contact-field">
-        <label className="contact-label" htmlFor="contact-message">MESSAGE</label>
+        <label className="contact-label" htmlFor="contact-message">MESSAGE:</label>
         <textarea
           id="contact-message"
           required
