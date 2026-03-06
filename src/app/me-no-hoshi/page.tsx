@@ -68,10 +68,9 @@ export default async function MeNoHoshiPage({
       <FilterProvider selected={selected}>
         <Header
           active="目の星"
-          title="目の星"
+          title={<>目の星<span className="page-title-count">({filteredPosts.length})</span></>}
           brandLabel="目の星 menohoshi"
           brandHref="/me-no-hoshi"
-          showTitleRow={false}
           showWorksToggle
           worksView={view}
           worksGridHref={worksGridHref}
