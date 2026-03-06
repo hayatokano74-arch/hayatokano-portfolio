@@ -142,7 +142,6 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false 
               className="work-grid-item"
             >
               <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} />
-              <div className="work-grid-divider" />
               <div className="work-grid-info">
                 <span className="work-grid-title">{w.title}</span>
                 <span className="work-grid-detail">
