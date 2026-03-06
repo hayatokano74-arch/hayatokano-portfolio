@@ -563,12 +563,15 @@ button {
   white-space: nowrap;
 }
 
+/* NOTON帳票風: 値セルのみアンダーライン */
 .work-grid-details-value {
   color: var(--fg);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  border-bottom: 1px solid var(--line-light);
+  padding-bottom: 2px;
 }
 
 /* ── Excerpt HTML（詳細ページ） ── */

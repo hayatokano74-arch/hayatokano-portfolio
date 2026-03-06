@@ -118,7 +118,7 @@ function GridDetails({ details }: { details: unknown }) {
     <div className="work-grid-details">
       {rows.map((r) => (
         <div key={r.label} className="work-grid-details-row">
-          <span className="work-grid-details-label">{r.label}</span>
+          <span className="work-grid-details-label">{r.label}:</span>
           <span className="work-grid-details-value">{r.value}</span>
         </div>
       ))}
