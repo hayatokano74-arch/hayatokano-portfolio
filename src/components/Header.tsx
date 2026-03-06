@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type Category } from "@/lib/categories";
 import { NAV_ITEMS, type Section } from "@/lib/nav";
@@ -304,6 +304,7 @@ function SearchInput() {
   const pathname = usePathname();
   const sp = useSearchParams();
   const [query, setQuery] = useState(sp.get("q") ?? "");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setQuery(sp.get("q") ?? "");
@@ -320,16 +321,28 @@ function SearchInput() {
     router.push(qs ? `${pathname}?${qs}` : pathname);
   }, [router, pathname, sp]);
 
+  /* リアルタイム検索: 入力300ms後に自動検索、クリアで即リセット */
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setQuery(v);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (!v.trim()) {
+      commit(v);
+    } else {
+      timerRef.current = setTimeout(() => commit(v), 300);
+    }
+  }, [commit]);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
   return (
     <div className="header-search">
       <input
         type="text"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") commit(query);
-        }}
-        onBlur={() => commit(query)}
+        onChange={handleChange}
         placeholder="SEARCH:"
         aria-label="作品を検索"
         style={searchInputStyle}
