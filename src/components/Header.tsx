@@ -318,7 +318,8 @@ function SearchInput() {
       params.delete("q");
     }
     const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
+    /* replace で履歴を汚さない（入力ごとに戻るボタンが増えない） */
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
   }, [router, pathname, sp]);
 
   /* リアルタイム検索: 入力300ms後に自動検索、クリアで即リセット */
