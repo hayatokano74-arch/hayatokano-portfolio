@@ -1334,19 +1334,20 @@ button {
   font-weight: 700;
 }
 
-/* works-list-body: ディテール+抜粋+View All */
+/* works-list-body: subgrid で親の12カラムを継承 */
 .works-list-body {
   grid-column: 3 / span 5;
   grid-row: 2;
   align-self: start;
   min-width: 0;
   overflow-wrap: anywhere;
+  display: grid;
+  grid-template-columns: subgrid;
 }
 
-/* リスト内テーブル: 各行は横並び(ラベル左・値右) */
-.works-list-body .work-details-row {
-  grid-template-columns: 112px minmax(0, 1fr);
-  gap: var(--space-2);
+/* body 内の直接子要素は全幅 */
+.works-list-body > * {
+  grid-column: 1 / -1;
 }
 
 /* View All ボタン: ピル型ボーダー */
@@ -1837,13 +1838,22 @@ button.tl-photo-cell {
 }
 
 /* ── WorkDetailsTable デフォルトスタイル ── */
+/* DETAILS テーブル: subgrid で親グリッドの列線に揃える */
+.work-details-table {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
 .work-details-table-header {
+  grid-column: 1 / -1;
   font-size: var(--font-meta);
   letter-spacing: 0.16em;
   color: var(--muted);
   padding-bottom: var(--space-2);
 }
 
+/* ベース: subgrid 非対応コンテキスト（目の星など）のフォールバック */
 .work-details-row {
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
@@ -1851,6 +1861,21 @@ button.tl-photo-cell {
   gap: var(--space-2);
   padding-top: 4px;
   padding-bottom: 0;
+}
+
+/* subgrid コンテキスト（works-list-body, overlay など）: 親グリッドに揃える */
+.work-details-table .work-details-row {
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  gap: 0;
+}
+
+.work-details-label {
+  grid-column: 1 / span 2;
+}
+
+.work-details-value {
+  grid-column: 3 / -1;
 }
 
 /* Contact ページ用: 列幅同じ、gap と padding が異なる */
@@ -1927,26 +1952,7 @@ button.tl-photo-cell {
   grid-column: 1 / -1;
 }
 
-/* overlay 内テーブルの subgrid 伝播 */
-.work-detail-overlay-content .work-details-table {
-  display: grid;
-  grid-template-columns: subgrid;
-  grid-column: 1 / -1;
-}
-
-.work-detail-overlay-content .work-details-table-header {
-  grid-column: 1 / -1;
-}
-
-
-
-.work-detail-overlay-content .work-details-row {
-  display: grid;
-  grid-template-columns: subgrid;
-  grid-column: 1 / -1;
-  gap: 0;
-}
-
+/* overlay 内: 12カラム全幅のため label=1col / value=残り */
 .work-detail-overlay-content .work-details-label {
   grid-column: 1;
 }
@@ -3680,17 +3686,10 @@ img[loading="lazy"] {
     grid-column: 1 / -1;
     grid-row: auto;
     order: 3;
-    display: block;
     max-width: none;
   }
 
-  /* ── DETAILSテーブル: 4カラムグリッドに統一（全ページ共通） ── */
-  .work-details-row {
-    grid-template-columns: repeat(4, 1fr);
-    column-gap: var(--grid-gutter);
-    row-gap: var(--space-2);
-  }
-
+  /* ── DETAILSテーブル: モバイル4カラム — label 1col / value 3col ── */
   .work-details-label {
     grid-column: 1;
   }
@@ -3973,11 +3972,13 @@ img[loading="lazy"] {
     display: block;
   }
 
-  /* オーバーレイ版: subgrid を4カラムで上書き（詳細度が高いため個別指定） */
-  .work-detail-overlay-content .work-details-row {
-    grid-template-columns: repeat(4, 1fr);
-    column-gap: var(--grid-gutter);
-    row-gap: var(--space-2);
+  /* オーバーレイ版: モバイルでは label/value を 1col/3col に統一 */
+  .work-detail-overlay-content .work-details-label {
+    grid-column: 1;
+  }
+
+  .work-detail-overlay-content .work-details-value {
+    grid-column: 2 / -1;
   }
 
   /* ── 目の星 ── */
