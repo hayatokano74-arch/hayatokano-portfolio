@@ -1952,13 +1952,13 @@ button.tl-photo-cell {
   grid-column: 1 / -1;
 }
 
-/* overlay 内: 12カラム全幅のため label=1col / value=残り */
+/* overlay 内: 6カラム中 label=2col / value=4col（リスト展開と同じ比率） */
 .work-detail-overlay-content .work-details-label {
-  grid-column: 1;
+  grid-column: 1 / span 2;
 }
 
 .work-detail-overlay-content .work-details-value {
-  grid-column: 2 / -1;
+  grid-column: 3 / -1;
 }
 
 /* ── スケルトンローディングアニメーション ── */
@@ -3969,16 +3969,6 @@ img[loading="lazy"] {
 
   .work-detail-overlay-content {
     grid-column: 1 / -1;
-    display: block;
-  }
-
-  /* オーバーレイ版: モバイルでは label/value を 1col/3col に統一 */
-  .work-detail-overlay-content .work-details-label {
-    grid-column: 1;
-  }
-
-  .work-detail-overlay-content .work-details-value {
-    grid-column: 2 / -1;
   }
 
   /* ── 目の星 ── */
