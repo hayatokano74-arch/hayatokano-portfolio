@@ -4,13 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 
 /**
  * グリッドデバッグオーバーレイ
- * - Ctrl+G: 12カラムグリッド（列）の表示/非表示
+ * - Ctrl+G: カラムグリッド（列）の表示/非表示（--grid-columns に連動）
  * - Ctrl+H: 8px ベースライングリッド（行）の表示/非表示
- * - 現在のブレークポイント名を左下に表示
+ * - 現在のブレークポイント名と列数を左下に表示
  */
 export function GridDebugOverlay() {
   const [showColumns, setShowColumns] = useState(false);
   const [showBaseline, setShowBaseline] = useState(false);
+  const [colCount, setColCount] = useState(12);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "g") {
@@ -28,12 +29,26 @@ export function GridDebugOverlay() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  /* --grid-columns CSS変数を監視してカラム数を動的に取得 */
+  useEffect(() => {
+    const update = () => {
+      const val = getComputedStyle(document.documentElement)
+        .getPropertyValue("--grid-columns")
+        .trim();
+      const n = parseInt(val, 10);
+      if (!isNaN(n) && n > 0) setColCount(n);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   const visible = showColumns || showBaseline;
   if (!visible) return null;
 
   return (
     <>
-      {/* 12カラムグリッドオーバーレイ（列） */}
+      {/* カラムグリッドオーバーレイ（列） */}
       {showColumns ? (
         <div
           aria-hidden="true"
@@ -43,14 +58,14 @@ export function GridDebugOverlay() {
             pointerEvents: "none",
             zIndex: 99999,
             display: "grid",
-            gridTemplateColumns: "repeat(12, 1fr)",
+            gridTemplateColumns: `repeat(${colCount}, 1fr)`,
             gap: "var(--grid-gutter, 1.5rem)",
             paddingInline: "var(--pad-x, 52px)",
             width: "100%",
             boxSizing: "border-box",
           }}
         >
-          {Array.from({ length: 12 }, (_, i) => (
+          {Array.from({ length: colCount }, (_, i) => (
             <div
               key={i}
               style={{
@@ -102,7 +117,7 @@ export function GridDebugOverlay() {
           gap: 8,
         }}
       >
-        <BreakpointLabel />
+        <BreakpointLabel colCount={colCount} />
         <span style={{ opacity: 0.5 }}>
           {showColumns ? "COL" : ""}
           {showColumns && showBaseline ? " + " : ""}
@@ -135,23 +150,23 @@ export function GridDebugOverlay() {
   );
 }
 
-/** 現在のブレークポイント名を返すコンポーネント */
-function BreakpointLabel() {
+/** 現在のブレークポイント名と列数を返すコンポーネント */
+function BreakpointLabel({ colCount }: { colCount: number }) {
   const [label, setLabel] = useState("");
 
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      if (w < 640) setLabel(`MOBILE — ${w}px`);
-      else if (w < 1024) setLabel(`TABLET — ${w}px`);
-      else if (w < 1280) setLabel(`DESKTOP — ${w}px`);
-      else if (w < 1536) setLabel(`WIDE — ${w}px`);
-      else setLabel(`ULTRA-WIDE — ${w}px`);
+      if (w < 640) setLabel(`MOBILE ${colCount}col — ${w}px`);
+      else if (w < 1024) setLabel(`TABLET ${colCount}col — ${w}px`);
+      else if (w < 1280) setLabel(`DESKTOP ${colCount}col — ${w}px`);
+      else if (w < 1536) setLabel(`WIDE ${colCount}col — ${w}px`);
+      else setLabel(`ULTRA-WIDE ${colCount}col — ${w}px`);
     };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, []);
+  }, [colCount]);
 
   return <>{label}</>;
 }

@@ -3451,6 +3451,8 @@ img[loading="lazy"] {
   :root {
     --pad-x: var(--space-4);
     --pad-y: var(--space-2);
+    --grid-columns: 4;
+    --grid-gutter: 1rem;
   }
 
   /* ── ヘッダー ── */
@@ -3469,16 +3471,16 @@ img[loading="lazy"] {
   }
 
   .header-title-row {
-    grid-template-columns: 1fr auto !important;
-    margin-top: var(--v-nav-title-gap) !important;
-    min-height: 0 !important;
+    grid-template-columns: 1fr auto;
+    margin-top: var(--v-nav-title-gap);
+    min-height: 0;
   }
 
   .header-title-left {
     grid-column: 1 / 2;
     width: 100%;
     justify-content: space-between;
-    gap: var(--space-4) !important;
+    gap: var(--space-4);
   }
 
   .header-title-right {
@@ -3490,8 +3492,8 @@ img[loading="lazy"] {
   }
 
   .header-category-row {
-    grid-template-columns: 1fr !important;
-    margin-top: var(--v-row-gap) !important;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: var(--v-row-gap);
     row-gap: var(--v-row-gap);
   }
 
@@ -3514,7 +3516,7 @@ img[loading="lazy"] {
 
   /* フィルターモード: モバイルでも検索バー+アイコンを表示 */
   .header-category-row.is-filter-mode {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .header-filter-search {
@@ -3526,14 +3528,15 @@ img[loading="lazy"] {
     display: block;
   }
 
-  /* ドロップダウン: モバイルでは1カラムに */
+  /* ドロップダウン: モバイル4カラム中 span 2 で2列横並び */
   .filter-dropdown-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: var(--grid-gutter);
     row-gap: var(--space-4);
   }
 
   .filter-dropdown-column {
-    grid-column: 1 / -1;
+    grid-column: span 2;
   }
 
   .desktop-main-nav {
@@ -3576,13 +3579,15 @@ img[loading="lazy"] {
     font-size: clamp(32px, 10vw, 48px);
   }
 
-  /* ── Works グリッド ── */
+  /* ── Works グリッド: モバイル4カラム中 span 2 で1行2枚 ── */
   .works-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: var(--grid-gutter);
+    row-gap: var(--space-5);
   }
 
   .work-grid-item {
-    grid-column: 1 / -1;
+    grid-column: span 2;
   }
 
   /* ── NOTON帳票風: ヘッダー行はモバイル非表示 ── */
@@ -3592,10 +3597,10 @@ img[loading="lazy"] {
 
   /* ── Works リスト: サマリー ── */
   .works-list-summary {
-    grid-template-columns: 104px minmax(0, 1fr) 32px !important;
-    column-gap: var(--space-3) !important;
+    grid-template-columns: 104px minmax(0, 1fr) 32px;
+    column-gap: var(--space-3);
     row-gap: 0;
-    align-items: center !important;
+    align-items: center;
     padding-top: var(--space-3);
     padding-bottom: var(--space-3);
   }
@@ -3611,7 +3616,7 @@ img[loading="lazy"] {
     white-space: normal;
     overflow-wrap: anywhere;
     min-width: 0;
-    line-height: var(--lh-tight) !important;
+    line-height: var(--lh-tight);
   }
 
   .works-list-summary-tags {
@@ -3625,10 +3630,10 @@ img[loading="lazy"] {
 
   /* ── Works リスト: ディテール ── */
   .works-list-detail {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(4, 1fr);
     row-gap: var(--space-4);
-    padding-top: var(--space-4) !important;
-    padding-bottom: var(--space-5) !important;
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-5);
   }
 
   .works-list-spacer {
@@ -3638,8 +3643,8 @@ img[loading="lazy"] {
   /* モバイルのリスト展開: order で並び替え（タグ→写真→本文） */
   /* デスクトップの explicit grid-row をリセット */
   .works-list-open-tags {
-    grid-column: 1 / -1 !important;
-    grid-row: auto !important;
+    grid-column: 1 / -1;
+    grid-row: auto;
     order: 1;
     display: flex;
     flex-wrap: wrap;
@@ -3652,7 +3657,7 @@ img[loading="lazy"] {
 
   .works-list-media {
     grid-column: 1 / -1;
-    grid-row: auto !important;
+    grid-row: auto;
     order: 2;
     align-self: start;
     justify-self: stretch;
@@ -3673,33 +3678,33 @@ img[loading="lazy"] {
 
   .works-list-body {
     grid-column: 1 / -1;
-    grid-row: auto !important;
+    grid-row: auto;
     order: 3;
-    display: block !important;
-    max-width: none !important;
+    display: block;
+    max-width: none;
   }
 
   .works-list-body .work-details-row {
-    grid-template-columns: 96px minmax(0, 1fr) !important;
-    gap: var(--space-2) !important;
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: var(--space-2);
   }
 
   .works-list-excerpt {
-    font-size: 12px !important;
-    line-height: var(--lh-relaxed) !important;
-    max-width: 100% !important;
+    font-size: 12px;
+    line-height: var(--lh-relaxed);
+    max-width: 100%;
   }
 
   .works-list-view {
-    margin-top: var(--space-3) !important;
-    margin-bottom: var(--space-3) !important;
-    font-size: var(--font-body) !important;
-    grid-column: 1 !important;
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-3);
+    font-size: var(--font-body);
+    grid-column: 1;
   }
 
   /* ── Text リスト ── */
   .text-list-row {
-    grid-template-columns: 48px minmax(0, 1fr) !important;
+    grid-template-columns: 48px minmax(0, 1fr);
     grid-template-rows: auto auto;
   }
 
@@ -3716,7 +3721,7 @@ img[loading="lazy"] {
   .text-list-categories {
     grid-column: 2;
     grid-row: 2;
-    text-align: left !important;
+    text-align: left;
   }
 
   /* ── Text 詳細 ── */
@@ -3782,8 +3787,8 @@ img[loading="lazy"] {
 
   /* ── News: サマリー ── */
   .news-accord-summary {
-    grid-template-columns: 80px minmax(0, 1fr) 32px !important;
-    column-gap: var(--space-3) !important;
+    grid-template-columns: 80px minmax(0, 1fr) 32px;
+    column-gap: var(--space-3);
   }
 
   .news-accord-date {
@@ -3800,10 +3805,10 @@ img[loading="lazy"] {
 
   /* ── News: ディテール ── */
   .news-accord-detail {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(4, 1fr);
     row-gap: var(--space-4);
-    padding-top: var(--space-4) !important;
-    padding-bottom: var(--space-5) !important;
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-5);
   }
 
   .news-accord-spacer {
@@ -3811,16 +3816,16 @@ img[loading="lazy"] {
   }
 
   .news-accord-body {
-    grid-column: 1;
+    grid-column: 1 / -1;
   }
 
   .news-accord-media {
-    grid-column: 1;
+    grid-column: 1 / -1;
   }
 
   /* ── テストギャラリー ── */
   .test-gallery-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, 1fr);
     height: auto;
     gap: var(--space-5);
   }
@@ -3851,18 +3856,18 @@ img[loading="lazy"] {
 
   /* ── About ── */
   .about-layout {
-    grid-template-columns: 1fr !important;
-    gap: var(--space-6) !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-6);
   }
 
   .about-text,
   .about-photos {
-    grid-column: 1 / -1 !important;
+    grid-column: 1 / -1;
   }
 
   /* ── Timeline ── */
   .timeline-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .timeline-filter-tabs-wrap {
@@ -3884,7 +3889,7 @@ img[loading="lazy"] {
 
   /* ── Contact ── */
   .contact-layout {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .contact-intro,
@@ -3895,11 +3900,11 @@ img[loading="lazy"] {
 
   /* ── Works 詳細 ── */
   .work-detail-shell {
-    height: 100% !important;
+    height: 100%;
   }
 
   .work-detail-controls {
-    width: 100% !important;
+    width: 100%;
   }
 
   .work-detail-stage-grid {
@@ -3915,64 +3920,64 @@ img[loading="lazy"] {
   }
 
   .work-detail-top {
-    margin-bottom: var(--space-5) !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
+    margin-bottom: var(--space-5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .work-detail-top > * {
-    grid-column: unset !important;
+    grid-column: unset;
   }
 
   .work-detail-bottom {
-    display: flex !important;
+    display: flex;
     flex-wrap: wrap;
-    justify-content: space-between !important;
-    align-items: flex-end !important;
+    justify-content: space-between;
+    align-items: flex-end;
     gap: var(--space-3);
   }
 
   .work-detail-bottom > *:first-child {
-    grid-column: unset !important;
+    grid-column: unset;
     flex: 1 1 0;
     min-width: 0;
   }
 
   .work-detail-bottom > .work-detail-counter {
     flex: 0 0 auto;
-    width: auto !important;
+    width: auto;
   }
 
   .work-detail-overlay-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .work-detail-overlay-close {
-    grid-column: 1 / -1 !important;
+    grid-column: 4;
     justify-self: end;
   }
 
   .work-detail-overlay-content {
-    grid-column: 1 / -1 !important;
-    display: block !important;
+    grid-column: 1 / -1;
+    display: block;
   }
 
   .work-detail-overlay-content .work-details-row {
-    grid-template-columns: 96px minmax(0, 1fr) !important;
-    gap: var(--space-2) !important;
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: var(--space-2);
   }
 
   /* ── 目の星 ── */
   .me-no-hoshi-detail {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--space-6);
     /* ヘッダー→コンテンツのギャップは .page-shell の gap で統一管理 */
   }
 
   .me-no-hoshi-meta-column,
   .me-no-hoshi-visual-column {
-    grid-column: 1 / -1 !important;
+    grid-column: 1 / -1;
   }
 
   .me-no-hoshi-visual-column article {
