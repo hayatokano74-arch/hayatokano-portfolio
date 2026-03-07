@@ -1952,13 +1952,13 @@ button.tl-photo-cell {
   grid-column: 1 / -1;
 }
 
-/* overlay 内: 6カラム中 label=2col / value=4col（リスト展開と同じ比率） */
+/* overlay 内: label=col4, value=col5-9（リスト展開と同じ絶対カラム5で値が始まる） */
 .work-detail-overlay-content .work-details-label {
-  grid-column: 1 / span 2;
+  grid-column: 1;
 }
 
 .work-detail-overlay-content .work-details-value {
-  grid-column: 3 / -1;
+  grid-column: 2 / -1;
 }
 
 /* ── スケルトンローディングアニメーション ── */
