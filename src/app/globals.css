@@ -3684,9 +3684,19 @@ img[loading="lazy"] {
     max-width: none;
   }
 
-  .works-list-body .work-details-row {
-    grid-template-columns: 80px minmax(0, 1fr);
-    gap: var(--space-2);
+  /* ── DETAILSテーブル: 4カラムグリッドに統一（全ページ共通） ── */
+  .work-details-row {
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: var(--grid-gutter);
+    row-gap: var(--space-2);
+  }
+
+  .work-details-label {
+    grid-column: 1;
+  }
+
+  .work-details-value {
+    grid-column: 2 / -1;
   }
 
   .works-list-excerpt {
@@ -3963,9 +3973,11 @@ img[loading="lazy"] {
     display: block;
   }
 
+  /* オーバーレイ版: subgrid を4カラムで上書き（詳細度が高いため個別指定） */
   .work-detail-overlay-content .work-details-row {
-    grid-template-columns: 80px minmax(0, 1fr);
-    gap: var(--space-2);
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: var(--grid-gutter);
+    row-gap: var(--space-2);
   }
 
   /* ── 目の星 ── */
