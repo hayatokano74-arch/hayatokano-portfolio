@@ -3579,7 +3579,7 @@ img[loading="lazy"] {
     font-size: clamp(32px, 10vw, 48px);
   }
 
-  /* ── Works グリッド: モバイル4カラム中 span 2 で1行2枚 ── */
+  /* ── Works グリッド: モバイルは1行1枚（全幅スタック） ── */
   .works-grid {
     grid-template-columns: repeat(4, 1fr);
     column-gap: var(--grid-gutter);
@@ -3587,7 +3587,7 @@ img[loading="lazy"] {
   }
 
   .work-grid-item {
-    grid-column: span 2;
+    grid-column: 1 / -1;
   }
 
   /* ── NOTON帳票風: ヘッダー行はモバイル非表示 ── */
