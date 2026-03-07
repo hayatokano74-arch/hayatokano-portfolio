@@ -2857,6 +2857,7 @@ img[loading="lazy"] {
 .garden-pagination-number,
 .garden-pagination-arrow {
   all: unset;
+  font-family: inherit;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3058,6 +3059,7 @@ img[loading="lazy"] {
 
 .garden-section-icon {
   margin-right: var(--space-2);
+  font-family: inherit;
   font-style: normal;
 }
 
