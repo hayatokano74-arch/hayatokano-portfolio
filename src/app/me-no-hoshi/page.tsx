@@ -102,19 +102,17 @@ function MeNoHoshiListDetails({ post }: { post: MeNoHoshiPost }) {
   if (rows.length === 0) return null;
 
   return (
-    <section>
-      <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)", marginBottom: "var(--space-2)" }}>DETAILS</div>
-      <div style={{ borderTop: "1px solid var(--line-light)" }}>
-        {rows.map((row) => (
-          <div
-            key={row.key}
-            className="work-details-row"
-          >
-            <div className="work-details-label">{row.label}:</div>
-            <div className="work-details-value">{row.value}</div>
-          </div>
-        ))}
-      </div>
+    <section className="work-details-table">
+      <div className="work-details-table-header">DETAILS</div>
+      {rows.map((row) => (
+        <div
+          key={row.key}
+          className="work-details-row"
+        >
+          <div className="work-details-label">{row.label}:</div>
+          <div className="work-details-value">{row.value}</div>
+        </div>
+      ))}
     </section>
   );
 }

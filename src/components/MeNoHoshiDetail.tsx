@@ -34,9 +34,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   return (
     <section className="me-no-hoshi-detail">
       <div className="me-no-hoshi-meta-column">
-        <div style={{ fontSize: "var(--font-meta)", lineHeight: "var(--lh-normal)", letterSpacing: "0.16em", color: "var(--muted)" }}>DETAILS</div>
-
-        <div style={{ marginTop: "var(--v-element)" }}>
+        <section className="work-details-table">
+          <div className="work-details-table-header">DETAILS</div>
           {tableRows.map((row) => (
             <div
               key={row.key}
@@ -46,7 +45,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
               <div className="work-details-value">{row.value}</div>
             </div>
           ))}
-        </div>
+        </section>
 
         {post.bio ? (
           <div

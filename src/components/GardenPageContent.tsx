@@ -501,17 +501,6 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   const showPagination = !searchQuery && totalPages > 1;
   const showArchive = !searchQuery && pages.length > 1;
 
-  // モバイルアーカイブボタン（Header の titleRight に渡す）
-  const archiveButton = showArchive ? (
-    <button
-      type="button"
-      className="mobile-archive-trigger"
-      onClick={() => setDrawerOpen(true)}
-    >
-      Archive +
-    </button>
-  ) : undefined;
-
   return (
     <>
       <Header
@@ -519,15 +508,30 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         title={<>Garden<span className="page-title-count">({nodes.length})</span></>}
         showCategoryRow={false}
         showSearch={false}
-        titleRight={archiveButton}
       />
       <div className="garden-layout">
         <div className="garden-main">
-          <GardenSearch
-            search={search}
-            onFullSearch={handleFullSearch}
-            fullSearchIds={fullSearchIds}
-          />
+          <div className="garden-search-bar">
+            <GardenSearch
+              search={search}
+              onFullSearch={handleFullSearch}
+              fullSearchIds={fullSearchIds}
+            />
+            {showArchive && (
+              <button
+                type="button"
+                className="garden-archive-trigger"
+                onClick={() => setDrawerOpen(true)}
+                aria-label="アーカイブを開く"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="4" rx="1" />
+                  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" />
+                  <line x1="10" y1="12" x2="14" y2="12" />
+                </svg>
+              </button>
+            )}
+          </div>
           <GardenGrid groups={pageGroups} totalNodes={filteredNodes.length} prevNodeCount={prevNodeCount} />
         </div>
         {showArchive && (

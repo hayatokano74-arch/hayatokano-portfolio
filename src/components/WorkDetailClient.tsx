@@ -29,6 +29,8 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
   const sp = useSearchParams();
   const [detailOpen, setDetailOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const overlayScrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   /* URLパラメータから初期値を読み取り、以降はローカルステートで管理 */
   const [localMode, setLocalMode] = useState<"gallery" | "index">(
@@ -141,6 +143,30 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
       window.removeEventListener("touchend", onTouchEnd);
     };
   }, [mode, prevImage, nextImage, goToImage]);
+
+  /* オーバーレイ表示中: htmlスクロール停止（二重スクロールバー防止） */
+  useEffect(() => {
+    if (!detailOpen) return;
+    const html = document.documentElement;
+    html.style.overflow = "hidden";
+    return () => { html.style.overflow = ""; };
+  }, [detailOpen]);
+
+  /* オーバーレイ: スクロール中だけ is-scrolling クラスを付与 */
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el || !detailOpen) return;
+    const onScroll = () => {
+      el.classList.add("is-scrolling");
+      clearTimeout(overlayScrollTimer.current);
+      overlayScrollTimer.current = setTimeout(() => el.classList.remove("is-scrolling"), 1000);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      clearTimeout(overlayScrollTimer.current);
+    };
+  }, [detailOpen]);
 
   return (
     <div
@@ -336,7 +362,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
       </div>
 
       {detailOpen ? (
-        <div className="work-detail-overlay">
+        <div ref={overlayRef} className="work-detail-overlay">
           {/* Closeボタン + コンテンツ: 同一グリッド */}
           <div className="work-detail-overlay-grid">
             <div className="work-detail-overlay-close">

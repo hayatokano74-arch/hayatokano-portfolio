@@ -29,7 +29,7 @@ export function GridDebugOverlay() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  /* --grid-columns CSS変数を監視してカラム数を動的に取得 */
+  /* --grid-columns CSS変数を監視 */
   useEffect(() => {
     const update = () => {
       const val = getComputedStyle(document.documentElement)
@@ -54,14 +54,15 @@ export function GridDebugOverlay() {
           aria-hidden="true"
           style={{
             position: "fixed",
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             pointerEvents: "none",
             zIndex: 99999,
             display: "grid",
             gridTemplateColumns: `repeat(${colCount}, 1fr)`,
             gap: "var(--grid-gutter, 1.5rem)",
             paddingInline: "var(--pad-x, 52px)",
-            width: "100%",
             boxSizing: "border-box",
           }}
         >
