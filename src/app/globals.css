@@ -2516,7 +2516,7 @@ img[loading="lazy"] {
 
 /* 検索バー（検索 + アーカイブトリガー） */
 .garden-search-bar {
-  display: contents; /* デスクトップ: GardenSearchがgrid-columnを直接使えるように */
+  /* デスクトップ: .garden-main > * の grid-column を継承する通常ブロック */
 }
 
 .garden-archive-trigger {
