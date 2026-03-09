@@ -1213,8 +1213,8 @@ button {
   align-items: center;
   margin-top: var(--v-row-gap);
   min-height: var(--space-8);
-  /* 反転帯: ページ余白を突き抜けて画面端まで */
-  background: var(--fg);
+  /* 反転帯: fgに背景色を少し混ぜてサイトのトーンに馴染ませる */
+  background: color-mix(in srgb, var(--fg) 88%, var(--bg));
   color: var(--bg);
   margin-inline: calc(-1 * var(--pad-x));
   padding-inline: var(--pad-x);
