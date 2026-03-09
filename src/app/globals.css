@@ -2039,9 +2039,9 @@ button.tl-photo-cell {
   min-width: 0;
 }
 
-/* コンテンツ: cols 3-9 に配置（内部は通常フロー） */
+/* コンテンツ: 中央6列（列4-9）に配置 */
 .work-detail-overlay-content {
-  grid-column: 3 / span 7;
+  grid-column: 4 / span 6;
   min-width: 0;
   margin-top: var(--space-9);
 }
