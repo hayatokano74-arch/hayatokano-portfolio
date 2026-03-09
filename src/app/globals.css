@@ -1863,13 +1863,13 @@ button.tl-photo-cell {
 
 /* テキストエリアのフローティングラベル位置調整 */
 .contact-field:has(.contact-textarea) .contact-label {
-  top: 36px;
+  top: 44px;
   left: var(--space-3);
 }
 
 .contact-field:has(.contact-textarea):focus-within .contact-label,
 .contact-field:has(.contact-textarea).has-value .contact-label {
-  transform: translateY(-28px);
+  transform: translateY(-36px);
   left: 0;
 }
 
