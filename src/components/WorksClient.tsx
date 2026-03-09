@@ -140,7 +140,6 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false 
               href={detailHref(w.slug)}
               prefetch={true}
               className="work-grid-item"
-              data-cursor="view"
             >
               <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} />
               <div className="work-grid-info">

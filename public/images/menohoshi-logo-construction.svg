@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <title>目の星 / Menohoshi — Logo Construction Grid</title>
+
+  <!-- 背景 -->
+  <rect width="800" height="800" fill="#f5f5f5"/>
+
+  <!-- ===== 構築グリッド（補助線） ===== -->
+  <g id="construction-grid" opacity="0.25" fill="none" stroke="#888" stroke-width="0.5">
+    <!-- 中心十字 -->
+    <line x1="400" y1="100" x2="400" y2="700"/>
+    <line x1="100" y1="400" x2="700" y2="400"/>
+
+    <!-- 対角線 -->
+    <line x1="175" y1="175" x2="625" y2="625"/>
+    <line x1="625" y1="175" x2="175" y2="625"/>
+
+    <!-- 外接円（基準円R=250） -->
+    <circle cx="400" cy="400" r="250"/>
+
+    <!-- 目の外形を構成する2つの主要円（R=250、中心をX方向に±120ずらす） -->
+    <circle cx="280" cy="400" r="250"/>
+    <circle cx="520" cy="400" r="250"/>
+
+    <!-- 目の高さを制御する補助円（R=250、中心をY方向に±120ずらす） -->
+    <circle cx="400" cy="280" r="250"/>
+    <circle cx="400" cy="520" r="250"/>
+
+    <!-- 瞳の構築円（R=80） -->
+    <circle cx="400" cy="400" r="80"/>
+
+    <!-- 内側の構築円（R=140） — 虹彩 -->
+    <circle cx="400" cy="400" r="140"/>
+
+    <!-- キャッチライト構築円（R=28） -->
+    <circle cx="432" cy="368" r="28"/>
+
+    <!-- 黄金比グリッド補助線 -->
+    <line x1="247" y1="100" x2="247" y2="700" stroke-dasharray="4,4"/>
+    <line x1="553" y1="100" x2="553" y2="700" stroke-dasharray="4,4"/>
+    <line x1="100" y1="247" x2="700" y2="247" stroke-dasharray="4,4"/>
+    <line x1="100" y1="553" x2="700" y2="553" stroke-dasharray="4,4"/>
+  </g>
+
+  <!-- ===== ロゴ本体 ===== -->
+  <g id="logo" fill="#141414" stroke="none">
+
+    <!-- 目の外形（ヴェシカ・パイシス）
+         2つの円(cx=280,r=250 と cx=520,r=250)の交差部分
+         交点: 上(400,180.68) 下(400,619.32)
+         円弧で描画 -->
+    <path d="
+      M 400 180.68
+      A 250 250 0 0 1 400 619.32
+      A 250 250 0 0 1 400 180.68
+      Z
+    " fill="#141414"/>
+
+    <!-- 虹彩（中間リング） -->
+    <circle cx="400" cy="400" r="140" fill="#f5f5f5"/>
+
+    <!-- 瞳孔 -->
+    <circle cx="400" cy="400" r="80" fill="#141414"/>
+
+    <!-- キャッチライト（目の星） -->
+    <circle cx="432" cy="368" r="28" fill="#f5f5f5"/>
+
+  </g>
+
+  <!-- ===== 寸法注釈 ===== -->
+  <g id="annotations" font-family="monospace" font-size="10" fill="#aaa">
+    <text x="400" y="138" text-anchor="middle">R=250</text>
+    <text x="400" y="318" text-anchor="middle">R=140</text>
+    <text x="400" y="358" text-anchor="middle">R=80</text>
+    <text x="462" y="364" text-anchor="start" font-size="9">R=28</text>
+    <text x="280" y="130" text-anchor="middle" font-size="9">cx=280</text>
+    <text x="520" y="130" text-anchor="middle" font-size="9">cx=520</text>
+  </g>
+
+</svg>
