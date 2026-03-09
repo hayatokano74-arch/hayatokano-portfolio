@@ -1205,14 +1205,20 @@ button {
   text-wrap: balance;
 }
 
-/* ── ヘッダーカテゴリ行: 12カラムグリッド ── */
+/* ── ヘッダーカテゴリ行: 12カラムグリッド + 反転帯 ── */
 .header-category-row {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
-  align-items: end;
+  align-items: center;
   margin-top: var(--v-row-gap);
   min-height: var(--space-8);
+  /* 反転帯: ページ余白を突き抜けて画面端まで */
+  background: var(--fg);
+  color: var(--bg);
+  margin-inline: calc(-1 * var(--pad-x));
+  padding-inline: var(--pad-x);
+  padding-block: var(--space-3);
 }
 
 /* カテゴリリンク: 左側。カテゴリが増えても折り返しで対応 */
@@ -1228,6 +1234,17 @@ button {
   font-weight: 500;
 }
 
+/* 反転帯内のカテゴリリンク色: 非活性は半透明、活性は帯の色 */
+.header-category-row .header-category-links a {
+  color: var(--bg);
+  opacity: 0.5;
+}
+
+.header-category-row .header-category-links a.underline-active {
+  color: var(--bg);
+  opacity: 1;
+}
+
 /* Grid/Listトグル: アイコンのみ、色の濃淡で状態表現 */
 .works-view-toggle {
   grid-column: 12;
@@ -1241,24 +1258,30 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--muted);
-  transition: color var(--duration-fast) ease;
+  color: inherit;
+  opacity: 0.5;
+  transition: opacity var(--duration-fast) ease;
   text-decoration: none;
 }
 
 .view-toggle-seg:hover {
-  color: var(--fg);
+  opacity: 1;
 }
 
 .view-toggle-seg.is-active {
-  color: var(--fg);
+  opacity: 1;
 }
 
 /* 検索窓: カラム12に配置、幅をカラムに合わせる */
 .header-search {
   grid-column: 12;
   width: 100%;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid currentColor;
+  opacity: 0.5;
+}
+
+.header-search:focus-within {
+  opacity: 1;
 }
 
 /* ── Works リストサマリー: 12カラムグリッド ── */
@@ -3295,7 +3318,7 @@ img[loading="lazy"] {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  border-bottom: 1px solid var(--line);
+  border-bottom: none;
 }
 
 /* 検索バー内の .header-search はborder不要（親が管理）、flex:1で残りを埋める */
@@ -3317,7 +3340,8 @@ img[loading="lazy"] {
 .filter-bar-separator {
   width: 1px;
   height: 16px;
-  background: var(--muted);
+  background: currentColor;
+  opacity: 0.3;
   margin: 0 var(--space-1);
 }
 
@@ -3331,19 +3355,20 @@ img[loading="lazy"] {
   height: var(--space-7);
   border: none;
   background: transparent;
-  color: var(--muted);
+  color: inherit;
+  opacity: 0.5;
   cursor: pointer;
   position: relative;
-  transition: color var(--duration-fast) ease;
+  transition: opacity var(--duration-fast) ease;
   padding: 0;
 }
 
 .filter-search-trigger:hover {
-  color: var(--fg);
+  opacity: 1;
 }
 
 .filter-search-trigger.is-open {
-  color: var(--fg);
+  opacity: 1;
 }
 
 /* フィルター選択数バッジ: アイコン右上のドット */
@@ -3354,7 +3379,7 @@ img[loading="lazy"] {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--fg);
+  background: currentColor;
 }
 
 /* ── ドロップダウン + コンテンツレイアウト ── */

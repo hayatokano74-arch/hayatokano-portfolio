@@ -285,7 +285,7 @@ const searchInputStyle = {
   background: "transparent",
   fontSize: "var(--font-body)",
   lineHeight: "var(--lh-normal)",
-  color: "var(--fg)",
+  color: "inherit",
   padding: 0,
   outline: "none",
   fontFamily: "inherit",
@@ -294,7 +294,7 @@ const searchInputStyle = {
 function SearchPlaceholder() {
   return (
     <div className="header-search">
-      <div style={{ ...searchInputStyle, color: "var(--muted)" }}>SEARCH:</div>
+      <div style={{ ...searchInputStyle, opacity: 0.5 }}>SEARCH:</div>
     </div>
   );
 }
