@@ -32,8 +32,9 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="contact-form">
-      <div className="contact-field">
-        <label className="contact-label" htmlFor="contact-name">NAME:</label>
+      {/* NAME フィールド */}
+      <div className={`contact-field${name ? " has-value" : ""}`}>
+        <label className="contact-label" htmlFor="contact-name">NAME</label>
         <input
           id="contact-name"
           type="text"
@@ -41,12 +42,12 @@ export function ContactForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="contact-input"
-          placeholder="お名前"
         />
       </div>
 
-      <div className="contact-field">
-        <label className="contact-label" htmlFor="contact-email">EMAIL:</label>
+      {/* EMAIL フィールド */}
+      <div className={`contact-field${email ? " has-value" : ""}`}>
+        <label className="contact-label" htmlFor="contact-email">EMAIL</label>
         <input
           id="contact-email"
           type="email"
@@ -54,12 +55,12 @@ export function ContactForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="contact-input"
-          placeholder="メールアドレス"
         />
       </div>
 
-      <div className="contact-field">
-        <label className="contact-label" htmlFor="contact-message">MESSAGE:</label>
+      {/* MESSAGE フィールド */}
+      <div className={`contact-field${message ? " has-value" : ""}`}>
+        <label className="contact-label" htmlFor="contact-message">MESSAGE</label>
         <textarea
           id="contact-message"
           required
@@ -67,7 +68,6 @@ export function ContactForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="contact-input contact-textarea"
-          placeholder="お問い合わせ内容"
         />
       </div>
 

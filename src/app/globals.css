@@ -1744,49 +1744,95 @@ button.tl-photo-cell {
   align-self: start;
 }
 
-/* ── Contact: 12カラムグリッド ── */
+/* ── Contact: 2カラムレイアウト（12カラムグリッド） ── */
 .contact-layout {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
-  /* margin-top 不要: .page-shell の gap で管理 */
 }
 
-/* フォーム・イントロは7列（読みやすい幅） */
-.contact-intro,
+/* 左カラム: 連絡先情報 */
+.contact-info {
+  grid-column: 1 / span 4;
+  min-width: 0;
+  position: sticky;
+  top: var(--space-9);
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.contact-intro {
+  font-size: var(--font-body);
+  line-height: var(--lh-relaxed);
+  font-weight: 500;
+}
+
+/* 連絡先リンクブロック */
+.contact-link-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.contact-link-label {
+  font-size: var(--font-meta);
+  letter-spacing: 0.16em;
+  line-height: var(--lh-normal);
+  color: var(--muted);
+}
+
+.contact-link-value {
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 700;
+}
+
+/* 右カラム: フォーム */
 .contact-form-area {
-  grid-column: 1 / span 7;
-}
-
-/* hrline・info行は全幅（ヘッダーと揃える） */
-.contact-full-width {
-  grid-column: 1 / -1;
-}
-
-.contact-form-area {
-  margin-bottom: var(--space-11);
+  grid-column: 6 / -1;
+  min-width: 0;
 }
 
 /* ── Contact フォーム ── */
 .contact-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-7);
 }
 
+/* フローティングラベル: フィールドコンテナ */
 .contact-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  position: relative;
+  padding-top: 20px;
 }
 
+/* フローティングラベル: ラベル */
 .contact-label {
+  position: absolute;
+  top: 28px;
+  left: 0;
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  color: var(--muted);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform var(--duration-normal) ease,
+              font-size var(--duration-normal) ease,
+              color var(--duration-fast) ease;
+}
+
+/* フォーカス or 値あり → ラベル浮上 */
+.contact-field:focus-within .contact-label,
+.contact-field.has-value .contact-label {
+  transform: translateY(-20px);
   font-size: var(--font-meta);
   letter-spacing: 0.16em;
-  color: var(--muted);
-  line-height: var(--lh-normal);
+  color: var(--fg);
 }
 
+/* 入力フィールド */
 .contact-input {
   width: 100%;
   border: 0;
@@ -1806,11 +1852,7 @@ button.tl-photo-cell {
   box-shadow: 0 1px 0 0 var(--fg);
 }
 
-.contact-input::placeholder {
-  color: var(--muted);
-  opacity: 0.5;
-}
-
+/* テキストエリア */
 .contact-textarea {
   resize: vertical;
   min-height: 120px;
@@ -1819,27 +1861,66 @@ button.tl-photo-cell {
   line-height: var(--lh-relaxed);
 }
 
+/* テキストエリアのフローティングラベル位置調整 */
+.contact-field:has(.contact-textarea) .contact-label {
+  top: 32px;
+  left: var(--space-3);
+}
+
+.contact-field:has(.contact-textarea):focus-within .contact-label,
+.contact-field:has(.contact-textarea).has-value .contact-label {
+  transform: translateY(-24px);
+  left: 0;
+}
+
 .contact-textarea:focus {
   border-color: var(--fg);
 }
 
+/* 送信ボタン: 全幅 + hover下線アニメ */
 .contact-submit {
-  align-self: flex-start;
+  position: relative;
+  width: 100%;
   border: 1px solid var(--fg);
   background: transparent;
   color: var(--fg);
   font-size: var(--font-body);
   font-weight: 600;
   letter-spacing: 0.08em;
-  padding: var(--space-2) var(--space-8);
+  padding: var(--space-3) var(--space-8);
   cursor: pointer;
   font-family: inherit;
-  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  overflow: hidden;
+  transition: color var(--duration-fast) ease;
+}
+
+.contact-submit::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--fg);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform var(--duration-normal) ease;
+  z-index: 0;
 }
 
 .contact-submit:hover {
-  background: var(--fg);
   color: var(--bg);
+}
+
+.contact-submit:hover::after {
+  transform: scaleY(1);
+}
+
+/* ボタンテキストを前面に */
+.contact-submit span,
+.contact-submit {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── WorkDetailsTable ── */
@@ -1864,15 +1945,6 @@ button.tl-photo-cell {
 
 .work-details-row {
   display: contents;
-}
-
-/* Contact ページ用: 列幅同じ、gap と padding が異なる */
-.contact-info-row {
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
-  column-gap: var(--space-6);
-  padding-top: var(--space-3);
-  padding-bottom: var(--space-3);
 }
 
 /* About ページ CV 用: 列幅 56px */
@@ -3873,12 +3945,15 @@ img[loading="lazy"] {
 
   /* ── Contact ── */
   .contact-layout {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr;
   }
 
-  .contact-intro,
-  .contact-form-area,
-  .contact-full-width {
+  .contact-info {
+    grid-column: 1 / -1;
+    position: static;
+  }
+
+  .contact-form-area {
     grid-column: 1 / -1;
   }
 
