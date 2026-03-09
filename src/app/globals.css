@@ -3296,7 +3296,7 @@ img[loading="lazy"] {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  border-bottom: none;
+  border-bottom: 1px solid var(--line);
 }
 
 /* 検索バー内の .header-search はborder不要（親が管理）、flex:1で残りを埋める */
