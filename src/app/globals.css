@@ -1863,13 +1863,13 @@ button.tl-photo-cell {
 
 /* テキストエリアのフローティングラベル位置調整 */
 .contact-field:has(.contact-textarea) .contact-label {
-  top: 32px;
+  top: 36px;
   left: var(--space-3);
 }
 
 .contact-field:has(.contact-textarea):focus-within .contact-label,
 .contact-field:has(.contact-textarea).has-value .contact-label {
-  transform: translateY(-24px);
+  transform: translateY(-28px);
   left: 0;
 }
 
@@ -1877,12 +1877,11 @@ button.tl-photo-cell {
   border-color: var(--fg);
 }
 
-/* 送信ボタン: 全幅 + hover下線アニメ */
+/* 送信ボタン: 全幅 + hover塗りつぶしアニメ */
 .contact-submit {
-  position: relative;
   width: 100%;
   border: 1px solid var(--fg);
-  background: transparent;
+  background: linear-gradient(var(--fg), var(--fg)) bottom center / 100% 0 no-repeat;
   color: var(--fg);
   font-size: var(--font-body);
   font-weight: 600;
@@ -1890,37 +1889,13 @@ button.tl-photo-cell {
   padding: var(--space-3) var(--space-8);
   cursor: pointer;
   font-family: inherit;
-  overflow: hidden;
-  transition: color var(--duration-fast) ease;
-}
-
-.contact-submit::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--fg);
-  transform: scaleY(0);
-  transform-origin: bottom;
-  transition: transform var(--duration-normal) ease;
-  z-index: 0;
+  transition: background-size var(--duration-normal) ease,
+              color var(--duration-fast) ease;
 }
 
 .contact-submit:hover {
+  background-size: 100% 100%;
   color: var(--bg);
-}
-
-.contact-submit:hover::after {
-  transform: scaleY(1);
-}
-
-/* ボタンテキストを前面に */
-.contact-submit span,
-.contact-submit {
-  position: relative;
-  z-index: 1;
 }
 
 /* ── WorkDetailsTable ── */
