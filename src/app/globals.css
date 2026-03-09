@@ -1802,37 +1802,27 @@ button.tl-photo-cell {
   gap: var(--space-7);
 }
 
-/* フローティングラベル: フィールドコンテナ */
+/* フィールドコンテナ */
 .contact-field {
-  position: relative;
-  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-/* フローティングラベル: ラベル */
+/* ラベル: 常に上部に固定表示 */
 .contact-label {
-  position: absolute;
-  top: 28px;
-  left: 0;
-  font-size: var(--font-body);
-  line-height: var(--lh-normal);
-  color: var(--muted);
-  pointer-events: none;
-  transform-origin: left top;
-  transition: transform var(--duration-normal) ease,
-              font-size var(--duration-normal) ease,
-              color var(--duration-fast) ease;
-}
-
-/* フォーカス or 値あり → ラベル浮上 */
-.contact-field:focus-within .contact-label,
-.contact-field.has-value .contact-label {
-  transform: translateY(-20px);
   font-size: var(--font-meta);
   letter-spacing: 0.16em;
+  line-height: var(--lh-normal);
+  color: var(--muted);
+  transition: color var(--duration-fast) ease;
+}
+
+.contact-field:focus-within .contact-label {
   color: var(--fg);
 }
 
-/* 入力フィールド */
+/* 入力フィールド: アンダーライン + フォーカスで左から伸びるライン */
 .contact-input {
   width: 100%;
   border: 0;
@@ -1844,12 +1834,15 @@ button.tl-photo-cell {
   padding: var(--space-2) 0;
   outline: none;
   font-family: inherit;
-  transition: border-color var(--duration-fast) ease;
+  background-image: linear-gradient(var(--fg), var(--fg));
+  background-size: 0% 1px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  transition: background-size var(--duration-normal) ease;
 }
 
 .contact-input:focus-visible {
-  border-color: var(--fg);
-  box-shadow: 0 1px 0 0 var(--fg);
+  background-size: 100% 1px;
 }
 
 /* テキストエリア */
@@ -1859,15 +1852,8 @@ button.tl-photo-cell {
   border: 1px solid var(--line);
   padding: var(--space-3);
   line-height: var(--lh-relaxed);
-}
-
-/* テキストエリアはラベルを常に浮上済み状態で固定 */
-.contact-field:has(.contact-textarea) .contact-label {
-  position: static;
-  font-size: var(--font-meta);
-  letter-spacing: 0.16em;
-  color: var(--fg);
-  margin-bottom: var(--space-2);
+  background-image: none;
+  transition: border-color var(--duration-fast) ease;
 }
 
 .contact-textarea:focus {

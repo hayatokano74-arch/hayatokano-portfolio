@@ -32,8 +32,7 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="contact-form">
-      {/* NAME フィールド */}
-      <div className={`contact-field${name ? " has-value" : ""}`}>
+      <div className="contact-field">
         <label className="contact-label" htmlFor="contact-name">NAME</label>
         <input
           id="contact-name"
@@ -45,8 +44,7 @@ export function ContactForm() {
         />
       </div>
 
-      {/* EMAIL フィールド */}
-      <div className={`contact-field${email ? " has-value" : ""}`}>
+      <div className="contact-field">
         <label className="contact-label" htmlFor="contact-email">EMAIL</label>
         <input
           id="contact-email"
@@ -58,8 +56,7 @@ export function ContactForm() {
         />
       </div>
 
-      {/* MESSAGE フィールド */}
-      <div className={`contact-field${message ? " has-value" : ""}`}>
+      <div className="contact-field">
         <label className="contact-label" htmlFor="contact-message">MESSAGE</label>
         <textarea
           id="contact-message"
