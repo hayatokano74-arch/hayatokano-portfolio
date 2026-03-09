@@ -1861,16 +1861,13 @@ button.tl-photo-cell {
   line-height: var(--lh-relaxed);
 }
 
-/* テキストエリアのフローティングラベル位置調整 */
+/* テキストエリアはラベルを常に浮上済み状態で固定 */
 .contact-field:has(.contact-textarea) .contact-label {
-  top: 44px;
-  left: var(--space-3);
-}
-
-.contact-field:has(.contact-textarea):focus-within .contact-label,
-.contact-field:has(.contact-textarea).has-value .contact-label {
-  transform: translateY(-36px);
-  left: 0;
+  position: static;
+  font-size: var(--font-meta);
+  letter-spacing: 0.16em;
+  color: var(--fg);
+  margin-bottom: var(--space-2);
 }
 
 .contact-textarea:focus {
