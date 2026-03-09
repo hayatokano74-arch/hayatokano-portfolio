@@ -1213,11 +1213,13 @@ button {
   align-items: center;
   margin-top: var(--v-row-gap);
   min-height: var(--space-8);
-  /* 反転帯: グリッド内に収めて浮かせる */
-  background: var(--fg);
-  color: var(--bg);
-  padding-inline: var(--space-5);
-  padding-block: var(--space-3);
+  /* アクセント帯: 微妙な明度差 + 上下ボーダーで段差を表現 */
+  background: color-mix(in srgb, var(--fg) 6%, var(--bg));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin-inline: calc(-1 * var(--pad-x));
+  padding-inline: var(--pad-x);
+  padding-block: var(--space-4);
 }
 
 /* カテゴリリンク: 左側。カテゴリが増えても折り返しで対応 */
@@ -1233,15 +1235,13 @@ button {
   font-weight: 500;
 }
 
-/* 反転帯内のカテゴリリンク色: 非活性は半透明、活性は帯の色 */
+/* カテゴリリンク色 */
 .header-category-row .header-category-links a {
-  color: var(--bg);
-  opacity: 0.5;
+  color: var(--muted);
 }
 
 .header-category-row .header-category-links a.underline-active {
-  color: var(--bg);
-  opacity: 1;
+  color: var(--fg);
 }
 
 /* Grid/Listトグル: アイコンのみ、色の濃淡で状態表現 */
@@ -1257,30 +1257,24 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: inherit;
-  opacity: 0.5;
-  transition: opacity var(--duration-fast) ease;
+  color: var(--muted);
+  transition: color var(--duration-fast) ease;
   text-decoration: none;
 }
 
 .view-toggle-seg:hover {
-  opacity: 1;
+  color: var(--fg);
 }
 
 .view-toggle-seg.is-active {
-  opacity: 1;
+  color: var(--fg);
 }
 
 /* 検索窓: カラム12に配置、幅をカラムに合わせる */
 .header-search {
   grid-column: 12;
   width: 100%;
-  border-bottom: 1px solid currentColor;
-  opacity: 0.5;
-}
-
-.header-search:focus-within {
-  opacity: 1;
+  border-bottom: 1px solid var(--line);
 }
 
 /* ── Works リストサマリー: 12カラムグリッド ── */
@@ -3339,8 +3333,7 @@ img[loading="lazy"] {
 .filter-bar-separator {
   width: 1px;
   height: 16px;
-  background: currentColor;
-  opacity: 0.3;
+  background: var(--muted);
   margin: 0 var(--space-1);
 }
 
@@ -3354,20 +3347,19 @@ img[loading="lazy"] {
   height: var(--space-7);
   border: none;
   background: transparent;
-  color: inherit;
-  opacity: 0.5;
+  color: var(--muted);
   cursor: pointer;
   position: relative;
-  transition: opacity var(--duration-fast) ease;
+  transition: color var(--duration-fast) ease;
   padding: 0;
 }
 
 .filter-search-trigger:hover {
-  opacity: 1;
+  color: var(--fg);
 }
 
 .filter-search-trigger.is-open {
-  opacity: 1;
+  color: var(--fg);
 }
 
 /* フィルター選択数バッジ: アイコン右上のドット */
@@ -3378,7 +3370,7 @@ img[loading="lazy"] {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: currentColor;
+  background: var(--fg);
 }
 
 /* ── ドロップダウン + コンテンツレイアウト ── */
