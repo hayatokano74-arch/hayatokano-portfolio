@@ -1205,21 +1205,14 @@ button {
   text-wrap: balance;
 }
 
-/* ── ヘッダーカテゴリ行: 12カラムグリッド + 反転帯 ── */
+/* ── ヘッダーカテゴリ行: 12カラムグリッド ── */
 .header-category-row {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
-  align-items: center;
+  align-items: end;
   margin-top: var(--v-row-gap);
   min-height: var(--space-8);
-  /* アクセント帯: 微妙な明度差 + 上下ボーダーで段差を表現 */
-  background: color-mix(in srgb, var(--fg) 6%, var(--bg));
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  margin-inline: calc(-1 * var(--pad-x));
-  padding-inline: var(--pad-x);
-  padding-block: var(--space-4);
 }
 
 /* カテゴリリンク: 左側。カテゴリが増えても折り返しで対応 */
@@ -1235,14 +1228,6 @@ button {
   font-weight: 500;
 }
 
-/* カテゴリリンク色 */
-.header-category-row .header-category-links a {
-  color: var(--muted);
-}
-
-.header-category-row .header-category-links a.underline-active {
-  color: var(--fg);
-}
 
 /* Grid/Listトグル: アイコンのみ、色の濃淡で状態表現 */
 .works-view-toggle {
