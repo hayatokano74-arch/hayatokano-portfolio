@@ -995,6 +995,109 @@ button {
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1;
+  display: inline-flex;
+}
+
+/* ── トップページ: タイポグラフィ演出（staggered文字出現） ── */
+@keyframes revealChar {
+  from {
+    opacity: 0;
+    transform: translateY(0.3em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.top-page-char {
+  display: inline-block;
+  opacity: 0;
+  animation: revealChar 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* HAYATO KANO: 全体フェードイン（ナビより先に表示） */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.top-page-name-animate {
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards;
+  animation-delay: 0.1s;
+}
+
+/* prefers-reduced-motion: アニメーション無効 */
+@media (prefers-reduced-motion: reduce) {
+  .top-page-char {
+    opacity: 1;
+    animation: none;
+  }
+  .top-page-name-animate {
+    opacity: 1;
+    animation: none;
+  }
+  .custom-cursor {
+    display: none !important;
+  }
+}
+
+/* ── カスタムカーソル ── */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--fg);
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transition:
+    width var(--duration-slow) cubic-bezier(0.23, 1, 0.32, 1),
+    height var(--duration-slow) cubic-bezier(0.23, 1, 0.32, 1),
+    background var(--duration-slow) ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.custom-cursor-text {
+  opacity: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #fff;
+  transition: opacity var(--duration-normal) ease;
+  user-select: none;
+}
+
+.custom-cursor.is-hovering {
+  width: 80px;
+  height: 80px;
+  background: var(--fg);
+}
+
+.custom-cursor.is-hovering .custom-cursor-text {
+  opacity: 1;
+}
+
+/* data-cursor 属性を持つ要素のネイティブカーソルを非表示 */
+[data-cursor] {
+  cursor: none;
+}
+
+/* タッチデバイスではカスタムカーソル非表示 */
+@media (hover: none) {
+  .custom-cursor {
+    display: none !important;
+  }
+  [data-cursor] {
+    cursor: auto;
+  }
 }
 
 /* ── 12カラムグリッド: 左4列 + 1列gap + 右7列 ── */

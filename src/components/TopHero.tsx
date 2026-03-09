@@ -48,13 +48,13 @@ export function TopHero({ navImages }: Props) {
         />
       )}
 
-      {/* ヘッダー行: 名前 + テーマドット */}
+      {/* ヘッダー行: 名前 + テーマドット（フェードインアニメーション） */}
       <div className="top-page-header">
-        <span className="top-page-name">HAYATO KANO</span>
+        <span className="top-page-name top-page-name-animate">HAYATO KANO</span>
         <ThemeDot />
       </div>
 
-      {/* ナビリスト */}
+      {/* ナビリスト（1文字ずつstaggered出現） */}
       <nav className="top-page-nav" onMouseLeave={handleLeave}>
         {NAV_ITEMS.map(({ num, label, href }, i) => (
           <div key={href} className="top-page-nav-row">
@@ -65,7 +65,17 @@ export function TopHero({ navImages }: Props) {
               onMouseEnter={() => handleHover(href)}
             >
               <span className="top-page-nav-num">{num}</span>
-              <span className="top-page-nav-label">{label}</span>
+              <span className="top-page-nav-label">
+                {label.split("").map((char, ci) => (
+                  <span
+                    key={ci}
+                    className="top-page-char"
+                    style={{ animationDelay: `${0.3 + i * 0.12 + ci * 0.03}s` }}
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </span>
+                ))}
+              </span>
             </Link>
           </div>
         ))}

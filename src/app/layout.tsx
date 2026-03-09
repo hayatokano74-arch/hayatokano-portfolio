@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_JP } from "next/font/google";
 import { ThemeScript } from "@/components/ThemeToggle";
 import { GridDebugOverlay } from "@/components/GridDebugOverlay";
 import { CustomScrollbar } from "@/components/CustomScrollbar";
+import { CustomCursor } from "@/components/CustomCursor";
 import "./globals.css";
 
 /* 和文: IBM Plex Sans JP（合理的・技術的） */
@@ -50,6 +51,7 @@ export default function RootLayout({
           メインコンテンツへ
         </a>
         {children}
+        <CustomCursor />
         <CustomScrollbar />
         <GridDebugOverlay />
         {/* Service Worker + スクロールバー自動表示 */}
