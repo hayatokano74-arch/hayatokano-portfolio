@@ -84,17 +84,26 @@ export function Header({
             const activeIdx = NAV_ITEMS.findIndex((n) => n.section === active);
             const dir = i > activeIdx ? "next" : i < activeIdx ? "prev" : undefined;
             return (
-              <Link
+              <a
                 key={section}
                 href={href}
                 className={`header-nav-item ${active === section ? "is-active" : ""}`}
-                onClick={() => {
-                  if (dir) document.documentElement.dataset.vtDir = dir;
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!dir) return;
+                  document.documentElement.dataset.vtDir = dir;
+                  if ("startViewTransition" in document) {
+                    (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(() => {
+                      router.push(href);
+                    });
+                  } else {
+                    router.push(href);
+                  }
                 }}
               >
                 <span className="header-nav-num">{num}</span>
                 <span className="header-nav-label">{label}</span>
-              </Link>
+              </a>
             );
           })}
         </nav>

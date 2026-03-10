@@ -204,7 +204,10 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           className="wdb-cell wdb-btn wdb-nav-arrow"
           onClick={() => {
             document.documentElement.dataset.vtDir = "prev";
-            router.push(`/works/${prevWork.slug}?mode=gallery&img=1`);
+            const go = () => router.push(`/works/${prevWork.slug}?mode=gallery&img=1`);
+            if ("startViewTransition" in document) {
+              (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(go);
+            } else { go(); }
           }}
         >
           ‹
@@ -215,7 +218,10 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           className="wdb-cell wdb-btn wdb-nav-arrow"
           onClick={() => {
             document.documentElement.dataset.vtDir = "next";
-            router.push(`/works/${nextWork.slug}?mode=gallery&img=1`);
+            const go = () => router.push(`/works/${nextWork.slug}?mode=gallery&img=1`);
+            if ("startViewTransition" in document) {
+              (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(go);
+            } else { go(); }
           }}
         >
           ›
