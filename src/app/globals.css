@@ -566,6 +566,7 @@ button {
   overflow: hidden;
   display: flex;
   align-items: center;
+  padding: var(--space-5) 0;
 }
 
 .index-grid {
