@@ -47,6 +47,7 @@ export function Header({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const view = worksView;
   const { filterOpen, onFilterToggle, filterCount } = useFilterContext();
 

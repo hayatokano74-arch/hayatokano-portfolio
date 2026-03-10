@@ -177,6 +177,15 @@ html[data-vt-dir="next"]::view-transition-new(root) {
   mix-blend-mode: normal;
 }
 
+/* Works詳細バー: ページ遷移中も固定 */
+::view-transition-old(detail-top-bar),
+::view-transition-new(detail-top-bar),
+::view-transition-old(detail-bottom-bar),
+::view-transition-new(detail-bottom-bar) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 ::view-transition-group(site-header) {
   animation-duration: 250ms;
   animation-timing-function: ease;
@@ -407,6 +416,7 @@ button {
   line-height: 1;
   min-width: 0;
   margin-bottom: var(--space-7);
+  view-transition-name: detail-top-bar;
 }
 
 .wdb-back {
@@ -446,6 +456,7 @@ button {
   min-width: 0;
   position: relative;
   z-index: 1001;
+  view-transition-name: detail-bottom-bar;
 }
 
 .wdb-cell {
