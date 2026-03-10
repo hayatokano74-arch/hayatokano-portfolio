@@ -3731,13 +3731,16 @@ img[loading="lazy"] {
   .header-bar {
     display: flex;
     justify-content: space-between;
-    align-items: stretch;
+    align-items: center;
+    border: none;
+    position: relative;
+    z-index: 101;
+    background: var(--bg);
   }
 
   .header-brand-name {
     border-right: none;
-    position: relative;
-    z-index: 101;
+    padding: 0;
   }
 
   .header-title-row {
@@ -3817,9 +3820,6 @@ img[loading="lazy"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    z-index: 101;
-    margin-right: -6px;
   }
 
   .mobile-overlay {
