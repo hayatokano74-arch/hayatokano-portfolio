@@ -4,7 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import * as DOMPurify from "dompurify";
+import createDOMPurify from "dompurify";
+
+/* DOMPurify: ブラウザ環境でのみインスタンス化 */
+const purify = typeof window !== "undefined" ? createDOMPurify(window) : null;
 import type { Work } from "@/lib/mock";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 import { blurDataURL } from "@/lib/blur";
@@ -296,7 +299,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
                   style={{
                     width: "100%",
                     height: "auto",
-                    maxHeight: "min(72vh, 820px)",
+                    maxHeight: "100%",
                     objectFit: "contain",
                     display: "block",
                   }}
@@ -328,7 +331,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
               <div
                 className="work-excerpt-html"
                 style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) }}
+                dangerouslySetInnerHTML={{ __html: purify ? purify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) : "" }}
               />
               {work.tags.length > 0 && (
               <div style={{ marginTop: "var(--v-block)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
