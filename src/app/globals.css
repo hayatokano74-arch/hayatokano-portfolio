@@ -494,12 +494,12 @@ button {
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
 }
 
-.wdb-btn:hover {
-  background: var(--fg);
-  color: var(--bg);
+/* ホバー: 非アクティブボタンのみ半透明背景で控えめに */
+.wdb-btn:not(.is-active):hover {
+  background: color-mix(in srgb, var(--fg) 15%, transparent);
 }
 
-/* アクティブ状態: 色反転 */
+/* アクティブ状態: 完全反転 */
 .wdb-btn.is-active {
   background: var(--fg);
   color: var(--bg);
