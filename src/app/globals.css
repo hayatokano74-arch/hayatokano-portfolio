@@ -3916,6 +3916,60 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
+/* ── ページネーション ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-9) 0 var(--space-7);
+}
+
+.pagination-page,
+.pagination-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 var(--space-2);
+  font-size: var(--font-body);
+  font-family: inherit;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+  text-decoration: none;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+}
+
+.pagination-page:hover,
+.pagination-arrow:hover:not(.is-disabled) {
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+}
+
+.pagination-page.is-current {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
+}
+
+.pagination-arrow.is-disabled {
+  color: var(--muted);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 36px;
+  font-size: var(--font-body);
+  color: var(--muted);
+  letter-spacing: 0.2em;
+}
+
 /* ═══ モバイルオーバーライド（ファイル末尾に1ブロックのみ配置） ═══ */
 @media (max-width: 900px) {
   :root {

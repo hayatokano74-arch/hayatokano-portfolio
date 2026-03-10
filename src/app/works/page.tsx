@@ -8,18 +8,20 @@ import { WorksClient } from "@/components/WorksClient";
 import { getWorks } from "@/lib/works";
 import { parseTags, parseYears, buildFilterGroups } from "@/lib/categories";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
+import { Pagination } from "@/components/Pagination";
+import { getPerPage } from "@/lib/siteSettings";
 
 export default async function WorksPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ view?: string; tags?: string; tag?: string; years?: string; q?: string }>;
+  searchParams?: Promise<{ view?: string; tags?: string; tag?: string; years?: string; q?: string; page?: string }>;
 }) {
   const sp = searchParams ? await searchParams : undefined;
   const view = sp?.view === "grid" ? "grid" : "list";
   const selectedTags = parseTags(sp);
   const selectedYears = parseYears(sp);
   const q = sp?.q?.toLowerCase() ?? "";
-  const works = await getWorks();
+  const [works, perPage] = await Promise.all([getWorks(), getPerPage()]);
 
   /* フィルタリング: Category + Year 複数選択対応 */
   let filteredWorks = works;
@@ -56,13 +58,26 @@ export default async function WorksPage({
   if (sp?.tags) spRecord.tags = sp.tags;
   if (sp?.years) spRecord.years = sp.years;
 
-  /* Grid/Listトグル用のURL */
+  /* ページネーション */
+  const totalPages = Math.max(1, Math.ceil(filteredWorks.length / perPage));
+  const currentPage = Math.min(Math.max(1, parseInt(sp?.page ?? "1", 10) || 1), totalPages);
+  const pagedWorks = filteredWorks.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  /* Grid/Listトグル・ページネーション用のベースパラメータ */
   const toggleBase = new URLSearchParams();
   if (selectedTags.length > 0) toggleBase.set("tags", selectedTags.join(","));
   if (selectedYears.length > 0) toggleBase.set("years", selectedYears.join(","));
   if (q) toggleBase.set("q", q);
   const worksGridHref = `/works?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "grid" }).toString()}`;
   const worksListHref = `/works?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "list" }).toString()}`;
+
+  /** ページ番号からURLを生成（page=1のときはパラメータ省略） */
+  const buildPageHref = (page: number) => {
+    const params = new URLSearchParams(toggleBase);
+    params.set("view", view);
+    if (page > 1) params.set("page", String(page));
+    return `/works?${params.toString()}`;
+  };
 
   return (
     <CanvasShell>
@@ -82,7 +97,8 @@ export default async function WorksPage({
           basePath="/works"
           currentSearchParams={spRecord}
         >
-          <WorksClient works={filteredWorks} view={view} renderListDetail={(work) => <WorkDetailsTable details={work.details} />} />
+          <WorksClient works={pagedWorks} view={view} renderListDetail={(work) => <WorkDetailsTable details={work.details} />} />
+          <Pagination currentPage={currentPage} totalPages={totalPages} buildHref={buildPageHref} />
         </FilterLayout>
       </FilterProvider>
     </CanvasShell>

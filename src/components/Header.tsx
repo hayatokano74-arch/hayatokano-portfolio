@@ -322,6 +322,8 @@ function SearchInput() {
     } else {
       params.delete("q");
     }
+    /* 検索変更時はページを1にリセット */
+    params.delete("page");
     const qs = params.toString();
     /* replace で履歴を汚さない（入力ごとに戻るボタンが増えない） */
     router.replace(qs ? `${pathname}?${qs}` : pathname);

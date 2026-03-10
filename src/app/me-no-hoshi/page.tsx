@@ -7,18 +7,20 @@ import { WorksClient } from "@/components/WorksClient";
 export const metadata: Metadata = { title: "目の星" };
 import { parseTags, parseYears, buildFilterGroups } from "@/lib/categories";
 import { getMeNoHoshiPosts, type MeNoHoshiPost } from "@/lib/meNoHoshi";
+import { Pagination } from "@/components/Pagination";
+import { getPerPage } from "@/lib/siteSettings";
 
 export default async function MeNoHoshiPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ view?: string; tags?: string; tag?: string; years?: string; q?: string }>;
+  searchParams?: Promise<{ view?: string; tags?: string; tag?: string; years?: string; q?: string; page?: string }>;
 }) {
   const sp = searchParams ? await searchParams : undefined;
   const view = sp?.view === "list" ? "list" : "grid";
   const selectedTags = parseTags(sp);
   const selectedYears = parseYears(sp);
   const q = sp?.q?.toLowerCase() ?? "";
-  const posts = await getMeNoHoshiPosts();
+  const [posts, perPage] = await Promise.all([getMeNoHoshiPosts(), getPerPage()]);
 
   /* フィルタリング: Category + Year 複数選択対応 */
   let filteredPosts = posts;
@@ -55,13 +57,26 @@ export default async function MeNoHoshiPage({
   if (sp?.tags) spRecord.tags = sp.tags;
   if (sp?.years) spRecord.years = sp.years;
 
-  /* Grid/Listトグル用のURL */
+  /* ページネーション */
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / perPage));
+  const currentPage = Math.min(Math.max(1, parseInt(sp?.page ?? "1", 10) || 1), totalPages);
+  const pagedPosts = filteredPosts.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  /* Grid/Listトグル・ページネーション用のベースパラメータ */
   const toggleBase = new URLSearchParams();
   if (selectedTags.length > 0) toggleBase.set("tags", selectedTags.join(","));
   if (selectedYears.length > 0) toggleBase.set("years", selectedYears.join(","));
   if (q) toggleBase.set("q", q);
   const worksGridHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "grid" }).toString()}`;
   const worksListHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "list" }).toString()}`;
+
+  /** ページ番号からURLを生成（page=1のときはパラメータ省略） */
+  const buildPageHref = (page: number) => {
+    const params = new URLSearchParams(toggleBase);
+    params.set("view", view);
+    if (page > 1) params.set("page", String(page));
+    return `/me-no-hoshi?${params.toString()}`;
+  };
 
   return (
     <CanvasShell>
@@ -84,12 +99,13 @@ export default async function MeNoHoshiPage({
           currentSearchParams={spRecord}
         >
           <WorksClient
-            works={filteredPosts}
+            works={pagedPosts}
             view={view}
             basePath="/me-no-hoshi"
             detailQuery=""
             renderListDetail={(post) => <MeNoHoshiListDetails post={post} />}
           />
+          <Pagination currentPage={currentPage} totalPages={totalPages} buildHref={buildPageHref} />
         </FilterLayout>
       </FilterProvider>
     </CanvasShell>

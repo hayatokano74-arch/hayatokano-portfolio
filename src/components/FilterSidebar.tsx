@@ -6,8 +6,8 @@ import type { FilterGroup } from "@/lib/categories";
 /** 各グループの選択状態: { tags: ["Video"], years: ["2021"] } */
 export type SelectedFilters = Record<string, string[]>;
 
-/** フィルターパラメータキーの一覧 */
-const FILTER_PARAM_KEYS = ["tags", "tag", "years"];
+/** フィルター変更時にURLから除外するパラメータ */
+const FILTER_PARAM_KEYS = ["tags", "tag", "years", "page"];
 
 /**
  * フィルタードロップダウン: 検索バーの直下に展開するインラインパネル。
