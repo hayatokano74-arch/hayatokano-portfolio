@@ -287,9 +287,11 @@ html[data-vt-dir="next"]::view-transition-new(root) {
   display: none;
 }
 
-/* モバイルメニュー内のドット: grid-column をリセット */
+/* モバイルメニュー内のドット: ヘッダー用スタイルをリセット */
 .mobile-overlay .theme-dot {
   grid-column: unset;
+  border-right: none;
+  padding: 8px;
 }
 
 html,
@@ -3957,7 +3959,7 @@ img[loading="lazy"] {
     margin-top: var(--space-3);
     margin-bottom: var(--space-3);
     font-size: var(--font-body);
-    grid-column: 1;
+    grid-column: 1 / -1;
   }
 
   /* ── Text リスト ── */
