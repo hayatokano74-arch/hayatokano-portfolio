@@ -369,8 +369,7 @@ button {
 .work-detail-bottom-bar {
   display: flex;
   align-items: stretch;
-  border-top: 1px solid var(--fg);
-  border-bottom: 1px solid var(--fg);
+  border: 1px solid var(--fg);
   font-size: var(--font-body);
   font-weight: 700;
   line-height: 1;
