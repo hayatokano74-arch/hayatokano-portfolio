@@ -61,7 +61,14 @@ export function Header({
       <div className="header-bar">
         {/* 左: ブランド名 */}
         <Link href={brandHref} className="header-brand-name">
-          {brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel}
+          {brandLabel.includes("目の星") ? (
+            <>
+              <MenohoshiLogo />
+              {brandLabel}
+            </>
+          ) : (
+            brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel
+          )}
         </Link>
 
         {/* モバイルメニューボタン: ＋ → × 回転 */}
@@ -350,5 +357,21 @@ function SearchInput() {
         style={searchInputStyle}
       />
     </div>
+  );
+}
+
+/* 目の星ロゴ: 四芒星 */
+function MenohoshiLogo() {
+  return (
+    <svg
+      className="menohoshi-logo"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 0 C13.5 8.5 15.5 10.5 24 12 C15.5 13.5 13.5 15.5 12 24 C10.5 15.5 8.5 13.5 0 12 C8.5 10.5 10.5 8.5 12 0Z" />
+    </svg>
   );
 }
