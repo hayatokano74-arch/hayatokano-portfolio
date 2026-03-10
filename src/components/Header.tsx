@@ -81,32 +81,16 @@ export function Header({
 
         {/* デスクトップナビ: ナンバリング付き */}
         <nav className="desktop-main-nav">
-          {NAV_ITEMS.map(({ num, label, href, section }, i) => {
-            const activeIdx = NAV_ITEMS.findIndex((n) => n.section === active);
-            const dir = i > activeIdx ? "next" : i < activeIdx ? "prev" : undefined;
-            return (
-              <a
-                key={section}
-                href={href}
-                className={`header-nav-item ${active === section ? "is-active" : ""}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (!dir) return;
-                  document.documentElement.dataset.vtDir = dir;
-                  if ("startViewTransition" in document) {
-                    (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(() => {
-                      router.push(href);
-                    });
-                  } else {
-                    router.push(href);
-                  }
-                }}
-              >
-                <span className="header-nav-num">{num}</span>
-                <span className="header-nav-label">{label}</span>
-              </a>
-            );
-          })}
+          {NAV_ITEMS.map(({ num, label, href, section }) => (
+            <Link
+              key={section}
+              href={href}
+              className={`header-nav-item ${active === section ? "is-active" : ""}`}
+            >
+              <span className="header-nav-num">{num}</span>
+              <span className="header-nav-label">{label}</span>
+            </Link>
+          ))}
         </nav>
       </div>
 
