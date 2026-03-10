@@ -438,7 +438,7 @@ button {
 }
 
 /* 前後ナビ矢印 */
-.wdb-nav-arrow {
+.wdb-btn.wdb-nav-arrow {
   font-size: 28px;
   text-decoration: none;
   justify-content: center;
