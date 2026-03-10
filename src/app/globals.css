@@ -1658,11 +1658,20 @@ button {
   color: inherit;
 }
 
-/* 反転時のサムネイル */
-.works-row:not([open]) > .works-list-summary:hover .works-list-summary-thumb img,
-.works-row[open] > .works-list-summary .works-list-summary-thumb img {
-  filter: invert(1);
-  mix-blend-mode: difference;
+/* 展開コンテンツの控えめなフェードイン */
+.works-row .works-list-detail {
+  animation: works-detail-fade 200ms ease;
+}
+
+@keyframes works-detail-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .works-row .works-list-detail {
+    animation: none;
+  }
 }
 
 /* Works サマリーの子要素配置（全セルに min-width: 0 でオーバーフロー防止） */

@@ -222,7 +222,7 @@ function WorksList<T extends WorkLike>({
             const thumbAlt = w.thumbnail?.alt ?? lead?.alt ?? w.title;
             const isPortraitLead = (lead?.height ?? 0) > (lead?.width ?? 0);
             return (
-          <details className="works-row">
+          <details className="works-row" name="works-list">
             {/* サマリー行: 12カラムグリッド */}
             <summary className="works-list-summary">
               <div className="works-list-summary-date">{w.date}</div>
