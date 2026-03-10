@@ -640,8 +640,20 @@ button {
 }
 
 @media (max-width: 900px) {
-  .site-footer {
-    display: none;
+  .site-footer-inner {
+    flex-wrap: wrap;
+  }
+
+  .footer-link {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .footer-copy {
+    flex-basis: 100%;
+    border-top: 1px solid var(--fg);
+    margin-left: 0;
+    justify-content: center;
   }
 }
 
