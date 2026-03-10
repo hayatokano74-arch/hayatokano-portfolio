@@ -1636,7 +1636,34 @@ button {
   min-height: var(--space-8);
   cursor: pointer;
   list-style: none;
-  padding: var(--space-1) 0;
+  padding: var(--space-1) var(--space-3);
+  margin: 0 calc(-1 * var(--space-3));
+  transition: background var(--duration-normal) ease, color var(--duration-normal) ease;
+}
+
+/* 閉じた行: ホバーで背景反転 */
+.works-row:not([open]) > .works-list-summary:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* 開いた行: summary は反転を維持 */
+.works-row[open] > .works-list-summary {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* 反転時のタグ色を継承 */
+.works-row:not([open]) > .works-list-summary:hover .works-list-summary-tags,
+.works-row[open] > .works-list-summary .works-list-summary-tags {
+  color: inherit;
+}
+
+/* 反転時のサムネイル */
+.works-row:not([open]) > .works-list-summary:hover .works-list-summary-thumb img,
+.works-row[open] > .works-list-summary .works-list-summary-thumb img {
+  filter: invert(1);
+  mix-blend-mode: difference;
 }
 
 /* Works サマリーの子要素配置（全セルに min-width: 0 でオーバーフロー防止） */
@@ -3997,8 +4024,8 @@ img[loading="lazy"] {
     column-gap: var(--space-3);
     row-gap: 0;
     align-items: center;
-    padding-top: var(--space-3);
-    padding-bottom: var(--space-3);
+    padding: var(--space-3) var(--space-3);
+    margin: 0 calc(-1 * var(--space-3));
   }
 
   .works-list-summary-date {
