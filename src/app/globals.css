@@ -439,9 +439,10 @@ button {
 
 /* 前後ナビ矢印 */
 .wdb-nav-arrow {
-  font-size: var(--font-brand);
+  font-size: 28px;
   text-decoration: none;
   justify-content: center;
+  min-width: 44px;
 }
 
 /* ── Works 詳細: ボトムバー（枠線区切り・常時固定表示） ── */
