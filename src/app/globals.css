@@ -2087,6 +2087,18 @@ button.tl-photo-cell {
   inset: 0;
   background: var(--bg);
   z-index: 1000;
+}
+
+/* オーバーレイ内部: flex縦積み（スクロール領域 + 固定バー） */
+.work-detail-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* スクロール可能なコンテンツ領域 */
+.work-detail-overlay-scroll {
+  flex: 1 1 0;
   overflow-y: auto;
   padding: var(--pad-y) var(--pad-x);
 }
@@ -2097,18 +2109,17 @@ button.tl-photo-cell {
   column-gap: var(--grid-gutter);
 }
 
-/* Closeボタン: 最終列右端 */
-.work-detail-overlay-close {
-  grid-column: 12;
-  justify-self: end;
-  min-width: 0;
-}
-
 /* コンテンツ: 中央6列（列4-9）に配置 */
 .work-detail-overlay-content {
   grid-column: 4 / span 6;
   min-width: 0;
-  margin-top: var(--space-9);
+  margin-top: var(--space-4);
+}
+
+/* オーバーレイ用ボトムバー: 下部固定 */
+.wdb-overlay-bar {
+  flex: 0 0 auto;
+  margin: 0 var(--pad-x) var(--pad-y);
 }
 
 /* ── スケルトンローディングアニメーション ── */
@@ -4133,11 +4144,6 @@ img[loading="lazy"] {
 
   .work-detail-overlay-grid {
     grid-template-columns: repeat(4, 1fr);
-  }
-
-  .work-detail-overlay-close {
-    grid-column: 4;
-    justify-self: end;
   }
 
   .work-detail-overlay-content {

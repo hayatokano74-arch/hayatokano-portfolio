@@ -341,41 +341,73 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
 
       {detailOpen ? (
         <div ref={overlayRef} className="work-detail-overlay">
-          {/* Closeボタン + コンテンツ: 同一グリッド */}
-          <div className="work-detail-overlay-grid">
-            <div className="work-detail-overlay-close">
-              <button
-                type="button"
-                className="action-link"
-                onClick={() => setDetailOpen(false)}
-                style={{ fontSize: "var(--font-body)" }}
-              >
-                Close
-              </button>
+          <div className="work-detail-overlay-inner">
+            {/* スクロール可能なコンテンツ領域 */}
+            <div className="work-detail-overlay-scroll">
+              <div className="work-detail-overlay-grid">
+                <div className="work-detail-overlay-content">
+                  <WorkDetailsTable details={work.details} />
+                  {work.details.bio ? (
+                    <div style={{ marginTop: "var(--v-heading)", paddingTop: "var(--v-block)" }}>
+                      <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
+                      <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
+                    </div>
+                  ) : null}
+                  <div
+                    className="work-excerpt-html"
+                    style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) }}
+                  />
+                  {work.tags.length > 0 && (
+                  <div style={{ marginTop: "var(--v-block)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
+                    {work.tags.map((tag, idx) => (
+                      <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
+                        {tag.toLowerCase()}
+                      </span>
+                    ))}
+                  </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="work-detail-overlay-content">
-              <WorkDetailsTable details={work.details} />
-              {work.details.bio ? (
-                <div style={{ marginTop: "var(--v-heading)", paddingTop: "var(--v-block)" }}>
-                  <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
-                  <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
-                </div>
-              ) : null}
-              <div
-                className="work-excerpt-html"
-                style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) }}
-              />
-              {work.tags.length > 0 && (
-              <div style={{ marginTop: "var(--v-block)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
-                {work.tags.map((tag, idx) => (
-                  <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
-                    {tag.toLowerCase()}
-                  </span>
-                ))}
-              </div>
-              )}
+            {/* オーバーレイ用ボトムバー（固定） */}
+            <div className="work-detail-bottom-bar wdb-overlay-bar">
+              <span className="wdb-cell wdb-title">
+                {work.title} | {work.year}
+              </span>
+              <button
+                type="button"
+                className="wdb-cell wdb-btn"
+                onClick={() => {
+                  setDetailOpen(false);
+                  setLocalMode("gallery");
+                  window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
+                }}
+              >
+                Gallery
+              </button>
+              <button
+                type="button"
+                className="wdb-cell wdb-btn"
+                onClick={() => {
+                  setDetailOpen(false);
+                  setLocalMode("index");
+                  window.history.replaceState(null, "", `${pathname}?mode=index`);
+                }}
+              >
+                Index
+              </button>
+              <button
+                type="button"
+                className="wdb-cell wdb-btn is-active"
+                onClick={() => setDetailOpen(false)}
+              >
+                Info
+              </button>
+              <span className="wdb-cell wdb-counter">
+                {"\u00A0"}
+              </span>
             </div>
           </div>
         </div>
