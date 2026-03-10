@@ -80,16 +80,23 @@ export function Header({
 
         {/* デスクトップナビ: ナンバリング付き */}
         <nav className="desktop-main-nav">
-          {NAV_ITEMS.map(({ num, label, href, section }) => (
-            <Link
-              key={section}
-              href={href}
-              className={`header-nav-item ${active === section ? "is-active" : ""}`}
-            >
-              <span className="header-nav-num">{num}</span>
-              <span className="header-nav-label">{label}</span>
-            </Link>
-          ))}
+          {NAV_ITEMS.map(({ num, label, href, section }, i) => {
+            const activeIdx = NAV_ITEMS.findIndex((n) => n.section === active);
+            const dir = i > activeIdx ? "next" : i < activeIdx ? "prev" : undefined;
+            return (
+              <Link
+                key={section}
+                href={href}
+                className={`header-nav-item ${active === section ? "is-active" : ""}`}
+                onClick={() => {
+                  if (dir) document.documentElement.dataset.vtDir = dir;
+                }}
+              >
+                <span className="header-nav-num">{num}</span>
+                <span className="header-nav-label">{label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
