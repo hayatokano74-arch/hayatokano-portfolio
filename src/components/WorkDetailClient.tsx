@@ -302,62 +302,40 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         )}
       </div>
 
-      {/* ボトムバー: 12カラムグリッドで配置 */}
-      <div className="work-detail-bottom" style={{ paddingTop: "var(--space-6)" }}>
-        <div style={{ gridColumn: "1 / span 4", display: "flex", flexDirection: "column", gap: "var(--space-2)", alignItems: "flex-start", minWidth: 0 }}>
-          <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>
-            {work.title} | {work.year}
-          </div>
-          <div className="work-detail-controls" style={{ display: "flex", alignItems: "center", gap: "var(--space-5)", minHeight: "var(--space-6)", fontSize: "var(--font-body)", lineHeight: 1.1, fontWeight: 700 }}>
-            <button
-              type="button"
-              className={`${mode === "gallery" ? "underline-active" : ""} action-link`.trim()}
-              style={{ color: mode === "gallery" ? "var(--fg)" : "var(--muted)", transition: "color 140ms linear", display: "inline-flex", alignItems: "center", lineHeight: 1.1 }}
-              onClick={() => {
-                setLocalMode("gallery");
-                window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
-              }}
-            >
-              gallery
-            </button>
-            <button
-              type="button"
-              className={`${mode === "index" ? "underline-active" : ""} action-link`.trim()}
-              style={{ color: mode === "index" ? "var(--fg)" : "var(--muted)", transition: "color 140ms linear", display: "inline-flex", alignItems: "center", lineHeight: 1.1 }}
-              onClick={() => {
-                setLocalMode("index");
-                window.history.replaceState(null, "", `${pathname}?mode=index`);
-              }}
-            >
-              index
-            </button>
-            <button
-              type="button"
-              className="action-link"
-              style={{
-                fontSize: "var(--font-body)",
-                lineHeight: 1.1,
-                fontWeight: 700,
-                textAlign: "left",
-                padding: 0,
-                border: 0,
-                background: "transparent",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "var(--space-2)",
-              }}
-              onClick={() => setDetailOpen(true)}
-            >
-              <span>詳細</span>
-              <span aria-hidden="true" style={{ fontSize: "0.95em", transform: "translateY(-0.5px)" }}>
-                ↗
-              </span>
-            </button>
-          </div>
-        </div>
-        {/* カウンター: 右端カラムに配置（グリッド12列目） */}
-        <span className="work-detail-counter" style={{ gridColumn: "12 / -1", justifySelf: "end", alignSelf: "end", fontSize: "var(--font-body)", fontWeight: 700, minWidth: 0 }}>
-          {mode === "gallery" ? `${img} / ${work.media.length}` : null}
+      {/* ボトムバー: 枠線区切りの横並び */}
+      <div className="work-detail-bottom-bar">
+        <span className="wdb-cell wdb-title">
+          {work.title} | {work.year}
+        </span>
+        <button
+          type="button"
+          className={`wdb-cell wdb-btn ${mode === "gallery" ? "is-active" : ""}`}
+          onClick={() => {
+            setLocalMode("gallery");
+            window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
+          }}
+        >
+          Gallery
+        </button>
+        <button
+          type="button"
+          className={`wdb-cell wdb-btn ${mode === "index" ? "is-active" : ""}`}
+          onClick={() => {
+            setLocalMode("index");
+            window.history.replaceState(null, "", `${pathname}?mode=index`);
+          }}
+        >
+          Index
+        </button>
+        <button
+          type="button"
+          className="wdb-cell wdb-btn"
+          onClick={() => setDetailOpen(true)}
+        >
+          Info
+        </button>
+        <span className="wdb-cell wdb-counter">
+          {mode === "gallery" ? `${img} / ${work.media.length}` : "\u00A0"}
         </span>
       </div>
 
