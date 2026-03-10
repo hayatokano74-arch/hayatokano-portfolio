@@ -87,10 +87,8 @@ export function Header({
               href={href}
               className={`header-nav-item ${active === section ? "is-active" : ""}`}
             >
-              <span className="header-nav-label">
-                <span className="header-nav-num">{num}</span>
-                {label}
-              </span>
+              <span className="header-nav-num">{num}</span>
+              <span className="header-nav-label">{label}</span>
             </Link>
           ))}
         </nav>
