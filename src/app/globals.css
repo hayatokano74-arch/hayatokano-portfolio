@@ -439,7 +439,7 @@ button {
 
 /* 前後ナビ矢印 */
 .wdb-nav-arrow {
-  font-size: var(--font-heading);
+  font-size: var(--font-brand);
   text-decoration: none;
   justify-content: center;
 }
