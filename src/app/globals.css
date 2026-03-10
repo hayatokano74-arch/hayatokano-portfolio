@@ -452,7 +452,7 @@ button {
 /* ホバーツールチップ: 矢印の下に作品タイトル表示 */
 .wdb-nav-tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
   right: 0;
   background: var(--fg);
   color: var(--bg);
