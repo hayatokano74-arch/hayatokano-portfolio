@@ -1636,8 +1636,7 @@ button {
   min-height: var(--space-8);
   cursor: pointer;
   list-style: none;
-  padding: var(--space-1) var(--space-3);
-  margin: 0 calc(-1 * var(--space-3));
+  padding: var(--space-1) 0;
   transition: background var(--duration-normal) ease, color var(--duration-normal) ease;
 }
 
@@ -4024,8 +4023,8 @@ img[loading="lazy"] {
     column-gap: var(--space-3);
     row-gap: 0;
     align-items: center;
-    padding: var(--space-3) var(--space-3);
-    margin: 0 calc(-1 * var(--space-3));
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-3);
   }
 
   .works-list-summary-date {
