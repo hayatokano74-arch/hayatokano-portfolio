@@ -299,7 +299,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
                   style={{
                     width: "100%",
                     height: "auto",
-                    maxHeight: "100%",
+                    maxHeight: "min(72vh, 820px)",
                     objectFit: "contain",
                     display: "block",
                   }}
