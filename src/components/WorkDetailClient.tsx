@@ -331,8 +331,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         </span>
       </div>
 
-      {detailOpen ? (
-        <div ref={overlayRef} className="work-detail-overlay">
+      <div ref={overlayRef} className={`work-detail-overlay${detailOpen ? " is-open" : ""}`}>
           <div className="work-detail-overlay-inner">
             {/* スクロール可能なコンテンツ領域 */}
             <div className="work-detail-overlay-scroll">
@@ -402,8 +401,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
               </span>
             </div>
           </div>
-        </div>
-      ) : null}
+      </div>
     </div>
   );
 }
