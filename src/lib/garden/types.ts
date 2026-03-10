@@ -19,6 +19,8 @@ export interface GardenNode {
   excerpt: string;
   /** ファイル更新時刻（同日投稿のソート用、Unix ms） */
   mtime: number;
+  /** 推定読了時間（分） */
+  readingTime: number;
 }
 
 /** リンクされたページの概要（カード表示用） */

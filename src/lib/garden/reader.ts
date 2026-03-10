@@ -132,6 +132,12 @@ function readNodesCache(): GardenNode[] | null {
         const data = JSON.parse(fs.readFileSync(p, "utf-8")) as GardenNode[];
         if (data.length > 0) {
           console.log(`[Garden] ノードキャッシュ読み込み: ${data.length} ノード ← ${p}`);
+          // readingTime がないキャッシュデータにフォールバック値を付与
+          for (const node of data) {
+            if (node.readingTime === undefined) {
+              node.readingTime = calculateReadingTime(node.contentHtml);
+            }
+          }
           return data;
         }
       }
@@ -158,6 +164,20 @@ export async function getGardenFiles(): Promise<GardenFile[]> {
   _gardenCache = await fetchAllGardenFiles();
   _gardenCachedAt = now;
   return _gardenCache;
+}
+
+/**
+ * HTMLからプレーンテキストを抽出し、読了時間（分）を計算。
+ * 日本語の平均読了速度 500文字/分 で計算。
+ */
+function calculateReadingTime(text: string): number {
+  /* HTMLタグ・改行・空白を除去 */
+  const plain = text
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+  const minutes = Math.ceil(plain.length / 500);
+  return Math.max(1, minutes);
 }
 
 /** ファイル名から拡張子を除去してタイトルを推定 */
@@ -348,6 +368,7 @@ async function parseFile(
     contentHtml,
     excerpt,
     mtime: file.modifiedAt,
+    readingTime: calculateReadingTime(contentHtml),
   };
 }
 

@@ -4,7 +4,15 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { GardenPageContent } from "@/components/GardenPageContent";
 import { getAllNodes } from "@/lib/garden/reader";
 
-export const metadata: Metadata = { title: "Garden" };
+export const metadata: Metadata = {
+  title: "Garden",
+  description: "Hayato Kano のデジタルガーデン。写真・映像・日々の記録。",
+  openGraph: {
+    title: "Garden",
+    description: "Hayato Kano のデジタルガーデン。写真・映像・日々の記録。",
+    type: "website",
+  },
+};
 
 /* ISR: CDNキャッシュを1時間保持（ノードキャッシュ使用時は処理が瞬時） */
 export const revalidate = 3600;

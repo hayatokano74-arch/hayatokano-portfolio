@@ -3374,12 +3374,23 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
+.garden-detail-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 1em;
+  margin-bottom: var(--v-block);
+}
+
 .garden-detail-date {
-  display: block;
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
-  margin-bottom: var(--v-block);
+}
+
+.garden-reading-time {
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
 }
 
 .garden-detail-title {

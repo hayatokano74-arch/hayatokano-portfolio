@@ -45,6 +45,7 @@ export default function RootLayout({
         {/* 画像ドメインへの接続を事前確立（DNS + TCP + TLS で 100-300ms 短縮） */}
         <link rel="preconnect" href="https://wp.hayatokano.com" />
         <link rel="dns-prefetch" href="https://wp.hayatokano.com" />
+        <link rel="alternate" type="application/rss+xml" href="/feed.xml" title="Hayato Kano Garden" />
         <ThemeScript />
       </head>
       <body>
