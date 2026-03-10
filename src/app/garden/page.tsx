@@ -6,8 +6,8 @@ import { getAllNodes } from "@/lib/garden/reader";
 
 export const metadata: Metadata = { title: "Garden" };
 
-/* サーバーレス関数の最大実行時間 */
-export const maxDuration = 60;
+/* ISR: CDNキャッシュを1時間保持（ノードキャッシュ使用時は処理が瞬時） */
+export const revalidate = 3600;
 
 /**
  * Garden ページ（Server Component）

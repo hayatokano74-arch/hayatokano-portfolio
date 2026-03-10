@@ -111,12 +111,41 @@ function rehypeOptimizedImages(options?: OptimizedImagesOptions) {
     });
   };
 }
+import fs from "fs";
+import path from "path";
 import { fetchAllGardenFiles, type GardenFile } from "./dropbox";
 import type { GardenNode, GardenFrontmatter } from "./types";
 
-// --- モジュールレベルキャッシュ（TTL付き） ---
-// ビルド時: 全ページが数秒で処理されるため確実にヒット（API呼び出し1回に削減）
-// ISR時: TTL経過後に新鮮なデータを再取得
+// ============================================================
+// ノードキャッシュ（ビルド時にHTML変換済みのデータを保存）
+// ランタイムではこれを読むだけでMarkdown処理が不要になる。
+// ============================================================
+
+const NODES_CACHE_PATH = path.join(process.cwd(), ".garden-nodes-cache.json");
+const NODES_TMP_CACHE_PATH = "/tmp/garden-nodes-cache.json";
+
+/** HTML変換済みノードキャッシュを読み込む */
+function readNodesCache(): GardenNode[] | null {
+  for (const p of [NODES_CACHE_PATH, NODES_TMP_CACHE_PATH]) {
+    try {
+      if (fs.existsSync(p)) {
+        const data = JSON.parse(fs.readFileSync(p, "utf-8")) as GardenNode[];
+        if (data.length > 0) {
+          console.log(`[Garden] ノードキャッシュ読み込み: ${data.length} ノード ← ${p}`);
+          return data;
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+/** モジュールレベルのノードキャッシュ（一度読んだらメモリに保持） */
+let _nodesCache: GardenNode[] | null = null;
+
+// --- ファイルキャッシュ（TTL付き） ---
 const CACHE_TTL_MS = 60_000; // 60秒
 let _gardenCache: GardenFile[] | null = null;
 let _gardenCachedAt = 0;
@@ -324,6 +353,13 @@ async function parseFile(
 
 /** 全ノードを取得（MDファイルが存在するもののみ。日付降順） */
 export async function getAllNodes(): Promise<GardenNode[]> {
+  /* ビルド時に生成されたノードキャッシュがあればMarkdown処理をスキップ */
+  if (!_nodesCache) {
+    _nodesCache = readNodesCache();
+  }
+  if (_nodesCache) return _nodesCache;
+
+  /* キャッシュがない場合は従来通りMarkdownをパース（ビルド時 or 初回デプロイ時） */
   const files = await getGardenFiles();
   if (files.length === 0) return [];
   const existingSlugs = await getFileSlugs(files);
@@ -341,6 +377,12 @@ export async function getAllNodes(): Promise<GardenNode[]> {
 
 /** slugで1ノードを取得（MDファイルが存在するもののみ） */
 export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
+  /* ノードキャッシュから検索（高速パス） */
+  const allNodes = await getAllNodes();
+  const cached = allNodes.find((n) => n.slug === slug);
+  if (cached) return cached;
+
+  /* キャッシュにない場合（新規投稿がISRで追加された場合など）は個別パース */
   const files = await getGardenFiles();
   if (files.length === 0) return null;
   const existingSlugs = await getFileSlugs(files);
@@ -350,7 +392,6 @@ export async function getNodeBySlug(slug: string): Promise<GardenNode | null> {
     const { data } = matter(pre.content);
     const fm = completeFrontmatter(data as GardenFrontmatter, file, pre);
     if (titleToSlug(fm.title) === slug) {
-      /* 詳細ページ: 1枚目の画像に fetchpriority="high" を付与（LCP最適化） */
       return parseFile(file, existingSlugs, { fetchPriority: true });
     }
   }
@@ -387,9 +428,20 @@ export async function getVirtualPageTitle(slug: string): Promise<string | null> 
 
 /**
  * 全ページの概要マップを取得（slug → { title, excerpt }）。
- * リンクカード表示用。MDファイルがあるページのみexcerptを持つ。
+ * リンクカード表示用。ノードキャッシュがあればそこから生成（高速）。
  */
 export async function getNodeSummaryMap(): Promise<Map<string, { title: string; excerpt?: string; date?: string }>> {
+  /* ノードキャッシュから生成（高速パス） */
+  const allNodes = await getAllNodes();
+  if (allNodes.length > 0) {
+    const map = new Map<string, { title: string; excerpt?: string; date?: string }>();
+    for (const node of allNodes) {
+      map.set(node.slug, { title: node.title, excerpt: node.excerpt, date: node.date });
+    }
+    return map;
+  }
+
+  /* フォールバック: ファイルから直接パース */
   const map = new Map<string, { title: string; excerpt?: string; date?: string }>();
   const files = await getGardenFiles();
 

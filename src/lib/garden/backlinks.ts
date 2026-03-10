@@ -1,5 +1,7 @@
 /* リンクインデックス生成（Cosense方式）— Dropbox API 経由 */
 
+import fs from "fs";
+import path from "path";
 import matter from "gray-matter";
 import { cache } from "react";
 import { titleToSlug } from "./slug";
@@ -18,8 +20,45 @@ interface RawLink {
   targetTitle: string;
 }
 
+// ============================================================
+// リンクキャッシュ（ビルド時に生成、ランタイムで読み取り）
+// ============================================================
+const LINKS_CACHE_PATH = path.join(process.cwd(), ".garden-links-cache.json");
+const LINKS_TMP_CACHE_PATH = "/tmp/garden-links-cache.json";
+
+/** undefined = 未読, null = キャッシュファイル不在, RawLink[] = 読み込み済み */
+let _linksCache: RawLink[] | null | undefined = undefined;
+
+/** リンクキャッシュを読み込む（0件でも有効なキャッシュとして扱う） */
+function readLinksCache(): RawLink[] | null {
+  for (const p of [LINKS_CACHE_PATH, LINKS_TMP_CACHE_PATH]) {
+    try {
+      if (fs.existsSync(p)) {
+        const data = JSON.parse(fs.readFileSync(p, "utf-8")) as RawLink[];
+        console.log(`[Garden] リンクキャッシュ読み込み: ${data.length} リンク ← ${p}`);
+        return data;
+      }
+    } catch { continue; }
+  }
+  return null;
+}
+
+/** リンクキャッシュを保存（prebuildスクリプトから呼ぶ） */
+export function writeLinksCache(links: RawLink[]): void {
+  const json = JSON.stringify(links);
+  try { fs.writeFileSync(LINKS_CACHE_PATH, json, "utf-8"); } catch {}
+  try { fs.writeFileSync(LINKS_TMP_CACHE_PATH, json, "utf-8"); } catch {}
+}
+
 /** 全ファイルをスキャンしてリンク関係を抽出（ブラケットリンク + ハッシュタグ） */
 const scanAllLinks = cache(async (): Promise<RawLink[]> => {
+  /* キャッシュがあればスキャンをスキップ（0件でもキャッシュ有効） */
+  if (_linksCache === undefined) {
+    _linksCache = readLinksCache();
+  }
+  if (_linksCache !== null) return _linksCache;
+
+  /* キャッシュなし: 従来通りファイルをスキャン */
   const files = await getGardenFiles();
   const links: RawLink[] = [];
 
@@ -29,7 +68,6 @@ const scanAllLinks = cache(async (): Promise<RawLink[]> => {
     const sourceTitle = fm.title || file.filename.replace(/\.md$/, "");
     const sourceSlug = titleToSlug(sourceTitle);
 
-    // Obsidian式 [[wikilink]]
     const wikilinkPositions = new Set<number>();
     for (const match of content.matchAll(WIKILINK_RE)) {
       wikilinkPositions.add(match.index!);
@@ -38,7 +76,6 @@ const scanAllLinks = cache(async (): Promise<RawLink[]> => {
       links.push({ sourceSlug, sourceTitle, targetSlug, targetTitle });
     }
 
-    // ブラケットリンク [テキスト]
     for (const match of content.matchAll(BRACKET_RE)) {
       if (wikilinkPositions.has(match.index! - 1)) continue;
       const targetTitle = match[1];
@@ -46,7 +83,6 @@ const scanAllLinks = cache(async (): Promise<RawLink[]> => {
       links.push({ sourceSlug, sourceTitle, targetSlug, targetTitle });
     }
 
-    // ハッシュタグ #タグ
     for (const match of content.matchAll(HASHTAG_RE)) {
       const targetTitle = match[1];
       const targetSlug = titleToSlug(targetTitle);
@@ -56,6 +92,40 @@ const scanAllLinks = cache(async (): Promise<RawLink[]> => {
 
   return links;
 });
+
+/**
+ * プリビルド用: リンクをスキャンしてキャッシュに保存する。
+ * prebuild-garden-nodes.ts から呼ばれる。
+ */
+export async function scanAllLinksForPrebuild(): Promise<RawLink[]> {
+  /* キャッシュを無視してファイルから直接スキャン */
+  const { getGardenFiles: getFiles } = await import("./reader");
+  const files = await getFiles();
+  const links: RawLink[] = [];
+
+  for (const file of files) {
+    const { data, content } = matter(file.content);
+    const fm = data as GardenFrontmatter;
+    const sourceTitle = fm.title || file.filename.replace(/\.md$/, "");
+    const sourceSlug = titleToSlug(sourceTitle);
+
+    const wikilinkPositions = new Set<number>();
+    for (const match of content.matchAll(WIKILINK_RE)) {
+      wikilinkPositions.add(match.index!);
+      links.push({ sourceSlug, sourceTitle, targetSlug: titleToSlug(match[1]), targetTitle: match[1] });
+    }
+    for (const match of content.matchAll(BRACKET_RE)) {
+      if (wikilinkPositions.has(match.index! - 1)) continue;
+      links.push({ sourceSlug, sourceTitle, targetSlug: titleToSlug(match[1]), targetTitle: match[1] });
+    }
+    for (const match of content.matchAll(HASHTAG_RE)) {
+      links.push({ sourceSlug, sourceTitle, targetSlug: titleToSlug(match[1]), targetTitle: match[1] });
+    }
+  }
+
+  writeLinksCache(links);
+  return links;
+}
 
 /** slug → LinkedPageSummary に変換 */
 function toPageSummary(

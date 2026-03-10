@@ -17,6 +17,7 @@ interface SearchHook {
   quickSearch: (query: string) => void;
   fullSearch: (query: string) => void;
   clearSearch: () => void;
+  ensureLoaded: () => void;
 }
 
 interface GardenSearchProps {
@@ -26,7 +27,7 @@ interface GardenSearchProps {
 }
 
 export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSearchProps) {
-  const { ready, quickResults, quickSearch, fullSearch, clearSearch } = search;
+  const { ready, quickResults, quickSearch, fullSearch, clearSearch, ensureLoaded } = search;
   const [query, setQuery] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -121,16 +122,17 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
           ref={inputRef}
           type="text"
           className="garden-search-input"
-          placeholder={ready ? "ページを検索…" : "インデックス読み込み中…"}
+          placeholder="ページを検索…"
           value={query}
           onChange={(e) => handleInput(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => {
+            /* 初回フォーカス時にインデックスを遅延読み込み */
+            ensureLoaded();
             if (query.trim() && quickResults.length > 0) {
               setShowPopup(true);
             }
           }}
-          disabled={!ready}
         />
         {query && (
           <button

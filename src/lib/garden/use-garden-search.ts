@@ -111,15 +111,20 @@ export function useGardenSearch() {
   const [fullResults, setFullResults] = useState<GardenSearchResult[] | null>(null);
   const miniRef = useRef<MiniSearch<IndexDoc> | null>(null);
   const docsRef = useRef<Map<string, SearchDoc>>(new Map());
+  const loadingRef = useRef(false);
 
-  // インデックス読み込み
-  useEffect(() => {
-    let cancelled = false;
+  /**
+   * 検索インデックスを遅延読み込み
+   * 初回は検索入力にフォーカスした時 or 検索が実行された時にロードする。
+   * 928KBのJSONをページ読み込み時に取得しない。
+   */
+  const ensureLoaded = useCallback(() => {
+    if (ready || loadingRef.current) return;
+    loadingRef.current = true;
+
     fetch("/garden-search-index.json")
       .then((res) => res.json())
       .then((docs: SearchDoc[]) => {
-        if (cancelled) return;
-
         const ms = new MiniSearch<IndexDoc>({
           fields: ["title", "tags", "body"],
           storeFields: ["title", "date", "tags"],
@@ -135,7 +140,6 @@ export function useGardenSearch() {
         }));
         ms.addAll(indexDocs);
 
-        // 元のドキュメントをMapに保存（snippet生成用）
         const docMap = new Map<string, SearchDoc>();
         for (const d of docs) {
           docMap.set(d.id, d);
@@ -146,12 +150,9 @@ export function useGardenSearch() {
         setReady(true);
       })
       .catch(() => {
-        // インデックス取得失敗時は検索を無効化（静かに）
+        loadingRef.current = false;
       });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }, [ready]);
 
   /** QuickSearch: タイトル＋タグのprefix一致 */
   const quickSearch = useCallback((query: string) => {
@@ -230,5 +231,7 @@ export function useGardenSearch() {
     quickSearch,
     fullSearch,
     clearSearch,
+    /** 検索インデックスの遅延読み込みを開始（フォーカス時に呼ぶ） */
+    ensureLoaded,
   };
 }
