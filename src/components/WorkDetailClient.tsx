@@ -177,44 +177,36 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         gridTemplateRows: "auto minmax(0, 1fr) auto",
       }}
     >
-      {/* トップバー: 12カラムグリッドで配置 */}
-      <div className="work-detail-top" style={{ marginBottom: "var(--space-7)" }}>
-        <div style={{ gridColumn: "1 / span 4", fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, minWidth: 0 }}>
-          <Link
-            href="/works"
-            className="action-link action-link-muted"
-            style={{ display: "inline-flex", alignItems: "center", gap: "var(--space-2)", lineHeight: 1 }}
-          >
-            <span
-              aria-hidden="true"
-              style={{ width: 14, height: 20, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-            >
-              <svg width="12" height="18" viewBox="0 0 12 18" fill="none">
-                <path d="M9 2.5L3 9L9 15.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-            <span style={{ display: "block" }}>Back</span>
-          </Link>
-        </div>
-
-        <div style={{ gridColumn: "5 / -1", justifySelf: "end", display: "flex", alignItems: "center", gap: "var(--space-7)", fontSize: "var(--space-7)", lineHeight: 1, minWidth: 0 }}>
-          <Link
-            href={`/works/${prevWork.slug}?mode=gallery&img=1`}
-            prefetch={true}
-            aria-label="previous work"
-            className="action-link action-link-muted"
-          >
-            ‹
-          </Link>
-          <Link
-            href={`/works/${nextWork.slug}?mode=gallery&img=1`}
-            prefetch={true}
-            aria-label="next work"
-            className="action-link action-link-muted"
-          >
-            ›
-          </Link>
-        </div>
+      {/* トップバー: 枠線区切りの横並び */}
+      <div className="work-detail-top-bar">
+        <Link
+          href="/works"
+          className="wdb-cell wdb-btn wdb-back"
+        >
+          <span aria-hidden="true" className="wdb-back-icon">
+            <svg width="10" height="14" viewBox="0 0 12 18" fill="none">
+              <path d="M9 2.5L3 9L9 15.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          Back
+        </Link>
+        <span className="wdb-cell wdb-spacer" />
+        <Link
+          href={`/works/${prevWork.slug}?mode=gallery&img=1`}
+          prefetch={true}
+          aria-label="previous work"
+          className="wdb-cell wdb-btn wdb-nav-arrow"
+        >
+          ‹
+        </Link>
+        <Link
+          href={`/works/${nextWork.slug}?mode=gallery&img=1`}
+          prefetch={true}
+          aria-label="next work"
+          className="wdb-cell wdb-btn wdb-nav-arrow"
+        >
+          ›
+        </Link>
       </div>
 
       <div className="work-detail-stage-grid">

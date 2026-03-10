@@ -365,6 +365,45 @@ button {
   align-items: end;
 }
 
+/* ── Works 詳細: トップバー（枠線区切り） ── */
+.work-detail-top-bar {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--fg);
+  font-size: var(--font-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  min-width: 0;
+  margin-bottom: var(--space-7);
+}
+
+.wdb-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+}
+
+.wdb-back-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 中央スペーサー: 余白を埋める */
+.wdb-spacer {
+  flex: 1 1 0;
+  border-right: 1px solid var(--fg);
+}
+
+/* 前後ナビ矢印 */
+.wdb-nav-arrow {
+  font-size: var(--font-heading);
+  text-decoration: none;
+  justify-content: center;
+}
+
 /* ── Works 詳細: ボトムバー（枠線区切り） ── */
 .work-detail-bottom-bar {
   display: flex;
@@ -4101,6 +4140,10 @@ img[loading="lazy"] {
 
   .work-detail-top > * {
     grid-column: unset;
+  }
+
+  .work-detail-top-bar {
+    margin-bottom: var(--space-5);
   }
 
   .work-detail-bottom {
