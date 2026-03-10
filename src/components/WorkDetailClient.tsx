@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import DOMPurify from "dompurify";
 import type { Work } from "@/lib/mock";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
@@ -26,6 +26,7 @@ function getEmbedUrl(src: string): string | null {
 
 export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { slug: string }[] }) {
   const pathname = usePathname();
+  const router = useRouter();
   const sp = useSearchParams();
   const [detailOpen, setDetailOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
@@ -144,6 +145,12 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
     };
   }, [mode, prevImage, nextImage, goToImage]);
 
+  /* ページ遷移方向のクリーンアップ（前後ナビのスライド用） */
+  useEffect(() => {
+    const t = setTimeout(() => delete document.documentElement.dataset.vtDir, 600);
+    return () => clearTimeout(t);
+  }, []);
+
   /* オーバーレイ表示中: htmlスクロール停止（二重スクロールバー防止） */
   useEffect(() => {
     if (!detailOpen) return;
@@ -191,22 +198,28 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           Back
         </Link>
         <span className="wdb-cell wdb-spacer" />
-        <Link
-          href={`/works/${prevWork.slug}?mode=gallery&img=1`}
-          prefetch={true}
+        <button
+          type="button"
           aria-label="previous work"
           className="wdb-cell wdb-btn wdb-nav-arrow"
+          onClick={() => {
+            document.documentElement.dataset.vtDir = "prev";
+            router.push(`/works/${prevWork.slug}?mode=gallery&img=1`);
+          }}
         >
           ‹
-        </Link>
-        <Link
-          href={`/works/${nextWork.slug}?mode=gallery&img=1`}
-          prefetch={true}
+        </button>
+        <button
+          type="button"
           aria-label="next work"
           className="wdb-cell wdb-btn wdb-nav-arrow"
+          onClick={() => {
+            document.documentElement.dataset.vtDir = "next";
+            router.push(`/works/${nextWork.slug}?mode=gallery&img=1`);
+          }}
         >
           ›
-        </Link>
+        </button>
       </div>
 
       <div className="work-detail-stage-grid">
@@ -294,15 +307,47 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         )}
       </div>
 
-      {/* ボトムバー: 枠線区切りの横並び */}
+      {/* Infoオーバーレイ（コンテンツのみスライド、バーは含まない） */}
+      <div ref={overlayRef} className={`work-detail-overlay${detailOpen ? " is-open" : ""}`}>
+        <div className="work-detail-overlay-scroll">
+          <div className="work-detail-overlay-grid">
+            <div className="work-detail-overlay-content">
+              <WorkDetailsTable details={work.details} />
+              {work.details.bio ? (
+                <div style={{ marginTop: "var(--v-heading)", paddingTop: "var(--v-block)" }}>
+                  <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
+                  <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
+                </div>
+              ) : null}
+              <div
+                className="work-excerpt-html"
+                style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) }}
+              />
+              {work.tags.length > 0 && (
+              <div style={{ marginTop: "var(--v-block)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
+                {work.tags.map((tag, idx) => (
+                  <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
+                    {tag.toLowerCase()}
+                  </span>
+                ))}
+              </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ボトムバー: 常時固定表示（オーバーレイの上に配置） */}
       <div className="work-detail-bottom-bar">
         <span className="wdb-cell wdb-title">
           {work.title} | {work.year}
         </span>
         <button
           type="button"
-          className={`wdb-cell wdb-btn ${mode === "gallery" ? "is-active" : ""}`}
+          className={`wdb-cell wdb-btn ${!detailOpen && mode === "gallery" ? "is-active" : ""}`}
           onClick={() => {
+            setDetailOpen(false);
             setLocalMode("gallery");
             window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
           }}
@@ -311,8 +356,9 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         </button>
         <button
           type="button"
-          className={`wdb-cell wdb-btn ${mode === "index" ? "is-active" : ""}`}
+          className={`wdb-cell wdb-btn ${!detailOpen && mode === "index" ? "is-active" : ""}`}
           onClick={() => {
+            setDetailOpen(false);
             setLocalMode("index");
             window.history.replaceState(null, "", `${pathname}?mode=index`);
           }}
@@ -321,86 +367,14 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         </button>
         <button
           type="button"
-          className="wdb-cell wdb-btn"
-          onClick={() => setDetailOpen(true)}
+          className={`wdb-cell wdb-btn ${detailOpen ? "is-active" : ""}`}
+          onClick={() => setDetailOpen(!detailOpen)}
         >
           Info
         </button>
         <span className="wdb-cell wdb-counter">
           {mode === "gallery" ? `${img} / ${work.media.length}` : "\u00A0"}
         </span>
-      </div>
-
-      <div ref={overlayRef} className={`work-detail-overlay${detailOpen ? " is-open" : ""}`}>
-          <div className="work-detail-overlay-inner">
-            {/* スクロール可能なコンテンツ領域 */}
-            <div className="work-detail-overlay-scroll">
-              <div className="work-detail-overlay-grid">
-                <div className="work-detail-overlay-content">
-                  <WorkDetailsTable details={work.details} />
-                  {work.details.bio ? (
-                    <div style={{ marginTop: "var(--v-heading)", paddingTop: "var(--v-block)" }}>
-                      <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
-                      <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
-                    </div>
-                  ) : null}
-                  <div
-                    className="work-excerpt-html"
-                    style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) }}
-                  />
-                  {work.tags.length > 0 && (
-                  <div style={{ marginTop: "var(--v-block)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
-                    {work.tags.map((tag, idx) => (
-                      <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
-                        {tag.toLowerCase()}
-                      </span>
-                    ))}
-                  </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* オーバーレイ用ボトムバー（固定） */}
-            <div className="work-detail-bottom-bar wdb-overlay-bar">
-              <span className="wdb-cell wdb-title">
-                {work.title} | {work.year}
-              </span>
-              <button
-                type="button"
-                className="wdb-cell wdb-btn"
-                onClick={() => {
-                  setDetailOpen(false);
-                  setLocalMode("gallery");
-                  window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
-                }}
-              >
-                Gallery
-              </button>
-              <button
-                type="button"
-                className="wdb-cell wdb-btn"
-                onClick={() => {
-                  setDetailOpen(false);
-                  setLocalMode("index");
-                  window.history.replaceState(null, "", `${pathname}?mode=index`);
-                }}
-              >
-                Index
-              </button>
-              <button
-                type="button"
-                className="wdb-cell wdb-btn is-active"
-                onClick={() => setDetailOpen(false)}
-              >
-                Info
-              </button>
-              <span className="wdb-cell wdb-counter">
-                {"\u00A0"}
-              </span>
-            </div>
-          </div>
       </div>
     </div>
   );
