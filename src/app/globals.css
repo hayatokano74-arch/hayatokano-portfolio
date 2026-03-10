@@ -406,6 +406,8 @@ button {
   border-right: 1px solid var(--fg);
   color: var(--fg);
   font: inherit;
+  font-size: var(--font-meta);
+  letter-spacing: 0.06em;
   cursor: pointer;
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
 }
@@ -424,6 +426,8 @@ button {
 /* カウンター: 右端 */
 .wdb-counter {
   flex: 0 0 auto;
+  font-size: var(--font-meta);
+  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
 }
 
