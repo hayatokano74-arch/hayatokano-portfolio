@@ -4,10 +4,10 @@ import { WorkDetailClient } from "@/components/WorkDetailClient";
 import { getWorks, getWorkBySlug } from "@/lib/works";
 import { notFound } from "next/navigation";
 
-/** 前後ナビ用の最小 slug リスト（全データを Client に送らないため） */
+/** 前後ナビ用の最小リスト（全データを Client に送らないため） */
 async function getWorkSlugs() {
   const all = await getWorks();
-  return all.map((w) => ({ slug: w.slug }));
+  return all.map((w) => ({ slug: w.slug, title: w.title }));
 }
 
 export async function generateStaticParams() {

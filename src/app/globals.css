@@ -446,6 +446,34 @@ button {
   text-decoration: none;
   justify-content: center;
   min-width: 44px;
+  position: relative;
+}
+
+/* ホバーツールチップ: 矢印の下に作品タイトル表示 */
+.wdb-nav-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: var(--font-meta);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  padding: 6px 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-normal) ease;
+}
+
+.wdb-nav-arrow:hover .wdb-nav-tooltip {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .wdb-nav-tooltip {
+    display: none;
+  }
 }
 
 /* ── Works 詳細: ボトムバー（枠線区切り・常時固定表示） ── */

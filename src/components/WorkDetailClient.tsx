@@ -24,7 +24,7 @@ function getEmbedUrl(src: string): string | null {
   return null;
 }
 
-export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { slug: string }[] }) {
+export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { slug: string; title: string }[] }) {
   const pathname = usePathname();
   const router = useRouter();
   const sp = useSearchParams();
@@ -200,7 +200,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         <span className="wdb-cell wdb-spacer" />
         <button
           type="button"
-          aria-label="previous work"
+          aria-label={`前の作品: ${prevWork.title}`}
           className="wdb-cell wdb-btn wdb-nav-arrow"
           onClick={() => {
             document.documentElement.dataset.vtDir = "prev";
@@ -211,10 +211,11 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           }}
         >
           ‹
+          <span className="wdb-nav-tooltip">{prevWork.title}</span>
         </button>
         <button
           type="button"
-          aria-label="next work"
+          aria-label={`次の作品: ${nextWork.title}`}
           className="wdb-cell wdb-btn wdb-nav-arrow"
           onClick={() => {
             document.documentElement.dataset.vtDir = "next";
@@ -225,6 +226,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           }}
         >
           ›
+          <span className="wdb-nav-tooltip">{nextWork.title}</span>
         </button>
       </div>
 
