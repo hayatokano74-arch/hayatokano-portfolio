@@ -223,13 +223,13 @@ html[data-vt-dir="next"]::view-transition-new(root) {
 
 /* テーマ切り替えドット（ヘッダー: ブランド名とナビの間） */
 .theme-dot {
-  grid-column: 5 / span 1;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 0;
+  border-right: 1px solid var(--fg);
   background: transparent;
-  padding: 8px;
+  padding: var(--space-3) var(--space-4);
   margin: 0;
   cursor: pointer;
 }
@@ -601,30 +601,39 @@ button {
 .site-footer {
   margin-top: auto;
   padding-top: var(--v-page);
-  padding-bottom: var(--space-4);
 }
 
 .site-footer-inner {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-7);
-  font-size: var(--font-body);
-  letter-spacing: 0.02em;
+  align-items: stretch;
+  border: 1px solid var(--fg);
+  font-size: var(--font-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
   color: var(--fg);
 }
 
 .footer-link {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-  transition: text-decoration-thickness var(--duration-fast) ease;
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-right: 1px solid var(--fg);
+  text-decoration: none;
+  transition:
+    background var(--duration-fast) ease,
+    color var(--duration-fast) ease;
 }
 
 .footer-link:hover {
-  text-decoration-thickness: 2px;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 .footer-copy {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
   margin-left: auto;
 }
 
@@ -842,52 +851,66 @@ button {
 }
 
 .header-bar {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  column-gap: var(--grid-gutter);
-  align-items: center;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--fg);
   min-height: var(--space-11);
 }
 
-/* ブランド名: 12カラムの1-4列目 */
+/* ブランド名: 左端セル */
 .header-brand-name {
-  grid-column: 1 / span 4;
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-right: 1px solid var(--fg);
   font-size: var(--font-body);
   font-weight: 700;
   line-height: 1;
   color: var(--fg);
   text-decoration: none;
   letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
-/* デスクトップナビ: space-betweenで項目を均等配分、gapなしで狭い画面でも収まる */
+/* デスクトップナビ: 残りスペースを埋め、各項目をセル区切りで配置 */
 .desktop-main-nav {
-  grid-column: 6 / -1;
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: stretch;
   white-space: nowrap;
   overflow: hidden;
 }
 
 .header-nav-item {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-right: 1px solid var(--fg);
   text-decoration: none;
   color: var(--muted);
-  transition: color var(--duration-fast) ease;
+  transition:
+    color var(--duration-fast) ease,
+    background var(--duration-fast) ease;
   position: relative;
+  flex: 1 1 0;
+  justify-content: center;
+}
+
+.header-nav-item:last-child {
+  border-right: none;
 }
 
 .header-nav-item:hover,
 .header-nav-item:focus-visible {
-  color: var(--fg);
+  background: var(--fg);
+  color: var(--bg);
 }
 
 .header-nav-item.is-active {
-  color: var(--fg);
+  background: var(--fg);
+  color: var(--bg);
 }
 
 /* アクティブインジケーター: 削除済み（ドットはテーマ切替に移動） */
@@ -901,12 +924,9 @@ button {
   transition: opacity var(--duration-fast) ease;
 }
 
-.header-nav-item:hover .header-nav-num {
-  opacity: 0.7;
-}
-
+.header-nav-item:hover .header-nav-num,
 .header-nav-item.is-active .header-nav-num {
-  opacity: 1;
+  opacity: 0.6;
 }
 
 .header-nav-label {
@@ -917,7 +937,7 @@ button {
 }
 
 .header-nav-item.is-active .header-nav-label {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* モバイルメニューボタン */
@@ -3712,7 +3732,13 @@ img[loading="lazy"] {
   .header-bar {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
+  }
+
+  .header-brand-name {
+    border-right: none;
+    position: relative;
+    z-index: 101;
   }
 
   .header-title-row {
@@ -3795,12 +3821,6 @@ img[loading="lazy"] {
     position: relative;
     z-index: 101;
     margin-right: -6px;
-  }
-
-  .header-brand-name {
-    grid-column: unset;
-    position: relative;
-    z-index: 101;
   }
 
   .mobile-overlay {
