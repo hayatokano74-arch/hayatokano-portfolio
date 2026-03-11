@@ -218,7 +218,7 @@ function WorksList<T extends WorkLike>({
     <div>
       {/* NOTON帳票風: ヘッダーラベル行 */}
       <div className="works-list-header">
-        <div className="works-list-header-label" style={{ gridColumn: "1 / span 2" }}>DATE:</div>
+        <div className="works-list-header-label" style={{ gridColumn: "1 / span 2" }}>YEAR:</div>
         <div className="works-list-header-label" style={{ gridColumn: "3 / span 6" }}>TITLE:</div>
         <div className="works-list-header-label" style={{ gridColumn: "9 / span 3" }}>TAGS:</div>
       </div>
@@ -234,7 +234,7 @@ function WorksList<T extends WorkLike>({
           <details className="works-row" name="works-list">
             {/* サマリー行: 12カラムグリッド */}
             <summary className="works-list-summary">
-              <div className="works-list-summary-date">{w.date}</div>
+              <div className="works-list-summary-date">{w.year}</div>
               <div className="works-list-summary-title">{w.title}{w.pinned && <PinnedBadge />}</div>
               {w.tags.length > 0 && (
               <div className="works-list-summary-tags">
