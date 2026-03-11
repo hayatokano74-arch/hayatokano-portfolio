@@ -63,6 +63,7 @@ export type Work = {
     height: number;
     poster?: string;
   }[];
+  pinned?: boolean;
 };
 
 export type TimelineItem = {

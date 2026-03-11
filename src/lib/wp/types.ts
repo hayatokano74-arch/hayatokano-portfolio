@@ -62,6 +62,7 @@ export type WpWorkResponse = {
     height?: number;
     poster?: string;
   }[];
+  pinned?: boolean;
 };
 
 /** GET /hayato/v1/text */

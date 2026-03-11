@@ -20,7 +20,7 @@ function escapeXml(str: string): string {
 }
 
 export async function GET() {
-  let nodes;
+  let nodes: Awaited<ReturnType<typeof getAllNodes>>;
   try {
     nodes = await getAllNodes();
   } catch {

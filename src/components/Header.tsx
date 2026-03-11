@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type Category } from "@/lib/categories";
 import { NAV_ITEMS, type Section } from "@/lib/nav";
@@ -103,42 +103,20 @@ export function Header({
       {mobileMenuOpen ? (
         <div className="mobile-overlay">
           <nav id="mobile-main-menu" className="mobile-overlay-nav">
-            {NAV_ITEMS.map(({ num, label, href, section }) => (
-              <Link
-                key={section}
-                href={href}
-                className={`mobile-nav-item ${active === section ? "is-active" : ""}`}
-              >
-                <span className="mobile-nav-num">{num}</span>
-                <span className="mobile-nav-label">{label}</span>
-              </Link>
+            {NAV_ITEMS.map(({ num, label, href, section }, i) => (
+              <React.Fragment key={section}>
+                {i > 0 && <div className="mobile-nav-line" />}
+                <Link
+                  href={href}
+                  className={`mobile-nav-item ${active === section ? "is-active" : ""}`}
+                >
+                  <span className="mobile-nav-num">{num}</span>
+                  <span className="mobile-nav-label">{label}</span>
+                </Link>
+              </React.Fragment>
             ))}
             <div style={{ marginTop: "var(--space-7)" }}>
               <ThemeDot />
-            </div>
-            <div className="mobile-menu-footer">
-              <div className="mobile-menu-footer-links">
-                <a href="mailto:info@hayatokano.com" className="mobile-menu-footer-link">
-                  info@hayatokano.com
-                </a>
-                <a
-                  href="https://www.instagram.com/_hayatokano/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mobile-menu-footer-link"
-                >
-                  Instagram
-                </a>
-                <a
-                  href="https://x.com/_oshica"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mobile-menu-footer-link"
-                >
-                  X
-                </a>
-              </div>
-              <span className="mobile-menu-footer-copy">© {new Date().getFullYear()} Hayato Kano</span>
             </div>
           </nav>
         </div>

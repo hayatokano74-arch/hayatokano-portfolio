@@ -122,6 +122,7 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
       bio: (d.bio ?? "").trim() || undefined,
     },
     media,
+    ...(raw.pinned ? { pinned: true } : {}),
   };
 }
 
@@ -133,7 +134,11 @@ export const getWorks = cache(async (): Promise<Work[]> => {
   const normalized = data
     .map(normalizeWork)
     .filter((w): w is Work => Boolean(w));
-  return normalized.length > 0 ? normalized : fallbackWorks;
+  if (normalized.length === 0) return fallbackWorks;
+  /* ピン留め作品を先頭に（元の順序は維持） */
+  const pinned = normalized.filter((w) => w.pinned);
+  const rest = normalized.filter((w) => !w.pinned);
+  return [...pinned, ...rest];
 });
 
 /** slug 指定で1件取得（React.cache でリクエスト単位の重複排除） */

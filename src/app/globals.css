@@ -1176,34 +1176,10 @@ button {
   height: 100%;
 }
 
-.mobile-menu-footer {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.mobile-menu-footer-links {
-  display: flex;
-  gap: var(--space-5);
-}
-
-.mobile-menu-footer-link {
-  font-size: var(--font-meta);
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.mobile-menu-footer-link:hover {
-  color: var(--fg);
-}
-
-.mobile-menu-footer-copy {
-  font-size: var(--font-meta);
-  letter-spacing: 0.08em;
-  color: var(--muted);
+/* モバイルメニュー: 項目間の区切り線（トップページと統一） */
+.mobile-nav-line {
+  height: 1px;
+  background: var(--line-light);
 }
 
 .mobile-nav-item {
