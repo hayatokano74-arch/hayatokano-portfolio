@@ -537,6 +537,7 @@ input {
 .editor-content {
   width: 100%;
   margin: 0 auto;
+  padding-bottom: 32px; /* タイプライターモード時はJSで50vhに切替 */
 }
 
 /* タイトル入力（エディタ内） */
@@ -638,9 +639,8 @@ input {
 .editor-textarea {
   display: block;
   width: 100%;
-  min-height: 100%;
-  padding: 8px 24px;
-  padding-bottom: 32px; /* タイプライターモード時はJSで50vhに切替 */
+  min-height: 200px; /* JS auto-resize で上書き */
+  padding: 8px 24px 32px;
   font-family: var(--font-editor);
   font-size: 16px;
   line-height: 1.9;
@@ -651,12 +651,7 @@ input {
   outline: none;
   resize: none;
   -webkit-text-size-adjust: none;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.editor-textarea::-webkit-scrollbar {
-  display: none;
+  overflow: hidden; /* 内部スクロール無効化 — スクロールは親コンテナが担当 */
 }
 
 .editor-textarea::placeholder {
@@ -1112,8 +1107,7 @@ input {
 
   /* --- テキストエリア --- */
   .editor-textarea {
-    padding: 8px 16px;
-    padding-bottom: 32px; /* タイプライターモード時はJSで切替 */
+    padding: 8px 16px 32px;
     font-size: 16px;
     line-height: 1.8;
   }

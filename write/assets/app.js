@@ -155,6 +155,9 @@
         newPost()
       }
     }
+
+    /* 初期 textarea 高さ設定 */
+    autoResizeEditor()
   }
 
   /* ============================================
@@ -236,6 +239,11 @@
         e.preventDefault()
         e.returnValue = ''
       }
+    })
+
+    /* ウィンドウリサイズ時にtextareaの高さを再計算 */
+    window.addEventListener('resize', () => {
+      autoResizeEditor()
     })
 
     /* クリップボードから画像ペースト */
@@ -470,6 +478,7 @@
    * タイプライターモードの適用/解除
    */
   function applyTypewriterMode(enabled) {
+    const content = $('#editor-content')
     if (enabled) {
       /* ミラーdivがなければ作成 */
       if (!document.getElementById('typewriter-mirror')) {
@@ -483,21 +492,24 @@
         `
         dom.editorScroll.appendChild(mirror)
       }
-      /* 下部余白を追加（カーソルが最下行でも中央に来る） */
-      dom.editor.style.paddingBottom = '50vh'
+      /* 下部余白をコンテンツラッパーに追加（カーソルが最下行でも中央に来る） */
+      if (content) content.style.paddingBottom = '50vh'
     } else {
       /* ミラーdivを削除 */
       const mirror = document.getElementById('typewriter-mirror')
       if (mirror) mirror.remove()
       /* 下部余白を通常に戻す */
-      dom.editor.style.paddingBottom = '32px'
+      if (content) content.style.paddingBottom = '32px'
     }
+    /* 高さ再計算 */
+    autoResizeEditor()
   }
 
   function applyFontSize(size) {
     dom.editor.style.fontSize = size + 'px'
     const valueEl = $('#settings-font-value')
     if (valueEl) valueEl.textContent = size + 'px'
+    autoResizeEditor()
   }
 
   function applyLineWidth(width) {
@@ -513,6 +525,26 @@
       const valueEl = $('#settings-width-value')
       if (valueEl) valueEl.textContent = width + '文字'
     }
+  }
+
+  /**
+   * textarea 自動リサイズ
+   * textarea の overflow: hidden + 高さを内容に合わせて伸縮させる。
+   * スクロールは親 .editor-scroll が担当する。
+   */
+  function autoResizeEditor() {
+    const textarea = dom.editor
+    if (!textarea) return
+    const scrollContainer = dom.editorScroll
+    /* 一度高さを0にしてscrollHeightを正確に取得 */
+    textarea.style.height = '0px'
+    const scrollH = textarea.scrollHeight
+    /* コンテナの表示高さ（最低保証: 書き始めが上すぎないように） */
+    const containerH = scrollContainer ? scrollContainer.clientHeight : 400
+    /* タイトル入力の高さを考慮 */
+    const titleH = dom.titleInput ? dom.titleInput.offsetHeight : 0
+    const minH = Math.max(200, containerH - titleH - 16)
+    textarea.style.height = Math.max(scrollH, minH) + 'px'
   }
 
   /* ============================================
@@ -894,6 +926,7 @@
 
     renderPosts()
     state.dirty = false
+    autoResizeEditor()
 
     /* モバイル: サイドバーを閉じてエディタに集中 */
     if (window.innerWidth <= 768) {
@@ -914,11 +947,15 @@
 
     dom.editor.focus()
     renderPosts()
+    autoResizeEditor()
   }
 
   function onEditorInput() {
     state.dirty = true
     updateStatus('draft')
+
+    /* textarea 高さを自動調整 */
+    autoResizeEditor()
 
     /* 文字数カウンター更新 */
     requestAnimationFrame(updateCharCount)
@@ -1430,7 +1467,8 @@
       mirror.textContent += '\u200b'
     }
 
-    const cursorY = mirror.scrollHeight
+    /* textarea のコンテナ内でのオフセット（タイトル入力の高さ分）を加算 */
+    const cursorY = mirror.scrollHeight + textarea.offsetTop
 
     /* スクロール: カーソル行が画面の縦中央に来るように */
     const containerHeight = scrollContainer.clientHeight

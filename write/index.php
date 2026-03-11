@@ -143,7 +143,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Garden</title>
-  <link rel="stylesheet" href="assets/style.css?v=19">
+  <link rel="stylesheet" href="assets/style.css?v=20">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#1a1a1a">
   <?php if ($authenticated): ?>
@@ -267,7 +267,7 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
-<script src="assets/app.js?v=19"></script>
+<script src="assets/app.js?v=20"></script>
 <?php endif; ?>
 </body>
 </html>
