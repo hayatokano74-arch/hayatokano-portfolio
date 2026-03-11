@@ -509,7 +509,7 @@
       if (valueEl) valueEl.textContent = '全幅'
     } else {
       /* ch単位 + パディング分を加算（ラッパーで統一制御） */
-      if (content) content.style.maxWidth = `calc(${width}ch + 96px)`
+      if (content) content.style.maxWidth = `calc(${width}ch + 48px)`
       const valueEl = $('#settings-width-value')
       if (valueEl) valueEl.textContent = width + '文字'
     }

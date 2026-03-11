@@ -504,10 +504,10 @@ input {
 .editor-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 4px 12px;
   border-bottom: 1px solid var(--border);
-  min-height: 48px;
+  min-height: 36px;
 }
 
 .sidebar-toggle {
@@ -543,7 +543,7 @@ input {
 .editor-title-input {
   display: block;
   width: 100%;
-  padding: 32px 48px 0;
+  padding: 16px 24px 0;
   font-family: var(--font-editor);
   font-size: 22px;
   font-weight: 700;
@@ -603,12 +603,12 @@ input {
 .editor-tabs {
   display: flex;
   border-bottom: 1px solid var(--border);
-  padding: 0 16px;
+  padding: 0 12px;
 }
 
 .tab {
-  padding: 8px 16px;
-  font-size: 13px;
+  padding: 5px 14px;
+  font-size: 12px;
   color: var(--muted);
   border-bottom: 2px solid transparent;
   transition: color var(--transition), border-color var(--transition);
@@ -639,8 +639,8 @@ input {
   display: block;
   width: 100%;
   min-height: 100%;
-  padding: 12px 48px;
-  padding-bottom: 50vh; /* カーソルが最下行でも中央に来るよう余白 */
+  padding: 8px 24px;
+  padding-bottom: 32px; /* タイプライターモード時はJSで50vhに切替 */
   font-family: var(--font-editor);
   font-size: 16px;
   line-height: 1.9;
@@ -667,7 +667,7 @@ input {
 .preview-area {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 40px;
+  padding: 16px 24px;
   font-family: var(--font-editor);
   font-size: 16px;
   line-height: 1.9;
@@ -767,8 +767,8 @@ input {
 .md-toolbar {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 6px 8px;
+  gap: 1px;
+  padding: 4px 8px;
   border-top: 1px solid var(--border);
   background: var(--toolbar-bg);
   overflow-x: auto;
@@ -780,12 +780,12 @@ input {
 }
 
 .md-toolbar button {
-  min-width: 36px;
-  height: 34px;
+  min-width: 32px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 14px;
   font-family: var(--font-mono);
   border-radius: var(--radius);
   transition: background var(--transition);
@@ -1057,7 +1057,7 @@ input {
   /* --- エディタヘッダー: 最小構成 --- */
   .editor-header {
     padding: 0 8px;
-    min-height: 44px;
+    min-height: 40px;
     gap: 4px;
   }
 
@@ -1083,7 +1083,7 @@ input {
   }
 
   .editor-title-input {
-    padding: 16px 18px 0;
+    padding: 12px 16px 0;
     font-size: 20px;
   }
 
@@ -1112,14 +1112,14 @@ input {
 
   /* --- テキストエリア --- */
   .editor-textarea {
-    padding: 8px 18px;
-    padding-bottom: 40vh;
+    padding: 8px 16px;
+    padding-bottom: 32px; /* タイプライターモード時はJSで切替 */
     font-size: 16px;
     line-height: 1.8;
   }
 
   .preview-area {
-    padding: 16px 18px;
+    padding: 12px 16px;
     font-size: 16px;
   }
 
