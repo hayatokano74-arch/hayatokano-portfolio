@@ -7,6 +7,19 @@ import { blurDataURL } from "@/lib/blur";
 /** WorksClient が受け取れる最小型（details を柔軟に） */
 type WorkLike = Omit<Work, "details"> & { details: unknown };
 
+/** ピン留めマーク（タイトル後の小ドット） */
+function PinnedDot() {
+  return (
+    <span
+      className="pinned-dot"
+      aria-label="ピン留め"
+      title="Pinned"
+    >
+      ·
+    </span>
+  );
+}
+
 /** リスト表示のExcerpt最大文字数（デフォルト: 200） */
 const DEFAULT_EXCERPT_MAX_LENGTH = 200;
 
@@ -145,14 +158,14 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false 
                 <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} />
                 <div className="work-grid-overlay">
                   <div className="work-grid-overlay-text">
-                    <span className="work-grid-overlay-title">{w.title}</span>
+                    <span className="work-grid-overlay-title">{w.title}{w.pinned && <PinnedDot />}</span>
                     {w.year && <span className="work-grid-overlay-year">{w.year}</span>}
                   </div>
                 </div>
               </div>
               {/* モバイル用: ホバーが効かないのでテキスト表示 */}
               <div className="work-grid-info">
-                <span className="work-grid-title">{w.title}</span>
+                <span className="work-grid-title">{w.title}{w.pinned && <PinnedDot />}</span>
                 <span className="work-grid-detail">
                   {w.year && <span>{w.year}</span>}
                 </span>
@@ -226,7 +239,7 @@ function WorksList<T extends WorkLike>({
             {/* サマリー行: 12カラムグリッド */}
             <summary className="works-list-summary">
               <div className="works-list-summary-date">{w.date}</div>
-              <div className="works-list-summary-title">{w.title}</div>
+              <div className="works-list-summary-title">{w.title}{w.pinned && <PinnedDot />}</div>
               {w.tags.length > 0 && (
               <div className="works-list-summary-tags">
                 {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}

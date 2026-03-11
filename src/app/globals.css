@@ -771,6 +771,17 @@ button {
   white-space: nowrap;
 }
 
+/* ピン留めドット（タイトル後の小さな中黒） */
+.pinned-dot {
+  display: inline-block;
+  margin-left: 0.3em;
+  font-weight: 900;
+  font-size: 1.2em;
+  line-height: 1;
+  vertical-align: middle;
+  opacity: 0.5;
+}
+
 .work-grid-overlay-year {
   flex-shrink: 0;
   opacity: 0.8;
