@@ -316,6 +316,57 @@ input {
   display: none;
 }
 
+/* サイドバー検索 */
+.sidebar-search {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 6px 28px 6px 10px;
+  font-size: 13px;
+  background: var(--input-bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.search-clear {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background var(--transition);
+}
+
+.search-clear:hover {
+  background: var(--sidebar-hover);
+  color: var(--fg);
+}
+
 /* 投稿リスト */
 .post-list {
   flex: 1;
@@ -682,6 +733,34 @@ input {
   border: none;
   border-top: 1px solid var(--border);
   margin: 24px 0;
+}
+.preview-area table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.preview-area th, .preview-area td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.preview-area th {
+  background: var(--sidebar-bg);
+  font-weight: 600;
+}
+.preview-area mark {
+  background: rgba(255, 230, 0, 0.3);
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+.preview-area li.checklist {
+  list-style: none;
+  margin-left: -24px;
+}
+.preview-area li.checklist input[type="checkbox"] {
+  margin-right: 6px;
+  accent-color: var(--accent);
 }
 
 /* マークダウンツールバー */
@@ -1255,6 +1334,15 @@ input {
 
 #app.fullscreen .editor-tabs {
   display: none;
+}
+
+/* 文字数カウンター */
+.char-counter {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  padding: 0 8px;
+  user-select: none;
 }
 
 /* ツールバーのスペーサー（全画面ボタンを右寄せ） */

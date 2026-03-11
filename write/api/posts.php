@@ -8,63 +8,10 @@
  * PUT    /api/posts.php           → 更新
  * DELETE /api/posts.php?id=123    → 削除
  */
-session_start();
-require_once __DIR__ . '/config.php';
-
-/* 認証チェック */
-if (!isset($_SESSION['garden_auth']) || $_SESSION['garden_auth'] !== true) {
-    http_response_code(401);
-    echo json_encode(['ok' => false, 'error' => '認証が必要です']);
-    exit;
-}
-
-header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/lib/auth-check.php';
+require_once __DIR__ . '/lib/wp-client.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
-
-/* ============================================
- * WP REST API ヘルパー
- * ============================================ */
-function wp_request($endpoint, $method = 'GET', $body = null) {
-    $url = WP_API_BASE . $endpoint;
-    $headers = [
-        'Authorization: Basic ' . WP_AUTH_TOKEN,
-        'Content-Type: application/json',
-    ];
-
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
-    switch ($method) {
-        case 'POST':
-            curl_setopt($ch, CURLOPT_POST, true);
-            if ($body) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
-            break;
-        case 'PUT':
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-            if ($body) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
-            break;
-        case 'DELETE':
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-            break;
-    }
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
-    curl_close($ch);
-
-    if ($error) {
-        return ['error' => $error, 'status' => 0];
-    }
-
-    return [
-        'data' => json_decode($response, true),
-        'status' => $httpCode,
-    ];
-}
 
 /**
  * WP投稿データを統一フォーマットに変換

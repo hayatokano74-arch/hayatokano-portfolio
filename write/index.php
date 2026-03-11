@@ -36,11 +36,78 @@ if (!$authenticated && isset($_COOKIE['garden_token'])) {
     }
 }
 
+/* CSRFトークン生成（セッションに1つ保持） */
+$_SESSION['csrf_token'] = $_SESSION['csrf_token'] ?? bin2hex(random_bytes(32));
+
+/* ============================================
+ * PIN認証レート制限
+ * ============================================ */
+define('RATE_LIMIT_FILE', __DIR__ . '/.rate-limit.json');
+define('RATE_LIMIT_MAX', 5);       /* 最大試行回数 */
+define('RATE_LIMIT_WINDOW', 300);  /* 計測期間（秒）= 5分 */
+define('RATE_LIMIT_LOCKOUT', 900); /* ロックアウト時間（秒）= 15分 */
+
+function rate_limit_check(string $ip): bool {
+    $data = [];
+    if (file_exists(RATE_LIMIT_FILE)) {
+        $data = json_decode(file_get_contents(RATE_LIMIT_FILE), true) ?: [];
+    }
+    $now = time();
+    /* 古いエントリを掃除 */
+    foreach ($data as $k => $entry) {
+        if ($now - ($entry['last'] ?? 0) > RATE_LIMIT_LOCKOUT + RATE_LIMIT_WINDOW) {
+            unset($data[$k]);
+        }
+    }
+    if (!isset($data[$ip])) return true; /* 初回 */
+    $entry = $data[$ip];
+    /* ロックアウト中か */
+    if (($entry['locked_until'] ?? 0) > $now) return false;
+    return true;
+}
+
+function rate_limit_record(string $ip): void {
+    $data = [];
+    if (file_exists(RATE_LIMIT_FILE)) {
+        $data = json_decode(file_get_contents(RATE_LIMIT_FILE), true) ?: [];
+    }
+    $now = time();
+    if (!isset($data[$ip])) {
+        $data[$ip] = ['attempts' => [], 'locked_until' => 0, 'last' => $now];
+    }
+    /* 計測期間外の試行を除去 */
+    $data[$ip]['attempts'] = array_values(array_filter(
+        $data[$ip]['attempts'],
+        fn($t) => ($now - $t) < RATE_LIMIT_WINDOW
+    ));
+    $data[$ip]['attempts'][] = $now;
+    $data[$ip]['last'] = $now;
+    /* 上限超過でロックアウト */
+    if (count($data[$ip]['attempts']) >= RATE_LIMIT_MAX) {
+        $data[$ip]['locked_until'] = $now + RATE_LIMIT_LOCKOUT;
+        $data[$ip]['attempts'] = [];
+    }
+    file_put_contents(RATE_LIMIT_FILE, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX);
+    @chmod(RATE_LIMIT_FILE, 0600);
+}
+
+function rate_limit_clear(string $ip): void {
+    if (!file_exists(RATE_LIMIT_FILE)) return;
+    $data = json_decode(file_get_contents(RATE_LIMIT_FILE), true) ?: [];
+    unset($data[$ip]);
+    file_put_contents(RATE_LIMIT_FILE, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX);
+}
+
 /* PIN送信処理 */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pin'])) {
-    if ($_POST['pin'] === GARDEN_PIN) {
+    $clientIp = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+
+    if (!rate_limit_check($clientIp)) {
+        $error = 'しばらく待ってから再試行してください';
+    } elseif ($_POST['pin'] === GARDEN_PIN) {
         $_SESSION['garden_auth'] = true;
         $_SESSION['garden_auth_time'] = time();
+        rate_limit_clear($clientIp);
 
         /* 「このデバイスを記憶」にチェックがある場合トークン発行 */
         if (!empty($_POST['remember'])) {
@@ -56,8 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pin'])) {
 
         header('Location: ./');
         exit;
+    } else {
+        rate_limit_record($clientIp);
+        $error = 'PINが正しくありません';
     }
-    $error = 'PINが正しくありません';
 }
 
 /* セッション有効期限（24時間） */
@@ -74,9 +143,12 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Garden</title>
-  <link rel="stylesheet" href="assets/style.css?v=17">
+  <link rel="stylesheet" href="assets/style.css?v=18">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#1a1a1a">
+  <?php if ($authenticated): ?>
+  <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+  <?php endif; ?>
   <link rel="manifest" href="data:application/json,{}">
 </head>
 <body data-theme="dark">
@@ -113,29 +185,33 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
 <div id="app">
 
   <!-- サイドバー -->
-  <aside id="sidebar" class="sidebar">
+  <aside id="sidebar" class="sidebar" role="navigation" aria-label="フォルダと投稿">
     <div class="sidebar-header">
       <span class="sidebar-title">Garden</span>
-      <button id="btn-new" class="sidebar-btn" title="新規">+</button>
+      <button id="btn-new" class="sidebar-btn" title="新規" aria-label="新規投稿">+</button>
+    </div>
+    <div class="sidebar-search" id="sidebar-search">
+      <input type="text" id="search-input" class="search-input" placeholder="検索..." aria-label="投稿を検索">
+      <button id="search-clear" class="search-clear" type="button" aria-label="検索をクリア" style="display:none;">×</button>
     </div>
     <div id="folder-tree" class="folder-tree"></div>
-    <div id="post-list" class="post-list"></div>
+    <div id="post-list" class="post-list" role="listbox" aria-label="投稿一覧"></div>
     <div class="sidebar-footer">
-      <button id="btn-settings" class="sidebar-btn-sm" title="設定">⚙</button>
-      <button id="btn-theme" class="sidebar-btn-sm" title="テーマ切替">◐</button>
-      <button id="btn-logout" class="sidebar-btn-sm" title="ログアウト">←</button>
+      <button id="btn-settings" class="sidebar-btn-sm" title="設定" aria-label="設定">⚙</button>
+      <button id="btn-theme" class="sidebar-btn-sm" title="テーマ切替" aria-label="テーマ切替">◐</button>
+      <button id="btn-logout" class="sidebar-btn-sm" title="ログアウト" aria-label="ログアウト">←</button>
     </div>
   </aside>
 
   <!-- メインエディタ -->
-  <main id="editor-area" class="editor-area">
+  <main id="editor-area" class="editor-area" role="main" aria-label="エディタ">
 
     <!-- ヘッダー -->
     <div class="editor-header">
       <!-- モバイル用: 戻るボタン（サイドバーを開く） -->
-      <button id="btn-mobile-back" class="mobile-back-btn" title="一覧に戻る">‹ 一覧</button>
+      <button id="btn-mobile-back" class="mobile-back-btn" title="一覧に戻る" aria-label="一覧に戻る">‹ 一覧</button>
       <!-- デスクトップ用: サイドバートグル -->
-      <button id="btn-sidebar-toggle" class="editor-btn sidebar-toggle">☰</button>
+      <button id="btn-sidebar-toggle" class="editor-btn sidebar-toggle" aria-label="サイドバー開閉">☰</button>
       <div class="editor-meta">
         <span id="post-date" class="meta-date"></span>
         <span id="post-status" class="meta-status">下書き</span>
@@ -168,20 +244,20 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
     <div id="preview" class="preview-area" style="display:none;"></div>
 
     <!-- マークダウンツールバー（キーボード上） -->
-    <div id="md-toolbar" class="md-toolbar">
-      <button data-insert="#">#</button>
-      <button data-insert="**">*</button>
-      <button data-insert="_">_</button>
-      <button data-insert="+">+</button>
-      <button data-insert="- ">-</button>
-      <button data-insert="```">``</button>
-      <button id="btn-link" data-action="link">[]</button>
-      <button data-insert="> ">&gt;</button>
-      <button data-insert="!">!</button>
-      <button data-insert="---">—</button>
-      <button id="btn-photo" data-action="photo">📷</button>
+    <div id="md-toolbar" class="md-toolbar" role="toolbar" aria-label="マークダウンツールバー">
+      <button data-insert="#" aria-label="見出し">#</button>
+      <button data-insert="**" aria-label="太字">*</button>
+      <button data-insert="_" aria-label="斜体">_</button>
+      <button data-insert="+" aria-label="番号付きリスト">+</button>
+      <button data-insert="- " aria-label="箇条書き">-</button>
+      <button data-insert="```" aria-label="コードブロック">``</button>
+      <button id="btn-link" data-action="link" aria-label="ウィキリンク">[]</button>
+      <button data-insert="> " aria-label="引用">&gt;</button>
+      <button data-insert="!" aria-label="画像">!</button>
+      <button data-insert="---" aria-label="水平線">—</button>
+      <button id="btn-photo" data-action="photo" aria-label="写真アップロード">📷</button>
       <span class="toolbar-spacer"></span>
-      <button id="btn-fullscreen" data-action="fullscreen" title="全画面">⤢</button>
+      <button id="btn-fullscreen" data-action="fullscreen" title="全画面" aria-label="全画面">⤢</button>
     </div>
 
     <!-- 画像アップロード（非表示） -->
@@ -190,7 +266,8 @@ if ($authenticated && isset($_SESSION['garden_auth_time'])) {
   </main>
 </div>
 
-<script src="assets/app.js?v=17"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<script src="assets/app.js?v=18"></script>
 <?php endif; ?>
 </body>
 </html>

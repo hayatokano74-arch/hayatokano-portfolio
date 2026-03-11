@@ -7,17 +7,7 @@
  *
  * 設定は .settings.json に保存（PIN認証ユーザー共通）
  */
-session_start();
-require_once __DIR__ . '/config.php';
-
-/* 認証チェック */
-if (!isset($_SESSION['garden_auth']) || $_SESSION['garden_auth'] !== true) {
-    http_response_code(401);
-    echo json_encode(['ok' => false, 'error' => '認証が必要です']);
-    exit;
-}
-
-header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/lib/auth-check.php';
 
 /* 設定ファイルパス */
 define('SETTINGS_FILE', __DIR__ . '/../.settings.json');

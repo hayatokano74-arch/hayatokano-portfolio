@@ -22,6 +22,9 @@
   const AUTOSAVE_DELAY = 3000
   const TYPEWRITER_MODE = true
 
+  /* CSRFトークン（metaタグから取得） */
+  const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || ''
+
   const state = {
     posts: [],
     folders: [],
@@ -32,6 +35,24 @@
     autosaveTimer: null,
     typewriter: TYPEWRITER_MODE,
     sidebarView: 'folders', /* 'folders' | 'posts' */
+    searchQuery: '',        /* サイドバー検索クエリ */
+  }
+
+  /* ============================================
+   * CSRF付きfetchラッパー
+   * ============================================ */
+  function apiFetch(url, options = {}) {
+    const headers = options.headers || {}
+    /* CSRFトークンを非GETリクエストに付与 */
+    const method = (options.method || 'GET').toUpperCase()
+    if (method !== 'GET' && CSRF_TOKEN) {
+      headers['X-CSRF-Token'] = CSRF_TOKEN
+    }
+    /* Content-Typeが未指定でbodyがFormDataでない場合 */
+    if (options.body && !(options.body instanceof FormData) && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json'
+    }
+    return fetch(url, { ...options, headers })
   }
 
   /* ============================================
@@ -77,6 +98,13 @@
     indicator.className = 'save-indicator'
     indicator.id = 'save-indicator'
     document.body.appendChild(indicator)
+
+    /* 文字数カウンター追加 */
+    const counter = document.createElement('span')
+    counter.className = 'char-counter'
+    counter.id = 'char-counter'
+    counter.textContent = '0 字'
+    dom.toolbar.insertBefore(counter, dom.toolbar.querySelector('.toolbar-spacer'))
 
     /* サイドバーバックドロップ（モバイル用） */
     const backdrop = document.createElement('div')
@@ -201,6 +229,41 @@
 
     /* キーボードショートカット */
     document.addEventListener('keydown', onKeyDown)
+
+    /* 未保存変更の離脱警告 */
+    window.addEventListener('beforeunload', (e) => {
+      if (state.dirty) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    })
+
+    /* クリップボードから画像ペースト */
+    dom.editor.addEventListener('paste', onPasteImage)
+
+    /* サイドバー検索 */
+    const searchInput = $('#search-input')
+    const searchClear = $('#search-clear')
+    let searchDebounce = null
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchDebounce)
+        searchDebounce = setTimeout(() => {
+          state.searchQuery = searchInput.value.trim().toLowerCase()
+          searchClear.style.display = state.searchQuery ? '' : 'none'
+          renderPosts()
+        }, 300)
+      })
+    }
+    if (searchClear) {
+      searchClear.addEventListener('click', () => {
+        searchInput.value = ''
+        state.searchQuery = ''
+        searchClear.style.display = 'none'
+        renderPosts()
+        searchInput.focus()
+      })
+    }
   }
 
   /* ============================================
@@ -343,9 +406,8 @@
     clearTimeout(settingsSaveTimer)
     settingsSaveTimer = setTimeout(async () => {
       try {
-        await fetch(`${API}/settings.php`, {
+        await apiFetch(`${API}/settings.php`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(partial),
         })
       } catch (e) {
@@ -364,7 +426,7 @@
 
     /* サーバーから設定を取得 */
     try {
-      const res = await fetch(`${API}/settings.php`)
+      const res = await apiFetch(`${API}/settings.php`)
       const data = await res.json()
       if (data.ok && data.settings) {
         const s = data.settings
@@ -531,7 +593,7 @@
    * ============================================ */
   async function loadFolders() {
     try {
-      const res = await fetch(`${API}/folders.php`)
+      const res = await apiFetch(`${API}/folders.php`)
       const data = await res.json()
       if (data.ok) {
         state.folders = data.folders
@@ -688,9 +750,8 @@
       const body = { action: 'create', name }
       if (parentId) body.parent = parentId
 
-      const res = await fetch(`${API}/folders.php`, {
+      const res = await apiFetch(`${API}/folders.php`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
       const data = await res.json()
@@ -726,7 +787,7 @@
       params.set('orderby', orderby)
       params.set('order', order)
 
-      const res = await fetch(`${API}/posts.php?${params}`)
+      const res = await apiFetch(`${API}/posts.php?${params}`)
       const data = await res.json()
       if (data.ok) {
         state.posts = data.posts
@@ -739,15 +800,31 @@
 
   function renderPosts() {
     dom.postList.innerHTML = ''
-    if (state.posts.length === 0) {
-      dom.postList.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px;">投稿がありません</div>'
+
+    /* 検索フィルタ */
+    let filteredPosts = state.posts
+    if (state.searchQuery) {
+      const q = state.searchQuery
+      filteredPosts = state.posts.filter((post) => {
+        const title = (post.title || '').toLowerCase()
+        const content = (post.content || '').substring(0, 500).toLowerCase()
+        return title.includes(q) || content.includes(q)
+      })
+    }
+
+    if (filteredPosts.length === 0) {
+      const msg = state.searchQuery ? '一致する投稿がありません' : '投稿がありません'
+      dom.postList.innerHTML = `<div style="padding:16px;color:var(--muted);font-size:13px;">${msg}</div>`
       return
     }
 
-    state.posts.forEach((post) => {
+    filteredPosts.forEach((post) => {
       const el = document.createElement('div')
       el.className = 'post-item' + (post.id === state.currentPostId ? ' active' : '')
       el.dataset.postId = post.id
+      el.setAttribute('role', 'option')
+      el.setAttribute('aria-selected', post.id === state.currentPostId ? 'true' : 'false')
+      el.setAttribute('tabindex', '0')
 
       const title = post.title || formatDate(post.date)
       const excerpt = (post.content || '').replace(/[#*_`>\[\]!\-]/g, '').substring(0, 60)
@@ -774,6 +851,22 @@
       el.addEventListener('contextmenu', (e) => {
         e.preventDefault()
         showPostContextMenu(e, post)
+      })
+
+      /* キーボード: Enter で選択、↑↓で移動 */
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          selectPost(post.id)
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          const next = el.nextElementSibling
+          if (next && next.classList.contains('post-item')) next.focus()
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          const prev = el.previousElementSibling
+          if (prev && prev.classList.contains('post-item')) prev.focus()
+        }
       })
 
       dom.postList.appendChild(el)
@@ -827,11 +920,33 @@
     state.dirty = true
     updateStatus('draft')
 
+    /* 文字数カウンター更新 */
+    requestAnimationFrame(updateCharCount)
+
     /* 自動保存デバウンス */
     clearTimeout(state.autosaveTimer)
     state.autosaveTimer = setTimeout(() => {
       savePost()
     }, AUTOSAVE_DELAY)
+  }
+
+  /**
+   * 文字数カウント（Markdownシンタックスを除外した本文文字数）
+   */
+  function updateCharCount() {
+    const text = dom.editor.value
+    /* Markdown記号・空行を除去してカウント */
+    const plain = text
+      .replace(/```[\s\S]*?```/g, '')         /* コードブロック */
+      .replace(/^#{1,3}\s/gm, '')             /* 見出し記号 */
+      .replace(/\*\*|__|~~|==|`/g, '')        /* 装飾記号 */
+      .replace(/!\[.*?\]\(.*?\)/g, '')        /* 画像 */
+      .replace(/\[(.+?)\]\(.*?\)/g, '$1')    /* リンク（テキストのみ残す） */
+      .replace(/^[\s>-]+/gm, '')              /* 引用・リスト記号 */
+      .replace(/\s+/g, '')                    /* 空白除去 */
+    const count = plain.length
+    const counter = $('#char-counter')
+    if (counter) counter.textContent = count.toLocaleString() + ' 字'
   }
 
   async function savePost() {
@@ -850,16 +965,14 @@
       let res
       if (state.currentPostId) {
         /* 更新 */
-        res = await fetch(`${API}/posts.php`, {
+        res = await apiFetch(`${API}/posts.php`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: state.currentPostId, ...payload }),
         })
       } else {
         /* 新規作成 */
-        res = await fetch(`${API}/posts.php`, {
+        res = await apiFetch(`${API}/posts.php`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
       }
@@ -903,15 +1016,13 @@
     try {
       let res
       if (state.currentPostId) {
-        res = await fetch(`${API}/posts.php`, {
+        res = await apiFetch(`${API}/posts.php`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: state.currentPostId, ...payload }),
         })
       } else {
-        res = await fetch(`${API}/posts.php`, {
+        res = await apiFetch(`${API}/posts.php`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
       }
@@ -964,14 +1075,25 @@
    * ============================================ */
   function renderPreview() {
     const md = dom.editor.value
-    dom.preview.innerHTML = parseMarkdown(md)
+    const html = parseMarkdown(md)
+    /* DOMPurify でXSSサニタイズ */
+    dom.preview.innerHTML = typeof DOMPurify !== 'undefined'
+      ? DOMPurify.sanitize(html, { ADD_ATTR: ['data-link'] })
+      : html
   }
 
+  /**
+   * 軽量マークダウンパーサー
+   * テーブル・チェックリスト・ハイライト対応
+   */
   function parseMarkdown(text) {
     let html = escapeHtml(text)
 
     /* コードブロック */
     html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+
+    /* テーブル */
+    html = parseMarkdownTables(html)
 
     /* 見出し */
     html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>')
@@ -982,14 +1104,20 @@
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     html = html.replace(/_(.+?)_/g, '<em>$1</em>')
 
+    /* ハイライト ==テキスト== */
+    html = html.replace(/==(.+?)==/g, '<mark>$1</mark>')
+
     /* インラインコード */
     html = html.replace(/`(.+?)`/g, '<code>$1</code>')
 
     /* ウィキリンク [[テキスト]] */
     html = html.replace(/\[\[(.+?)\]\]/g, '<a href="#" class="wiki-link" data-link="$1">$1</a>')
 
-    /* リンク */
-    html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+    /* リンク（javascript: スキーム除去） */
+    html = html.replace(/\[(.+?)\]\((.+?)\)/g, (_, label, href) => {
+      if (/^\s*javascript:/i.test(href)) return label
+      return `<a href="${href}" target="_blank" rel="noopener">${label}</a>`
+    })
 
     /* 画像 */
     html = html.replace(/!\[(.+?)\]\((.+?)\)/g, '<img src="$2" alt="$1">')
@@ -1000,9 +1128,13 @@
     /* 水平線 */
     html = html.replace(/^---$/gm, '<hr>')
 
+    /* チェックリスト（リストより先にマッチ） */
+    html = html.replace(/^- \[x\] (.+)$/gm, '<li class="checklist checked"><input type="checkbox" checked disabled> $1</li>')
+    html = html.replace(/^- \[ \] (.+)$/gm, '<li class="checklist"><input type="checkbox" disabled> $1</li>')
+
     /* リスト */
     html = html.replace(/^- (.+)$/gm, '<li>$1</li>')
-    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    html = html.replace(/(<li[\s>].*<\/li>\n?)+/gs, '<ul>$&</ul>')
 
     /* 段落 */
     html = html.replace(/\n\n/g, '</p><p>')
@@ -1010,6 +1142,39 @@
     html = html.replace(/<p><\/p>/g, '')
 
     return html
+  }
+
+  /**
+   * マークダウンテーブルパーサー
+   * | col1 | col2 | 記法を <table> に変換
+   */
+  function parseMarkdownTables(html) {
+    return html.replace(/((?:^\|.+\|[ \t]*$\n?)+)/gm, (block) => {
+      const rows = block.trim().split('\n').filter(r => r.trim())
+      if (rows.length < 2) return block
+
+      /* 2行目がセパレーター（|---|---| 形式）かチェック */
+      const sepLine = rows[1].trim()
+      if (!/^\|[\s\-:]+(\|[\s\-:]+)+\|?$/.test(sepLine)) return block
+
+      const parseCells = (row) =>
+        row.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim())
+
+      const headers = parseCells(rows[0])
+      const bodyRows = rows.slice(2)
+
+      let table = '<table><thead><tr>'
+      headers.forEach(h => { table += `<th>${h}</th>` })
+      table += '</tr></thead><tbody>'
+      bodyRows.forEach(row => {
+        const cells = parseCells(row)
+        table += '<tr>'
+        cells.forEach(c => { table += `<td>${c}</td>` })
+        table += '</tr>'
+      })
+      table += '</tbody></table>'
+      return table
+    })
   }
 
   /* ============================================
@@ -1157,7 +1322,7 @@
       const formData = new FormData()
       formData.append('image', file)
 
-      const res = await fetch(`${API}/upload.php`, {
+      const res = await apiFetch(`${API}/upload.php`, {
         method: 'POST',
         body: formData,
       })
@@ -1177,6 +1342,23 @@
     } catch (e) {
       textarea.value = textarea.value.replace(placeholder, '')
       alert('画像アップロード中にエラーが発生しました')
+    }
+  }
+
+  /* ============================================
+   * クリップボード画像ペースト
+   * ============================================ */
+  function onPasteImage(e) {
+    const items = e.clipboardData?.items
+    if (!items) return
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault()
+        const file = item.getAsFile()
+        if (file) uploadImage(file)
+        return
+      }
     }
   }
 
@@ -1307,26 +1489,42 @@
     const menu = document.createElement('div')
     menu.className = 'context-menu'
     menu.id = 'context-menu'
+    menu.setAttribute('role', 'menu')
+    menu.setAttribute('aria-label', '操作メニュー')
     document.body.appendChild(menu)
 
     /* クリックで閉じる */
     document.addEventListener('click', () => {
       menu.classList.remove('show')
     })
+
+    /* Escape で閉じる */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.classList.contains('show')) {
+        menu.classList.remove('show')
+        /* メニューを開いた要素にフォーカスを戻す */
+        if (menu._trigger) {
+          menu._trigger.focus()
+          menu._trigger = null
+        }
+      }
+    })
   }
 
   function showFolderContextMenu(e, folder) {
     const menu = $('#context-menu')
+    menu._trigger = e.target
     menu.innerHTML = `
-      <button class="context-menu-item" data-action="add-sub">サブフォルダを追加</button>
-      <button class="context-menu-item" data-action="move">移動</button>
-      <button class="context-menu-item" data-action="rename">名前を変更</button>
-      <div class="context-menu-sep"></div>
-      <button class="context-menu-item danger" data-action="delete">削除</button>
+      <button class="context-menu-item" data-action="add-sub" role="menuitem">サブフォルダを追加</button>
+      <button class="context-menu-item" data-action="move" role="menuitem">移動</button>
+      <button class="context-menu-item" data-action="rename" role="menuitem">名前を変更</button>
+      <div class="context-menu-sep" role="separator"></div>
+      <button class="context-menu-item danger" data-action="delete" role="menuitem">削除</button>
     `
 
     positionContextMenu(menu, e.clientX, e.clientY)
     menu.classList.add('show')
+    setupMenuKeyboardNav(menu)
 
     menu.querySelector('[data-action="add-sub"]').onclick = () => {
       promptNewFolder(folder.id)
@@ -1340,9 +1538,8 @@
       const newName = await showModal('フォルダ名を変更', 'フォルダ名', folder.name)
       if (!newName || newName === folder.name) return
       try {
-        const res = await fetch(`${API}/folders.php`, {
+        const res = await apiFetch(`${API}/folders.php`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'rename', id: folder.id, name: newName }),
         })
         const data = await res.json()
@@ -1355,9 +1552,8 @@
     menu.querySelector('[data-action="delete"]').onclick = async () => {
       if (!confirm(`「${folder.name}」を削除しますか？\n中の投稿は「すべて」に移動します。`)) return
       try {
-        const res = await fetch(`${API}/folders.php`, {
+        const res = await apiFetch(`${API}/folders.php`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'delete', id: folder.id }),
         })
         const data = await res.json()
@@ -1380,7 +1576,7 @@
     overlay.className = 'modal-overlay'
     overlay.id = 'modal-overlay'
     overlay.innerHTML = `
-      <div class="modal-box">
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-title" id="modal-title"></div>
         <input class="modal-input" id="modal-input" type="text">
         <div class="modal-actions">
@@ -1392,11 +1588,39 @@
     document.body.appendChild(overlay)
   }
 
+  /**
+   * フォーカストラップ: Tab/Shift+Tab でモーダル内を循環
+   */
+  function trapFocus(container, e) {
+    const focusable = container.querySelectorAll('input, button, select, textarea, [tabindex]:not([tabindex="-1"])')
+    if (focusable.length === 0) return
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+  }
+
+  /* モーダル表示時にフォーカスを戻す元の要素 */
+  let modalTrigger = null
+
   function showModal(title, placeholder, defaultValue = '') {
     return new Promise((resolve) => {
+      modalTrigger = document.activeElement
       const overlay = $('#modal-overlay')
       const input = $('#modal-input')
       const titleEl = $('#modal-title')
+      const box = overlay.querySelector('.modal-box')
 
       titleEl.textContent = title
       input.placeholder = placeholder || ''
@@ -1404,11 +1628,20 @@
       overlay.classList.add('show')
       input.focus()
 
+      const onTrap = (e) => trapFocus(box, e)
+      document.addEventListener('keydown', onTrap)
+
       const cleanup = () => {
         overlay.classList.remove('show')
+        document.removeEventListener('keydown', onTrap)
         $('#modal-ok').onclick = null
         $('#modal-cancel').onclick = null
         input.onkeydown = null
+        /* 元のトリガー要素にフォーカス戻し */
+        if (modalTrigger) {
+          modalTrigger.focus()
+          modalTrigger = null
+        }
       }
 
       $('#modal-ok').onclick = () => {
@@ -1442,9 +1675,9 @@
     overlay.className = 'modal-overlay'
     overlay.id = 'folder-picker-overlay'
     overlay.innerHTML = `
-      <div class="modal-box folder-picker-box">
+      <div class="modal-box folder-picker-box" role="dialog" aria-modal="true" aria-labelledby="folder-picker-title">
         <div class="modal-title" id="folder-picker-title">移動先を選択</div>
-        <div class="folder-picker-list" id="folder-picker-list"></div>
+        <div class="folder-picker-list" id="folder-picker-list" role="listbox" aria-label="フォルダ一覧"></div>
         <div class="modal-actions">
           <button class="modal-btn modal-btn-cancel" id="folder-picker-cancel">キャンセル</button>
         </div>
@@ -1462,16 +1695,26 @@
    */
   function showFolderPicker(title, excludeIds = [], currentId = -1) {
     return new Promise((resolve) => {
+      const pickerTrigger = document.activeElement
       const overlay = $('#folder-picker-overlay')
       const titleEl = $('#folder-picker-title')
       const list = $('#folder-picker-list')
+      const box = overlay.querySelector('.modal-box')
 
       titleEl.textContent = title
       list.innerHTML = ''
 
+      const onTrap = (e) => {
+        trapFocus(box, e)
+        if (e.key === 'Escape') { cleanup(); resolve(null) }
+      }
+      document.addEventListener('keydown', onTrap)
+
       function cleanup() {
         overlay.classList.remove('show')
+        document.removeEventListener('keydown', onTrap)
         $('#folder-picker-cancel').onclick = null
+        if (pickerTrigger) pickerTrigger.focus()
       }
 
       /* 「すべて」= ルートレベル（フォルダなし） */
@@ -1516,7 +1759,7 @@
     if (!confirm(`「${name}」を削除しますか？\nゴミ箱に移動します。`)) return
 
     try {
-      const res = await fetch(`${API}/posts.php?id=${id}`, { method: 'DELETE' })
+      const res = await apiFetch(`${API}/posts.php?id=${id}`, { method: 'DELETE' })
       const data = await res.json()
       if (data.ok) {
         showSaveIndicator('削除しました')
@@ -1554,9 +1797,8 @@
     if (folderId === null) return
 
     try {
-      const res = await fetch(`${API}/posts.php`, {
+      const res = await apiFetch(`${API}/posts.php`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, folder: folderId }),
       })
       const data = await res.json()
@@ -1587,9 +1829,8 @@
     if (newParent === null) return
 
     try {
-      const res = await fetch(`${API}/folders.php`, {
+      const res = await apiFetch(`${API}/folders.php`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'move', id: folderId, parent: newParent }),
       })
       const data = await res.json()
@@ -1628,14 +1869,16 @@
    * ============================================ */
   function showPostContextMenu(e, post) {
     const menu = $('#context-menu')
+    menu._trigger = e.target
     menu.innerHTML = `
-      <button class="context-menu-item" data-action="move">フォルダに移動</button>
-      <div class="context-menu-sep"></div>
-      <button class="context-menu-item danger" data-action="delete">削除</button>
+      <button class="context-menu-item" data-action="move" role="menuitem">フォルダに移動</button>
+      <div class="context-menu-sep" role="separator"></div>
+      <button class="context-menu-item danger" data-action="delete" role="menuitem">削除</button>
     `
 
     positionContextMenu(menu, e.clientX, e.clientY)
     menu.classList.add('show')
+    setupMenuKeyboardNav(menu)
 
     menu.querySelector('[data-action="move"]').onclick = () => movePost(post.id)
     menu.querySelector('[data-action="delete"]').onclick = () => deletePost(post.id)
@@ -1659,6 +1902,46 @@
         menu.style.top = (window.innerHeight - rect.height - 8) + 'px'
       }
     })
+  }
+
+  /**
+   * コンテキストメニューのキーボードナビゲーション
+   * ↑/↓ で項目移動、Enter で実行
+   */
+  function setupMenuKeyboardNav(menu) {
+    const items = menu.querySelectorAll('[role="menuitem"]')
+    if (items.length === 0) return
+    let idx = 0
+    items[0].focus()
+
+    function onMenuKey(e) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        idx = (idx + 1) % items.length
+        items[idx].focus()
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        idx = (idx - 1 + items.length) % items.length
+        items[idx].focus()
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        items[idx].click()
+        menu.removeEventListener('keydown', onMenuKey)
+      } else if (e.key === 'Escape') {
+        menu.classList.remove('show')
+        menu.removeEventListener('keydown', onMenuKey)
+        if (menu._trigger) { menu._trigger.focus(); menu._trigger = null }
+      }
+    }
+    menu.addEventListener('keydown', onMenuKey)
+    /* メニューが閉じたらリスナー解除 */
+    const observer = new MutationObserver(() => {
+      if (!menu.classList.contains('show')) {
+        menu.removeEventListener('keydown', onMenuKey)
+        observer.disconnect()
+      }
+    })
+    observer.observe(menu, { attributes: true, attributeFilter: ['class'] })
   }
 
   /* ============================================
@@ -1702,7 +1985,7 @@
 
   function logout() {
     if (confirm('ログアウトしますか？')) {
-      fetch(`${API}/auth.php?action=logout`).then(() => {
+      apiFetch(`${API}/auth.php?action=logout`).then(() => {
         location.reload()
       })
     }

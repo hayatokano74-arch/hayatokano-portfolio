@@ -1,0 +1,2 @@
+# lib/ 配下のPHPファイルへの直接アクセスをブロック
+Require all denied

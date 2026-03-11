@@ -9,47 +9,8 @@
  * POST /api/folders.php  action=rename → 名前変更
  * POST /api/folders.php  action=delete → 削除
  */
-session_start();
-require_once __DIR__ . '/config.php';
-
-/* 認証チェック */
-if (!isset($_SESSION['garden_auth']) || $_SESSION['garden_auth'] !== true) {
-    http_response_code(401);
-    echo json_encode(['ok' => false, 'error' => '認証が必要です']);
-    exit;
-}
-
-header('Content-Type: application/json; charset=utf-8');
-
-/* WP APIリクエスト */
-function wp_request($endpoint, $method = 'GET', $body = null) {
-    $url = WP_API_BASE . $endpoint;
-    $headers = [
-        'Authorization: Basic ' . WP_AUTH_TOKEN,
-        'Content-Type: application/json',
-    ];
-
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
-    if ($method === 'POST') {
-        curl_setopt($ch, CURLOPT_POST, true);
-        if ($body) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
-    } elseif ($method === 'DELETE') {
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-    }
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    return [
-        'data' => json_decode($response, true),
-        'status' => $httpCode,
-    ];
-}
+require_once __DIR__ . '/lib/auth-check.php';
+require_once __DIR__ . '/lib/wp-client.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 

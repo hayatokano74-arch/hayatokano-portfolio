@@ -18,6 +18,11 @@ SetEnvIf Request_URI ".*" Ngx_Cache_NoCacheMode=on
     Require all denied
 </Files>
 
+# レート制限ファイルへの直接アクセスをブロック
+<Files ".rate-limit.json">
+    Require all denied
+</Files>
+
 # .htaccess 自体へのアクセスをブロック
 <Files ".htaccess">
     Require all denied
