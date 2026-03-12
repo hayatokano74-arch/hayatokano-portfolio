@@ -487,6 +487,7 @@ button {
   min-width: 0;
   position: relative;
   z-index: 1001;
+  background: var(--bg);
   view-transition-name: detail-bottom-bar;
 }
 
