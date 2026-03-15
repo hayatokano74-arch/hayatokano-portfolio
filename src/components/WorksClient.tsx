@@ -152,14 +152,7 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false 
             >
               <div className="work-grid-thumb">
                 <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} />
-                <div className="work-grid-overlay">
-                  <div className="work-grid-overlay-text">
-                    <span className="work-grid-overlay-title">{w.title}{w.pinned && <PinnedBadge />}</span>
-                    {w.year && <span className="work-grid-overlay-year">{w.year}</span>}
-                  </div>
-                </div>
               </div>
-              {/* モバイル用: ホバーが効かないのでテキスト表示 */}
               <div className="work-grid-info">
                 <span className="work-grid-title">{w.title}{w.pinned && <PinnedBadge />}</span>
                 <span className="work-grid-detail">
