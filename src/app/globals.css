@@ -4065,6 +4065,7 @@ img[loading="lazy"] {
     justify-content: center;
     border-left: 1px solid var(--fg);
     padding: var(--space-2) var(--space-3);
+    height: auto;
   }
 
   .mobile-overlay {
