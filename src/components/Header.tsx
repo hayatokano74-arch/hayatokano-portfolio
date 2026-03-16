@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React from "react";
 import { type Category } from "@/lib/categories";
-import { NAV_ITEMS, type Section } from "@/lib/nav";
+import { type Section } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
-import { useFilterContext } from "@/components/FilterableContent";
+import { useMobileMenu } from "@/hooks/useMobileMenu";
+import { DesktopNav } from "@/components/header/DesktopNav";
+import { MobileMenuButton, MobileMenuOverlay } from "@/components/header/MobileMenu";
+import { CategoryRow } from "@/components/header/CategoryRow";
+import { MenohoshiLogo } from "@/components/header/icons";
 
 type HeaderTitle = React.ReactNode;
 
@@ -25,7 +28,6 @@ export function Header({
   activeCategory = "Video",
   categoryHrefs,
   titleRight,
-  /* フィルターモード用 */
   showFilterButton = false,
 }: {
   active: Section;
@@ -42,18 +44,9 @@ export function Header({
   activeCategory?: Category;
   categoryHrefs?: Partial<Record<Category, string>>;
   titleRight?: React.ReactNode;
-  /* フィルターモード用 */
   showFilterButton?: boolean;
 }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
-  const view = worksView;
-  const { filterOpen, onFilterToggle, filterCount } = useFilterContext();
-
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [pathname]);
+  const { isOpen: mobileMenuOpen, toggle: toggleMobileMenu } = useMobileMenu();
 
   return (
     <header className="header-root">
@@ -68,59 +61,18 @@ export function Header({
           )}
         </Link>
 
-        {/* モバイルメニューボタン: ＋ → × 回転 */}
-        <button
-          type="button"
-          className={`mobile-menu-button ${mobileMenuOpen ? "is-open" : ""}`}
-          aria-expanded={mobileMenuOpen}
-          aria-controls="mobile-main-menu"
-          aria-label={mobileMenuOpen ? "メニューを閉じる" : "メニューを開く"}
-          onClick={() => setMobileMenuOpen((open) => !open)}
-        >
-          <span className="mobile-menu-icon" />
-        </button>
+        {/* モバイルメニューボタン */}
+        <MobileMenuButton isOpen={mobileMenuOpen} onToggle={toggleMobileMenu} />
 
-        {/* テーマ切替ドット: ブランドとナビの間 */}
+        {/* テーマ切替ドット */}
         <ThemeDot />
 
-        {/* デスクトップナビ: ナンバリング付き */}
-        <nav className="desktop-main-nav">
-          {NAV_ITEMS.map(({ num, label, href, section }) => (
-            <Link
-              key={section}
-              href={href}
-              className={`header-nav-item ${active === section ? "is-active" : ""}`}
-            >
-              <span className="header-nav-num">{num}</span>
-              <span className="header-nav-label">{label}</span>
-            </Link>
-          ))}
-        </nav>
+        {/* デスクトップナビ */}
+        <DesktopNav active={active} />
       </div>
 
-
       {/* ── モバイルフルスクリーンメニュー ── */}
-      {mobileMenuOpen ? (
-        <div className="mobile-overlay">
-          <nav id="mobile-main-menu" className="mobile-overlay-nav">
-            {NAV_ITEMS.map(({ num, label, href, section }, i) => (
-              <React.Fragment key={section}>
-                {i > 0 && <div className="mobile-nav-line" />}
-                <Link
-                  href={href}
-                  className={`mobile-nav-item ${active === section ? "is-active" : ""}`}
-                >
-                  <span className="mobile-nav-num">{num}</span>
-                  <span className="mobile-nav-label">{label}</span>
-                </Link>
-              </React.Fragment>
-            ))}
-            <div style={{ marginTop: "var(--space-7)" }}>
-              <ThemeDot />
-            </div>
-          </nav>
-        </div>
-      ) : null}
+      <MobileMenuOverlay isOpen={mobileMenuOpen} active={active} />
 
       {/* ── タイトル行（12カラムグリッド） ── */}
       {showTitleRow || titleRight ? (
@@ -139,216 +91,17 @@ export function Header({
 
       {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (
-        <div className={`header-category-row ${showFilterButton ? "is-filter-mode" : ""}`}>
-          {/* フィルターモード: 全機能を1本のバーに統合 */}
-          {showFilterButton ? (
-            <>
-              <div className="header-filter-search">
-                {/* 検索入力 */}
-                {showSearch ? (
-                  <Suspense fallback={<SearchPlaceholder />}>
-                    <SearchInput />
-                  </Suspense>
-                ) : null}
-
-                {/* 右端ツールグループ: Filter + セパレーター + Grid/List */}
-                <div className="filter-bar-tools">
-                  {/* フィルターアイコン */}
-                  <button
-                    type="button"
-                    className={`filter-search-trigger ${filterOpen ? "is-open" : ""}`}
-                    onClick={onFilterToggle}
-                    aria-expanded={filterOpen}
-                    aria-label="フィルターを開閉"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <circle cx="5" cy="4" r="1.5" fill="currentColor" />
-                      <circle cx="11" cy="8" r="1.5" fill="currentColor" />
-                      <circle cx="7" cy="12" r="1.5" fill="currentColor" />
-                    </svg>
-                    {filterCount > 0 && <span className="filter-badge" />}
-                  </button>
-
-                  {showWorksToggle ? (
-                    <>
-                      {/* セパレーター */}
-                      <span className="filter-bar-separator" aria-hidden="true" />
-
-                      <Link
-                        href={worksGridHref}
-                        className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
-                        aria-label="グリッド表示"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
-                          <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
-                          <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" />
-                          <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
-                        </svg>
-                      </Link>
-                      <Link
-                        href={worksListHref}
-                        className={`view-toggle-seg ${view === "list" ? "is-active" : ""}`}
-                        aria-label="リスト表示"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor" />
-                          <rect x="1" y="7" width="14" height="2" rx="0.5" fill="currentColor" />
-                          <rect x="1" y="12" width="14" height="2" rx="0.5" fill="currentColor" />
-                        </svg>
-                      </Link>
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            </>
-          ) : (
-            /* 従来モード: カテゴリリンク + Grid/List + 検索 */
-            <>
-              <div className="header-category-links">
-                {Object.keys(categoryHrefs ?? {}).filter((item) => categoryHrefs?.[item]).map((item) => {
-                  const className = item === activeCategory ? "underline-active" : "";
-                  const style = { color: item === activeCategory ? "var(--fg)" : "var(--muted)" } as const;
-                  const href = categoryHrefs![item]!;
-                  return (
-                    <Link key={item} href={href} className={`${className} action-link`.trim()} style={style}>
-                      {item}
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {showWorksToggle ? (
-                <div className="works-view-toggle">
-                  <Link
-                    href={worksGridHref}
-                    className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
-                    aria-label="グリッド表示"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
-                      <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
-                      <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" />
-                      <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
-                    </svg>
-                  </Link>
-                  <Link
-                    href={worksListHref}
-                    className={`view-toggle-seg ${view === "list" ? "is-active" : ""}`}
-                    aria-label="リスト表示"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor" />
-                      <rect x="1" y="7" width="14" height="2" rx="0.5" fill="currentColor" />
-                      <rect x="1" y="12" width="14" height="2" rx="0.5" fill="currentColor" />
-                    </svg>
-                  </Link>
-                </div>
-              ) : null}
-
-              {showSearch ? (
-                <Suspense fallback={<SearchPlaceholder />}>
-                  <SearchInput />
-                </Suspense>
-              ) : null}
-            </>
-          )}
-        </div>
+        <CategoryRow
+          showFilterButton={showFilterButton}
+          showSearch={showSearch}
+          showWorksToggle={showWorksToggle}
+          worksView={worksView}
+          worksGridHref={worksGridHref}
+          worksListHref={worksListHref}
+          activeCategory={activeCategory}
+          categoryHrefs={categoryHrefs}
+        />
       ) : null}
     </header>
-  );
-}
-
-const searchInputStyle = {
-  width: "100%",
-  border: 0,
-  background: "transparent",
-  fontSize: "var(--font-body)",
-  lineHeight: "var(--lh-normal)",
-  color: "var(--fg)",
-  padding: 0,
-  outline: "none",
-  fontFamily: "inherit",
-} as const;
-
-function SearchPlaceholder() {
-  return (
-    <div className="header-search">
-      <div style={{ ...searchInputStyle, color: "var(--muted)" }}>SEARCH:</div>
-    </div>
-  );
-}
-
-function SearchInput() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const sp = useSearchParams();
-  const [query, setQuery] = useState(sp.get("q") ?? "");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setQuery(sp.get("q") ?? "");
-  }, [sp]);
-
-  const commit = useCallback((value: string) => {
-    const params = new URLSearchParams(sp.toString());
-    if (value.trim()) {
-      params.set("q", value.trim());
-    } else {
-      params.delete("q");
-    }
-    /* 検索変更時はページを1にリセット */
-    params.delete("page");
-    const qs = params.toString();
-    /* replace で履歴を汚さない（入力ごとに戻るボタンが増えない） */
-    router.replace(qs ? `${pathname}?${qs}` : pathname);
-  }, [router, pathname, sp]);
-
-  /* リアルタイム検索: 入力300ms後に自動検索、クリアで即リセット */
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    setQuery(v);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (!v.trim()) {
-      commit(v);
-    } else {
-      timerRef.current = setTimeout(() => commit(v), 300);
-    }
-  }, [commit]);
-
-  useEffect(() => {
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, []);
-
-  return (
-    <div className="header-search">
-      <input
-        type="text"
-        value={query}
-        onChange={handleChange}
-        placeholder="SEARCH:"
-        aria-label="作品を検索"
-        style={searchInputStyle}
-      />
-    </div>
-  );
-}
-
-/* 目の星ロゴ: 四芒星 */
-function MenohoshiLogo() {
-  return (
-    <svg
-      className="menohoshi-logo"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M12 0 C13.5 8.5 15.5 10.5 24 12 C15.5 13.5 13.5 15.5 12 24 C10.5 15.5 8.5 13.5 0 12 C8.5 10.5 10.5 8.5 12 0Z" />
-    </svg>
   );
 }
