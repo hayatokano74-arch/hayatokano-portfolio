@@ -1,202 +1,57 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import createDOMPurify from "dompurify";
 import type { Work } from "@/lib/types";
-import { WorkDetailsTable } from "@/components/WorkDetailsTable";
-import { blurDataURL } from "@/lib/blur";
-
-/** YouTube / Vimeo の URL を埋め込み用に変換。該当しなければ null */
-function getEmbedUrl(src: string): string | null {
-  /* YouTube: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID */
-  const ytMatch = src.match(
-    /(?:youtube\.com\/(?:watch\?.*v=|embed\/)|youtu\.be\/)([\w-]{11})/,
-  );
-  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`;
-
-  /* Vimeo: vimeo.com/ID */
-  const vmMatch = src.match(/vimeo\.com\/(\d+)/);
-  if (vmMatch) return `https://player.vimeo.com/video/${vmMatch[1]}`;
-
-  return null;
-}
+import { useGalleryNav } from "@/hooks/useGalleryNav";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
+import { useDetailOverlay } from "@/hooks/useDetailOverlay";
+import { GalleryStage } from "@/components/work-detail/GalleryStage";
+import { IndexGrid } from "@/components/work-detail/IndexGrid";
+import { InfoOverlay } from "@/components/work-detail/InfoOverlay";
+import { BottomBar } from "@/components/work-detail/BottomBar";
 
 export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { slug: string; title: string }[] }) {
   const pathname = usePathname();
   const router = useRouter();
   const sp = useSearchParams();
-  const [detailOpen, setDetailOpen] = useState(false);
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-  const isHorizontalSwipe = useRef<boolean | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const overlayScrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  /* URLパラメータから初期値を読み取り、以降はローカルステートで管理 */
-  const [localMode, setLocalMode] = useState<"gallery" | "index">(
-    () => (sp.get("mode") === "index" ? "index" : "gallery"),
-  );
-  const [localImg, setLocalImg] = useState(
-    () => Math.max(1, Math.min(work.media.length, Number(sp.get("img") ?? "1") || 1)),
-  );
-
-  const mode = localMode;
-  const img = localImg;
-  /* WP から取得した実際の works リストで前後を計算（mock ではなく） */
+  /* WP から取得した実際の works リストで前後を計算 */
   const currentWorkIndex = Math.max(
     0,
     allWorks.findIndex((w) => w.slug === work.slug),
   );
   const prevWork = allWorks[(currentWorkIndex - 1 + allWorks.length) % allWorks.length];
   const nextWork = allWorks[(currentWorkIndex + 1) % allWorks.length];
-  const total = work.media.length;
-  const prevImage = img <= 1 ? total : img - 1;
-  const nextImage = img >= total ? 1 : img + 1;
-  const currentMedia = work.media[img - 1];
 
-  /* ギャラリー画像切替時のクロスフェード制御 */
-  const [fading, setFading] = useState(false);
-  const fadeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  /* ギャラリーナビゲーション */
+  const {
+    mode, setMode,
+    img, setImg,
+    prevImage, nextImage,
+    currentMedia, fading,
+    goToImage,
+  } = useGalleryNav({
+    pathname,
+    media: work.media,
+    initialMode: sp.get("mode") === "index" ? "index" : "gallery",
+    initialImg: Math.max(1, Math.min(work.media.length, Number(sp.get("img") ?? "1") || 1)),
+  });
 
-  const goToImage = useCallback(
-    (nextImg: number) => {
-      /* 同じ画像への切替は無視 */
-      if (nextImg === localImg) return;
+  /* Infoオーバーレイ */
+  const { detailOpen, setDetailOpen, overlayRef } = useDetailOverlay();
 
-      /* フェードアウト開始 */
-      setFading(true);
-      clearTimeout(fadeTimer.current);
-
-      /* opacity が下がりきったタイミングで画像を差し替え、フェードイン */
-      fadeTimer.current = setTimeout(() => {
-        setLocalImg(nextImg);
-        setLocalMode("gallery");
-        window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${nextImg}`);
-
-        /* 次フレームでフェードイン（ブラウザにレンダリングを挟ませる） */
-        requestAnimationFrame(() => setFading(false));
-      }, 80); /* 80ms でフェードアウト → 差替え → 80ms でフェードイン = 合計約160ms */
-    },
-    [pathname, localImg],
-  );
-
-  /* ブラウザバック/フォワード対応 */
-  useEffect(() => {
-    const onPopState = () => {
-      const url = new URL(window.location.href);
-      setLocalMode(url.searchParams.get("mode") === "index" ? "index" : "gallery");
-      setLocalImg(
-        Math.max(1, Math.min(work.media.length, Number(url.searchParams.get("img") ?? "1") || 1)),
-      );
-    };
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, [work.media.length]);
-
-  useEffect(() => {
-    if (mode !== "gallery") return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const tagName = target?.tagName?.toLowerCase();
-      if (tagName === "input" || tagName === "textarea" || target?.isContentEditable) return;
-
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        goToImage(prevImage);
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault();
-        goToImage(nextImage);
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [mode, prevImage, nextImage, goToImage]);
-
-  useEffect(() => {
-    if (mode !== "gallery") return;
-
-    const preloadTargets = [prevImage, nextImage]
-      .map((index) => work.media[index - 1])
-      .filter(Boolean);
-
-    preloadTargets.forEach((media) => {
-      if (media.type === "image") {
-        const img = new window.Image();
-        img.decoding = "async";
-        img.src = media.src;
-        return;
-      }
-
-      if (media.poster) {
-        const poster = new window.Image();
-        poster.decoding = "async";
-        poster.src = media.poster;
-      }
-    });
-  }, [mode, prevImage, nextImage, work.media]);
-
-  /* スワイプによる画像ナビゲーション（モバイル対応）
-     - 方向ロック: touchmove で初期移動方向を判定し、水平優勢時のみスワイプ扱い
-     - スコープ限定: ギャラリーステージ要素内のタッチのみ対象 */
-  useEffect(() => {
-    if (mode !== "gallery") return;
-    const stage = stageRef.current;
-    if (!stage) return;
-
-    const onTouchStart = (e: TouchEvent) => {
-      touchStartX.current = e.touches[0].clientX;
-      touchStartY.current = e.touches[0].clientY;
-      /* 方向未確定にリセット */
-      isHorizontalSwipe.current = null;
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      /* 方向が既に確定済みなら再判定しない */
-      if (isHorizontalSwipe.current !== null) return;
-      if (touchStartX.current === null || touchStartY.current === null) return;
-
-      const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
-      const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
-      /* 一定距離（10px）動いたら方向を確定 */
-      const lockThreshold = 10;
-      if (dx >= lockThreshold || dy >= lockThreshold) {
-        isHorizontalSwipe.current = dx > dy;
-      }
-    };
-
-    const onTouchEnd = (e: TouchEvent) => {
-      if (touchStartX.current === null) return;
-      const dx = e.changedTouches[0].clientX - touchStartX.current;
-
-      /* 方向ロック: 水平スワイプと判定された場合のみナビゲーション実行 */
-      const isHorizontal = isHorizontalSwipe.current === true;
-      /* ref をリセット */
-      touchStartX.current = null;
-      touchStartY.current = null;
-      isHorizontalSwipe.current = null;
-
-      if (!isHorizontal) return;
-
-      const threshold = 50;
-      if (dx > threshold) goToImage(prevImage);       // 右スワイプ → 前の画像
-      else if (dx < -threshold) goToImage(nextImage);  // 左スワイプ → 次の画像
-    };
-
-    stage.addEventListener("touchstart", onTouchStart, { passive: true });
-    stage.addEventListener("touchmove", onTouchMove, { passive: true });
-    stage.addEventListener("touchend", onTouchEnd, { passive: true });
-    return () => {
-      stage.removeEventListener("touchstart", onTouchStart);
-      stage.removeEventListener("touchmove", onTouchMove);
-      stage.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [mode, prevImage, nextImage, goToImage]);
+  /* スワイプジェスチャー（モバイル対応） */
+  const onSwipeLeft = useCallback(() => goToImage(nextImage), [goToImage, nextImage]);
+  const onSwipeRight = useCallback(() => goToImage(prevImage), [goToImage, prevImage]);
+  useSwipeGesture({
+    targetRef: stageRef,
+    enabled: mode === "gallery",
+    onSwipeLeft,
+    onSwipeRight,
+  });
 
   /* ページ遷移方向のクリーンアップ（前後ナビのスライド用） */
   useEffect(() => {
@@ -204,84 +59,14 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
     return () => clearTimeout(t);
   }, []);
 
-  /* フェードタイマーのクリーンアップ */
-  useEffect(() => {
-    return () => clearTimeout(fadeTimer.current);
-  }, []);
-
-  /* オーバーレイ表示中: htmlスクロール停止（二重スクロールバー防止） */
-  useEffect(() => {
-    if (!detailOpen) return;
-    const html = document.documentElement;
-    html.style.overflow = "hidden";
-    return () => { html.style.overflow = ""; };
-  }, [detailOpen]);
-
-  /* オーバーレイ表示中: Escキーで閉じる */
-  useEffect(() => {
-    if (!detailOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setDetailOpen(false);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [detailOpen]);
-
-  /* オーバーレイ表示中: フォーカストラップ（Tabキーをオーバーレイ内に閉じ込める） */
-  useEffect(() => {
-    if (!detailOpen) return;
-    const overlay = overlayRef.current;
-    if (!overlay) return;
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Tab") return;
-
-      /* オーバーレイ内のフォーカス可能な要素を取得 */
-      const focusable = overlay.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])',
-      );
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (e.shiftKey) {
-        /* Shift+Tab: 最初の要素にいたら最後へ循環 */
-        if (document.activeElement === first || !overlay.contains(document.activeElement)) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        /* Tab: 最後の要素にいたら最初へ循環 */
-        if (document.activeElement === last || !overlay.contains(document.activeElement)) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [detailOpen]);
-
-  /* オーバーレイ: スクロール中だけ is-scrolling クラスを付与 */
-  useEffect(() => {
-    const el = overlayRef.current;
-    if (!el || !detailOpen) return;
-    const onScroll = () => {
-      el.classList.add("is-scrolling");
-      clearTimeout(overlayScrollTimer.current);
-      overlayScrollTimer.current = setTimeout(() => el.classList.remove("is-scrolling"), 1000);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      clearTimeout(overlayScrollTimer.current);
-    };
-  }, [detailOpen]);
+  /* 作品間ナビゲーション（View Transition 対応） */
+  const navigateToWork = useCallback((slug: string, dir: "prev" | "next") => {
+    document.documentElement.dataset.vtDir = dir;
+    const go = () => router.push(`/works/${slug}?mode=gallery&img=1`);
+    if ("startViewTransition" in document) {
+      (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(go);
+    } else { go(); }
+  }, [router]);
 
   return (
     <div
@@ -294,10 +79,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
     >
       {/* トップバー: 枠線区切りの横並び */}
       <div className="work-detail-top-bar">
-        <Link
-          href="/works"
-          className="wdb-cell wdb-btn wdb-back"
-        >
+        <Link href="/works" className="wdb-cell wdb-btn wdb-back">
           <span aria-hidden="true" className="wdb-back-icon">
             <svg width="10" height="14" viewBox="0 0 12 18" fill="none">
               <path d="M9 2.5L3 9L9 15.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -310,13 +92,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           type="button"
           aria-label={`前の作品: ${prevWork.title}`}
           className="wdb-cell wdb-btn wdb-nav-arrow"
-          onClick={() => {
-            document.documentElement.dataset.vtDir = "prev";
-            const go = () => router.push(`/works/${prevWork.slug}?mode=gallery&img=1`);
-            if ("startViewTransition" in document) {
-              (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(go);
-            } else { go(); }
-          }}
+          onClick={() => navigateToWork(prevWork.slug, "prev")}
         >
           ‹
           <span className="wdb-nav-tooltip">{prevWork.title}</span>
@@ -325,13 +101,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           type="button"
           aria-label={`次の作品: ${nextWork.title}`}
           className="wdb-cell wdb-btn wdb-nav-arrow"
-          onClick={() => {
-            document.documentElement.dataset.vtDir = "next";
-            const go = () => router.push(`/works/${nextWork.slug}?mode=gallery&img=1`);
-            if ("startViewTransition" in document) {
-              (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(go);
-            } else { go(); }
-          }}
+          onClick={() => navigateToWork(nextWork.slug, "next")}
         >
           ›
           <span className="wdb-nav-tooltip">{nextWork.title}</span>
@@ -340,82 +110,13 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
 
       <div ref={stageRef} className="work-detail-stage-grid">
         {mode === "gallery" ? (
-          <>
-            {/* 左半分クリック: 前の画像 */}
-            <button
-              type="button"
-              aria-label="前の画像"
-              onClick={() => goToImage(prevImage)}
-              className="work-detail-click-prev"
-            />
-            {/* 右半分クリック: 次の画像 */}
-            <button
-              type="button"
-              aria-label="次の画像"
-              onClick={() => goToImage(nextImage)}
-              className="work-detail-click-next"
-            />
-            <div
-              className={`work-detail-gallery-stage${fading ? " is-fading" : ""}`}
-              style={{
-                zIndex: currentMedia?.type === "video" ? 3 : 0,
-              }}
-            >
-              {currentMedia?.type === "video" ? (() => {
-                const embedUrl = getEmbedUrl(currentMedia.src);
-                return embedUrl ? (
-                  <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9" }}>
-                    <iframe
-                      src={embedUrl}
-                      title={currentMedia.alt || "video"}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        width: "100%",
-                        height: "100%",
-                        border: "none",
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <video
-                    src={currentMedia.src}
-                    poster={currentMedia.poster}
-                    controls
-                    playsInline
-                    preload="metadata"
-                    style={{
-                      width: "100%",
-                      aspectRatio: "16 / 9",
-                      display: "block",
-                    }}
-                  />
-                );
-              })() : currentMedia?.src ? (
-                <Image
-                  src={currentMedia.src}
-                  alt={currentMedia.alt}
-                  width={currentMedia.width}
-                  height={currentMedia.height}
-                  priority={img === 1}
-                  sizes="(max-width: 900px) 100vw, 66vw"
-                  placeholder="blur"
-                  blurDataURL={blurDataURL(currentMedia.width, currentMedia.height)}
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    maxHeight: "min(72vh, 820px)",
-                    objectFit: "contain",
-                    display: "block",
-                  }}
-                />
-              ) : (
-                <div style={{ aspectRatio: "16 / 9", width: "100%", border: "1px solid var(--line)" }} />
-              )}
-            </div>
-          </>
+          <GalleryStage
+            currentMedia={currentMedia}
+            fading={fading}
+            imgIndex={img}
+            onPrev={() => goToImage(prevImage)}
+            onNext={() => goToImage(nextImage)}
+          />
         ) : (
           <div className="work-detail-index-stage">
             <IndexGrid work={work} current={img} onSelect={goToImage} />
@@ -424,188 +125,27 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
       </div>
 
       {/* Infoオーバーレイ（コンテンツのみスライド、バーは含まない） */}
-      <div ref={overlayRef} role="dialog" aria-modal="true" className={`work-detail-overlay${detailOpen ? " is-open" : ""}`}>
-        <div className="work-detail-overlay-scroll">
-          <div className="work-detail-overlay-grid">
-            <div className="work-detail-overlay-content">
-              {work.tags.length > 0 && (
-              <div style={{ color: "var(--muted)", fontSize: "var(--font-body)" }}>
-                {work.tags.map((tag, idx) => (
-                  <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
-                    {tag.toLowerCase()}
-                  </span>
-                ))}
-              </div>
-              )}
-              <div
-                className="work-excerpt-html"
-                style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
-                suppressHydrationWarning
-                dangerouslySetInnerHTML={{ __html: typeof window !== "undefined" ? createDOMPurify(window).sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) : "" }}
-              />
-              <div style={{ marginTop: "var(--v-heading)" }}>
-                <WorkDetailsTable details={work.details} />
-              </div>
-              {/* Contact 導線 */}
-              <div style={{ marginTop: "var(--v-section)" }}>
-                <Link
-                  href="/contact"
-                  style={{
-                    fontSize: "var(--font-body)",
-                    color: "var(--muted)",
-                    textDecoration: "underline",
-                    textUnderlineOffset: "3px",
-                  }}
-                >
-                  お問い合わせ
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <InfoOverlay work={work} detailOpen={detailOpen} overlayRef={overlayRef} />
 
       {/* ボトムバー: 常時固定表示（オーバーレイの上に配置） */}
-      <div className="work-detail-bottom-bar">
-        <span className="wdb-cell wdb-title">
-          {work.title} | {work.year}
-        </span>
-        <button
-          type="button"
-          className={`wdb-cell wdb-btn ${!detailOpen && mode === "gallery" ? "is-active" : ""}`}
-          onClick={() => {
-            setDetailOpen(false);
-            setLocalMode("gallery");
-            window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
-          }}
-        >
-          Gallery
-        </button>
-        <button
-          type="button"
-          className={`wdb-cell wdb-btn ${!detailOpen && mode === "index" ? "is-active" : ""}`}
-          onClick={() => {
-            setDetailOpen(false);
-            setLocalMode("index");
-            window.history.replaceState(null, "", `${pathname}?mode=index`);
-          }}
-        >
-          Index
-        </button>
-        <button
-          type="button"
-          className={`wdb-cell wdb-btn ${detailOpen ? "is-active" : ""}`}
-          onClick={() => setDetailOpen(!detailOpen)}
-        >
-          Info
-        </button>
-        <span className="wdb-cell wdb-counter">
-          {mode === "gallery" ? `${img} / ${work.media.length}` : "\u00A0"}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function IndexGrid({ work, current, onSelect }: { work: Work; current: number; onSelect: (n: number) => void }) {
-  const thumbs = useMemo(() => work.media, [work.media]);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const scrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  /* スクロール中だけ is-scrolling クラスを付与（CSSでスクロールバー表示） */
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      el.classList.add("is-scrolling");
-      clearTimeout(scrollTimer.current);
-      scrollTimer.current = setTimeout(() => el.classList.remove("is-scrolling"), 1000);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      clearTimeout(scrollTimer.current);
-    };
-  }, []);
-
-  return (
-    <div
-      ref={scrollRef}
-      className="index-grid hide-scrollbar"
-      style={{
-        gap: "var(--space-6)",
-        width: "100%",
-        maxHeight: "100%",
-        overflowY: "auto",
-      }}
-    >
-      {thumbs.map((image, idx) => {
-        const n = idx + 1;
-        const isPortrait = image.height > image.width;
-        return (
-          <button
-            type="button"
-            key={image.id}
-            onClick={() => onSelect(n)}
-            style={{
-              width: "100%",
-              display: "inline-block",
-              padding: 0,
-              border: 0,
-              background: "transparent",
-              outline: "none",
-              opacity: n === current ? 0.9 : 1,
-              textAlign: "left",
-            }}
-            aria-label={`${n}枚目の画像`}
-          >
-            <div
-              style={{
-                position: "relative",
-                width: isPortrait
-                  ? `${Math.round((image.width / image.height) * 100)}%`
-                  : "100%",
-                margin: "0 auto",
-                aspectRatio: `${image.width} / ${image.height}`,
-                overflow: "hidden",
-              }}
-            >
-              {(image.type === "video" ? image.poster : image.src) ? (
-                <Image
-                  src={image.type === "video" ? (image.poster as string) : image.src}
-                  alt={image.alt}
-                  fill
-                  loading="lazy"
-                  sizes="(max-width: 720px) 100vw, (max-width: 1024px) 50vw, 320px"
-                  placeholder="blur"
-                  blurDataURL={blurDataURL(image.width, image.height)}
-                  style={{ objectFit: "cover", objectPosition: "center" }}
-                />
-              ) : null}
-              {image.type === "video" ? (
-                <div
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    right: 8,
-                    bottom: 8,
-                    width: 16,
-                    height: 16,
-                    background: "rgba(0,0,0,0.65)",
-                    display: "grid",
-                    placeItems: "center",
-                    color: "#fff",
-                    fontSize: 9,
-                    lineHeight: 1,
-                  }}
-                >
-                  ▶
-                </div>
-              ) : null}
-            </div>
-          </button>
-        );
-      })}
+      <BottomBar
+        work={work}
+        mode={mode}
+        img={img}
+        detailOpen={detailOpen}
+        pathname={pathname}
+        onGallery={() => {
+          setDetailOpen(false);
+          setMode("gallery");
+          window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
+        }}
+        onIndex={() => {
+          setDetailOpen(false);
+          setMode("index");
+          window.history.replaceState(null, "", `${pathname}?mode=index`);
+        }}
+        onToggleInfo={() => setDetailOpen(!detailOpen)}
+      />
     </div>
   );
 }
