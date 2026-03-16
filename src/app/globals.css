@@ -577,6 +577,24 @@ button {
   align-items: center;
   justify-content: center;
   padding: var(--space-5) 0;
+
+  /* ギャラリー画像切替クロスフェード（GPU合成レイヤーで処理） */
+  opacity: 1;
+  transition: opacity 80ms ease-out;
+  will-change: opacity;
+}
+
+/* フェードアウト状態 */
+.work-detail-gallery-stage.is-fading {
+  opacity: 0;
+}
+
+/* アクセシビリティ: モーション軽減設定時はトランジションなし */
+@media (prefers-reduced-motion: reduce) {
+  .work-detail-gallery-stage {
+    transition: none;
+    will-change: auto;
+  }
 }
 
 .work-detail-click-prev {

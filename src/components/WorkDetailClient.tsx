@@ -171,6 +171,11 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
     return () => clearTimeout(t);
   }, []);
 
+  /* フェードタイマーのクリーンアップ */
+  useEffect(() => {
+    return () => clearTimeout(fadeTimer.current);
+  }, []);
+
   /* オーバーレイ表示中: htmlスクロール停止（二重スクロールバー防止） */
   useEffect(() => {
     if (!detailOpen) return;
@@ -300,7 +305,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         </button>
       </div>
 
-      <div className="work-detail-stage-grid">
+      <div ref={stageRef} className="work-detail-stage-grid">
         {mode === "gallery" ? (
           <>
             {/* 左半分クリック: 前の画像 */}
@@ -318,7 +323,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
               className="work-detail-click-next"
             />
             <div
-              className="work-detail-gallery-stage"
+              className={`work-detail-gallery-stage${fading ? " is-fading" : ""}`}
               style={{
                 zIndex: currentMedia?.type === "video" ? 3 : 0,
               }}
