@@ -236,14 +236,14 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
             {/* 左半分クリック: 前の画像 */}
             <button
               type="button"
-              aria-label="previous image area"
+              aria-label="前の画像"
               onClick={() => goToImage(prevImage)}
               className="work-detail-click-prev"
             />
             {/* 右半分クリック: 次の画像 */}
             <button
               type="button"
-              aria-label="next image area"
+              aria-label="次の画像"
               onClick={() => goToImage(nextImage)}
               className="work-detail-click-next"
             />
@@ -320,21 +320,8 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
         <div className="work-detail-overlay-scroll">
           <div className="work-detail-overlay-grid">
             <div className="work-detail-overlay-content">
-              <WorkDetailsTable details={work.details} />
-              {work.details.bio ? (
-                <div style={{ marginTop: "var(--v-heading)", paddingTop: "var(--v-block)" }}>
-                  <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
-                  <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}>{work.details.bio}</div>
-                </div>
-              ) : null}
-              <div
-                className="work-excerpt-html"
-                style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
-                suppressHydrationWarning
-                dangerouslySetInnerHTML={{ __html: typeof window !== "undefined" ? createDOMPurify(window).sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) : "" }}
-              />
               {work.tags.length > 0 && (
-              <div style={{ marginTop: "var(--v-block)", color: "var(--muted)", fontSize: "var(--font-body)" }}>
+              <div style={{ color: "var(--muted)", fontSize: "var(--font-body)" }}>
                 {work.tags.map((tag, idx) => (
                   <span key={`${work.slug}-${tag}-${idx}`} className="underline-active" style={{ marginRight: "var(--space-3)" }}>
                     {tag.toLowerCase()}
@@ -342,6 +329,15 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
                 ))}
               </div>
               )}
+              <div
+                className="work-excerpt-html"
+                style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{ __html: typeof window !== "undefined" ? createDOMPurify(window).sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) : "" }}
+              />
+              <div style={{ marginTop: "var(--v-heading)" }}>
+                <WorkDetailsTable details={work.details} />
+              </div>
             </div>
           </div>
         </div>
@@ -439,7 +435,7 @@ function IndexGrid({ work, current, onSelect }: { work: Work; current: number; o
               opacity: n === current ? 0.9 : 1,
               textAlign: "left",
             }}
-            aria-label={`image ${n}`}
+            aria-label={`${n}枚目の画像`}
           >
             <div
               style={{
