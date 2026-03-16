@@ -34,7 +34,18 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   return (
     <section className="me-no-hoshi-detail">
       <div className="me-no-hoshi-meta-column">
-        <section className="work-details-table">
+        {/* TEXT（ステートメント） */}
+        <div>
+          <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>TEXT</div>
+          <div
+            className="mnh-rich-text"
+            style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}
+            dangerouslySetInnerHTML={{ __html: cleanWpHtml(post.statement) }}
+          />
+        </div>
+
+        {/* DETAILS（展示情報） */}
+        <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
           <div className="work-details-table-header">DETAILS</div>
           {tableRows.map((row) => (
             <div
@@ -47,6 +58,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           ))}
         </section>
 
+        {/* BIO（プロフィール） */}
         {post.bio ? (
           <div
             style={{
@@ -63,14 +75,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           </div>
         ) : null}
 
-        <div style={{ marginTop: "var(--v-heading)" }}>
-          <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>TEXT</div>
-          <div
-            className="mnh-rich-text"
-            style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}
-            dangerouslySetInnerHTML={{ __html: cleanWpHtml(post.statement) }}
-          />
-        </div>
+        {/* NOTICE（注釈） */}
         <div style={{ marginTop: "var(--v-block)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>
       </div>
 
