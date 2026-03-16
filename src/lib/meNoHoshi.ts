@@ -238,6 +238,25 @@ function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
       : undefined
   );
 
+  /* BIO を行ごとに分割し、details 末尾に追加する。
+     改行（\n, \r\n）や <br> で分割し、各行を独立した detail 行にする。
+     最初の行のみラベル "BIO"、以降は空ラベル。 */
+  const bioText = String(bioRaw ?? "").trim();
+  if (bioText) {
+    const bioLines = bioText
+      .replace(/<br\s*\/?>/gi, "\n")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    bioLines.forEach((line, i) => {
+      details.push({
+        key: `bio-${i}`,
+        label: i === 0 ? "BIO" : "",
+        value: line,
+      });
+    });
+  }
+
   return {
     slug,
     date: (post.date ?? "2024/10/09").trim(),

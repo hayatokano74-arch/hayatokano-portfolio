@@ -44,43 +44,29 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           />
         </div>
 
-        {/* DETAILS（展示情報） */}
+        {/* DETAILS（展示情報 + BIO） */}
         <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
           <div className="work-details-table-header">DETAILS</div>
+          {/* BIO行はデータ正規化層で details に統合済み。
+              key が "bio-" で始まる行には薄い区切り線用のクラスを付与 */}
           {tableRows.map((row) => (
             <div
               key={row.key}
-              className="work-details-row"
+              className={`work-details-row${row.key.startsWith("bio-") ? " work-details-row--bio" : ""}`}
             >
-              <div className="work-details-label">{row.label}:</div>
+              <div className="work-details-label">{row.label ? `${row.label}:` : ""}</div>
               <div className="work-details-value">{row.value}</div>
             </div>
           ))}
         </section>
 
-        {/* BIO（プロフィール） */}
-        {post.bio ? (
-          <div
-            style={{
-              marginTop: "var(--v-heading)",
-              paddingTop: "var(--v-block)",
-            }}
-          >
-            <div style={{ fontSize: "var(--font-meta)", letterSpacing: "0.16em", color: "var(--muted)" }}>BIO</div>
-            <div
-              className="mnh-rich-text"
-              style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", color: "var(--fg)" }}
-              dangerouslySetInnerHTML={{ __html: cleanWpHtml(post.bio) }}
-            />
-          </div>
-        ) : null}
-
         {/* NOTICE（注釈） */}
         <div style={{ marginTop: "var(--v-block)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>
       </div>
 
-      <div className="me-no-hoshi-visual-column">
-        {post.showKeyVisuals && (
+      {/* KEY VISUAL: 独立グリッドアイテム（モバイルで order: -1 によりトップに表示） */}
+      {post.showKeyVisuals && (
+        <div className="me-no-hoshi-key-visual">
           <div className="me-no-hoshi-section is-first">
             <div className="me-no-hoshi-section-label">KEY VISUAL</div>
             <div className="single-col-grid" style={{ marginTop: "var(--v-element)", gap: "var(--space-4)" }}>
@@ -120,8 +106,11 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             </div>
             <div style={{ marginTop: "var(--v-element)", fontSize: "var(--font-body)", color: "var(--muted)" }}>{post.heroCaption}</div>
           </div>
-        )}
+        </div>
+      )}
 
+      {/* PAST WORKS / ARCHIVE */}
+      <div className="me-no-hoshi-visual-column">
         {post.showPastWorks && post.pastWorks.length > 0 && (
           <section className="me-no-hoshi-section">
             <div className="me-no-hoshi-section-label">PAST WORKS</div>

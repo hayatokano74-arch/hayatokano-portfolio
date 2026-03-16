@@ -97,6 +97,12 @@
 
   /* ── ページタイトル（フォントサイズ） ── */
   --font-page-title: clamp(48px, 5.5vw, 96px); /* モバイル48px → デスクトップ96px */
+
+  /* ── Works詳細バーの高さ（構成要素からの導出） ──
+     高さ = padding上下 + フォントサイズ + ボーダー上下(2px)
+     .wdb-cell の padding が --space-3 なので: --space-3 × 2 + font + 2px */
+  --wdb-top-bar-h: calc(var(--space-3) * 2 + var(--font-meta) + 2px);
+  --wdb-bottom-bar-h: calc(var(--space-3) * 2 + var(--font-body) + 2px);
 }
 
 /* ── ダークモード ── */
@@ -418,6 +424,7 @@ button {
 }
 
 /* ── Works 詳細: トップバー（枠線区切り） ── */
+/* z-index でオーバーレイ（z-index: 1000）より上に表示し、Info表示中も操作可能にする */
 .work-detail-top-bar {
   display: flex;
   align-items: stretch;
@@ -427,6 +434,9 @@ button {
   letter-spacing: 0.06em;
   line-height: 1;
   min-width: 0;
+  position: relative;
+  z-index: 1001;
+  background: var(--bg);
   view-transition-name: detail-top-bar;
 }
 
@@ -587,6 +597,12 @@ button {
 /* フェードアウト状態 */
 .work-detail-gallery-stage.is-fading {
   opacity: 0;
+}
+
+/* View Transition 中は opacity トランジションを無効にし、
+   作品間遷移のスライドアニメーションとの競合を防ぐ */
+html[data-vt-dir] .work-detail-gallery-stage {
+  transition: none;
 }
 
 /* アクセシビリティ: モーション軽減設定時はトランジションなし */
@@ -1404,19 +1420,31 @@ button {
 .me-no-hoshi-detail {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
+  /* 右カラム: KEY VISUAL(row 1) + PAST WORKS/ARCHIVE(row 2) の2行 */
+  grid-template-rows: auto auto;
   column-gap: var(--grid-gutter);
   align-items: start;
 }
 
+/* 左カラム（テキスト）: 全行にまたがる */
 .me-no-hoshi-meta-column {
   grid-column: 1 / span 4;
+  grid-row: 1 / -1;
   min-width: 0;
 }
 
+/* 右カラム（写真）: KEY VISUAL row 1 */
+.me-no-hoshi-key-visual {
+  grid-column: 6 / -1;
+  grid-row: 1;
+  min-width: 0;
+  width: 100%;
+}
 
-/* 右カラム: 画像を右端のグリッド線に揃える */
+/* 右カラム（写真）: PAST WORKS / ARCHIVE row 2 */
 .me-no-hoshi-visual-column {
   grid-column: 6 / -1;
+  grid-row: 2;
   min-width: 0;
   width: 100%;
 }
@@ -2373,6 +2401,11 @@ button.tl-photo-cell {
   padding-bottom: 4px;
 }
 
+/* BIO行: 通常の detail 行より薄い区切り線で視覚的に区別する */
+.work-details-row--bio .work-details-value {
+  border-bottom-color: color-mix(in srgb, var(--fg) 15%, transparent);
+}
+
 /* ── Works 詳細オーバーレイ: 12カラムグリッド ── */
 /* htmlのスクロールバーはJS側で非表示にするため、オーバーレイは
    システムのオーバーレイスクロールバーを使用（スペースを取らない） */
@@ -2393,13 +2426,17 @@ button.tl-photo-cell {
   visibility: visible;
 }
 
-/* スクロール可能なコンテンツ領域 */
+/* スクロール可能なコンテンツ領域
+   トップバー・ボトムバーは z-index でオーバーレイの上に表示されるため、
+   上下の padding でバーの裏にコンテンツが隠れないようにする。
+   バー高さはCSS変数（--wdb-top-bar-h / --wdb-bottom-bar-h）から参照し、
+   セクション余白（--v-section）で呼吸感を確保する。 */
 .work-detail-overlay-scroll {
   overflow-y: auto;
   height: 100%;
   padding: var(--pad-y) var(--pad-x);
-  /* バーの高さ分だけ下に余白（コンテンツがバーの下に隠れない） */
-  padding-bottom: calc(var(--pad-y) + 64px);
+  padding-top: calc(var(--wdb-top-bar-h) + var(--v-section));
+  padding-bottom: calc(var(--wdb-bottom-bar-h) + var(--v-section));
 }
 
 .work-detail-overlay-grid {
@@ -4513,6 +4550,15 @@ img[loading="lazy"] {
     grid-column: 1 / -1;
   }
 
+  /* モバイル: .wdb-cell の padding が --space-2 に縮小、
+     ボトムバーはタイトル行が折り返して2行分になる */
+  .work-detail-overlay-scroll {
+    --wdb-top-bar-h: calc(var(--space-2) * 2 + var(--font-meta) + 2px);
+    --wdb-bottom-bar-h: calc((var(--space-2) * 2 + var(--font-body) + 1px) * 2);
+    padding-top: calc(var(--wdb-top-bar-h) + var(--v-section));
+    padding-bottom: calc(var(--wdb-bottom-bar-h) + var(--v-section));
+  }
+
   /* ── 目の星 ── */
   .me-no-hoshi-detail {
     grid-template-columns: repeat(4, 1fr);
@@ -4520,9 +4566,23 @@ img[loading="lazy"] {
     /* ヘッダー→コンテンツのギャップは .page-shell の gap で統一管理 */
   }
 
+  .me-no-hoshi-key-visual,
   .me-no-hoshi-meta-column,
   .me-no-hoshi-visual-column {
     grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  /* モバイル: KEY VISUAL だけトップに表示 */
+  .me-no-hoshi-key-visual {
+    order: -1;
+  }
+
+  /* PAST WORKS が visual-column の最初の子になったため、
+     元は KEY VISUAL の直後（同じ div 内）で --space-7 だった margin-top を
+     0 にする（グリッドの gap が間隔を担う） */
+  .me-no-hoshi-visual-column > .me-no-hoshi-section:first-child {
+    margin-top: 0;
   }
 
   .me-no-hoshi-visual-column article {

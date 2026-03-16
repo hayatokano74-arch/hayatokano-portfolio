@@ -446,6 +446,20 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
               <div style={{ marginTop: "var(--v-heading)" }}>
                 <WorkDetailsTable details={work.details} />
               </div>
+              {/* Contact 導線 */}
+              <div style={{ marginTop: "var(--v-section)" }}>
+                <Link
+                  href="/contact"
+                  style={{
+                    fontSize: "var(--font-body)",
+                    color: "var(--muted)",
+                    textDecoration: "underline",
+                    textUnderlineOffset: "3px",
+                  }}
+                >
+                  お問い合わせ
+                </Link>
+              </div>
             </div>
           </div>
         </div>
