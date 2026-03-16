@@ -1,9 +1,9 @@
 /**
  * Garden キャッシュ生成スクリプト
  *
- * Dropbox API から全ファイルを取得し、.garden-cache.json に保存する。
+ * WordPress API から全記事を取得し、.garden-cache.json に保存する。
  * next build はこのキャッシュファイルからデータを読み取り、
- * ランタイムでは Dropbox API を一切呼ばない。
+ * ランタイムでは WP API を直接呼ばない（ISR 再検証時を除く）。
  *
  * prebuild で自動実行される（generate-search-index.ts より先に実行）。
  */
@@ -14,14 +14,12 @@ async function main() {
   console.log("[prebuild] Garden キャッシュを生成します...");
 
   try {
-    // fetchAllGardenFiles() 内部でキャッシュファイルへの書き込みが行われる
     const files = await fetchAllGardenFiles();
     console.log(`[prebuild] 完了: ${files.length} ファイルをキャッシュしました`);
   } catch (error) {
-    console.error("[prebuild] Dropbox からの取得に失敗:", error);
+    console.error("[prebuild] WordPress API からの取得に失敗:", error);
 
     // キャッシュファイルが既に存在する場合は問題なし
-    // （前回のビルドで生成されたものが使われる）
     const fs = await import("fs");
     const path = await import("path");
     const cachePath = path.join(process.cwd(), ".garden-cache.json");
