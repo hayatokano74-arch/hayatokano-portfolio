@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useFilterContext } from "@/components/FilterableContent";
 import { WorksClient } from "@/components/WorksClient";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
-import type { Work } from "@/lib/mock";
+import type { Work } from "@/lib/types";
 
 /** WorksClient が受け取る最小型 */
 type WorkLike = Omit<Work, "details"> & { details: unknown };

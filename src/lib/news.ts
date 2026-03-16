@@ -5,7 +5,8 @@
  * WP_BASE_URL 未設定 or API失敗時は mock.ts のフォールバックデータを返す
  */
 
-import { type NewsItem, news as fallbackNews } from "@/lib/mock";
+import type { NewsItem } from "@/lib/types";
+import { news as fallbackNews } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
 import type { WpNewsResponse } from "@/lib/wp/types";
 

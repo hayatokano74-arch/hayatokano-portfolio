@@ -5,7 +5,7 @@
  * Garden カテゴリ (ID: 52) 配下の投稿のみ取得。
  */
 
-import type { GardenFile } from "./dropbox";
+import type { GardenFile } from "./cache";
 
 /** Garden 親カテゴリ ID（WP側で作成済み） */
 const GARDEN_CATEGORY_ID = 52;

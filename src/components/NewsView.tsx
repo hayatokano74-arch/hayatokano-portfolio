@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { type NewsItem } from "@/lib/mock";
+import { type NewsItem } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
 
 /* 画像なしプレースホルダー: 正方形 + 対角線× */

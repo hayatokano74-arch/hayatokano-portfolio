@@ -6,7 +6,8 @@
  */
 
 import { cache } from "react";
-import { type TextPost, texts as fallbackTexts } from "@/lib/mock";
+import type { TextPost } from "@/lib/types";
+import { texts as fallbackTexts } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
 import type { WpTextResponse } from "@/lib/wp/types";
 

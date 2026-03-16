@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { type Work } from "@/lib/mock";
+import { type Work } from "@/lib/types";
 import { fetchWpApi } from "@/lib/wp/client";
 
 /* モジュールレベルに RegExp を巻き上げ（js-hoist-regexp） */

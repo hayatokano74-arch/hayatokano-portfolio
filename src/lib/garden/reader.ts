@@ -1,4 +1,4 @@
-/* Markdownファイルの読み込み・パース（Dropbox API 経由） */
+/* Markdownファイルの読み込み・パース（WordPress API 経由） */
 
 import matter from "gray-matter";
 import { unified } from "unified";
@@ -113,7 +113,7 @@ function rehypeOptimizedImages(options?: OptimizedImagesOptions) {
 }
 import fs from "fs";
 import path from "path";
-import { fetchAllGardenFiles, type GardenFile } from "./dropbox";
+import { fetchAllGardenFiles, type GardenFile } from "./cache";
 import type { GardenNode, GardenFrontmatter } from "./types";
 
 // ============================================================

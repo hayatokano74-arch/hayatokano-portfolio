@@ -5,7 +5,8 @@
  * WP_BASE_URL 未設定 or API失敗時は mock.ts のフォールバックデータを返す
  */
 
-import { type TimelineItem, timeline as fallbackTimeline } from "@/lib/mock";
+import type { TimelineItem } from "@/lib/types";
+import { timeline as fallbackTimeline } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
 import type { WpTimelineResponse } from "@/lib/wp/types";
 

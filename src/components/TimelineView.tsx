@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { TimelineItem } from "@/lib/mock";
+import type { TimelineItem } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
 import { Header } from "@/components/Header";
 

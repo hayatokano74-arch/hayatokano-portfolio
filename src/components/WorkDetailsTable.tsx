@@ -1,4 +1,4 @@
-import type { Work } from "@/lib/mock";
+import type { Work } from "@/lib/types";
 
 export function WorkDetailsTable({ details }: { details: Work["details"] }) {
   const rows = [

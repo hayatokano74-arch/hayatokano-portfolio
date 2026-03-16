@@ -6,7 +6,8 @@
  */
 
 import { cache } from "react";
-import { type Work, type WorkTag, works as fallbackWorks } from "@/lib/mock";
+import type { Work, WorkTag } from "@/lib/types";
+import { works as fallbackWorks } from "@/lib/mock";
 import { fetchWpApi } from "@/lib/wp/client";
 import type { WpWorkResponse } from "@/lib/wp/types";
 

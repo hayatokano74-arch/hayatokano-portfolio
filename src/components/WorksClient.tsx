@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import type { Work } from "@/lib/mock";
+import type { Work } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
 
 /** WorksClient が受け取れる最小型（details を柔軟に） */

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import createDOMPurify from "dompurify";
-import type { Work } from "@/lib/mock";
+import type { Work } from "@/lib/types";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 import { blurDataURL } from "@/lib/blur";
 

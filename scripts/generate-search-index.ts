@@ -1,13 +1,13 @@
 /**
  * Garden 検索インデックス生成スクリプト
- * Dropbox API からファイルを取得し、public/garden-search-index.json に出力する。
+ * WordPress API からファイルを取得し、public/garden-search-index.json に出力する。
  * prebuild で自動実行される。
  */
 
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { fetchAllGardenFiles } from "../src/lib/garden/dropbox";
+import { fetchAllGardenFiles } from "../src/lib/garden/cache";
 
 interface SearchDoc {
   id: string;
@@ -32,7 +32,7 @@ async function main() {
   try {
     files = await fetchAllGardenFiles();
   } catch (error) {
-    console.error("Dropbox からファイルを取得できませんでした:", error);
+    console.error("WordPress API からファイルを取得できませんでした:", error);
     console.log("空のインデックスを出力します。");
     fs.writeFileSync(OUTPUT_PATH, "[]", "utf-8");
     return;

@@ -8,7 +8,7 @@
  * prebuild で自動実行される（generate-search-index.ts より先に実行）。
  */
 
-import { fetchAllGardenFiles } from "../src/lib/garden/dropbox";
+import { fetchAllGardenFiles } from "../src/lib/garden/cache";
 
 async function main() {
   console.log("[prebuild] Garden キャッシュを生成します...");
