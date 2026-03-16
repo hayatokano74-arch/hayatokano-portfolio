@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 import { FilterProvider, FilterLayout } from "@/components/FilterableContent";
-import { WorksClient } from "@/components/WorksClient";
+import { FilteredWorksList, FilteredCount } from "@/components/FilteredWorksList";
+import { parseTags, parseYears, buildFilterGroups } from "@/lib/categories";
+import { getMeNoHoshiPosts } from "@/lib/meNoHoshi";
+import { getPerPage } from "@/lib/siteSettings";
 
 export const metadata: Metadata = { title: "目の星" };
-import { parseTags, parseYears, buildFilterGroups } from "@/lib/categories";
-import { getMeNoHoshiPosts, type MeNoHoshiPost } from "@/lib/meNoHoshi";
-import { Pagination } from "@/components/Pagination";
-import { getPerPage } from "@/lib/siteSettings";
 
 export default async function MeNoHoshiPage({
   searchParams,
@@ -22,47 +21,21 @@ export default async function MeNoHoshiPage({
   const q = sp?.q?.toLowerCase() ?? "";
   const [posts, perPage] = await Promise.all([getMeNoHoshiPosts(), getPerPage()]);
 
-  /* フィルタリング: Category + Year 複数選択対応 */
-  let filteredPosts = posts;
-  if (selectedTags.length > 0) {
-    filteredPosts = filteredPosts.filter((p) => selectedTags.some((t) => p.tags.includes(t)));
-  }
-  if (selectedYears.length > 0) {
-    filteredPosts = filteredPosts.filter((p) => selectedYears.includes(p.year));
-  }
-  if (q) {
-    filteredPosts = filteredPosts.filter((post) =>
-      post.title.toLowerCase().includes(q) ||
-      post.tags.some((tag) => tag.toLowerCase().includes(q)) ||
-      post.statement.toLowerCase().includes(q) ||
-      post.year.includes(q) ||
-      post.date.includes(q) ||
-      post.details.some((d) => d.value?.toLowerCase().includes(q) || d.label?.toLowerCase().includes(q))
-    );
-  }
-
-  /* フィルターグループ構築（Category + Year） */
+  /* フィルターグループ構築（全データから） */
   const filterGroups = buildFilterGroups(
     posts.flatMap((p) => p.tags),
     posts.map((p) => p.year).filter(Boolean),
   );
 
-  /* 現在の選択状態 */
-  const selected = { tags: selectedTags, years: selectedYears };
+  /* 初期選択状態（URLパラメータから） */
+  const initialSelected = { tags: selectedTags, years: selectedYears };
 
-  /* 現在のURLパラメータ */
+  /* 現在のURLパラメータ（フィルター以外を維持） */
   const spRecord: Record<string, string> = {};
   if (sp?.view) spRecord.view = sp.view;
   if (sp?.q) spRecord.q = sp.q;
-  if (sp?.tags) spRecord.tags = sp.tags;
-  if (sp?.years) spRecord.years = sp.years;
 
-  /* ページネーション */
-  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / perPage));
-  const currentPage = Math.min(Math.max(1, parseInt(sp?.page ?? "1", 10) || 1), totalPages);
-  const pagedPosts = filteredPosts.slice((currentPage - 1) * perPage, currentPage * perPage);
-
-  /* Grid/Listトグル・ページネーション用のベースパラメータ */
+  /* Grid/Listトグル用URL */
   const toggleBase = new URLSearchParams();
   if (selectedTags.length > 0) toggleBase.set("tags", selectedTags.join(","));
   if (selectedYears.length > 0) toggleBase.set("years", selectedYears.join(","));
@@ -70,20 +43,17 @@ export default async function MeNoHoshiPage({
   const worksGridHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "grid" }).toString()}`;
   const worksListHref = `/me-no-hoshi?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "list" }).toString()}`;
 
-  /** ページ番号からURLを生成（page=1のときはパラメータ省略） */
-  const buildPageHref = (page: number) => {
-    const params = new URLSearchParams(toggleBase);
-    params.set("view", view);
-    if (page > 1) params.set("page", String(page));
-    return `/me-no-hoshi?${params.toString()}`;
-  };
-
   return (
     <CanvasShell>
-      <FilterProvider selected={selected}>
+      <FilterProvider
+        initialSelected={initialSelected}
+        basePath="/me-no-hoshi"
+        currentSearchParams={spRecord}
+        groups={filterGroups}
+      >
         <Header
           active="目の星"
-          title={<>目の星 / Menohoshi<span className="page-title-count">({filteredPosts.length})</span></>}
+          title={<>目の星 / Menohoshi<FilteredCount allWorks={posts} searchQuery={q} basePath="/me-no-hoshi" /></>}
           brandLabel="目の星 menohoshi"
           brandHref="/me-no-hoshi"
           showWorksToggle
@@ -92,43 +62,17 @@ export default async function MeNoHoshiPage({
           worksListHref={worksListHref}
           showFilterButton
         />
-        <FilterLayout
-          groups={filterGroups}
-          selected={selected}
-          basePath="/me-no-hoshi"
-          currentSearchParams={spRecord}
-        >
-          <WorksClient
-            works={pagedPosts}
+        <FilterLayout groups={filterGroups}>
+          <FilteredWorksList
+            allWorks={posts}
             view={view}
+            perPage={perPage}
             basePath="/me-no-hoshi"
             detailQuery=""
-            renderListDetail={(post) => <MeNoHoshiListDetails post={post} />}
+            searchQuery={q}
           />
-          <Pagination currentPage={currentPage} totalPages={totalPages} buildHref={buildPageHref} />
         </FilterLayout>
       </FilterProvider>
     </CanvasShell>
-  );
-}
-
-function MeNoHoshiListDetails({ post }: { post: MeNoHoshiPost }) {
-  const rows = post.details.filter((row) => row.value);
-
-  if (rows.length === 0) return null;
-
-  return (
-    <section className="work-details-table">
-      <div className="work-details-table-header">DETAILS</div>
-      {rows.map((row) => (
-        <div
-          key={row.key}
-          className="work-details-row"
-        >
-          <div className="work-details-label">{row.label}:</div>
-          <div className="work-details-value">{row.value}</div>
-        </div>
-      ))}
-    </section>
   );
 }

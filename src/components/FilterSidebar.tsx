@@ -1,13 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import type { FilterGroup } from "@/lib/categories";
 
 /** 各グループの選択状態: { tags: ["Video"], years: ["2021"] } */
 export type SelectedFilters = Record<string, string[]>;
-
-/** フィルター変更時にURLから除外するパラメータ */
-const FILTER_PARAM_KEYS = ["tags", "tag", "years", "page"];
 
 /**
  * フィルタードロップダウン: 検索バーの直下に展開するインラインパネル。
@@ -16,40 +12,16 @@ const FILTER_PARAM_KEYS = ["tags", "tag", "years", "page"];
 export function FilterSidebar({
   groups,
   selected,
-  basePath,
-  currentSearchParams,
   open,
+  onToggle,
 }: {
   groups: FilterGroup[];
   selected: SelectedFilters;
-  basePath: string;
-  currentSearchParams: Record<string, string>;
   open: boolean;
   onClose: () => void;
+  /** フィルター値をトグル（クライアント側stateを即座に更新） */
+  onToggle: (paramKey: string, value: string) => void;
 }) {
-  const router = useRouter();
-
-  /* 特定グループ内の値をトグル → URLを更新 */
-  const toggleValue = (paramKey: string, value: string) => {
-    const current = selected[paramKey] ?? [];
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
-
-    const params = new URLSearchParams();
-    /* フィルター以外のパラメータ（view, q等）を維持 */
-    for (const [k, v] of Object.entries(currentSearchParams)) {
-      if (!FILTER_PARAM_KEYS.includes(k)) params.set(k, v);
-    }
-    /* 全グループの選択状態を反映 */
-    for (const group of groups) {
-      const vals = group.paramKey === paramKey ? next : (selected[group.paramKey] ?? []);
-      if (vals.length > 0) params.set(group.paramKey, vals.join(","));
-    }
-    const qs = params.toString();
-    router.push(qs ? `${basePath}?${qs}` : basePath);
-  };
-
   if (!open) return null;
 
   return (
@@ -61,7 +33,7 @@ export function FilterSidebar({
             key={group.paramKey}
             group={group}
             selectedValues={selected[group.paramKey] ?? []}
-            onToggle={(value) => toggleValue(group.paramKey, value)}
+            onToggle={(value) => onToggle(group.paramKey, value)}
           />
         ))}
       </div>

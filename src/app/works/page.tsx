@@ -2,14 +2,12 @@ import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 import { FilterProvider, FilterLayout } from "@/components/FilterableContent";
-
-export const metadata: Metadata = { title: "Works" };
-import { WorksClient } from "@/components/WorksClient";
+import { FilteredWorksList, FilteredCount } from "@/components/FilteredWorksList";
 import { getWorks } from "@/lib/works";
 import { parseTags, parseYears, buildFilterGroups } from "@/lib/categories";
-import { WorkDetailsTable } from "@/components/WorkDetailsTable";
-import { Pagination } from "@/components/Pagination";
 import { getPerPage } from "@/lib/siteSettings";
+
+export const metadata: Metadata = { title: "Works" };
 
 export default async function WorksPage({
   searchParams,
@@ -23,47 +21,21 @@ export default async function WorksPage({
   const q = sp?.q?.toLowerCase() ?? "";
   const [works, perPage] = await Promise.all([getWorks(), getPerPage()]);
 
-  /* フィルタリング: Category + Year 複数選択対応 */
-  let filteredWorks = works;
-  if (selectedTags.length > 0) {
-    filteredWorks = filteredWorks.filter((w) => selectedTags.some((t) => w.tags.includes(t)));
-  }
-  if (selectedYears.length > 0) {
-    filteredWorks = filteredWorks.filter((w) => selectedYears.includes(w.year));
-  }
-  if (q) {
-    filteredWorks = filteredWorks.filter((work) =>
-      work.title.toLowerCase().includes(q) ||
-      work.tags.some((tag) => tag.toLowerCase().includes(q)) ||
-      work.excerpt.toLowerCase().includes(q) ||
-      work.year.includes(q) ||
-      work.date.includes(q) ||
-      Object.values(work.details).some((v) => typeof v === "string" && v.toLowerCase().includes(q))
-    );
-  }
-
-  /* フィルターグループ構築（Category + Year） */
+  /* フィルターグループ構築（全データから） */
   const filterGroups = buildFilterGroups(
     works.flatMap((w) => w.tags),
     works.map((w) => w.year).filter(Boolean),
   );
 
-  /* 現在の選択状態 */
-  const selected = { tags: selectedTags, years: selectedYears };
+  /* 初期選択状態（URLパラメータから） */
+  const initialSelected = { tags: selectedTags, years: selectedYears };
 
-  /* 現在のURLパラメータ */
+  /* 現在のURLパラメータ（フィルター以外を維持） */
   const spRecord: Record<string, string> = {};
   if (sp?.view) spRecord.view = sp.view;
   if (sp?.q) spRecord.q = sp.q;
-  if (sp?.tags) spRecord.tags = sp.tags;
-  if (sp?.years) spRecord.years = sp.years;
 
-  /* ページネーション */
-  const totalPages = Math.max(1, Math.ceil(filteredWorks.length / perPage));
-  const currentPage = Math.min(Math.max(1, parseInt(sp?.page ?? "1", 10) || 1), totalPages);
-  const pagedWorks = filteredWorks.slice((currentPage - 1) * perPage, currentPage * perPage);
-
-  /* Grid/Listトグル・ページネーション用のベースパラメータ */
+  /* Grid/Listトグル用URL */
   const toggleBase = new URLSearchParams();
   if (selectedTags.length > 0) toggleBase.set("tags", selectedTags.join(","));
   if (selectedYears.length > 0) toggleBase.set("years", selectedYears.join(","));
@@ -71,34 +43,31 @@ export default async function WorksPage({
   const worksGridHref = `/works?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "grid" }).toString()}`;
   const worksListHref = `/works?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "list" }).toString()}`;
 
-  /** ページ番号からURLを生成（page=1のときはパラメータ省略） */
-  const buildPageHref = (page: number) => {
-    const params = new URLSearchParams(toggleBase);
-    params.set("view", view);
-    if (page > 1) params.set("page", String(page));
-    return `/works?${params.toString()}`;
-  };
-
   return (
     <CanvasShell>
-      <FilterProvider selected={selected}>
+      <FilterProvider
+        initialSelected={initialSelected}
+        basePath="/works"
+        currentSearchParams={spRecord}
+        groups={filterGroups}
+      >
         <Header
           active="Works"
-          title={<>Works<span className="page-title-count">({filteredWorks.length})</span></>}
+          title={<>Works<FilteredCount allWorks={works} searchQuery={q} basePath="/works" /></>}
           showWorksToggle
           worksView={view}
           worksGridHref={worksGridHref}
           worksListHref={worksListHref}
           showFilterButton
         />
-        <FilterLayout
-          groups={filterGroups}
-          selected={selected}
-          basePath="/works"
-          currentSearchParams={spRecord}
-        >
-          <WorksClient works={pagedWorks} view={view} renderListDetail={(work) => <WorkDetailsTable details={work.details} />} />
-          <Pagination currentPage={currentPage} totalPages={totalPages} buildHref={buildPageHref} />
+        <FilterLayout groups={filterGroups}>
+          <FilteredWorksList
+            allWorks={works}
+            view={view}
+            perPage={perPage}
+            basePath="/works"
+            searchQuery={q}
+          />
         </FilterLayout>
       </FilterProvider>
     </CanvasShell>
