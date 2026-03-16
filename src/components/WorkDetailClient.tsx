@@ -30,6 +30,9 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
   const sp = useSearchParams();
   const [detailOpen, setDetailOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const isHorizontalSwipe = useRef<boolean | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const overlayScrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -55,13 +58,30 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
   const nextImage = img >= total ? 1 : img + 1;
   const currentMedia = work.media[img - 1];
 
+  /* ギャラリー画像切替時のクロスフェード制御 */
+  const [fading, setFading] = useState(false);
+  const fadeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   const goToImage = useCallback(
     (nextImg: number) => {
-      setLocalImg(nextImg);
-      setLocalMode("gallery");
-      window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${nextImg}`);
+      /* 同じ画像への切替は無視 */
+      if (nextImg === localImg) return;
+
+      /* フェードアウト開始 */
+      setFading(true);
+      clearTimeout(fadeTimer.current);
+
+      /* opacity が下がりきったタイミングで画像を差し替え、フェードイン */
+      fadeTimer.current = setTimeout(() => {
+        setLocalImg(nextImg);
+        setLocalMode("gallery");
+        window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${nextImg}`);
+
+        /* 次フレームでフェードイン（ブラウザにレンダリングを挟ませる） */
+        requestAnimationFrame(() => setFading(false));
+      }, 80); /* 80ms でフェードアウト → 差替え → 80ms でフェードイン = 合計約160ms */
     },
-    [pathname],
+    [pathname, localImg],
   );
 
   /* ブラウザバック/フォワード対応 */
@@ -157,6 +177,56 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
     const html = document.documentElement;
     html.style.overflow = "hidden";
     return () => { html.style.overflow = ""; };
+  }, [detailOpen]);
+
+  /* オーバーレイ表示中: Escキーで閉じる */
+  useEffect(() => {
+    if (!detailOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setDetailOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [detailOpen]);
+
+  /* オーバーレイ表示中: フォーカストラップ（Tabキーをオーバーレイ内に閉じ込める） */
+  useEffect(() => {
+    if (!detailOpen) return;
+    const overlay = overlayRef.current;
+    if (!overlay) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+
+      /* オーバーレイ内のフォーカス可能な要素を取得 */
+      const focusable = overlay.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey) {
+        /* Shift+Tab: 最初の要素にいたら最後へ循環 */
+        if (document.activeElement === first || !overlay.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        /* Tab: 最後の要素にいたら最初へ循環 */
+        if (document.activeElement === last || !overlay.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [detailOpen]);
 
   /* オーバーレイ: スクロール中だけ is-scrolling クラスを付与 */
@@ -316,7 +386,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
       </div>
 
       {/* Infoオーバーレイ（コンテンツのみスライド、バーは含まない） */}
-      <div ref={overlayRef} className={`work-detail-overlay${detailOpen ? " is-open" : ""}`}>
+      <div ref={overlayRef} role="dialog" aria-modal="true" className={`work-detail-overlay${detailOpen ? " is-open" : ""}`}>
         <div className="work-detail-overlay-scroll">
           <div className="work-detail-overlay-grid">
             <div className="work-detail-overlay-content">
