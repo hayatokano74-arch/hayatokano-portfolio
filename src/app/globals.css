@@ -7,7 +7,7 @@
   --bg: #ececec;
   --bg-subtle: #e0e0e0;
   --fg: #141414;
-  --muted: #9a9a9a;
+  --muted: #626262; /* WCAG AA 4.5:1以上確保（on #ececec ≈ 4.56:1） */
   --line: var(--fg);
   --line-light: var(--fg);
   --accent: #0066cc;
@@ -104,7 +104,7 @@
   --bg: #1a1a1a;
   --bg-subtle: #242424;
   --fg: #e8e8e8;
-  --muted: #888;
+  --muted: #949494; /* WCAG AA 4.5:1以上確保（on #1a1a1a ≈ 5.40:1） */
   --line: var(--fg);
   --line-light: var(--fg);
   --accent: #4d9fff;
