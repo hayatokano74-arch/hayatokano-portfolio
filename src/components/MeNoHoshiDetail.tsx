@@ -49,15 +49,20 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           <div className="work-details-table-header">DETAILS</div>
           {/* BIO行はデータ正規化層で details に統合済み。
               key が "bio-" で始まる行には薄い区切り線用のクラスを付与 */}
-          {tableRows.map((row) => (
+          {tableRows.map((row, i) => {
+            const isBio = row.key.startsWith("bio-");
+            /* BIOの最後の行: 次の行がBIOでない、または最終行 */
+            const isLastBio = isBio && (i === tableRows.length - 1 || !tableRows[i + 1].key.startsWith("bio-"));
+            return (
             <div
               key={row.key}
-              className={`work-details-row${row.key.startsWith("bio-") ? " work-details-row--bio" : ""}`}
+              className={`work-details-row${isBio && !isLastBio ? " work-details-row--bio" : ""}`}
             >
               <div className="work-details-label">{row.label ? `${row.label}:` : ""}</div>
               <div className="work-details-value">{row.value}</div>
             </div>
-          ))}
+            );
+          })}
         </section>
 
         {/* NOTICE（注釈） */}
