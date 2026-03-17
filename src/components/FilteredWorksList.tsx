@@ -125,7 +125,8 @@ export function FilteredWorksList<T extends WorkLike>({
 
 /** 目の星のリスト詳細 */
 function MeNoHoshiListDetails({ details }: { details: { key: string; label: string; value: string }[] }) {
-  const rows = details.filter((row) => row.value);
+  /* リスト表示ではBIOを除外（個別ページのみ表示） */
+  const rows = details.filter((row) => row.value && !row.key.startsWith("bio-"));
   if (rows.length === 0) return null;
 
   return (

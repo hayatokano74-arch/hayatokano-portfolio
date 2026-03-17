@@ -75,9 +75,11 @@ function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; wi
 function GridDetails({ details }: { details: unknown }) {
   let rows: { label: string; value: string | undefined }[];
 
-  /* 配列形式（MeNoHoshi）: そのまま使う */
+  /* 配列形式（MeNoHoshi）: グリッド表示ではBIOを除外 */
   if (Array.isArray(details)) {
-    rows = (details as { label: string; value: string }[]).map((d) => ({ label: d.label, value: d.value }));
+    rows = (details as { key: string; label: string; value: string }[])
+      .filter((d) => !d.key.startsWith("bio-"))
+      .map((d) => ({ label: d.label, value: d.value }));
   } else {
     /* オブジェクト形式（Works）: 既存ロジック */
     const d = details as Work["details"];
