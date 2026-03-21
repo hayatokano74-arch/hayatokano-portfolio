@@ -141,14 +141,24 @@ export function useGardenSearch() {
           },
         });
 
-        const indexDocs: IndexDoc[] = docs.map((d) => ({
+        /* 重複IDを除去（WP側で同じ投稿が複数存在する場合の対策） */
+        const seen = new Set<string>();
+        const uniqueDocs: SearchDoc[] = [];
+        for (const d of docs) {
+          if (!seen.has(d.id)) {
+            seen.add(d.id);
+            uniqueDocs.push(d);
+          }
+        }
+
+        const indexDocs: IndexDoc[] = uniqueDocs.map((d) => ({
           ...d,
           tags: d.tags.join(" "),
         }));
         ms.addAll(indexDocs);
 
         const docMap = new Map<string, SearchDoc>();
-        for (const d of docs) {
+        for (const d of uniqueDocs) {
           docMap.set(d.id, d);
         }
 

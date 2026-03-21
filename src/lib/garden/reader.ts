@@ -390,9 +390,17 @@ export async function getAllNodes(): Promise<GardenNode[]> {
   );
 
   // 日付降順 → 同日ならファイル更新時刻が新しい方が上
-  return nodes.sort((a, b) => {
+  nodes.sort((a, b) => {
     if (a.date !== b.date) return a.date > b.date ? -1 : 1;
     return b.mtime - a.mtime;
+  });
+
+  // 重複タイトルを除去（WP側で同じ投稿が複数存在する場合の対策）
+  const seen = new Set<string>();
+  return nodes.filter((n) => {
+    if (seen.has(n.title)) return false;
+    seen.add(n.title);
+    return true;
   });
 }
 
