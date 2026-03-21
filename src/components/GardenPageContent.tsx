@@ -71,16 +71,14 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
           />
         </div>
       )}
-      {/* モバイル: フッター上のArchiveリンク */}
-      <div className="garden-mobile-archive-footer">
-        <button
-          type="button"
-          className="garden-mobile-archive-btn"
-          onClick={state.openDrawer}
-        >
-          Archive
-        </button>
-      </div>
+      {/* モバイル: フッター枠の最上部にArchiveボタン */}
+      <button
+        type="button"
+        className="garden-mobile-archive-footer"
+        onClick={state.openDrawer}
+      >
+        Archive
+      </button>
       <GardenMobileArchiveDrawer
         nodes={state.filteredNodes}
         currentPage={state.safePage}

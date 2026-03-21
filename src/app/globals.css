@@ -2946,27 +2946,9 @@ img[loading="lazy"] {
   margin-bottom: var(--space-4);
 }
 
-/* モバイル: フッター上のArchiveリンク（デスクトップではサイドバーがあるため非表示） */
+/* モバイル: フッター枠内の最上部にArchiveボタン（デスクトップでは非表示） */
 .garden-mobile-archive-footer {
   display: none;
-}
-
-.garden-mobile-archive-btn {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  font-size: var(--font-meta);
-  letter-spacing: 0.08em;
-  line-height: var(--lh-normal);
-  font-weight: 500;
-  color: var(--muted);
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.garden-mobile-archive-btn:hover,
-.garden-mobile-archive-btn:active {
-  color: var(--fg);
 }
 
 /* サイドバー内の検索（アーカイブ下） */
@@ -4561,12 +4543,36 @@ img[loading="lazy"] {
     margin-top: 0 !important;
   }
 
-  /* Garden モバイル */
+  /* Garden モバイル: Archiveボタンをフッター枠上部に統合 */
   .garden-mobile-archive-footer {
     display: flex;
+    align-items: center;
     justify-content: center;
-    padding: var(--space-7) var(--pad-x);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--fg);
+    border-bottom: none;
+    font-size: var(--font-meta);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--fg);
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
   }
+
+  .garden-mobile-archive-footer:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  /* フッターのpadding分だけ下にずらして枠線を繋げる */
+  .garden-mobile-archive-footer {
+    margin-bottom: calc(-1 * var(--v-page));
+  }
+
 
   .garden-layout {
     display: block;
