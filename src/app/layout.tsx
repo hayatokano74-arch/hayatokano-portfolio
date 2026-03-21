@@ -66,8 +66,6 @@ export default function RootLayout({
               `if("serviceWorker"in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js")})}`,
               // スクロール時だけスクロールバーを表示（html.is-scrolling）
               `(function(){var t,h=document.documentElement;window.addEventListener("scroll",function(){h.classList.add("is-scrolling");clearTimeout(t);t=setTimeout(function(){h.classList.remove("is-scrolling")},1200)},{passive:true})})()`,
-              // View Transition方向属性のクリーンアップ（遷移後に削除）
-              `(function(){var h=document.documentElement;document.addEventListener("visibilitychange",function(){if(!document.hidden)delete h.dataset.vtDir});setTimeout(function(){delete h.dataset.vtDir},600)})()`,
             ].join(";"),
           }}
         />

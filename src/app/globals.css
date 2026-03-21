@@ -119,90 +119,6 @@
   --color-success-bg: #2ecc7133;
 }
 
-/* ── View Transitions（ページ遷移演出） ── */
-@view-transition {
-  navigation: auto;
-}
-
-/* ルート（全体）: デフォルトはフェード＋縦スライド */
-::view-transition-old(root) {
-  animation: vt-fade-out 280ms ease both;
-}
-
-::view-transition-new(root) {
-  animation: vt-slide-in 280ms ease both;
-}
-
-@keyframes vt-fade-out {
-  to {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes vt-slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}
-
-@keyframes vt-fade-in {
-  from { opacity: 0; }
-}
-
-/* 前後ナビ時: root はフェードのみ（バーが二重にならない） */
-html[data-vt-dir="prev"]::view-transition-old(root),
-html[data-vt-dir="next"]::view-transition-old(root) {
-  animation: vt-fade-out 280ms ease both;
-}
-html[data-vt-dir="prev"]::view-transition-new(root),
-html[data-vt-dir="next"]::view-transition-new(root) {
-  animation: vt-fade-in 280ms ease both;
-}
-
-/* 前後ナビ時: ステージだけ横スライド */
-html[data-vt-dir="prev"]::view-transition-old(detail-stage) {
-  animation: vt-slide-out-right 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-html[data-vt-dir="prev"]::view-transition-new(detail-stage) {
-  animation: vt-slide-in-left 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-html[data-vt-dir="next"]::view-transition-old(detail-stage) {
-  animation: vt-slide-out-left 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-html[data-vt-dir="next"]::view-transition-new(detail-stage) {
-  animation: vt-slide-in-right 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes vt-slide-out-left {
-  to { opacity: 0; transform: translateX(-8%); }
-}
-@keyframes vt-slide-in-right {
-  from { opacity: 0; transform: translateX(8%); }
-}
-@keyframes vt-slide-out-right {
-  to { opacity: 0; transform: translateX(8%); }
-}
-@keyframes vt-slide-in-left {
-  from { opacity: 0; transform: translateX(-8%); }
-}
-
-/* ヘッダー: ページ遷移中も固定（スムーズモーフ） */
-::view-transition-old(site-header),
-::view-transition-new(site-header) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-/* Works詳細バー: ページ遷移中も固定 */
-::view-transition-old(detail-top-bar),
-::view-transition-new(detail-top-bar),
-::view-transition-old(detail-bottom-bar),
-::view-transition-new(detail-bottom-bar) {
-  animation: none;
-  mix-blend-mode: normal;
-}
 
 ::view-transition-group(site-header) {
   animation-duration: 250ms;
@@ -437,7 +353,6 @@ button {
   position: relative;
   z-index: 1001;
   background: var(--bg);
-  view-transition-name: detail-top-bar;
 }
 
 .wdb-back {
@@ -510,7 +425,6 @@ button {
   position: relative;
   z-index: 1001;
   background: var(--bg);
-  view-transition-name: detail-bottom-bar;
 }
 
 .wdb-cell {
@@ -572,7 +486,6 @@ button {
   position: relative;
   min-height: 0;
   overflow: hidden;
-  view-transition-name: detail-stage;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
@@ -599,11 +512,6 @@ button {
   opacity: 0;
 }
 
-/* View Transition 中は opacity トランジションを無効にし、
-   作品間遷移のスライドアニメーションとの競合を防ぐ */
-html[data-vt-dir] .work-detail-gallery-stage {
-  transition: none;
-}
 
 /* アクセシビリティ: モーション軽減設定時はトランジションなし */
 @media (prefers-reduced-motion: reduce) {
@@ -1000,7 +908,6 @@ html[data-vt-dir] .work-detail-gallery-stage {
 
 .header-root {
   position: relative;
-  view-transition-name: site-header;
 }
 
 

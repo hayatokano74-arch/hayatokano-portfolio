@@ -53,19 +53,9 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
     onSwipeRight,
   });
 
-  /* ページ遷移方向のクリーンアップ（前後ナビのスライド用） */
-  useEffect(() => {
-    const t = setTimeout(() => delete document.documentElement.dataset.vtDir, 600);
-    return () => clearTimeout(t);
-  }, []);
-
-  /* 作品間ナビゲーション（View Transition 対応） */
-  const navigateToWork = useCallback((slug: string, dir: "prev" | "next") => {
-    document.documentElement.dataset.vtDir = dir;
-    const go = () => router.push(`/works/${slug}?mode=gallery&img=1`);
-    if ("startViewTransition" in document) {
-      (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(go);
-    } else { go(); }
+  /* 作品間ナビゲーション（アニメーションなし） */
+  const navigateToWork = useCallback((slug: string) => {
+    router.push(`/works/${slug}?mode=gallery&img=1`);
   }, [router]);
 
   return (
@@ -92,7 +82,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           type="button"
           aria-label={`前の作品: ${prevWork.title}`}
           className="wdb-cell wdb-btn wdb-nav-arrow"
-          onClick={() => navigateToWork(prevWork.slug, "prev")}
+          onClick={() => navigateToWork(prevWork.slug)}
         >
           ‹
           <span className="wdb-nav-tooltip">{prevWork.title}</span>
@@ -101,7 +91,7 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
           type="button"
           aria-label={`次の作品: ${nextWork.title}`}
           className="wdb-cell wdb-btn wdb-nav-arrow"
-          onClick={() => navigateToWork(nextWork.slug, "next")}
+          onClick={() => navigateToWork(nextWork.slug)}
         >
           ›
           <span className="wdb-nav-tooltip">{nextWork.title}</span>
