@@ -7,7 +7,7 @@ import type { MonthGroup } from "./group-by-month";
 import type { GardenNode } from "./types";
 
 /** 1ページあたりの表示件数 */
-export const NODES_PER_PAGE = 30;
+export const NODES_PER_PAGE = 15;
 
 /* ─── アーカイブツリーの型定義（年 > 月 > 投稿） ─── */
 
