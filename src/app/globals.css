@@ -2946,6 +2946,30 @@ img[loading="lazy"] {
   margin-bottom: var(--space-4);
 }
 
+/* モバイル: ヘッダー下のArchiveリンク（デスクトップではサイドバーがあるため非表示） */
+.garden-mobile-archive-row {
+  display: none;
+}
+
+.garden-mobile-archive-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  line-height: var(--lh-normal);
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: uppercase;
+}
+
+.garden-mobile-archive-btn:hover,
+.garden-mobile-archive-btn:active {
+  color: var(--fg);
+}
+
 /* サイドバー内の検索（アーカイブ下） */
 .garden-sidebar-search {
   margin-top: var(--space-6);
@@ -4539,6 +4563,13 @@ img[loading="lazy"] {
   }
 
   /* Garden モバイル */
+  .garden-mobile-archive-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 var(--pad-x);
+    margin-bottom: var(--space-5);
+  }
+
   .garden-layout {
     display: block;
   }

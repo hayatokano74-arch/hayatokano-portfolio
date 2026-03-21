@@ -24,16 +24,6 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
     />
   );
 
-  const archiveButton = (
-    <button
-      type="button"
-      className="mobile-archive-trigger"
-      onClick={state.openDrawer}
-    >
-      Archive +
-    </button>
-  );
-
   return (
     <>
       <Header
@@ -41,8 +31,17 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         title={<>Garden<span className="page-title-count">({nodes.length})</span></>}
         showCategoryRow={false}
         showSearch={false}
-        titleRight={archiveButton}
       />
+      {/* モバイル: ヘッダー下のArchiveリンク */}
+      <div className="garden-mobile-archive-row">
+        <button
+          type="button"
+          className="garden-mobile-archive-btn"
+          onClick={state.openDrawer}
+        >
+          Archive
+        </button>
+      </div>
       <div className="garden-layout">
         <div className="garden-main">
           {/* 全文検索結果バー（検索中のみ表示） */}
