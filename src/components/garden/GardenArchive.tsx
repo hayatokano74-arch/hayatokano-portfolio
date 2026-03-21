@@ -195,11 +195,6 @@ export function GardenArchiveSidebar({
 
   return (
     <aside className="garden-sidebar">
-      {searchElement && (
-        <div style={{ marginBottom: "var(--space-6)" }}>
-          {searchElement}
-        </div>
-      )}
       <div>
         <ArchiveYearTree
           tree={tree}
@@ -209,6 +204,11 @@ export function GardenArchiveSidebar({
           onSelect={onPageChange}
         />
       </div>
+      {searchElement && (
+        <div className="garden-sidebar-search">
+          {searchElement}
+        </div>
+      )}
     </aside>
   );
 }

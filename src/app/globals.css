@@ -2958,6 +2958,24 @@ img[loading="lazy"] {
   margin-bottom: var(--space-4);
 }
 
+/* サイドバー内の検索（アーカイブ下） */
+.garden-sidebar-search {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line);
+}
+
+.garden-sidebar-search .garden-search-input {
+  font-size: var(--font-meta);
+  padding: var(--space-1) var(--space-7);
+}
+
+.garden-sidebar-search .garden-search-icon {
+  left: 8px;
+  width: 13px;
+  height: 13px;
+}
+
 /* 検索UI */
 .garden-search-wrapper {
   position: relative;
