@@ -3161,7 +3161,7 @@ img[loading="lazy"] {
 
 /* 年月セクションの親コンテナ */
 .garden-sections {
-  margin-top: var(--space-6);
+  /* margin-top不要: garden-layoutのgridでサイドバーと高さを揃える */
 }
 
 /* 年月セクション */
