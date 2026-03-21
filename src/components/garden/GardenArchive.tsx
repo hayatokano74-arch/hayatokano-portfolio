@@ -2,13 +2,16 @@
 
 /**
  * Garden アーカイブUI
- * デスクトップ用サイドバーとモバイル用ボトムドロワーの2つのコンポーネントを提供する。
+ * 年 > 月 > 投稿タイトルの3階層ツリー。
+ * デスクトップ用サイドバーとモバイル用ボトムドロワーを提供する。
  */
 
-import React, { useState, useCallback, useMemo } from "react";
-import type { MonthGroup } from "@/lib/garden/group-by-month";
+import React, { useState, useCallback } from "react";
+import Link from "next/link";
+import type { GardenNode } from "@/lib/garden/types";
 import { buildArchiveTree } from "@/lib/garden/pagination";
 import type { GardenArchiveYear } from "@/lib/garden/pagination";
+import { titleToSlug } from "@/lib/garden/slug";
 
 /* ─── 三角形アイコン ─── */
 function ToggleArrow({ open }: { open: boolean }) {
@@ -38,19 +41,21 @@ const btnStyle = {
   cursor: "pointer",
 } as const;
 
-/* ─── 年ツリーの共通コンポーネント ─── */
+/* ─── 年 > 月 > 投稿 の3階層ツリー ─── */
 function ArchiveYearTree({
   tree,
   currentPage,
   openKeys,
   onToggle,
   onSelect,
+  onClose,
 }: {
   tree: GardenArchiveYear[];
   currentPage: number;
   openKeys: Set<string>;
   onToggle: (key: string) => void;
   onSelect: (page: number) => void;
+  onClose?: () => void;
 }) {
   return (
     <>
@@ -58,6 +63,7 @@ function ArchiveYearTree({
         const yearOpen = openKeys.has(yearNode.year);
         return (
           <div key={yearNode.year} style={{ marginBottom: "var(--space-3)" }}>
+            {/* 年 */}
             <button
               type="button"
               onClick={() => onToggle(yearNode.year)}
@@ -81,15 +87,18 @@ function ArchiveYearTree({
               </span>
             </button>
 
-            {yearOpen ? (
+            {yearOpen && (
               <div style={{ paddingLeft: "var(--space-5)", marginTop: "var(--space-1)" }}>
                 {yearNode.months.map((m) => {
-                  const isActive = m.page === currentPage;
+                  const monthKey = m.groupLabel;
+                  const monthOpen = openKeys.has(monthKey);
                   return (
-                    <div key={m.groupLabel} style={{ marginBottom: "var(--space-1)" }}>
+                    <div key={monthKey} style={{ marginBottom: "var(--space-1)" }}>
+                      {/* 月 */}
                       <button
                         type="button"
-                        onClick={() => onSelect(m.page)}
+                        onClick={() => onToggle(monthKey)}
+                        aria-expanded={monthOpen}
                         style={{
                           ...btnStyle,
                           display: "flex",
@@ -97,21 +106,51 @@ function ArchiveYearTree({
                           gap: "var(--space-2)",
                           fontSize: "var(--font-body)",
                           lineHeight: "var(--lh-normal)",
-                          fontWeight: isActive ? 700 : 500,
-                          color: isActive ? "var(--fg)" : "var(--muted)",
+                          fontWeight: 500,
+                          color: "var(--muted)",
                           fontFamily: "inherit",
                         }}
                       >
+                        <ToggleArrow open={monthOpen} />
                         <span>{m.label}</span>
                         <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
                           ({m.count})
                         </span>
                       </button>
+
+                      {/* 投稿タイトル一覧 */}
+                      {monthOpen && (
+                        <div style={{ paddingLeft: "var(--space-5)", marginTop: "var(--space-1)" }}>
+                          {m.posts.map((post) => {
+                            const isActivePage = post.page === currentPage;
+                            return (
+                              <div key={`${post.date}-${post.title}`} style={{ marginBottom: 2 }}>
+                                <Link
+                                  href={`/garden/${encodeURIComponent(titleToSlug(post.title))}`}
+                                  onClick={() => onClose?.()}
+                                  style={{
+                                    display: "block",
+                                    fontSize: "var(--font-meta)",
+                                    lineHeight: "var(--lh-normal)",
+                                    color: isActivePage ? "var(--fg)" : "var(--muted)",
+                                    textDecoration: "none",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {post.title}
+                                </Link>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
-            ) : null}
+            )}
           </div>
         );
       })}
@@ -119,7 +158,7 @@ function ArchiveYearTree({
   );
 }
 
-/* ─── 年ツリーの開閉状態を管理するHook ─── */
+/* ─── 開閉状態を管理するHook ─── */
 function useArchiveToggle(tree: GardenArchiveYear[]) {
   const [openKeys, setOpenKeys] = useState<Set<string>>(() => {
     const initial = new Set<string>();
@@ -141,17 +180,17 @@ function useArchiveToggle(tree: GardenArchiveYear[]) {
 
 /* ─── デスクトップ用サイドバー ─── */
 export function GardenArchiveSidebar({
-  pages,
+  nodes,
   currentPage,
   onPageChange,
   searchElement,
 }: {
-  pages: MonthGroup[][];
+  nodes: GardenNode[];
   currentPage: number;
   onPageChange: (page: number) => void;
   searchElement?: React.ReactNode;
 }) {
-  const tree = useMemo(() => buildArchiveTree(pages), [pages]);
+  const tree = buildArchiveTree(nodes);
   const { openKeys, toggle } = useArchiveToggle(tree);
 
   return (
@@ -176,24 +215,23 @@ export function GardenArchiveSidebar({
 
 /* ─── モバイル用ボトムドロワー ─── */
 export function GardenMobileArchiveDrawer({
-  pages,
+  nodes,
   currentPage,
   onPageChange,
   open,
   onClose,
   searchElement,
 }: {
-  pages: MonthGroup[][];
+  nodes: GardenNode[];
   currentPage: number;
   onPageChange: (page: number) => void;
   open: boolean;
   onClose: () => void;
   searchElement?: React.ReactNode;
 }) {
-  const tree = useMemo(() => buildArchiveTree(pages), [pages]);
+  const tree = buildArchiveTree(nodes);
   const { openKeys, toggle } = useArchiveToggle(tree);
 
-  // 月選択時にドロワーも閉じる
   const handleSelect = useCallback(
     (page: number) => {
       onPageChange(page);
@@ -237,6 +275,7 @@ export function GardenMobileArchiveDrawer({
           openKeys={openKeys}
           onToggle={toggle}
           onSelect={handleSelect}
+          onClose={onClose}
         />
       </div>
     </>

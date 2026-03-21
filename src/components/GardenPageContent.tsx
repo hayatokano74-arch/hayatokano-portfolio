@@ -68,7 +68,7 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         </div>
         {state.showArchive && (
           <GardenArchiveSidebar
-            pages={state.pages}
+            nodes={state.filteredNodes}
             currentPage={state.safePage}
             onPageChange={state.handlePageChange}
             searchElement={searchElement}
@@ -86,7 +86,7 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         </div>
       )}
       <GardenMobileArchiveDrawer
-        pages={state.pages}
+        nodes={state.filteredNodes}
         currentPage={state.safePage}
         onPageChange={state.handlePageChange}
         open={state.drawerOpen}

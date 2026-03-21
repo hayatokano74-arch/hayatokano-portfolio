@@ -1,17 +1,28 @@
 /**
  * Garden ページネーション計算の純粋関数
- * 月グループを投稿数ベースでページに分割し、アーカイブツリーを構築する。
+ * ノードを30件ずつページに分割し、アーカイブツリーを構築する。
  */
 
 import type { MonthGroup } from "./group-by-month";
+import type { GardenNode } from "./types";
 
-/* ─── アーカイブツリーの型定義 ─── */
+/** 1ページあたりの表示件数 */
+export const NODES_PER_PAGE = 30;
+
+/* ─── アーカイブツリーの型定義（年 > 月 > 投稿） ─── */
+
+export type GardenArchivePost = {
+  title: string;
+  date: string;
+  /** このノードが属するページ番号（1始まり） */
+  page: number;
+};
 
 export type GardenArchiveMonth = {
   label: string;       // "2月"
   groupLabel: string;  // "2026年2月"（MonthGroup.label と一致）
   count: number;
-  page: number;        // 1始まり
+  posts: GardenArchivePost[];
 };
 
 export type GardenArchiveYear = {
@@ -21,69 +32,103 @@ export type GardenArchiveYear = {
 };
 
 /**
- * 月グループを1ヶ月=1ページに分割する。
- * 投稿が少ない月（5件未満）は前の月に統合する。
+ * 全ノードを30件ずつフラットに分割する。
+ * 月の境界は無視し、純粋に件数で区切る。
  */
-export function groupIntoPages(groups: MonthGroup[]): MonthGroup[][] {
-  if (groups.length === 0) return [];
+export function paginateNodes(nodes: GardenNode[]): GardenNode[][] {
+  if (nodes.length === 0) return [];
 
-  const pages: MonthGroup[][] = [];
-
-  for (const group of groups) {
-    // 投稿が少なすぎる月は前のページに統合
-    if (pages.length > 0 && group.nodes.length < 5) {
-      pages[pages.length - 1].push(group);
-    } else {
-      pages.push([group]);
-    }
+  const pages: GardenNode[][] = [];
+  for (let i = 0; i < nodes.length; i += NODES_PER_PAGE) {
+    pages.push(nodes.slice(i, i + NODES_PER_PAGE));
   }
-
   return pages;
 }
 
-/** pages（MonthGroup[][]）から年→月の2階層ツリーを構築 */
-export function buildArchiveTree(pages: MonthGroup[][]): GardenArchiveYear[] {
+/**
+ * 旧互換: MonthGroup[][] を返す（GardenGrid が月見出し付きで表示するため）
+ * 各ページのノードを月グループに再分割する。
+ */
+export function groupIntoPages(allGroups: MonthGroup[]): MonthGroup[][] {
+  /* まず全ノードをフラットにして30件ずつ分割 */
+  const allNodes = allGroups.flatMap((g) => g.nodes);
+  const flatPages = paginateNodes(allNodes);
+
+  /* 各ページ内のノードを月でグループ化 */
+  return flatPages.map((pageNodes) => {
+    const groups: MonthGroup[] = [];
+    let currentLabel = "";
+
+    for (const node of pageNodes) {
+      const d = new Date(node.date);
+      const label = isNaN(d.getTime())
+        ? "日付不明"
+        : `${d.getFullYear()}年${d.getMonth() + 1}月`;
+
+      if (label !== currentLabel) {
+        currentLabel = label;
+        groups.push({ label, nodes: [node] });
+      } else {
+        groups[groups.length - 1].nodes.push(node);
+      }
+    }
+    return groups;
+  });
+}
+
+/** 全ノードから年→月→投稿の3階層ツリーを構築 */
+export function buildArchiveTree(nodes: GardenNode[]): GardenArchiveYear[] {
   const tree: GardenArchiveYear[] = [];
   const yearMap = new Map<string, GardenArchiveYear>();
 
-  for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
-    for (const group of pages[pageIdx]) {
-      // "2026年2月" → year="2026", monthLabel="2月"
-      const match = group.label.match(/^(\d+)年(\d+)月$/);
-      if (!match) continue;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    const d = new Date(node.date);
+    if (isNaN(d.getTime())) continue;
 
-      const [, yearStr, monthStr] = match;
-      const nodeCount = group.nodes.length;
+    const yearStr = String(d.getFullYear());
+    const monthNum = d.getMonth() + 1;
+    const groupLabel = `${yearStr}年${monthNum}月`;
+    const page = Math.floor(i / NODES_PER_PAGE) + 1;
 
-      let yearNode = yearMap.get(yearStr);
-      if (!yearNode) {
-        yearNode = { year: yearStr, count: 0, months: [] };
-        yearMap.set(yearStr, yearNode);
-        tree.push(yearNode);
-      }
-      yearNode.count += nodeCount;
-
-      // 同じ月が複数ページにまたがることはないので直接追加
-      yearNode.months.push({
-        label: `${Number(monthStr)}月`,
-        groupLabel: group.label,
-        count: nodeCount,
-        page: pageIdx + 1,
-      });
+    let yearNode = yearMap.get(yearStr);
+    if (!yearNode) {
+      yearNode = { year: yearStr, count: 0, months: [] };
+      yearMap.set(yearStr, yearNode);
+      tree.push(yearNode);
     }
+    yearNode.count++;
+
+    /* 月ノードを探すか作成 */
+    let monthNode = yearNode.months.find((m) => m.groupLabel === groupLabel);
+    if (!monthNode) {
+      monthNode = {
+        label: `${monthNum}月`,
+        groupLabel,
+        count: 0,
+        posts: [],
+      };
+      yearNode.months.push(monthNode);
+    }
+    monthNode.count++;
+    monthNode.posts.push({
+      title: node.title,
+      date: node.date,
+      page,
+    });
   }
+
   return tree;
 }
 
-/** ページの期間ラベルを生成（実在する月のみ表示） */
+/** ページの期間ラベルを生成 */
 export function pageRangeLabel(groups: MonthGroup[]): string {
   if (groups.length === 0) return "";
   if (groups.length === 1) return groups[0].label;
 
-  const newest = groups[0].label; // 新しい方
-  const oldest = groups[groups.length - 1].label; // 古い方
+  const newest = groups[0].label;
+  const oldest = groups[groups.length - 1].label;
 
-  // 同年なら月だけ表示（例: "2025年9月 — 7月"）
   const newestYear = newest.match(/^(\d+)年/);
   const oldestYear = oldest.match(/^(\d+)年/);
   if (newestYear && oldestYear && newestYear[1] === oldestYear[1]) {
