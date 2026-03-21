@@ -17,7 +17,7 @@ interface SearchHook {
   quickSearch: (query: string) => void;
   fullSearch: (query: string) => void;
   clearSearch: () => void;
-  ensureLoaded: () => void;
+  ensureLoaded: () => Promise<void>;
 }
 
 interface GardenSearchProps {
@@ -31,8 +31,13 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
   const [query, setQuery] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  /** 全文検索が保留中（Enter押下時にインデックス未ロード） */
+  const [pendingFullSearch, setPendingFullSearch] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+  /** 最新のクエリをrefで保持（ensureLoaded完了後のコールバックで使用） */
+  const queryRef = useRef(query);
+  queryRef.current = query;
 
   // 外側クリックでポップアップを閉じる
   useEffect(() => {
@@ -50,17 +55,38 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // インデックスロード完了時：入力中のクエリがあればQuickSearchを再実行
+  // 全文検索が保留中であればFullSearchも実行
+  useEffect(() => {
+    if (!ready) return;
+    const q = queryRef.current;
+    if (q.trim()) {
+      quickSearch(q);
+      setShowPopup(true);
+    }
+    if (pendingFullSearch && q.trim()) {
+      fullSearch(q);
+      onFullSearch(q);
+      setPendingFullSearch(false);
+      setShowPopup(false);
+    }
+  }, [ready]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleInput = useCallback(
     (value: string) => {
       setQuery(value);
       setActiveIndex(-1);
+      // インデックスロードを開始（Promiseを返すが、ここではawaitしない）
       ensureLoaded();
       if (value.trim()) {
+        // readyでない場合でもquickSearchを呼ぶ（中身はnullチェックで安全にスキップ）
+        // ready変更時のuseEffectで再実行される
         quickSearch(value);
         setShowPopup(true);
       } else {
         clearSearch();
         onFullSearch(null);
+        setPendingFullSearch(false);
         setShowPopup(false);
       }
     },
@@ -90,11 +116,17 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
           // 候補を選択 → そのページに遷移
           const selected = quickResults[activeIndex];
           window.location.href = `/garden/${encodeURIComponent(titleToSlug(selected.title))}`;
-        } else {
-          // 全文検索実行
+        } else if (ready) {
+          // インデックスロード済み → 全文検索実行
           fullSearch(query);
           onFullSearch(query);
           setShowPopup(false);
+        } else {
+          // インデックス未ロード → ロード完了後に全文検索を実行
+          setPendingFullSearch(true);
+          onFullSearch(query);
+          setShowPopup(false);
+          ensureLoaded();
         }
         return;
       }

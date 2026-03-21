@@ -112,18 +112,25 @@ export function useGardenSearch() {
   const miniRef = useRef<MiniSearch<IndexDoc> | null>(null);
   const docsRef = useRef<Map<string, SearchDoc>>(new Map());
   const loadingRef = useRef(false);
+  /** ロード完了待ちのPromise（重複ロード防止 + await可能にする） */
+  const loadPromiseRef = useRef<Promise<void> | null>(null);
 
   /**
    * 検索インデックスを遅延読み込み
    * 初回は検索入力にフォーカスした時 or 検索が実行された時にロードする。
    * 928KBのJSONをページ読み込み時に取得しない。
+   * Promiseを返すため、呼び出し側でawaitしてロード完了後に検索を実行できる。
    */
-  const ensureLoaded = useCallback(() => {
-    if (ready || loadingRef.current) return;
+  const ensureLoaded = useCallback((): Promise<void> => {
+    if (ready) return Promise.resolve();
+    if (loadPromiseRef.current) return loadPromiseRef.current;
     loadingRef.current = true;
 
-    fetch("/garden-search-index.json")
-      .then((res) => res.json())
+    const promise = fetch("/garden-search-index.json")
+      .then((res) => {
+        if (!res.ok) throw new Error(`検索インデックスの取得に失敗: ${res.status}`);
+        return res.json();
+      })
       .then((docs: SearchDoc[]) => {
         const ms = new MiniSearch<IndexDoc>({
           fields: ["title", "tags", "body"],
@@ -149,9 +156,14 @@ export function useGardenSearch() {
         docsRef.current = docMap;
         setReady(true);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("[GardenSearch] インデックス読み込みエラー:", err);
         loadingRef.current = false;
+        loadPromiseRef.current = null;
       });
+
+    loadPromiseRef.current = promise;
+    return promise;
   }, [ready]);
 
   /** QuickSearch: タイトル＋タグのprefix一致 */

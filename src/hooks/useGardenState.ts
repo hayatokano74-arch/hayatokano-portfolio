@@ -59,7 +59,17 @@ export function useGardenState(nodes: GardenNode[]): GardenState {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const search = useGardenSearch();
 
-  // URL の ?q= パラメータで初期検索を実行、またはインデックス読み込み完了後に再検索
+  // URL の ?q= パラメータで初期検索を実行
+  // 初期クエリがある場合はインデックスロードを開始し、完了後に検索を実行
+  useEffect(() => {
+    const q = searchQuery || initialQuery;
+    if (q) {
+      // インデックスロードを開始（まだの場合）
+      search.ensureLoaded();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // インデックスロード完了後に初期クエリで検索を実行
   useEffect(() => {
     if (search.ready) {
       const q = searchQuery || initialQuery;
