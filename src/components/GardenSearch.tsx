@@ -54,6 +54,7 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
     (value: string) => {
       setQuery(value);
       setActiveIndex(-1);
+      ensureLoaded();
       if (value.trim()) {
         quickSearch(value);
         setShowPopup(true);
@@ -63,7 +64,7 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
         setShowPopup(false);
       }
     },
-    [quickSearch, clearSearch, onFullSearch],
+    [quickSearch, clearSearch, onFullSearch, ensureLoaded],
   );
 
   const handleKeyDown = useCallback(
