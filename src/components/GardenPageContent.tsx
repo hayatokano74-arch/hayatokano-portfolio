@@ -16,6 +16,14 @@ import { GardenArchiveSidebar, GardenMobileArchiveDrawer } from "./garden/Garden
 export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   const state = useGardenState(nodes);
 
+  const searchElement = (
+    <GardenSearch
+      search={state.search}
+      onFullSearch={state.handleFullSearch}
+      fullSearchIds={state.fullSearchIds}
+    />
+  );
+
   return (
     <>
       <Header
@@ -26,27 +34,32 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
       />
       <div className="garden-layout">
         <div className="garden-main">
-          <div className="garden-search-bar">
-            <GardenSearch
-              search={state.search}
-              onFullSearch={state.handleFullSearch}
-              fullSearchIds={state.fullSearchIds}
-            />
-            {state.showArchive && (
-              <button
-                type="button"
-                className="garden-archive-trigger"
-                onClick={state.openDrawer}
-                aria-label="アーカイブを開く"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="4" rx="1" />
-                  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" />
-                  <line x1="10" y1="12" x2="14" y2="12" />
-                </svg>
-              </button>
-            )}
+          {/* モバイルではアーカイブ・検索トリガーボタンを表示 */}
+          <div className="garden-mobile-actions">
+            <button
+              type="button"
+              className="garden-archive-trigger"
+              onClick={state.openDrawer}
+              aria-label="アーカイブ・検索を開く"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
           </div>
+          {/* 全文検索結果バー（検索中のみ表示） */}
+          {state.fullSearchIds !== null && (
+            <div className="garden-search-result-bar-standalone">
+              <span>検索結果: {state.fullSearchIds.length} 件</span>
+              <button
+                className="garden-search-result-clear"
+                onClick={() => state.handleFullSearch(null)}
+              >
+                クリア
+              </button>
+            </div>
+          )}
           <GardenGrid
             groups={state.pageGroups}
             totalNodes={state.filteredNodes.length}
@@ -58,6 +71,7 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
             pages={state.pages}
             currentPage={state.safePage}
             onPageChange={state.handlePageChange}
+            searchElement={searchElement}
           />
         )}
       </div>
@@ -71,15 +85,14 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
           />
         </div>
       )}
-      {state.showArchive && (
-        <GardenMobileArchiveDrawer
-          pages={state.pages}
-          currentPage={state.safePage}
-          onPageChange={state.handlePageChange}
-          open={state.drawerOpen}
-          onClose={state.closeDrawer}
-        />
-      )}
+      <GardenMobileArchiveDrawer
+        pages={state.pages}
+        currentPage={state.safePage}
+        onPageChange={state.handlePageChange}
+        open={state.drawerOpen}
+        onClose={state.closeDrawer}
+        searchElement={searchElement}
+      />
     </>
   );
 }

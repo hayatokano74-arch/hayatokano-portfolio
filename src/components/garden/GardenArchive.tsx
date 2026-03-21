@@ -5,7 +5,7 @@
  * デスクトップ用サイドバーとモバイル用ボトムドロワーの2つのコンポーネントを提供する。
  */
 
-import { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import type { MonthGroup } from "@/lib/garden/group-by-month";
 import { buildArchiveTree } from "@/lib/garden/pagination";
 import type { GardenArchiveYear } from "@/lib/garden/pagination";
@@ -144,16 +144,23 @@ export function GardenArchiveSidebar({
   pages,
   currentPage,
   onPageChange,
+  searchElement,
 }: {
   pages: MonthGroup[][];
   currentPage: number;
   onPageChange: (page: number) => void;
+  searchElement?: React.ReactNode;
 }) {
   const tree = useMemo(() => buildArchiveTree(pages), [pages]);
   const { openKeys, toggle } = useArchiveToggle(tree);
 
   return (
     <aside className="garden-sidebar">
+      {searchElement && (
+        <div style={{ marginBottom: "var(--space-6)" }}>
+          {searchElement}
+        </div>
+      )}
       <div>
         <ArchiveYearTree
           tree={tree}
@@ -174,12 +181,14 @@ export function GardenMobileArchiveDrawer({
   onPageChange,
   open,
   onClose,
+  searchElement,
 }: {
   pages: MonthGroup[][];
   currentPage: number;
   onPageChange: (page: number) => void;
   open: boolean;
   onClose: () => void;
+  searchElement?: React.ReactNode;
 }) {
   const tree = useMemo(() => buildArchiveTree(pages), [pages]);
   const { openKeys, toggle } = useArchiveToggle(tree);
@@ -215,6 +224,12 @@ export function GardenMobileArchiveDrawer({
             ✕
           </button>
         </div>
+
+        {searchElement && (
+          <div style={{ marginBottom: "var(--space-5)" }}>
+            {searchElement}
+          </div>
+        )}
 
         <ArchiveYearTree
           tree={tree}

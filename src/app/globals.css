@@ -2937,13 +2937,25 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
-/* 検索バー（検索 + アーカイブトリガー） */
-.garden-search-bar {
-  /* デスクトップ: .garden-main > * の grid-column を継承する通常ブロック */
+/* モバイル用アクションバー（デスクトップでは非表示） */
+.garden-mobile-actions {
+  display: none;
 }
 
 .garden-archive-trigger {
-  display: none; /* デスクトップ: サイドバーがあるため非表示 */
+  display: none;
+}
+
+/* 全文検索結果バー（メインエリア内） */
+.garden-search-result-bar-standalone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  font-size: var(--font-meta);
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-4);
 }
 
 /* 検索UI */
@@ -4533,15 +4545,10 @@ img[loading="lazy"] {
     display: none;
   }
 
-  .garden-search-bar {
+  .garden-mobile-actions {
     display: flex;
-    align-items: stretch;
-    gap: var(--space-2);
-  }
-
-  .garden-search-bar .garden-search-wrapper {
-    flex: 1;
-    min-width: 0;
+    justify-content: flex-end;
+    margin-bottom: var(--space-3);
   }
 
   .garden-archive-trigger {
@@ -4550,6 +4557,7 @@ img[loading="lazy"] {
     justify-content: center;
     flex-shrink: 0;
     width: 40px;
+    height: 40px;
     padding: 0;
     color: var(--muted);
     background: transparent;
