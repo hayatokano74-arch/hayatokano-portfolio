@@ -2937,14 +2937,6 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
-/* モバイル用アクションバー（デスクトップでは非表示） */
-.garden-mobile-actions {
-  display: none;
-}
-
-.garden-archive-trigger {
-  display: none;
-}
 
 /* 全文検索結果バー（メインエリア内） */
 .garden-search-result-bar-standalone {
@@ -4563,33 +4555,6 @@ img[loading="lazy"] {
     display: none;
   }
 
-  .garden-mobile-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: var(--space-3);
-  }
-
-  .garden-archive-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    color: var(--muted);
-    background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
-  }
-
-  .garden-archive-trigger:hover,
-  .garden-archive-trigger:active {
-    color: var(--fg);
-    border-color: var(--fg);
-  }
 
   .garden-pagination-wrap {
     display: block;

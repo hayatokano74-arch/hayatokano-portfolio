@@ -24,6 +24,16 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
     />
   );
 
+  const archiveButton = (
+    <button
+      type="button"
+      className="mobile-archive-trigger"
+      onClick={state.openDrawer}
+    >
+      Archive +
+    </button>
+  );
+
   return (
     <>
       <Header
@@ -31,23 +41,10 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         title={<>Garden<span className="page-title-count">({nodes.length})</span></>}
         showCategoryRow={false}
         showSearch={false}
+        titleRight={archiveButton}
       />
       <div className="garden-layout">
         <div className="garden-main">
-          {/* モバイルではアーカイブ・検索トリガーボタンを表示 */}
-          <div className="garden-mobile-actions">
-            <button
-              type="button"
-              className="garden-archive-trigger"
-              onClick={state.openDrawer}
-              aria-label="アーカイブ・検索を開く"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </button>
-          </div>
           {/* 全文検索結果バー（検索中のみ表示） */}
           {state.fullSearchIds !== null && (
             <div className="garden-search-result-bar-standalone">
