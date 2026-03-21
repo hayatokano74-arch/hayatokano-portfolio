@@ -1211,6 +1211,10 @@ button {
   min-height: var(--space-11);
 }
 
+.top-page-header .theme-dot {
+  border-right: none;
+}
+
 .top-page-name {
   font-size: var(--font-body);
   font-weight: 700;
