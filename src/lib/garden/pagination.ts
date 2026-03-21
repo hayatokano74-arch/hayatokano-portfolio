@@ -5,9 +5,6 @@
 
 import type { MonthGroup } from "./group-by-month";
 
-/** 1ページあたりの目標投稿数 */
-export const NODES_PER_PAGE = 30;
-
 /* ─── アーカイブツリーの型定義 ─── */
 
 export type GardenArchiveMonth = {
@@ -24,36 +21,20 @@ export type GardenArchiveYear = {
 };
 
 /**
- * 月グループを投稿数ベースでページに分割する。
- * - 月グループは絶対に分割しない（1つの月が2ページにまたがらない）
- * - 目標投稿数に達したらページを閉じる
- * - 最後のページが極端に少ない場合は前のページに統合
+ * 月グループを1ヶ月=1ページに分割する。
+ * 投稿が少ない月（5件未満）は前の月に統合する。
  */
 export function groupIntoPages(groups: MonthGroup[]): MonthGroup[][] {
   if (groups.length === 0) return [];
 
   const pages: MonthGroup[][] = [];
-  let currentPage: MonthGroup[] = [];
-  let currentCount = 0;
 
   for (const group of groups) {
-    currentPage.push(group);
-    currentCount += group.nodes.length;
-
-    if (currentCount >= NODES_PER_PAGE) {
-      pages.push(currentPage);
-      currentPage = [];
-      currentCount = 0;
-    }
-  }
-
-  // 残りのグループを処理
-  if (currentPage.length > 0) {
-    // 最後のページが少なすぎる場合（目標の1/3未満）は前のページに統合
-    if (pages.length > 0 && currentCount < Math.floor(NODES_PER_PAGE / 3)) {
-      pages[pages.length - 1].push(...currentPage);
+    // 投稿が少なすぎる月は前のページに統合
+    if (pages.length > 0 && group.nodes.length < 5) {
+      pages[pages.length - 1].push(group);
     } else {
-      pages.push(currentPage);
+      pages.push([group]);
     }
   }
 
