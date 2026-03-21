@@ -1845,6 +1845,7 @@ button {
   cursor: pointer;
   list-style: none;
   padding: var(--space-1) 0;
+  transition: background var(--duration-normal) ease, color var(--duration-normal) ease;
 }
 
 .news-accord-summary::-webkit-details-marker {
@@ -1853,6 +1854,33 @@ button {
 
 .news-accord-summary::marker {
   content: "";
+}
+
+/* ホバー時: 色反転（Worksリストと統一） */
+.news-accord-item:not([open]) > .news-accord-summary:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* 開いた状態: サマリーの反転を維持 */
+.news-accord-item[open] > .news-accord-summary {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* 反転時の日付色を継承 */
+.news-accord-item:not([open]) > .news-accord-summary:hover .news-accord-date,
+.news-accord-item[open] > .news-accord-summary .news-accord-date {
+  color: inherit;
+}
+
+/* 展開コンテンツのフェードイン */
+.news-accord-item .news-accord-detail {
+  animation: news-fade-in 200ms ease both;
+}
+
+@keyframes news-fade-in {
+  from { opacity: 0; }
 }
 
 .news-accord-date {
