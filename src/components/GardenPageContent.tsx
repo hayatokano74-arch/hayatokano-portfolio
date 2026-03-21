@@ -3,11 +3,12 @@
 /**
  * Garden一覧ページのClient Component
  * 検索 + 投稿数ベースのページネーション + アーカイブサイドバーを管理する。
- * Footerを内包し、モバイルではArchiveボタンをフッター枠内に統合する。
  */
 
+import { useEffect } from "react";
 import type { GardenNode } from "@/lib/garden/types";
 import { useGardenState } from "@/hooks/useGardenState";
+import { useFooterSlot } from "./FooterSlotContext";
 import { GardenSearch } from "./GardenSearch";
 import { GardenGrid } from "./GardenGrid";
 import { GardenPagination } from "./GardenPagination";
@@ -16,6 +17,21 @@ import { GardenArchiveSidebar, GardenMobileArchiveDrawer } from "./garden/Garden
 
 export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   const state = useGardenState(nodes);
+  const { setSlot } = useFooterSlot();
+
+  /* モバイル用: フッター枠内にArchiveボタンを登録 */
+  useEffect(() => {
+    setSlot(
+      <button
+        type="button"
+        className="garden-footer-archive-btn"
+        onClick={state.openDrawer}
+      >
+        Archive
+      </button>
+    );
+    return () => setSlot(null);
+  }, [setSlot, state.openDrawer]);
 
   const searchElement = (
     <GardenSearch
@@ -72,38 +88,6 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
           />
         </div>
       )}
-      {/* フッター（Archiveボタンをモバイルで枠内に統合） */}
-      <footer className="site-footer">
-        <div className="site-footer-inner">
-          <button
-            type="button"
-            className="garden-footer-archive-btn"
-            onClick={state.openDrawer}
-          >
-            Archive
-          </button>
-          <a href="mailto:info@hayatokano.com" className="footer-link">
-            info@hayatokano.com
-          </a>
-          <a
-            href="https://www.instagram.com/_hayatokano/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="footer-link"
-          >
-            Instagram
-          </a>
-          <a
-            href="https://x.com/_oshica"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="footer-link"
-          >
-            X
-          </a>
-          <span className="footer-copy">© {new Date().getFullYear()} Hayato Kano</span>
-        </div>
-      </footer>
       <GardenMobileArchiveDrawer
         nodes={state.filteredNodes}
         currentPage={state.safePage}

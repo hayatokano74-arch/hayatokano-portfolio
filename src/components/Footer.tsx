@@ -1,7 +1,10 @@
-export function Footer() {
+import type React from "react";
+
+export function Footer({ topSlot }: { topSlot?: React.ReactNode } = {}) {
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">
+        {topSlot}
         <a href="mailto:info@hayatokano.com" className="footer-link">
           info@hayatokano.com
         </a>
