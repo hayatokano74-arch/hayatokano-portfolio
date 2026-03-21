@@ -2946,8 +2946,8 @@ img[loading="lazy"] {
   margin-bottom: var(--space-4);
 }
 
-/* モバイル: ヘッダー下のArchiveリンク（デスクトップではサイドバーがあるため非表示） */
-.garden-mobile-archive-row {
+/* モバイル: フッター上のArchiveリンク（デスクトップではサイドバーがあるため非表示） */
+.garden-mobile-archive-footer {
   display: none;
 }
 
@@ -2962,7 +2962,6 @@ img[loading="lazy"] {
   color: var(--muted);
   cursor: pointer;
   font-family: inherit;
-  text-transform: uppercase;
 }
 
 .garden-mobile-archive-btn:hover,
@@ -4563,11 +4562,10 @@ img[loading="lazy"] {
   }
 
   /* Garden モバイル */
-  .garden-mobile-archive-row {
+  .garden-mobile-archive-footer {
     display: flex;
-    justify-content: flex-end;
-    padding: 0 var(--pad-x);
-    margin-bottom: var(--space-5);
+    justify-content: center;
+    padding: var(--space-7) var(--pad-x);
   }
 
   .garden-layout {

@@ -32,16 +32,6 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         showCategoryRow={false}
         showSearch={false}
       />
-      {/* モバイル: ヘッダー下のArchiveリンク */}
-      <div className="garden-mobile-archive-row">
-        <button
-          type="button"
-          className="garden-mobile-archive-btn"
-          onClick={state.openDrawer}
-        >
-          Archive
-        </button>
-      </div>
       <div className="garden-layout">
         <div className="garden-main">
           {/* 全文検索結果バー（検索中のみ表示） */}
@@ -81,6 +71,16 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
           />
         </div>
       )}
+      {/* モバイル: フッター上のArchiveリンク */}
+      <div className="garden-mobile-archive-footer">
+        <button
+          type="button"
+          className="garden-mobile-archive-btn"
+          onClick={state.openDrawer}
+        >
+          Archive
+        </button>
+      </div>
       <GardenMobileArchiveDrawer
         nodes={state.filteredNodes}
         currentPage={state.safePage}
