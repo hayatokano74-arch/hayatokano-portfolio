@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Work } from "@/lib/types";
 import { useGalleryNav } from "@/hooks/useGalleryNav";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
@@ -12,13 +11,23 @@ import { IndexGrid } from "@/components/work-detail/IndexGrid";
 import { InfoOverlay } from "@/components/work-detail/InfoOverlay";
 import { BottomBar } from "@/components/work-detail/BottomBar";
 
-export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { slug: string; title: string }[] }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const sp = useSearchParams();
-  const stageRef = useRef<HTMLDivElement>(null);
+export function WorkDetailClient({
+  work: initialWork,
+  allWorks,
+  initialSlug,
+}: {
+  work: Work;
+  allWorks: Work[];
+  initialSlug: string;
+}) {
+  /* 現在表示中の作品（クライアント側で切替） */
+  const [currentSlug, setCurrentSlug] = useState(initialSlug);
+  const work = allWorks.find((w) => w.slug === currentSlug) ?? initialWork;
 
-  /* WP から取得した実際の works リストで前後を計算 */
+  const stageRef = useRef<HTMLDivElement>(null);
+  const pathname = `/works/${work.slug}`;
+
+  /* 前後の作品を計算 */
   const currentWorkIndex = Math.max(
     0,
     allWorks.findIndex((w) => w.slug === work.slug),
@@ -33,11 +42,12 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
     prevImage, nextImage,
     currentMedia, fading,
     goToImage,
+    resetTo,
   } = useGalleryNav({
     pathname,
     media: work.media,
-    initialMode: sp.get("mode") === "index" ? "index" : "gallery",
-    initialImg: Math.max(1, Math.min(work.media.length, Number(sp.get("img") ?? "1") || 1)),
+    initialMode: "gallery",
+    initialImg: 1,
   });
 
   /* Infoオーバーレイ */
@@ -53,10 +63,31 @@ export function WorkDetailClient({ work, allWorks }: { work: Work; allWorks: { s
     onSwipeRight,
   });
 
-  /* 作品間ナビゲーション（アニメーションなし） */
+  /* ブラウザバック/フォワードでslugを復元 */
+  useEffect(() => {
+    const onPopState = () => {
+      const match = window.location.pathname.match(/^\/works\/([^/]+)/);
+      if (match) {
+        const slug = match[1];
+        setCurrentSlug(slug);
+        const url = new URL(window.location.href);
+        const newImg = Math.max(1, Number(url.searchParams.get("img") ?? "1") || 1);
+        const newMode = url.searchParams.get("mode") === "index" ? "index" as const : "gallery" as const;
+        resetTo(newImg, newMode);
+      }
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [resetTo]);
+
+  /* 作品間ナビゲーション（ページ遷移なし、クライアント側で切替） */
   const navigateToWork = useCallback((slug: string) => {
-    router.push(`/works/${slug}?mode=gallery&img=1`);
-  }, [router]);
+    setCurrentSlug(slug);
+    resetTo(1, "gallery");
+    setDetailOpen(false);
+    /* URLだけ更新（ページ遷移なし） */
+    window.history.pushState(null, "", `/works/${slug}?mode=gallery&img=1`);
+  }, [resetTo, setDetailOpen]);
 
   return (
     <div

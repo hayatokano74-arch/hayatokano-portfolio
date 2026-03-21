@@ -123,6 +123,14 @@ export function useGalleryNav({
     return () => clearTimeout(fadeTimer.current);
   }, []);
 
+  /* 作品切替時に即座にリセット（フェードなし） */
+  const resetTo = useCallback((newImg: number, newMode: "gallery" | "index") => {
+    clearTimeout(fadeTimer.current);
+    setFading(false);
+    setImg(newImg);
+    setMode(newMode);
+  }, []);
+
   return {
     mode,
     setMode,
@@ -133,6 +141,7 @@ export function useGalleryNav({
     currentMedia,
     fading,
     goToImage,
+    resetTo,
     total,
   };
 }

@@ -4,11 +4,6 @@ import { WorkDetailClient } from "@/components/WorkDetailClient";
 import { getWorks, getWorkBySlug } from "@/lib/works";
 import { notFound } from "next/navigation";
 
-/** 前後ナビ用の最小リスト（全データを Client に送らないため） */
-async function getWorkSlugs() {
-  const all = await getWorks();
-  return all.map((w) => ({ slug: w.slug, title: w.title }));
-}
 
 export async function generateStaticParams() {
   const works = await getWorks();
@@ -42,15 +37,13 @@ export default async function WorkDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [work, allWorks] = await Promise.all([
-    getWorkBySlug(slug),
-    getWorkSlugs(),
-  ]);
+  const allWorks = await getWorks();
+  const work = allWorks.find((w) => w.slug === slug);
   if (!work) return notFound();
 
   return (
     <CanvasShell>
-      <WorkDetailClient work={work} allWorks={allWorks} />
+      <WorkDetailClient work={work} allWorks={allWorks} initialSlug={slug} />
     </CanvasShell>
   );
 }
