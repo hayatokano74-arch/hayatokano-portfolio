@@ -3,6 +3,7 @@
 /**
  * Garden一覧ページのClient Component
  * 検索 + 投稿数ベースのページネーション + アーカイブサイドバーを管理する。
+ * Footerを内包し、モバイルではArchiveボタンをフッター枠内に統合する。
  */
 
 import type { GardenNode } from "@/lib/garden/types";
@@ -71,14 +72,38 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
           />
         </div>
       )}
-      {/* モバイル: フッター枠の最上部にArchiveボタン */}
-      <button
-        type="button"
-        className="garden-mobile-archive-footer"
-        onClick={state.openDrawer}
-      >
-        Archive
-      </button>
+      {/* フッター（Archiveボタンをモバイルで枠内に統合） */}
+      <footer className="site-footer">
+        <div className="site-footer-inner">
+          <button
+            type="button"
+            className="garden-footer-archive-btn"
+            onClick={state.openDrawer}
+          >
+            Archive
+          </button>
+          <a href="mailto:info@hayatokano.com" className="footer-link">
+            info@hayatokano.com
+          </a>
+          <a
+            href="https://www.instagram.com/_hayatokano/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-link"
+          >
+            Instagram
+          </a>
+          <a
+            href="https://x.com/_oshica"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-link"
+          >
+            X
+          </a>
+          <span className="footer-copy">© {new Date().getFullYear()} Hayato Kano</span>
+        </div>
+      </footer>
       <GardenMobileArchiveDrawer
         nodes={state.filteredNodes}
         currentPage={state.safePage}

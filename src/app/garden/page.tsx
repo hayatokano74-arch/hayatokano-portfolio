@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { CanvasShell } from "@/components/CanvasShell";
 import { GardenPageContent } from "@/components/GardenPageContent";
 import { getAllNodes } from "@/lib/garden/reader";
 
@@ -28,10 +27,10 @@ export default async function GardenPage() {
   const nodes = await getAllNodes();
 
   return (
-    <CanvasShell>
+    <main id="main-content" className="page-shell">
       <Suspense>
         <GardenPageContent nodes={nodes} />
       </Suspense>
-    </CanvasShell>
+    </main>
   );
 }

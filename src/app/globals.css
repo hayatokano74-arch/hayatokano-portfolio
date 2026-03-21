@@ -2948,8 +2948,8 @@ img[loading="lazy"] {
   margin-bottom: var(--space-4);
 }
 
-/* モバイル: フッター枠内の最上部にArchiveボタン（デスクトップでは非表示） */
-.garden-mobile-archive-footer {
+/* Garden フッター内のArchiveボタン（デスクトップではサイドバーがあるため非表示） */
+.garden-footer-archive-btn {
   display: none;
 }
 
@@ -4545,15 +4545,15 @@ img[loading="lazy"] {
     margin-top: 0 !important;
   }
 
-  /* Garden モバイル: Archiveボタンをフッター枠上部に統合 */
-  .garden-mobile-archive-footer {
+  /* Garden モバイル: Archiveボタンをフッター枠内の最上部に表示 */
+  .garden-footer-archive-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--fg);
-    border-bottom: none;
+    border: none;
+    border-bottom: 1px solid var(--fg);
     font-size: var(--font-meta);
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -4565,14 +4565,9 @@ img[loading="lazy"] {
     transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
   }
 
-  .garden-mobile-archive-footer:hover {
+  .garden-footer-archive-btn:hover {
     background: var(--fg);
     color: var(--bg);
-  }
-
-  /* フッターのpadding分だけ下にずらして枠線を繋げる */
-  .garden-mobile-archive-footer {
-    margin-bottom: calc(-1 * var(--v-page));
   }
 
 
