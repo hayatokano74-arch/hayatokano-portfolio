@@ -2918,6 +2918,8 @@ img[loading="lazy"] {
 
 .garden-sidebar {
   grid-column: 11 / -1;
+  position: sticky;
+  top: var(--space-7);
   align-self: start;
 }
 

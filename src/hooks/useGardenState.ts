@@ -143,9 +143,9 @@ export function useGardenState(nodes: GardenNode[]): GardenState {
     [],
   );
 
-  // 検索中はページネーション・アーカイブ非表示
+  // 検索中はページネーション非表示（アーカイブは常に表示）
   const showPagination = !searchQuery && totalPages > 1;
-  const showArchive = !searchQuery && pages.length > 1;
+  const showArchive = pages.length > 1 || !!searchQuery;
 
   return {
     search,
