@@ -113,7 +113,7 @@ function rehypeOptimizedImages(options?: OptimizedImagesOptions) {
 }
 import fs from "fs";
 import path from "path";
-import { fetchAllGardenFiles, type GardenFile } from "./cache";
+import { fetchAllGardenFiles, clearCache, type GardenFile } from "./cache";
 import type { GardenNode, GardenFrontmatter } from "./types";
 
 // ============================================================
