@@ -156,6 +156,21 @@ const CACHE_TTL_MS = 60_000; // 60秒
 let _gardenCache: GardenFile[] | null = null;
 let _gardenCachedAt = 0;
 
+/**
+ * 全キャッシュをクリアする（On-demand revalidate時に呼び出す）
+ * メモリキャッシュ + ファイルキャッシュの両方をリセット
+ */
+export function clearAllGardenCaches(): void {
+  _nodesCache = null;
+  _gardenCache = null;
+  _gardenCachedAt = 0;
+  clearCache(); // ファイルキャッシュも削除
+  // ノードキャッシュファイルも削除
+  try { if (fs.existsSync(NODES_CACHE_PATH)) fs.unlinkSync(NODES_CACHE_PATH); } catch { /* ignore */ }
+  try { if (fs.existsSync(NODES_TMP_CACHE_PATH)) fs.unlinkSync(NODES_TMP_CACHE_PATH); } catch { /* ignore */ }
+  console.log("[Garden] 全キャッシュをクリアしました");
+}
+
 export async function getGardenFiles(): Promise<GardenFile[]> {
   const now = Date.now();
   if (_gardenCache && now - _gardenCachedAt < CACHE_TTL_MS) {

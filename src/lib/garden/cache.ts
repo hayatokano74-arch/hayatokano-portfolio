@@ -65,20 +65,57 @@ export function readCache(): GardenFile[] | null {
   return null;
 }
 
+/** キャッシュファイルを削除する（On-demand revalidate時に呼び出す） */
+export function clearCache(): void {
+  for (const p of [CACHE_PATH, TMP_CACHE_PATH]) {
+    try {
+      if (fs.existsSync(p)) {
+        fs.unlinkSync(p);
+        console.log(`[Garden] キャッシュ削除: ${p}`);
+      }
+    } catch {
+      // 削除失敗 — 無視
+    }
+  }
+}
+
+/** キャッシュの最終更新時刻を取得（ミリ秒） */
+function getCacheAge(): number {
+  for (const p of [CACHE_PATH, TMP_CACHE_PATH]) {
+    try {
+      if (fs.existsSync(p)) {
+        return fs.statSync(p).mtimeMs;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return 0;
+}
+
+/** キャッシュの有効期限（ミリ秒）— 5分 */
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000;
+
 /**
  * Garden ファイルを取得する（WordPress API のみ）
  *
- * ビルド時: WP API → キャッシュに保存
- * ランタイム: キャッシュから読み込み（ISR 時のみ WP API にフォールバック）
+ * キャッシュが5分以内ならキャッシュを使用。
+ * 5分を超えたらWP APIから再取得してキャッシュを更新。
+ * これにより新しい投稿が自動的に反映される。
  */
 export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
-  // 1. キャッシュがあればそれを使う（ランタイム高速化）
-  const cached = readCache();
-  if (cached && cached.length > 0) {
-    return cached;
+  // 1. キャッシュが新鮮（5分以内）ならそのまま使う
+  const cacheAge = getCacheAge();
+  const isFresh = cacheAge > 0 && (Date.now() - cacheAge) < CACHE_MAX_AGE_MS;
+
+  if (isFresh) {
+    const cached = readCache();
+    if (cached && cached.length > 0) {
+      return cached;
+    }
   }
 
-  // 2. WP API から取得
+  // 2. WP API から取得（キャッシュが古い or 存在しない場合）
   let wpFiles: GardenFile[] = [];
   try {
     const { fetchGardenFromWP } = await import("./wordpress");
@@ -86,15 +123,21 @@ export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
     console.log(`[Garden] WordPress API: ${wpFiles.length} 件取得`);
   } catch (e) {
     console.error("[Garden] WordPress API 取得失敗:", e);
+    // API失敗時は古いキャッシュにフォールバック
+    const cached = readCache();
+    if (cached && cached.length > 0) {
+      console.log("[Garden] API失敗 → 古いキャッシュにフォールバック");
+      return cached;
+    }
   }
 
-  // 3. 取得できたらキャッシュに保存
+  // 3. 取得できたらキャッシュを更新
   if (wpFiles.length > 0) {
     writeCache(wpFiles);
     return wpFiles;
   }
 
-  // 4. WP も空ならエラー（キャッシュもない状態）
+  // 4. WP も空ならエラー
   console.error("[Garden] データソースが空です（WP API 0件、キャッシュなし）");
   return [];
 }

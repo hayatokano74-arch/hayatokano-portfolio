@@ -1211,10 +1211,6 @@ button {
   min-height: var(--space-11);
 }
 
-.top-page-header .theme-dot {
-  border-right: none;
-}
-
 .top-page-name {
   font-size: var(--font-body);
   font-weight: 700;
@@ -1849,7 +1845,6 @@ button {
   cursor: pointer;
   list-style: none;
   padding: var(--space-1) 0;
-  transition: background var(--duration-normal) ease, color var(--duration-normal) ease;
 }
 
 .news-accord-summary::-webkit-details-marker {
@@ -1858,33 +1853,6 @@ button {
 
 .news-accord-summary::marker {
   content: "";
-}
-
-/* ホバー時: 色反転（Worksリストと統一） */
-.news-accord-item:not([open]) > .news-accord-summary:hover {
-  background: var(--fg);
-  color: var(--bg);
-}
-
-/* 開いた状態: サマリーの反転を維持 */
-.news-accord-item[open] > .news-accord-summary {
-  background: var(--fg);
-  color: var(--bg);
-}
-
-/* 反転時の日付色を継承 */
-.news-accord-item:not([open]) > .news-accord-summary:hover .news-accord-date,
-.news-accord-item[open] > .news-accord-summary .news-accord-date {
-  color: inherit;
-}
-
-/* 展開コンテンツのフェードイン */
-.news-accord-item .news-accord-detail {
-  animation: news-fade-in 200ms ease both;
-}
-
-@keyframes news-fade-in {
-  from { opacity: 0; }
 }
 
 .news-accord-date {
@@ -2980,8 +2948,8 @@ img[loading="lazy"] {
   margin-bottom: var(--space-4);
 }
 
-/* Garden フッター内のArchiveボタン（デスクトップではサイドバーがあるため非表示） */
-.garden-footer-archive-btn {
+/* モバイル: フッター枠内の最上部にArchiveボタン（デスクトップでは非表示） */
+.garden-mobile-archive-footer {
   display: none;
 }
 
@@ -3138,15 +3106,24 @@ img[loading="lazy"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-3);
   margin-top: var(--space-4);
-  padding: 8px 0;
+  padding: var(--space-2) 0;
   font-size: var(--font-meta);
   letter-spacing: 0.04em;
   color: var(--muted);
   border-bottom: 1px solid var(--line);
 }
 
+.garden-search-result-bar > span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .garden-search-result-clear {
+  flex-shrink: 0;
   padding: var(--space-1) var(--space-2);
   font-size: var(--font-meta);
   font-family: inherit;
@@ -3165,7 +3142,7 @@ img[loading="lazy"] {
 
 /* 年月セクションの親コンテナ */
 .garden-sections {
-  /* margin-top不要: garden-layoutのgridでサイドバーと高さを揃える */
+  margin-top: var(--space-6);
 }
 
 /* 年月セクション */
@@ -4577,15 +4554,15 @@ img[loading="lazy"] {
     margin-top: 0 !important;
   }
 
-  /* Garden モバイル: Archiveボタンをフッター枠内の最上部に表示 */
-  .garden-footer-archive-btn {
+  /* Garden モバイル: Archiveボタンをフッター枠上部に統合 */
+  .garden-mobile-archive-footer {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     padding: var(--space-3) var(--space-4);
-    border: none;
-    border-bottom: 1px solid var(--fg);
+    border: 1px solid var(--fg);
+    border-bottom: none;
     font-size: var(--font-meta);
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -4597,9 +4574,15 @@ img[loading="lazy"] {
     transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
   }
 
-  .garden-footer-archive-btn:hover {
+  .garden-mobile-archive-footer:hover {
     background: var(--fg);
     color: var(--bg);
+  }
+
+  /* Archiveボタンがある場合、フッターの余白を消して枠線を繋げる */
+  .page-shell:has(.garden-mobile-archive-footer) .site-footer {
+    padding-top: 0;
+    margin-top: calc(-1 * var(--v-header-content-gap));
   }
 
 
