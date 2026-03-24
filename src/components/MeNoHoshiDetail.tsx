@@ -63,7 +63,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           />
         </div>
 
-        {/* PROFILE（BIO / 過去の展示 / SNS リンク） */}
+        {/* PROFILE（ARTIST / BIO / SNS リンク） */}
         {hasProfile && (
           <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
             <div className="work-details-table-header">PROFILE</div>
@@ -76,7 +76,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
               </div>
             )}
 
-            {/* BIO（元の表示方式: 行ごとに分割、work-details-row--bio で薄い区切り線） */}
+            {/* BIO（行ごとに分割、work-details-row--bio で薄い区切り線） */}
             {bioLines.map((line, i) => {
               const isLastBio = i === bioLines.length - 1;
               return (
@@ -86,14 +86,6 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
                 </div>
               );
             })}
-
-            {/* 過去の展示 */}
-            {post.pastExhibitions.map((line, i) => (
-              <div key={`past-ex-${i}`} className="work-details-row">
-                <div className="work-details-label">{i === 0 ? "EXHIBITION:" : ""}</div>
-                <div className="work-details-value">{line}</div>
-              </div>
-            ))}
 
             {/* SNS リンク */}
             {post.snsLinks.map((link, i) => (
@@ -120,6 +112,22 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             </div>
           ))}
         </section>
+
+        {/* EXHIBITION（独立セクション、DETAILS の下） */}
+        {post.pastExhibitions.length > 0 && (
+          <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
+            <div className="work-details-table-header">EXHIBITION</div>
+            {post.pastExhibitions.map((line, i) => {
+              const isLast = i === post.pastExhibitions.length - 1;
+              return (
+                <div key={`past-ex-${i}`} className={`work-details-row${!isLast ? " work-details-row--bio" : ""}`}>
+                  <div className="work-details-label"></div>
+                  <div className="work-details-value">{line}</div>
+                </div>
+              );
+            })}
+          </section>
+        )}
 
         {/* NOTICE（注釈） */}
         <div style={{ marginTop: "var(--v-block)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>
