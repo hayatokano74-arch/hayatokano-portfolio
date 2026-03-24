@@ -946,6 +946,15 @@ button {
   white-space: nowrap;
 }
 
+/* ロゴ ｜ テキスト の縦区切り線 */
+.header-brand-sep {
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  background: currentColor;
+  opacity: 0.35;
+}
+
 /* デスクトップナビ: 残りスペースを埋め、各項目をセル区切りで配置 */
 .desktop-main-nav {
   flex: 1 1 0;

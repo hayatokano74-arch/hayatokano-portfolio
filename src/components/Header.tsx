@@ -77,6 +77,12 @@ export function Header({
         <Link href={brandHref} className="header-brand-name">
           {brandLabel === "目の星 menohoshi" ? (
             <MenohoshiLogo />
+          ) : brandLabel === "目の星" ? (
+            <>
+              <MenohoshiLogo />
+              <span className="header-brand-sep" />
+              <span>目の星</span>
+            </>
           ) : (
             brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel
           )}
