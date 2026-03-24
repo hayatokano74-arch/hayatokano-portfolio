@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useRef, useLayoutEffect } from "react";
 import { type Category } from "@/lib/categories";
 import { type Section } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
@@ -48,6 +48,27 @@ export function Header({
 }) {
   const { isOpen: mobileMenuOpen, toggle: toggleMobileMenu } = useMobileMenu();
 
+  /* タイトルが折り返す場合のみフォントサイズを縮小（最小24px） */
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useLayoutEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    const MIN_SIZE = 24;
+    const fit = () => {
+      el.style.fontSize = ""; // CSSの値にリセット
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      // scrollHeight > size * 1.5 → 2行以上に折り返している（line-height: 1 前提）
+      while (el.scrollHeight > size * 1.5 && size > MIN_SIZE) {
+        size -= 1;
+        el.style.fontSize = `${size}px`;
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [title]);
+
   return (
     <header className="header-root">
       {/* ── メインヘッダーバー ── */}
@@ -79,7 +100,7 @@ export function Header({
         <div className="header-title-row">
           <div className="header-title-left">
             {showTitleRow ? (
-              <h1 className="page-title">{title}</h1>
+              <h1 ref={titleRef} className="page-title">{title}</h1>
             ) : null}
           </div>
 
