@@ -63,55 +63,58 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           />
         </div>
 
-        {/* DETAILS（展示情報） */}
-        <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
-          <div className="work-details-table-header">DETAILS</div>
-          {detailRows.map((row) => (
-            <div key={row.key} className="work-details-row">
-              <div className="work-details-label">{row.label ? `${row.label}:` : ""}</div>
-              <div className="work-details-value">{row.value}</div>
-            </div>
-          ))}
-        </section>
-
-        {/* PROFILE（ARTIST / BIO / SNS リンク） */}
-        {hasProfile && (
-          <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
-            <div className="work-details-table-header">PROFILE</div>
-
-            {/* ARTIST */}
-            {artistRow?.value && (
-              <div className="work-details-row">
-                <div className="work-details-label">ARTIST:</div>
-                <div className="work-details-value">{artistRow.value}</div>
-              </div>
-            )}
-
-            {/* BIO（行ごとに分割、work-details-row--bio で薄い区切り線） */}
-            {bioLines.map((line, i) => {
-              const isLastBio = i === bioLines.length - 1;
-              return (
-                <div key={`bio-${i}`} className={`work-details-row${!isLastBio ? " work-details-row--bio" : ""}`}>
-                  <div className="work-details-label">{i === 0 ? "BIO:" : ""}</div>
-                  <div className="work-details-value">{line}</div>
-                </div>
-              );
-            })}
-
-            {/* SNS リンク */}
-            {post.snsLinks.map((link, i) => (
-              <div key={`sns-${i}`} className="work-details-row">
-                <div className="work-details-label">{link.label ? `${link.label}:` : "LINK:"}</div>
-                <div className="work-details-value">
-                  <a href={link.url} target="_blank" rel="noopener noreferrer"
-                    style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: "3px" }}>
-                    {link.url}
-                  </a>
-                </div>
+        {/* DETAILS + PROFILE: 共通グリッドで包み subgrid によりラベル列幅を自動同幅化 */}
+        <div className="mnh-meta-tables" style={{ marginTop: "var(--v-heading)" }}>
+          {/* DETAILS（展示情報） */}
+          <section className="work-details-table">
+            <div className="work-details-table-header">DETAILS</div>
+            {detailRows.map((row) => (
+              <div key={row.key} className="work-details-row">
+                <div className="work-details-label">{row.label ? `${row.label}:` : ""}</div>
+                <div className="work-details-value">{row.value}</div>
               </div>
             ))}
           </section>
-        )}
+
+          {/* PROFILE（ARTIST / BIO / SNS リンク） */}
+          {hasProfile && (
+            <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
+              <div className="work-details-table-header">PROFILE</div>
+
+              {/* ARTIST */}
+              {artistRow?.value && (
+                <div className="work-details-row">
+                  <div className="work-details-label">ARTIST:</div>
+                  <div className="work-details-value">{artistRow.value}</div>
+                </div>
+              )}
+
+              {/* BIO（行ごとに分割、work-details-row--bio で薄い区切り線） */}
+              {bioLines.map((line, i) => {
+                const isLastBio = i === bioLines.length - 1;
+                return (
+                  <div key={`bio-${i}`} className={`work-details-row${!isLastBio ? " work-details-row--bio" : ""}`}>
+                    <div className="work-details-label">{i === 0 ? "BIO:" : ""}</div>
+                    <div className="work-details-value">{line}</div>
+                  </div>
+                );
+              })}
+
+              {/* SNS リンク */}
+              {post.snsLinks.map((link, i) => (
+                <div key={`sns-${i}`} className="work-details-row">
+                  <div className="work-details-label">{link.label ? `${link.label}:` : "LINK:"}</div>
+                  <div className="work-details-value">
+                    <a href={link.url} target="_blank" rel="noopener noreferrer"
+                      style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: "3px" }}>
+                      {link.url}
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
+        </div>
 
         {/* EXHIBITION（セクションヘッダーなし、DETAILS と同じ行形式） */}
         {post.pastExhibitions.length > 0 && (

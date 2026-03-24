@@ -1340,9 +1340,16 @@ button {
   min-width: 0;
 }
 
-/* DETAILS / PROFILE / EXHIBITION のラベル列を同幅に固定（実測: EXHIBITION: が最大 91.8px） */
-.me-no-hoshi-meta-column .work-details-table {
-  grid-template-columns: 96px minmax(0, 1fr);
+/* DETAILS + PROFILE を共通グリッドに収め、subgrid でラベル列を自動同幅化 */
+.mnh-meta-tables {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-4);
+}
+.mnh-meta-tables > .work-details-table {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  /* column-gap は親から継承 */
 }
 
 /* 右カラム（写真）: KEY VISUAL row 1 */
