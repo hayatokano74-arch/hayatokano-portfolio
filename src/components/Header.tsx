@@ -75,7 +75,7 @@ export function Header({
       <div className="header-bar">
         {/* 左: ブランド名 */}
         <Link href={brandHref} className="header-brand-name">
-          {brandLabel.includes("目の星") ? (
+          {brandLabel === "目の星 menohoshi" ? (
             <MenohoshiLogo />
           ) : (
             brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel
