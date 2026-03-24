@@ -20,13 +20,22 @@ export async function generateMetadata({
   const post = await getMeNoHoshiBySlug(slug);
   if (!post) return {};
   const hero = post.media[0];
+  /* description は HTML タグを除去してプレーンテキストに */
+  const description = post.statement.replace(/<[^>]+>/g, "").trim();
+  const imageUrl = hero?.src ?? null;
   return {
     title: post.title,
-    description: post.statement,
+    description,
     openGraph: {
       title: post.title,
-      description: post.statement,
-      ...(hero?.src ? { images: [{ url: hero.src }] } : {}),
+      description,
+      ...(imageUrl ? { images: [{ url: imageUrl, width: hero.width, height: hero.height }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      ...(imageUrl ? { images: [imageUrl] } : {}),
     },
   };
 }

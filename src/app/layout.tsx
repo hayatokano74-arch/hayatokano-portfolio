@@ -19,6 +19,7 @@ const siteName = "Hayato Kano";
 const siteDescription = "Hayato Kano — Photographer / Visual Artist";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://hayatokano.com"),
   title: {
     default: siteName,
     template: `%s | ${siteName}`,
@@ -28,9 +29,11 @@ export const metadata: Metadata = {
     type: "website",
     siteName,
     locale: "ja_JP",
+    images: [{ url: "/images/top-hero.jpg", width: 1200, alt: siteName }],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/images/top-hero.jpg"],
   },
 };
 

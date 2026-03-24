@@ -20,13 +20,20 @@ export async function generateMetadata({
   if (!work) return {};
   const lead = work.media[0];
   const ogImage = lead?.type === "video" ? lead.poster : lead?.src;
+  const title = `${work.title} | ${work.year}`;
   return {
-    title: `${work.title} | ${work.year}`,
+    title,
     description: work.excerpt,
     openGraph: {
-      title: `${work.title} | ${work.year}`,
+      title,
       description: work.excerpt,
       ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: work.excerpt,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   };
 }
