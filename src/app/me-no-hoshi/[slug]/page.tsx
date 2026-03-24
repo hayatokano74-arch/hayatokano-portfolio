@@ -19,23 +19,21 @@ export async function generateMetadata({
   /* React.cache() により getMeNoHoshiPosts の重複リクエストを排除 */
   const post = await getMeNoHoshiBySlug(slug);
   if (!post) return {};
-  const hero = post.media[0];
   /* description は HTML タグを除去してプレーンテキストに */
   const description = post.statement.replace(/<[^>]+>/g, "").trim();
-  const imageUrl = hero?.src ?? null;
   return {
     title: post.title,
     description,
     openGraph: {
       title: post.title,
       description,
-      ...(imageUrl ? { images: [{ url: imageUrl, width: hero.width, height: hero.height }] } : {}),
+      /* images は opengraph-image.tsx が自動生成するため省略 */
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description,
-      ...(imageUrl ? { images: [imageUrl] } : {}),
+      /* images は opengraph-image.tsx が自動生成するため省略 */
     },
   };
 }

@@ -18,8 +18,6 @@ export async function generateMetadata({
   const { slug } = await params;
   const work = await getWorkBySlug(slug);
   if (!work) return {};
-  const lead = work.media[0];
-  const ogImage = lead?.type === "video" ? lead.poster : lead?.src;
   const title = `${work.title} | ${work.year}`;
   return {
     title,
@@ -27,13 +25,13 @@ export async function generateMetadata({
     openGraph: {
       title,
       description: work.excerpt,
-      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+      /* images は opengraph-image.tsx が自動生成するため省略 */
     },
     twitter: {
       card: "summary_large_image",
       title,
       description: work.excerpt,
-      ...(ogImage ? { images: [ogImage] } : {}),
+      /* images は opengraph-image.tsx が自動生成するため省略 */
     },
   };
 }
