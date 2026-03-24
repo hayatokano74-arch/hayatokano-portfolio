@@ -1340,6 +1340,11 @@ button {
   min-width: 0;
 }
 
+/* DETAILS / PROFILE / EXHIBITION のラベル列を同幅に固定（実測: EXHIBITION: が最大 91.8px） */
+.me-no-hoshi-meta-column .work-details-table {
+  grid-template-columns: 96px minmax(0, 1fr);
+}
+
 /* 右カラム（写真）: KEY VISUAL row 1 */
 .me-no-hoshi-key-visual {
   grid-column: 6 / -1;
@@ -4644,5 +4649,6 @@ img[loading="lazy"] {
   .garden-entry-body {
     contain-intrinsic-size: auto 350px;
   }
+
 }
 
