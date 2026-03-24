@@ -955,6 +955,11 @@ button {
   opacity: 0.35;
 }
 
+/* 目の星テキスト＋区切り線: モバイルのみ表示 */
+.header-brand-mnh-text {
+  display: none;
+}
+
 /* デスクトップナビ: 残りスペースを埋め、各項目をセル区切りで配置 */
 .desktop-main-nav {
   flex: 1 1 0;
@@ -4014,6 +4019,10 @@ img[loading="lazy"] {
   .header-brand-name {
     flex: 1 1 0;
     border-right: none;
+  }
+
+  .header-brand-mnh-text {
+    display: inline-block;
   }
 
   .header-title-row {

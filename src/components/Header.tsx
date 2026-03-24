@@ -80,8 +80,8 @@ export function Header({
           ) : brandLabel === "目の星" ? (
             <>
               <MenohoshiLogo />
-              <span className="header-brand-sep" />
-              <span>目の星</span>
+              <span className="header-brand-sep header-brand-mnh-text" />
+              <span className="header-brand-mnh-text">目の星</span>
             </>
           ) : (
             brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel
