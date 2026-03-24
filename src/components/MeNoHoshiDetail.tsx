@@ -28,11 +28,12 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             caption: "",
           },
         ];
-  /* 空フィールドを除外して表示（BIOはPROFILEセクションに独立） */
-  const tableRows = post.details.filter((row) => row.value);
+  /* ARTISTはPROFILEに移動 — DETAILSから除外 */
+  const artistRow = post.details.find((row) => row.key === "artist");
+  const detailRows = post.details.filter((row) => row.value && row.key !== "artist");
 
   /* PROFILEセクションの表示条件 */
-  const hasProfile = !!post.bio || post.pastExhibitions.length > 0 || post.snsLinks.length > 0;
+  const hasProfile = !!artistRow?.value || !!post.bio || post.pastExhibitions.length > 0 || post.snsLinks.length > 0;
 
   return (
     <section className="me-no-hoshi-detail">
@@ -51,6 +52,14 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
         {hasProfile && (
           <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
             <div className="work-details-table-header">PROFILE</div>
+
+            {/* ARTIST */}
+            {artistRow?.value && (
+              <div className="work-details-row">
+                <div className="work-details-label">ARTIST:</div>
+                <div className="work-details-value">{artistRow.value}</div>
+              </div>
+            )}
 
             {/* BIO */}
             {post.bio && (
@@ -89,7 +98,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
         {/* DETAILS（展示情報） */}
         <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
           <div className="work-details-table-header">DETAILS</div>
-          {tableRows.map((row) => (
+          {detailRows.map((row) => (
             <div key={row.key} className="work-details-row">
               <div className="work-details-label">{row.label ? `${row.label}:` : ""}</div>
               <div className="work-details-value">{row.value}</div>
