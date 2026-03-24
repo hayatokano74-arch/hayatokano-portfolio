@@ -111,24 +111,22 @@ export function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
       : undefined
   );
 
-  /* BIO を行ごとに分割し、details 末尾に追加する。
-     改行（\n, \r\n）や <br> で分割し、各行を独立した detail 行にする。
-     最初の行のみラベル "BIO"、以降は空ラベル。 */
-  const bioText = String(bioRaw ?? "").trim();
-  if (bioText) {
-    const bioLines = bioText
-      .replace(/<br\s*\/?>/gi, "\n")
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    bioLines.forEach((line, i) => {
-      details.push({
-        key: `bio-${i}`,
-        label: i === 0 ? "BIO" : "",
-        value: line,
-      });
-    });
-  }
+  /* 過去の展示: 1行1展示として配列化 */
+  const pastExhibitions = String(post.pastExhibitions ?? "").trim()
+    ? String(post.pastExhibitions).trim()
+        .replace(/<br\s*\/?>/gi, "\n")
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+    : [];
+
+  /* SNS リンク: {label, url} の配列として正規化 */
+  const snsLinks = (post.snsLinks ?? [])
+    .filter((item) => item.url)
+    .map((item) => ({
+      label: (item.label ?? "").trim(),
+      url: (item.url ?? "").trim(),
+    }));
 
   return {
     slug,
@@ -142,6 +140,8 @@ export function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     media,
     details,
     bio: ensureHtml(String(bioRaw ?? "").trim()),
+    pastExhibitions,
+    snsLinks,
     statement: ensureHtml((post.statement ?? "").trim()),
     notice: (post.notice ?? "").trim(),
     keyVisuals,

@@ -44,6 +44,8 @@ export type MeNoHoshiPost = {
   media: Work["media"];
   details: MeNoHoshiDetailItem[];
   bio: string;
+  pastExhibitions: string[];
+  snsLinks: { label: string; url: string }[];
   statement: string;
   notice: string;
   keyVisuals: MeNoHoshiKeyVisual[];
@@ -68,6 +70,8 @@ export type WpMeNoHoshiResponse = {
   media?: Work["media"];
   details?: { key?: string; label?: string; value?: string }[] | Record<string, string>;
   bio?: string;
+  pastExhibitions?: string;
+  snsLinks?: { label?: string; url?: string }[];
   statement?: string;
   notice?: string;
   showKeyVisuals?: boolean;

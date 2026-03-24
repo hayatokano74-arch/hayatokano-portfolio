@@ -28,8 +28,11 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             caption: "",
           },
         ];
-  /* 空フィールドを除外して表示 */
+  /* 空フィールドを除外して表示（BIOはPROFILEセクションに独立） */
   const tableRows = post.details.filter((row) => row.value);
+
+  /* PROFILEセクションの表示条件 */
+  const hasProfile = !!post.bio || post.pastExhibitions.length > 0 || post.snsLinks.length > 0;
 
   return (
     <section className="me-no-hoshi-detail">
@@ -44,25 +47,54 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           />
         </div>
 
-        {/* DETAILS（展示情報 + BIO） */}
+        {/* PROFILE（BIO / 過去の展示 / SNS リンク） */}
+        {hasProfile && (
+          <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
+            <div className="work-details-table-header">PROFILE</div>
+
+            {/* BIO */}
+            {post.bio && (
+              <div className="work-details-row">
+                <div className="work-details-label">BIO:</div>
+                <div
+                  className="work-details-value mnh-rich-text"
+                  dangerouslySetInnerHTML={{ __html: cleanWpHtml(post.bio) }}
+                />
+              </div>
+            )}
+
+            {/* 過去の展示 */}
+            {post.pastExhibitions.map((line, i) => (
+              <div key={`past-ex-${i}`} className="work-details-row">
+                <div className="work-details-label">{i === 0 ? "EXHIBITION:" : ""}</div>
+                <div className="work-details-value">{line}</div>
+              </div>
+            ))}
+
+            {/* SNS リンク */}
+            {post.snsLinks.map((link, i) => (
+              <div key={`sns-${i}`} className="work-details-row">
+                <div className="work-details-label">{link.label ? `${link.label}:` : "LINK:"}</div>
+                <div className="work-details-value">
+                  <a href={link.url} target="_blank" rel="noopener noreferrer"
+                    style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: "3px" }}>
+                    {link.url}
+                  </a>
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* DETAILS（展示情報） */}
         <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
           <div className="work-details-table-header">DETAILS</div>
-          {/* BIO行はデータ正規化層で details に統合済み。
-              key が "bio-" で始まる行には薄い区切り線用のクラスを付与 */}
-          {tableRows.map((row, i) => {
-            const isBio = row.key.startsWith("bio-");
-            /* BIOの最後の行: 次の行がBIOでない、または最終行 */
-            const isLastBio = isBio && (i === tableRows.length - 1 || !tableRows[i + 1].key.startsWith("bio-"));
-            return (
-            <div
-              key={row.key}
-              className={`work-details-row${isBio && !isLastBio ? " work-details-row--bio" : ""}`}
-            >
+          {tableRows.map((row) => (
+            <div key={row.key} className="work-details-row">
               <div className="work-details-label">{row.label ? `${row.label}:` : ""}</div>
               <div className="work-details-value">{row.value}</div>
             </div>
-            );
-          })}
+          ))}
         </section>
 
         {/* NOTICE（注釈） */}
