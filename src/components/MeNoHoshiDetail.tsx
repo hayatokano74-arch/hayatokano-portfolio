@@ -120,7 +120,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
               const isLast = i === post.pastExhibitions.length - 1;
               return (
                 <div key={`past-ex-${i}`} className={`work-details-row${!isLast ? " work-details-row--bio" : ""}`}>
-                  <div className="work-details-label">{i === 0 ? "EXHIBITION:" : ""}</div>
+                  <div className="work-details-label" style={{ whiteSpace: "nowrap" }}>{i === 0 ? "EXHIBITION:" : ""}</div>
                   <div className="work-details-value">{line}</div>
                 </div>
               );
