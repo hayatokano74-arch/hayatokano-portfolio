@@ -113,15 +113,19 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           ))}
         </section>
 
-        {/* EXHIBITION（ヘッダーなし、DETAILS の下にリスト表示） */}
+        {/* EXHIBITION（セクションヘッダーなし、DETAILS と同じ行形式） */}
         {post.pastExhibitions.length > 0 && (
-          <ul style={{ marginTop: "var(--v-heading)", listStyle: "none", padding: 0, margin: "var(--v-heading) 0 0" }}>
-            {post.pastExhibitions.map((line, i) => (
-              <li key={`past-ex-${i}`} style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", borderBottom: "1px solid var(--line-light)", paddingBottom: 4, marginBottom: 4 }}>
-                {line}
-              </li>
-            ))}
-          </ul>
+          <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
+            {post.pastExhibitions.map((line, i) => {
+              const isLast = i === post.pastExhibitions.length - 1;
+              return (
+                <div key={`past-ex-${i}`} className={`work-details-row${!isLast ? " work-details-row--bio" : ""}`}>
+                  <div className="work-details-label">{i === 0 ? "EXHIBITION:" : ""}</div>
+                  <div className="work-details-value">{line}</div>
+                </div>
+              );
+            })}
+          </section>
         )}
 
         {/* NOTICE（注釈） */}
