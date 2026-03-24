@@ -63,6 +63,17 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           />
         </div>
 
+        {/* DETAILS（展示情報） */}
+        <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
+          <div className="work-details-table-header">DETAILS</div>
+          {detailRows.map((row) => (
+            <div key={row.key} className="work-details-row">
+              <div className="work-details-label">{row.label ? `${row.label}:` : ""}</div>
+              <div className="work-details-value">{row.value}</div>
+            </div>
+          ))}
+        </section>
+
         {/* PROFILE（ARTIST / BIO / SNS リンク） */}
         {hasProfile && (
           <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
@@ -101,17 +112,6 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             ))}
           </section>
         )}
-
-        {/* DETAILS（展示情報） */}
-        <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
-          <div className="work-details-table-header">DETAILS</div>
-          {detailRows.map((row) => (
-            <div key={row.key} className="work-details-row">
-              <div className="work-details-label">{row.label ? `${row.label}:` : ""}</div>
-              <div className="work-details-value">{row.value}</div>
-            </div>
-          ))}
-        </section>
 
         {/* EXHIBITION（セクションヘッダーなし、DETAILS と同じ行形式） */}
         {post.pastExhibitions.length > 0 && (
