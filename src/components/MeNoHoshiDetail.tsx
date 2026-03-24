@@ -11,6 +11,18 @@ function cleanWpHtml(html: string): string {
     .trim();
 }
 
+/** HTML を剥いてプレーンテキスト行の配列に変換（元のBIO表示方式に合わせる） */
+function htmlToLines(html: string): string[] {
+  return html
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+}
+
 export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   const hero = post.media[0];
   const keyVisuals =
@@ -32,8 +44,11 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
   const artistRow = post.details.find((row) => row.key === "artist");
   const detailRows = post.details.filter((row) => row.value && row.key !== "artist");
 
+  /* BIOを行ごとに分割（元の表示方式を復元） */
+  const bioLines = post.bio ? htmlToLines(post.bio) : [];
+
   /* PROFILEセクションの表示条件 */
-  const hasProfile = !!artistRow?.value || !!post.bio || post.pastExhibitions.length > 0 || post.snsLinks.length > 0;
+  const hasProfile = !!artistRow?.value || bioLines.length > 0 || post.pastExhibitions.length > 0 || post.snsLinks.length > 0;
 
   return (
     <section className="me-no-hoshi-detail">
@@ -61,16 +76,16 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
               </div>
             )}
 
-            {/* BIO */}
-            {post.bio && (
-              <div className="work-details-row">
-                <div className="work-details-label">BIO:</div>
-                <div
-                  className="work-details-value mnh-rich-text"
-                  dangerouslySetInnerHTML={{ __html: cleanWpHtml(post.bio) }}
-                />
-              </div>
-            )}
+            {/* BIO（元の表示方式: 行ごとに分割、work-details-row--bio で薄い区切り線） */}
+            {bioLines.map((line, i) => {
+              const isLastBio = i === bioLines.length - 1;
+              return (
+                <div key={`bio-${i}`} className={`work-details-row${!isLastBio ? " work-details-row--bio" : ""}`}>
+                  <div className="work-details-label">{i === 0 ? "BIO:" : ""}</div>
+                  <div className="work-details-value">{line}</div>
+                </div>
+              );
+            })}
 
             {/* 過去の展示 */}
             {post.pastExhibitions.map((line, i) => (
