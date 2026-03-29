@@ -23,7 +23,7 @@ export function getWpBaseUrl(): string | null {
  */
 export async function fetchWpApi<T>(
   endpoint: string,
-  revalidate = 300,
+  revalidate = 3600,
 ): Promise<T | null> {
   const base = getWpBaseUrl();
   if (!base) return null;

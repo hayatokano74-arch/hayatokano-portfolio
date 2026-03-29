@@ -113,6 +113,7 @@ function rehypeOptimizedImages(options?: OptimizedImagesOptions) {
 }
 import fs from "fs";
 import path from "path";
+import { unstable_cache, revalidateTag } from "next/cache";
 import { fetchAllGardenFiles, clearCache, type GardenFile } from "./cache";
 import type { GardenNode, GardenFrontmatter } from "./types";
 
@@ -168,6 +169,8 @@ export function clearAllGardenCaches(): void {
   // ノードキャッシュファイルも削除
   try { if (fs.existsSync(NODES_CACHE_PATH)) fs.unlinkSync(NODES_CACHE_PATH); } catch { /* ignore */ }
   try { if (fs.existsSync(NODES_TMP_CACHE_PATH)) fs.unlinkSync(NODES_TMP_CACHE_PATH); } catch { /* ignore */ }
+  // Next.js Data Cache（Vercel永続キャッシュ）も無効化
+  try { revalidateTag("garden"); } catch { /* Route Handler 以外では失敗するため無視 */ }
   console.log("[Garden] 全キャッシュをクリアしました");
 }
 
@@ -387,36 +390,55 @@ async function parseFile(
   };
 }
 
+/**
+ * Next.js Data Cache 経由でノードを取得する内部関数。
+ * unstable_cache により Vercel のサーバーサイドキャッシュに永続化され、
+ * コールドスタート後もキャッシュが有効になる。
+ */
+const _fetchAllNodesCached = unstable_cache(
+  async (): Promise<GardenNode[]> => {
+    const files = await getGardenFiles();
+    if (files.length === 0) return [];
+    const existingSlugs = await getFileSlugs(files);
+
+    const nodes = await Promise.all(
+      files.map((file) => parseFile(file, existingSlugs)),
+    );
+
+    // 日付降順 → 同日ならファイル更新時刻が新しい方が上
+    nodes.sort((a, b) => {
+      if (a.date !== b.date) return a.date > b.date ? -1 : 1;
+      return b.mtime - a.mtime;
+    });
+
+    // 重複タイトルを除去（WP側で同じ投稿が複数存在する場合の対策）
+    const seen = new Set<string>();
+    return nodes.filter((n) => {
+      if (seen.has(n.title)) return false;
+      seen.add(n.title);
+      return true;
+    });
+  },
+  ["garden-nodes"],
+  { revalidate: 3600, tags: ["garden"] },
+);
+
 /** 全ノードを取得（MDファイルが存在するもののみ。日付降順） */
 export async function getAllNodes(): Promise<GardenNode[]> {
-  /* ビルド時に生成されたノードキャッシュがあればMarkdown処理をスキップ */
-  if (!_nodesCache) {
-    _nodesCache = readNodesCache();
-  }
+  /* 1. プロセス内メモリキャッシュ（同一リクエスト内の最速パス） */
   if (_nodesCache) return _nodesCache;
 
-  /* キャッシュがない場合は従来通りMarkdownをパース（ビルド時 or 初回デプロイ時） */
-  const files = await getGardenFiles();
-  if (files.length === 0) return [];
-  const existingSlugs = await getFileSlugs(files);
+  /* 2. ビルド時ファイルキャッシュ（デプロイに含まれる場合の高速パス） */
+  const fileCache = readNodesCache();
+  if (fileCache) {
+    _nodesCache = fileCache;
+    return fileCache;
+  }
 
-  const nodes = await Promise.all(
-    files.map((file) => parseFile(file, existingSlugs)),
-  );
-
-  // 日付降順 → 同日ならファイル更新時刻が新しい方が上
-  nodes.sort((a, b) => {
-    if (a.date !== b.date) return a.date > b.date ? -1 : 1;
-    return b.mtime - a.mtime;
-  });
-
-  // 重複タイトルを除去（WP側で同じ投稿が複数存在する場合の対策）
-  const seen = new Set<string>();
-  return nodes.filter((n) => {
-    if (seen.has(n.title)) return false;
-    seen.add(n.title);
-    return true;
-  });
+  /* 3. Next.js Data Cache 経由（Vercel で永続化、コールドスタート後も有効） */
+  const result = await _fetchAllNodesCached();
+  _nodesCache = result;
+  return result;
 }
 
 /** slugで1ノードを取得（MDファイルが存在するもののみ） */

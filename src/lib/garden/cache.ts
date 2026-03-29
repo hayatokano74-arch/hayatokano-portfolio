@@ -93,8 +93,8 @@ function getCacheAge(): number {
   return 0;
 }
 
-/** キャッシュの有効期限（ミリ秒）— 5分 */
-const CACHE_MAX_AGE_MS = 5 * 60 * 1000;
+/** キャッシュの有効期限（ミリ秒）— 1時間 */
+const CACHE_MAX_AGE_MS = 60 * 60 * 1000;
 
 /**
  * Garden ファイルを取得する（WordPress API のみ）

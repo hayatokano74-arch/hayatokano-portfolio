@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { clearAllGardenCaches } from "@/lib/garden/reader";
 
@@ -26,8 +26,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // 全キャッシュをクリア（メモリ + ファイル + ノードキャッシュ）
+    // 全キャッシュをクリア（メモリ + ファイル + ノードキャッシュ + Data Cache）
     clearAllGardenCaches();
+
+    // Next.js Data Cache を tag 指定で無効化（unstable_cache 対応）
+    revalidateTag("garden");
 
     // Gardenページを即時再生成
     revalidatePath("/garden", "layout");

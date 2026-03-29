@@ -3,6 +3,9 @@ import { getWorks } from "@/lib/works";
 import { getMeNoHoshiPosts } from "@/lib/meNoHoshi";
 import { getAllNodes } from "@/lib/garden/reader";
 
+/* ISR: 1時間キャッシュ（Works・MeNoHoshi・Garden の revalidate に合わせる） */
+export const revalidate = 3600;
+
 /** HTML文字列から最初の <img> の src を抽出 */
 function firstImageSrc(html: string): string | null {
   const match = html.match(/<img[^>]+src="([^"]+)"/);
