@@ -1357,6 +1357,7 @@ button {
 .me-no-hoshi-title {
   grid-column: 1 / span 4;
   grid-row: 1;
+  margin-bottom: var(--v-heading);
 }
 
 /* 左カラム（テキスト）: row 2 から末尾まで */
@@ -4572,7 +4573,7 @@ img[loading="lazy"] {
   }
 
   /* モバイル表示順: タイトル → キービジュアル → メタ → ビジュアルカラム */
-  .me-no-hoshi-title        { order: 1; }
+  .me-no-hoshi-title        { order: 1; margin-bottom: 0; }
   .me-no-hoshi-key-visual   { order: 2; }
   .me-no-hoshi-meta-column  { order: 3; }
   .me-no-hoshi-visual-column { order: 4; }
