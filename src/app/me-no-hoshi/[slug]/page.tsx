@@ -54,6 +54,7 @@ export default async function MeNoHoshiDetailPage({
         title={post.title}
         brandLabel="目の星"
         brandHref="/me-no-hoshi"
+        showTitleRow={false}
         showCategoryRow={false}
       />
       <MeNoHoshiDetail post={post} />

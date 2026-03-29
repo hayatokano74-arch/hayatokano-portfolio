@@ -5,10 +5,8 @@
  * 検索 + 投稿数ベースのページネーション + アーカイブサイドバーを管理する。
  */
 
-import { useEffect } from "react";
 import type { GardenNode } from "@/lib/garden/types";
 import { useGardenState } from "@/hooks/useGardenState";
-import { useFooterSlot } from "./FooterSlotContext";
 import { GardenSearch } from "./GardenSearch";
 import { GardenGrid } from "./GardenGrid";
 import { GardenPagination } from "./GardenPagination";
@@ -17,21 +15,16 @@ import { GardenArchiveSidebar, GardenMobileArchiveDrawer } from "./garden/Garden
 
 export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   const state = useGardenState(nodes);
-  const { setSlot } = useFooterSlot();
 
-  /* モバイル用: フッター枠内にArchiveボタンを登録 */
-  useEffect(() => {
-    setSlot(
-      <button
-        type="button"
-        className="garden-footer-archive-btn"
-        onClick={state.openDrawer}
-      >
-        Archive
-      </button>
-    );
-    return () => setSlot(null);
-  }, [setSlot, state.openDrawer]);
+  const archiveButton = (
+    <button
+      type="button"
+      className="mobile-archive-trigger"
+      onClick={state.openDrawer}
+    >
+      Archive +
+    </button>
+  );
 
   const searchElement = (
     <GardenSearch
@@ -49,6 +42,7 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         showTitleRow={false}
         showCategoryRow={false}
         showSearch={false}
+        titleRight={archiveButton}
       />
       <div className="garden-layout">
         <div className="garden-main">

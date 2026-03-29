@@ -84,7 +84,12 @@ export function Header({
               <span className="header-brand-mnh-text">目の星</span>
             </>
           ) : (
-            brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel
+            <>
+              {brandLabel === "Hayato Kano" ? "HAYATO KANO" : brandLabel}
+              {/* モバイル: 現在のセクション名を表示 */}
+              <span className="header-brand-sep header-mobile-section-sep" />
+              <span className="header-mobile-section-label">{active}</span>
+            </>
           )}
         </Link>
 

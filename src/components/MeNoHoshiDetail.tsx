@@ -52,6 +52,11 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
 
   return (
     <section className="me-no-hoshi-detail">
+      {/* タイトル: グリッド独立アイテム（モバイルでキービジュアルの前に来るよう分離） */}
+      <div className="me-no-hoshi-title" style={{ fontSize: "var(--font-heading)", fontWeight: 700, lineHeight: "var(--lh-normal)", marginBottom: "var(--v-heading)" }}>
+        {post.title}
+      </div>
+
       <div className="me-no-hoshi-meta-column">
         {/* TEXT（ステートメント） */}
         <div>
