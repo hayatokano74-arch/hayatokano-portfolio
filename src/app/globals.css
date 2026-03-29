@@ -82,7 +82,7 @@
      ヘッダー各行とコンテンツ間の垂直方向の間隔を統一する。
      全て 8px ベースライン倍数。 */
   --v-row-gap: var(--space-7);         /* 行間ギャップ: 32-40px (4-5×baseline) */
-  --v-header-content-gap: var(--space-12); /* ヘッダー→コンテンツ: 56-72px（page-shell gap で使用） */
+  --v-header-content-gap: var(--space-8); /* ヘッダー→コンテンツ: 32-40px（page-shell gap で使用） */
   /* ヘッダー→コンテンツの間隔は .page-shell の gap で一元管理 */
 
   /* ── 垂直マージン階層（セマンティックトークン） ──
@@ -1560,13 +1560,13 @@ button {
 }
 
 /* ── ヘッダータイトル行: 12カラムグリッド ──
-   margin-top: ナビバー→ページタイトル間の余白（参考: designwaterloo.com） */
+   余白は page-shell の gap に一元管理（ページタイトル廃止のため margin-top 不要） */
 .header-title-row {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
   align-items: center;
-  margin-top: var(--v-nav-title-gap);
+  margin-top: 0;
 }
 
 .header-title-left {
@@ -2962,9 +2962,13 @@ img[loading="lazy"] {
 
 .garden-sidebar {
   grid-column: 11 / -1;
+  align-self: stretch;
+}
+
+.garden-sidebar-inner {
   position: sticky;
   top: var(--space-7);
-  align-self: start;
+  margin-top: var(--space-6);
 }
 
 .garden-content {
@@ -4050,7 +4054,6 @@ img[loading="lazy"] {
 
   .header-title-row {
     grid-template-columns: 1fr auto;
-    margin-top: var(--v-nav-title-gap);
     min-height: 0;
   }
 
