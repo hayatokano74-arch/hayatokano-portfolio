@@ -215,7 +215,7 @@ function WorksList<T extends WorkLike>({
       <div className="works-list-header">
         <div className="works-list-header-label" style={{ gridColumn: "1 / span 2" }}>YEAR:</div>
         <div className="works-list-header-label" style={{ gridColumn: "3 / span 6" }}>TITLE:</div>
-        <div className="works-list-header-label" style={{ gridColumn: "9 / span 3" }}>TAGS:</div>
+        <div className="works-list-header-label" style={{ gridColumn: "9 / -1" }}>TAGS:</div>
       </div>
       <div className="hrline" />
       {works.map((w) => (
