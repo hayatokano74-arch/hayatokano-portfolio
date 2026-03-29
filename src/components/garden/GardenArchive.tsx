@@ -195,7 +195,7 @@ export function GardenArchiveSidebar({
 
   return (
     <aside className="garden-sidebar">
-      <div>
+      <div className="garden-sidebar-inner">
         <ArchiveYearTree
           tree={tree}
           currentPage={currentPage}
@@ -203,12 +203,12 @@ export function GardenArchiveSidebar({
           onToggle={toggle}
           onSelect={onPageChange}
         />
+        {searchElement && (
+          <div className="garden-sidebar-search">
+            {searchElement}
+          </div>
+        )}
       </div>
-      {searchElement && (
-        <div className="garden-sidebar-search">
-          {searchElement}
-        </div>
-      )}
     </aside>
   );
 }
