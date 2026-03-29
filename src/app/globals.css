@@ -2949,6 +2949,14 @@ img[loading="lazy"] {
 
 .garden-main {
   grid-column: 1 / span 9;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  column-gap: var(--grid-gutter);
+  min-width: 0;
+}
+
+.garden-main > * {
+  grid-column: 4 / span 6;
   min-width: 0;
 }
 
