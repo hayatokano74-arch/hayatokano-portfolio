@@ -39,7 +39,7 @@ export default async function TextListPage({
 
   return (
     <CanvasShell>
-      <Header active="Text" title="Text" activeCategory={activeCategory} categoryHrefs={categoryHrefs} />
+      <Header active="Text" title="Text" showTitleRow={false} activeCategory={activeCategory} categoryHrefs={categoryHrefs} />
       <div>
         <div className="hrline" />
         {filteredTexts.map((t) => (

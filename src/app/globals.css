@@ -1542,6 +1542,11 @@ button {
   padding-top: 7px;
 }
 
+/* タイトルなし時のスペーサー: ナビバー→コンテンツ間の余白を確保 */
+.header-no-title-gap {
+  margin-top: var(--v-nav-title-gap);
+}
+
 /* ── ヘッダータイトル行: 12カラムグリッド ──
    margin-top: ナビバー→ページタイトル間の余白（参考: designwaterloo.com） */
 .header-title-row {
@@ -2296,6 +2301,7 @@ button.tl-photo-cell {
 .work-details-table-header {
   grid-column: 1 / -1;
   font-size: var(--font-meta);
+  font-weight: 700;
   letter-spacing: 0.16em;
   color: var(--muted);
   padding-bottom: var(--space-2);

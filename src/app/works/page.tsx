@@ -54,6 +54,7 @@ export default async function WorksPage({
         <Header
           active="Works"
           title={<>Works<FilteredCount allWorks={works} searchQuery={q} basePath="/works" /></>}
+          showTitleRow={false}
           showWorksToggle
           worksView={view}
           worksGridHref={worksGridHref}

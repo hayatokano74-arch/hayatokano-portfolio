@@ -11,7 +11,7 @@ export default async function AboutPage() {
   const about = await getAbout();
   return (
     <CanvasShell>
-      <Header active="About" title="About" showCategoryRow={false} />
+      <Header active="About" title="About" showTitleRow={false} showCategoryRow={false} />
       <div className="about-layout">
         {/* 左カラム: テキスト */}
         <div className="about-text">

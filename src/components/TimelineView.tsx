@@ -104,6 +104,7 @@ export function TimelinePageContent({
       <Header
         active="Time Line"
         title="Time Line"
+        showTitleRow={false}
         showCategoryRow={false}
         titleRight={archiveButton}
       />

@@ -13,7 +13,7 @@ const links = [
 export default function ContactPage() {
   return (
     <CanvasShell>
-      <Header active="Contact" title="Contact" showCategoryRow={false} />
+      <Header active="Contact" title="Contact" showTitleRow={false} showCategoryRow={false} />
       <div className="contact-layout">
         {/* 左カラム: イントロ + 連絡先情報 */}
         <div className="contact-info">

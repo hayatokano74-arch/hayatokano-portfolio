@@ -114,7 +114,10 @@ export function Header({
             <div className="header-title-right">{titleRight}</div>
           ) : null}
         </div>
-      ) : null}
+      ) : (
+        /* タイトルも titleRight もない場合: ナビバー→コンテンツ間の余白を確保 */
+        <div className="header-no-title-gap" />
+      )}
 
       {/* ── カテゴリ行（12カラムグリッド） ── */}
       {showCategoryRow ? (

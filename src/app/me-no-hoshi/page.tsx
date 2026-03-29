@@ -54,6 +54,7 @@ export default async function MeNoHoshiPage({
         <Header
           active="目の星"
           title={<>目の星 / Menohoshi<FilteredCount allWorks={posts} searchQuery={q} basePath="/me-no-hoshi" /></>}
+          showTitleRow={false}
           brandLabel="目の星 menohoshi"
           brandHref="/me-no-hoshi"
           showWorksToggle

@@ -36,7 +36,7 @@ export default async function TextDetail({
 
   return (
     <CanvasShell>
-      <Header active="Text" title="Text" showCategoryRow={false} />
+      <Header active="Text" title="Text" showTitleRow={false} showCategoryRow={false} />
       <div className="text-detail-layout">
         {/* 左: Reading リンク（列1-2） */}
         <div className="text-detail-rail">

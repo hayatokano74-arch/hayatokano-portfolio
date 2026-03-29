@@ -93,7 +93,7 @@ export default async function GardenNodePage({ params }: Props) {
 
   return (
     <CanvasShell>
-      <Header active="Garden" title="Garden" showCategoryRow={false} showSearch={false} />
+      <Header active="Garden" title="Garden" showTitleRow={false} showCategoryRow={false} showSearch={false} />
       <article className="garden-detail">
         {jsonLd && (
           <script
