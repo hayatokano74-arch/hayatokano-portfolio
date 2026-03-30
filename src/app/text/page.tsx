@@ -41,9 +41,9 @@ export default async function TextListPage({
     <CanvasShell>
       <Header active="Text" title="Text" showTitleRow={false} activeCategory={activeCategory} categoryHrefs={categoryHrefs} />
       <div>
-        <div className="hrline" />
         {filteredTexts.map((t) => (
           <div key={t.slug}>
+            <div className="hrline" />
             <Link
               href={`/text/${t.slug}`}
               className="action-link text-list-row"
@@ -54,7 +54,6 @@ export default async function TextListPage({
                 {t.categories.join("    ")}
               </div>
             </Link>
-            <div className="hrline" />
           </div>
         ))}
       </div>

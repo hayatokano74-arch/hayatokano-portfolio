@@ -45,6 +45,7 @@ export default async function AboutPage() {
               </div>
             ) : (
               <div key={i}>
+                <div className="hrline" />
                 <div className="cv-detail-row">
                   <div
                     style={{
@@ -66,7 +67,6 @@ export default async function AboutPage() {
                     {row.content}
                   </div>
                 </div>
-                <div className="hrline" />
               </div>
             ),
           )}

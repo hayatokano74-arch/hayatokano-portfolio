@@ -25,9 +25,9 @@ function NoImagePlaceholder() {
 export function NewsView({ items }: { items: NewsItem[] }) {
   return (
     <div className="news-accordion">
-      <div className="hrline" />
       {items.map((item) => (
         <div key={item.id}>
+        <div className="hrline" />
         <details className="news-accord-item" name="news">
           {/* サマリー行: 12カラムグリッド */}
           <summary className="news-accord-summary">
@@ -84,7 +84,6 @@ export function NewsView({ items }: { items: NewsItem[] }) {
             </div>
           </div>
         </details>
-        <div className="hrline" />
         </div>
       ))}
     </div>
