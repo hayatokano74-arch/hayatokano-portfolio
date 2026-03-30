@@ -4160,6 +4160,11 @@ img[loading="lazy"] {
     grid-column: 1 / -1;
   }
 
+  /* ── フィルターレイアウト: サーチバー下の余白をGardenに合わせる ── */
+  .filter-layout {
+    padding-top: var(--space-6);
+  }
+
   /* ── NOTON帳票風: ヘッダー行はモバイル非表示 ── */
   .works-list-header {
     display: none;
