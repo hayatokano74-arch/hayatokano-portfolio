@@ -2350,9 +2350,10 @@ button.tl-photo-cell {
   padding-top: 4px;
 }
 
-/* BIO行: 通常の detail 行より薄い区切り線で視覚的に区別する */
+/* BIO行: テキストコンテンツのため行間の線なし */
 .work-details-row--bio .work-details-value {
-  border-top-color: color-mix(in srgb, var(--fg) 15%, transparent);
+  border-top: none;
+  padding-top: 0;
 }
 
 /* ── Works 詳細オーバーレイ: 12カラムグリッド ── */
