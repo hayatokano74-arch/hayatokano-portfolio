@@ -1419,6 +1419,30 @@ button {
   color: var(--muted);
 }
 
+/* EXHIBITION: CV風2列（年号 + 展示情報）— About CV と同じ56px年号幅 */
+.mnh-exhibition-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: var(--space-6);
+  padding-top: 4px;
+  padding-bottom: 4px;
+  align-items: baseline;
+}
+
+.mnh-exhibition-year {
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 0;
+}
+
+.mnh-exhibition-info {
+  font-size: var(--font-body);
+  line-height: var(--lh-normal);
+  min-width: 0;
+}
+
 /* ── 目の星 リッチテキスト ── */
 .mnh-rich-text p {
   margin: 0 0 0.75em;

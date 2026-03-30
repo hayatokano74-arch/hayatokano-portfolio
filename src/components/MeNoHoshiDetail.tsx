@@ -120,19 +120,26 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           )}
         </div>
 
-        {/* EXHIBITION（セクションヘッダーなし、DETAILS と同じ行形式） */}
+        {/* EXHIBITION: CV風（年号 + 展示情報の2列） */}
         {post.pastExhibitions.length > 0 && (
-          <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
+          <div style={{ marginTop: "var(--v-heading)" }}>
+            <div className="work-details-table-header">EXHIBITION</div>
             {post.pastExhibitions.map((line, i) => {
-              const isLast = i === post.pastExhibitions.length - 1;
+              /* 先頭の4桁年号を抽出 。例: "2024 タイトル / 会場" */
+              const match = line.match(/^(\d{4})\s+([\s\S]*)/);
+              const year = match ? match[1] : "";
+              const info = match ? match[2] : line;
               return (
-                <div key={`past-ex-${i}`} className={`work-details-row${!isLast ? " work-details-row--bio" : ""}`}>
-                  <div className="work-details-label" style={{ whiteSpace: "nowrap" }}>{i === 0 ? "EXHIBITION:" : ""}</div>
-                  <div className="work-details-value">{line}</div>
+                <div key={`ex-${i}`}>
+                  <div className="hrline" />
+                  <div className="mnh-exhibition-row">
+                    <div className="mnh-exhibition-year">{year}</div>
+                    <div className="mnh-exhibition-info">{info}</div>
+                  </div>
                 </div>
               );
             })}
-          </section>
+          </div>
         )}
 
         {/* NOTICE（注釈） */}
