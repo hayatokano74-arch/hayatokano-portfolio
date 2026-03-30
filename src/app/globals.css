@@ -499,24 +499,22 @@ button {
   align-items: center;
   justify-content: center;
   padding: var(--space-5) 0;
-
-  /* ギャラリー画像切替クロスフェード（GPU合成レイヤーで処理） */
-  opacity: 1;
-  transition: opacity 80ms ease-out;
-  will-change: opacity;
 }
 
-/* フェードアウト状態 */
-.work-detail-gallery-stage.is-fading {
-  opacity: 0;
+/* 画像切替時: key変化でReactが再マウント → このアニメーションが自動発火 */
+@keyframes gallery-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
+.gallery-media-enter {
+  animation: gallery-fade-in 180ms ease-out both;
+}
 
-/* アクセシビリティ: モーション軽減設定時はトランジションなし */
+/* アクセシビリティ: モーション軽減設定時はアニメーションなし */
 @media (prefers-reduced-motion: reduce) {
-  .work-detail-gallery-stage {
-    transition: none;
-    will-change: auto;
+  .gallery-media-enter {
+    animation: none;
   }
 }
 
@@ -779,15 +777,15 @@ button {
   white-space: nowrap;
 }
 
-/* NOTON帳票風: 値セルのみアンダーライン */
+/* NOTON帳票風: 値セルのみオーバーライン（最初の行の上から線・最後の行の下は線なし） */
 .work-grid-details-value {
   color: var(--fg);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border-bottom: 1px solid var(--line-light);
-  padding-bottom: 2px;
+  border-top: 1px solid var(--line-light);
+  padding-top: 2px;
 }
 
 /* ── Excerpt HTML（詳細ページ） ── */
