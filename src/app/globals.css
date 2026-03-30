@@ -1,6 +1,5 @@
+/* Tailwind Preflight（ブラウザ間のスタイル正規化） */
 @tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 :root {
   /* ── 色（ライトモード） ── */

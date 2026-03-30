@@ -1,15 +1,13 @@
 /**
- * Service Worker — Garden 画像キャッシュ
+ * Service Worker — WP 画像キャッシュ
  *
- * garden-images-opt/ の画像をキャッシュし、
+ * wp.hayatokano.com からの全画像をキャッシュし、
  * 2回目以降の訪問で即座に表示する。
- * キャッシュ容量は 500MB を上限とし、LRU で古い画像を削除する。
+ * キャッシュ容量は最大 2000 件を上限とし、LRU で古い画像を削除する。
  */
 
-const CACHE_NAME = "garden-img-v1";
-const MAX_CACHE_ITEMS = 2000;
+const CACHE_NAME = "wp-img-v2";
 const IMAGE_ORIGIN = "https://wp.hayatokano.com";
-const OPT_PATH = "/garden-images-opt/";
 
 // インストール時: 即座にアクティベート
 self.addEventListener("install", () => {
@@ -22,7 +20,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key.startsWith("garden-img-") && key !== CACHE_NAME)
+          .filter((key) => key.startsWith("garden-img-") || (key.startsWith("wp-img-") && key !== CACHE_NAME))
           .map((key) => caches.delete(key)),
       ),
     ),
@@ -30,14 +28,15 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// フェッチ: garden-images-opt の画像をキャッシュファースト
+// フェッチ: wp.hayatokano.com の画像をキャッシュファースト
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // garden-images-opt の画像のみ対象
-  if (url.origin !== IMAGE_ORIGIN || !url.pathname.startsWith(OPT_PATH)) {
-    return;
-  }
+  // wp.hayatokano.com からの画像リクエストのみ対象
+  if (url.origin !== IMAGE_ORIGIN) return;
+
+  // 画像ファイル拡張子のみキャッシュ
+  if (!/\.(jpe?g|png|gif|webp|avif|svg|woff2?)(\?.*)?$/i.test(url.pathname)) return;
 
   event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -51,7 +50,7 @@ self.addEventListener("fetch", (event) => {
         if (response.ok) {
           // キャッシュ上限チェック（超過時は古いエントリを削除）
           const keys = await cache.keys();
-          if (keys.length >= MAX_CACHE_ITEMS) {
+          if (keys.length >= 2000) {
             await cache.delete(keys[0]);
           }
           cache.put(event.request, response.clone());

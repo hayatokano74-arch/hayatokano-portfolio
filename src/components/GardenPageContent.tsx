@@ -5,13 +5,23 @@
  * 検索 + 投稿数ベースのページネーション + アーカイブサイドバーを管理する。
  */
 
+import dynamic from "next/dynamic";
 import type { GardenNode } from "@/lib/garden/types";
 import { useGardenState } from "@/hooks/useGardenState";
 import { GardenSearch } from "./GardenSearch";
 import { GardenGrid } from "./GardenGrid";
 import { GardenPagination } from "./GardenPagination";
 import { Header } from "./Header";
-import { GardenArchiveSidebar, GardenMobileArchiveDrawer } from "./garden/GardenArchive";
+
+/* アーカイブUI: デスクトップサイドバー・モバイルドロワーともに初期表示では不要なため遅延ロード */
+const GardenArchiveSidebar = dynamic(
+  () => import("./garden/GardenArchive").then((m) => m.GardenArchiveSidebar),
+  { ssr: false },
+);
+const GardenMobileArchiveDrawer = dynamic(
+  () => import("./garden/GardenArchive").then((m) => m.GardenMobileArchiveDrawer),
+  { ssr: false },
+);
 
 export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   const state = useGardenState(nodes);
