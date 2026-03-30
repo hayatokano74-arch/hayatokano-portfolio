@@ -52,9 +52,12 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         showTitleRow={false}
         showCategoryRow={false}
         showSearch={false}
-        titleRight={archiveButton}
       />
       <div className="garden-layout">
+        {/* モバイル専用: ヘッダーとコンテンツの間にアーカイブボタンを表示 */}
+        <div className="garden-mobile-archive-bar">
+          {archiveButton}
+        </div>
         <div className="garden-main">
           {/* 全文検索結果バー（検索中のみ表示） */}
           {state.fullSearchIds !== null && (

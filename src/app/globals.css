@@ -3020,6 +3020,11 @@ img[loading="lazy"] {
 }
 
 /* モバイル: フッター枠内の最上部にArchiveボタン（デスクトップでは非表示） */
+/* ヘッダー直下のアーカイブトリガー（モバイル専用・デスクトップ非表示） */
+.garden-mobile-archive-bar {
+  display: none;
+}
+
 .garden-mobile-archive-footer {
   display: none;
 }
@@ -4676,6 +4681,13 @@ img[loading="lazy"] {
 
   .garden-layout {
     display: block;
+  }
+
+  /* モバイル専用: ヘッダーとコンテンツの間のアーカイブボタン */
+  .garden-mobile-archive-bar {
+    display: flex;
+    align-items: center;
+    padding-bottom: var(--space-3);
   }
 
   .garden-main {
