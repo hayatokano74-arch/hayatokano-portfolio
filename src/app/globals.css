@@ -2344,17 +2344,17 @@ button.tl-photo-cell {
   color: var(--muted);
 }
 
-/* NOTON帳票風: 値セルのみアンダーライン */
+/* NOTON帳票風: 値セルのみオーバーライン（最初の行の上から線・最後の行の下は線なし） */
 .work-details-value {
   font-size: var(--font-body);
   line-height: var(--lh-normal);
-  border-bottom: 1px solid var(--line-light);
-  padding-bottom: 4px;
+  border-top: 1px solid var(--line-light);
+  padding-top: 4px;
 }
 
 /* BIO行: 通常の detail 行より薄い区切り線で視覚的に区別する */
 .work-details-row--bio .work-details-value {
-  border-bottom-color: color-mix(in srgb, var(--fg) 15%, transparent);
+  border-top-color: color-mix(in srgb, var(--fg) 15%, transparent);
 }
 
 /* ── Works 詳細オーバーレイ: 12カラムグリッド ── */
