@@ -86,6 +86,7 @@ export function NewsView({ items }: { items: NewsItem[] }) {
         </details>
         </div>
       ))}
+      <div className="hrline" />
     </div>
   );
 }
