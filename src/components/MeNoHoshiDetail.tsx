@@ -124,21 +124,15 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
         {post.pastExhibitions.length > 0 && (
           <div style={{ marginTop: "var(--v-heading)" }}>
             <div className="work-details-table-header">EXHIBITION</div>
-            {post.pastExhibitions.map((line, i) => {
-              /* 先頭の4桁年号を抽出 。例: "2024 タイトル / 会場" */
-              const match = line.match(/^(\d{4})\s+([\s\S]*)/);
-              const year = match ? match[1] : "";
-              const info = match ? match[2] : line;
-              return (
-                <div key={`ex-${i}`}>
-                  <div className="hrline" />
-                  <div className="mnh-exhibition-row">
-                    <div className="mnh-exhibition-year">{year}</div>
-                    <div className="mnh-exhibition-info">{info}</div>
-                  </div>
+            {post.pastExhibitions.map((item, i) => (
+              <div key={`ex-${i}`}>
+                <div className="hrline" />
+                <div className="mnh-exhibition-row">
+                  <div className="mnh-exhibition-year">{item.year}</div>
+                  <div className="mnh-exhibition-info">{item.info}</div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
 

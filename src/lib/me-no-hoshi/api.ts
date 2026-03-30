@@ -6,6 +6,33 @@ import { fetchWpApi } from "@/lib/wp/client";
 import type { MeNoHoshiPost, WpMeNoHoshiResponse } from "./types";
 import { normalizePost } from "./normalize";
 
+/** グリッドカードの表示フィールド設定 */
+export type MeNoHoshiGridField = {
+  key: string;
+  label: string;
+  visible: boolean;
+};
+
+/** グリッド設定のデフォルト値（WP未設定時のフォールバック） */
+const defaultGridFields: MeNoHoshiGridField[] = [
+  { key: "artist",    label: "ARTIST",    visible: true  },
+  { key: "period",    label: "PERIOD",    visible: true  },
+  { key: "open_date", label: "OPEN",      visible: true  },
+  { key: "hours",     label: "HOURS",     visible: true  },
+  { key: "closed",    label: "CLOSED",    visible: false },
+  { key: "admission", label: "ADMISSION", visible: false },
+  { key: "venue",     label: "VENUE",     visible: true  },
+  { key: "address",   label: "ADDRESS",   visible: false },
+  { key: "access",    label: "ACCESS",    visible: false },
+];
+
+/** WPのグリッド表示設定を取得（React.cache でリクエスト単位の重複排除） */
+export const getMeNoHoshiGridSettings = cache(async (): Promise<MeNoHoshiGridField[]> => {
+  const data = await fetchWpApi<MeNoHoshiGridField[]>("hayato/v1/me-no-hoshi-grid-settings");
+  if (!data || !Array.isArray(data) || data.length === 0) return defaultGridFields;
+  return data;
+});
+
 /** WP REST API から目の星データを取得 */
 async function fetchWpMeNoHoshiPosts(): Promise<MeNoHoshiPost[] | null> {
   const data = await fetchWpApi<unknown>("hayato/v1/me-no-hoshi");
@@ -64,7 +91,10 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
       { key: "access", label: "ACCESS", value: "JR石巻駅から徒歩10分（仮）" },
     ],
     bio: "北海道札幌市生まれ。写真を軸に、風景と生活の関係を主題に制作。近年は展示空間と写真の距離感を含めた構成にも取り組む。",
-    pastExhibitions: [],
+    pastExhibitions: [
+      { year: "2023", info: "Work Archive 2023 / ギャラリー名（仮）" },
+      { year: "2022", info: "Group Exhibition / スペース名（仮）" },
+    ],
     snsLinks: [],
     statement:
       "本展は、居住と記憶の境界をめぐる写真展。展示は小さな空間の中で、光と距離に応答しながら構成された。",

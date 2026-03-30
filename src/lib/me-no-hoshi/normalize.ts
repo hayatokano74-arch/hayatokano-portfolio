@@ -111,14 +111,28 @@ export function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
       : undefined
   );
 
-  /* 過去の展示: 1行1展示として配列化 */
-  const pastExhibitions = String(post.pastExhibitions ?? "").trim()
-    ? String(post.pastExhibitions).trim()
-        .replace(/<br\s*\/?>/gi, "\n")
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-    : [];
+  /* 過去の展示: {year, info}[] に正規化（新形式: 配列 / 旧形式: 改行区切りテキスト） */
+  const pastExhibitions: { year: string; info: string }[] = (() => {
+    const raw = post.pastExhibitions;
+    if (!raw) return [];
+    /* 新形式: 配列 */
+    if (Array.isArray(raw)) {
+      return raw
+        .filter((item): item is { year?: string; info?: string } => typeof item === "object" && item !== null)
+        .map((item) => ({ year: String(item.year ?? "").trim(), info: String(item.info ?? "").trim() }))
+        .filter((item) => item.year || item.info);
+    }
+    /* 旧形式: 改行区切りテキスト */
+    return String(raw).trim()
+      .replace(/<br\s*\/?>/gi, "\n")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const m = line.match(/^(\d{4})\s+([\s\S]*)$/);
+        return m ? { year: m[1], info: m[2].trim() } : { year: "", info: line };
+      });
+  })();
 
   /* SNS リンク: {label, url} の配列として正規化 */
   const snsLinks = (post.snsLinks ?? [])
