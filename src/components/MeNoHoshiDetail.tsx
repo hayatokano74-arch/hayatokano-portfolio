@@ -96,9 +96,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
 
               {/* BIO（行ごとに分割、work-details-row--bio で薄い区切り線） */}
               {bioLines.map((line, i) => {
-                const isLastBio = i === bioLines.length - 1;
                 return (
-                  <div key={`bio-${i}`} className={`work-details-row${!isLastBio ? " work-details-row--bio" : ""}`}>
+                  <div key={`bio-${i}`} className={`work-details-row${i !== 0 ? " work-details-row--bio" : ""}`}>
                     <div className="work-details-label">{i === 0 ? "BIO:" : ""}</div>
                     <div className="work-details-value">{line}</div>
                   </div>
