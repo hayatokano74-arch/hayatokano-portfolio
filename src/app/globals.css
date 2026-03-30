@@ -1393,7 +1393,7 @@ button {
 }
 
 .me-no-hoshi-past-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .me-no-hoshi-archive-grid {
