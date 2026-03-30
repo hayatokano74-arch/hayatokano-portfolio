@@ -5,6 +5,7 @@ import { useFilterContext } from "@/components/FilterableContent";
 import { WorksClient } from "@/components/WorksClient";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 import type { Work } from "@/lib/types";
+import type { MeNoHoshiGridField } from "@/lib/me-no-hoshi/api";
 
 /** WorksClient が受け取る最小型 */
 type WorkLike = Omit<Work, "details"> & { details: unknown };
@@ -47,6 +48,7 @@ export function FilteredWorksList<T extends WorkLike>({
   basePath = "/works",
   detailQuery,
   searchQuery = "",
+  gridSettings,
 }: {
   allWorks: T[];
   view: "grid" | "list";
@@ -54,6 +56,7 @@ export function FilteredWorksList<T extends WorkLike>({
   basePath?: "/works" | "/me-no-hoshi";
   detailQuery?: string;
   searchQuery?: string;
+  gridSettings?: MeNoHoshiGridField[];
 }) {
   const { selected } = useFilterContext();
   const selectedTags = selected.tags ?? [];
@@ -113,6 +116,7 @@ export function FilteredWorksList<T extends WorkLike>({
         basePath={basePath}
         detailQuery={detailQuery}
         renderListDetail={renderListDetail}
+        gridSettings={gridSettings}
       />
       <ClientPagination
         currentPage={safePage}

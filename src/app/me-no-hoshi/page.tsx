@@ -5,6 +5,7 @@ import { FilterProvider, FilterLayout } from "@/components/FilterableContent";
 import { FilteredWorksList, FilteredCount } from "@/components/FilteredWorksList";
 import { parseTags, parseYears, buildFilterGroups } from "@/lib/categories";
 import { getMeNoHoshiPosts } from "@/lib/meNoHoshi";
+import { getMeNoHoshiGridSettings } from "@/lib/me-no-hoshi/api";
 import { getPerPage } from "@/lib/siteSettings";
 
 export const metadata: Metadata = { title: "目の星" };
@@ -19,7 +20,11 @@ export default async function MeNoHoshiPage({
   const selectedTags = parseTags(sp);
   const selectedYears = parseYears(sp);
   const q = sp?.q?.toLowerCase() ?? "";
-  const [posts, perPage] = await Promise.all([getMeNoHoshiPosts(), getPerPage()]);
+  const [posts, perPage, gridSettings] = await Promise.all([
+    getMeNoHoshiPosts(),
+    getPerPage(),
+    getMeNoHoshiGridSettings(),
+  ]);
 
   /* フィルターグループ構築（全データから） */
   const filterGroups = buildFilterGroups(
@@ -71,6 +76,7 @@ export default async function MeNoHoshiPage({
             basePath="/me-no-hoshi"
             detailQuery=""
             searchQuery={q}
+            gridSettings={gridSettings}
           />
         </FilterLayout>
       </FilterProvider>

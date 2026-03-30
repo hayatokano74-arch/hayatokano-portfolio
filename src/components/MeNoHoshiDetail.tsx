@@ -123,7 +123,8 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
         {/* EXHIBITION: CV風（年号 + 展示情報の2列） */}
         {post.pastExhibitions.length > 0 && (
           <div style={{ marginTop: "var(--v-heading)" }}>
-            <div className="work-details-table-header">EXHIBITION</div>
+            {/* work-details-table の row-gap:4px 分が存在しないため padding-bottom で補正 */}
+            <div className="work-details-table-header" style={{ paddingBottom: "calc(var(--space-2) + 4px)" }}>EXHIBITION</div>
             {post.pastExhibitions.map((item, i) => (
               <div key={`ex-${i}`}>
                 <div className="hrline" />

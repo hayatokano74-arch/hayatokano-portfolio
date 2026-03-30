@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Work } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
+import type { MeNoHoshiGridField } from "@/lib/me-no-hoshi/api";
 
 /** WorksClient が受け取れる最小型（details を柔軟に） */
 type WorkLike = Omit<Work, "details"> & { details: unknown };
@@ -26,6 +27,7 @@ export function WorksClient<T extends WorkLike>({
   detailQuery = "?mode=gallery&img=1",
   renderListDetail,
   excerptMaxLength = DEFAULT_EXCERPT_MAX_LENGTH,
+  gridSettings,
 }: {
   works: T[];
   view: "grid" | "list";
@@ -34,12 +36,13 @@ export function WorksClient<T extends WorkLike>({
   renderListDetail?: (work: T) => ReactNode;
   /** リスト表示でのExcerpt最大文字数。0で無制限 */
   excerptMaxLength?: number;
+  gridSettings?: MeNoHoshiGridField[];
 }) {
   const detailHref = (slug: string) => `${basePath}/${slug}${detailQuery}`;
   return (
     <div>
       {view === "grid" ? (
-        <WorksGrid works={works} detailHref={detailHref} showDetails={basePath === "/me-no-hoshi"} />
+        <WorksGrid works={works} detailHref={detailHref} showDetails={basePath === "/me-no-hoshi"} gridSettings={gridSettings} />
       ) : (
         <WorksList works={works} detailHref={detailHref} renderListDetail={renderListDetail} excerptMaxLength={excerptMaxLength} />
       )}
@@ -71,15 +74,28 @@ function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; wi
   return <div style={{ width: "100%", aspectRatio: "3 / 2", background: "var(--media-bg)" }} />;
 }
 
-/* グリッド用 DETAILS（投稿ごとに値があるフィールドだけ表示） */
-function GridDetails({ details }: { details: unknown }) {
+/* グリッド用 DETAILS */
+function GridDetails({ details, gridSettings }: { details: unknown; gridSettings?: MeNoHoshiGridField[] }) {
   let rows: { label: string; value: string | undefined }[];
 
-  /* 配列形式（MeNoHoshi）: グリッド表示ではBIOを除外 */
+  /* 配列形式（MeNoHoshi）: WPのグリッド設定でフィルタ＆ソート */
   if (Array.isArray(details)) {
-    rows = (details as { key: string; label: string; value: string }[])
-      .filter((d) => !d.key.startsWith("bio-"))
-      .map((d) => ({ label: d.label, value: d.value }));
+    const detailsArr = details as { key: string; label: string; value: string }[];
+
+    if (gridSettings && gridSettings.length > 0) {
+      /* WP設定あり: visible=trueのフィールドをWP設定の順番で表示 */
+      rows = gridSettings
+        .filter((s) => s.visible)
+        .flatMap((s) => {
+          const found = detailsArr.find((d) => d.key === s.key);
+          return found ? [{ label: found.label, value: found.value }] : [];
+        });
+    } else {
+      /* WP設定なし（フォールバック）: BIOを除外してそのまま表示 */
+      rows = detailsArr
+        .filter((d) => !d.key.startsWith("bio-"))
+        .map((d) => ({ label: d.label, value: d.value }));
+    }
   } else {
     /* オブジェクト形式（Works）: 既存ロジック */
     const d = details as Work["details"];
@@ -137,7 +153,7 @@ function GridDetails({ details }: { details: unknown }) {
   );
 }
 
-function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false }: { works: T[]; detailHref: (slug: string) => string; showDetails?: boolean }) {
+function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false, gridSettings }: { works: T[]; detailHref: (slug: string) => string; showDetails?: boolean; gridSettings?: MeNoHoshiGridField[] }) {
   return (
     <div style={{ position: "relative", paddingBottom: "var(--space-14)" }}>
       <div className="works-grid">
@@ -166,7 +182,7 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false 
                   {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
                 </div>
               )}
-              {showDetails && <GridDetails details={w.details} />}
+              {showDetails && <GridDetails details={w.details} gridSettings={gridSettings} />}
             </Link>
           );
         })}

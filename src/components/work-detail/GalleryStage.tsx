@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import type { Work } from "@/lib/types";
-import { blurDataURL } from "@/lib/blur";
 import { getEmbedUrl } from "@/lib/embed-url";
 
 type MediaItem = Work["media"][number];
@@ -10,22 +9,23 @@ type MediaItem = Work["media"][number];
 /**
  * ギャラリーステージ: 画像/動画の表示エリア
  * - 左半分クリック: 前の画像 / 右半分クリック: 次の画像
- * - クロスフェード対応
+ * - key変化でReactが要素を再マウント → CSSアニメーションで自然にフェードイン
  * - YouTube/Vimeo 埋め込み対応
  */
 export function GalleryStage({
   currentMedia,
-  fading,
   imgIndex,
   onPrev,
   onNext,
 }: {
   currentMedia: MediaItem | undefined;
-  fading: boolean;
   imgIndex: number;
   onPrev: () => void;
   onNext: () => void;
 }) {
+  /* key にsrcを使うことで画像変化時にReactが要素を再マウントし、CSSアニメーションが発火する */
+  const mediaKey = currentMedia?.src ?? `empty-${imgIndex}`;
+
   return (
     <>
       {/* 左半分クリック: 前の画像 */}
@@ -43,7 +43,7 @@ export function GalleryStage({
         className="work-detail-click-next"
       />
       <div
-        className={`work-detail-gallery-stage${fading ? " is-fading" : ""}`}
+        className="work-detail-gallery-stage"
         style={{
           zIndex: currentMedia?.type === "video" ? 3 : 0,
         }}
@@ -51,7 +51,7 @@ export function GalleryStage({
         {currentMedia?.type === "video" ? (() => {
           const embedUrl = getEmbedUrl(currentMedia.src);
           return embedUrl ? (
-            <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9" }}>
+            <div key={mediaKey} className="gallery-media-enter" style={{ position: "relative", width: "100%", aspectRatio: "16 / 9" }}>
               <iframe
                 src={embedUrl}
                 title={currentMedia.alt || "video"}
@@ -68,6 +68,8 @@ export function GalleryStage({
             </div>
           ) : (
             <video
+              key={mediaKey}
+              className="gallery-media-enter"
               src={currentMedia.src}
               poster={currentMedia.poster}
               controls
@@ -82,14 +84,14 @@ export function GalleryStage({
           );
         })() : currentMedia?.src ? (
           <Image
+            key={mediaKey}
+            className="gallery-media-enter"
             src={currentMedia.src}
             alt={currentMedia.alt}
             width={currentMedia.width}
             height={currentMedia.height}
             priority={imgIndex === 1}
             sizes="(max-width: 900px) 100vw, 66vw"
-            placeholder="blur"
-            blurDataURL={blurDataURL(currentMedia.width, currentMedia.height)}
             style={{
               width: "100%",
               height: "auto",
@@ -99,7 +101,10 @@ export function GalleryStage({
             }}
           />
         ) : (
-          <div style={{ aspectRatio: "16 / 9", width: "100%", border: "1px solid var(--line)" }} />
+          <div
+            key={mediaKey}
+            style={{ aspectRatio: "16 / 9", width: "100%", border: "1px solid var(--line)" }}
+          />
         )}
       </div>
     </>

@@ -2188,6 +2188,7 @@ button.tl-photo-cell {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
+  align-items: start;
 }
 
 /* 左カラム: 連絡先情報 */
@@ -4485,7 +4486,8 @@ img[loading="lazy"] {
 
   /* ── Contact ── */
   .contact-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, 1fr);  /* 他ページと統一 */
+    row-gap: var(--space-10);               /* info → form 間の縦余白 */
   }
 
   .contact-info {

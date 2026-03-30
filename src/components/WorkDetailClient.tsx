@@ -40,7 +40,7 @@ export function WorkDetailClient({
     mode, setMode,
     img, setImg,
     prevImage, nextImage,
-    currentMedia, fading,
+    currentMedia,
     goToImage,
     resetTo,
   } = useGalleryNav({
@@ -133,7 +133,6 @@ export function WorkDetailClient({
         {mode === "gallery" ? (
           <GalleryStage
             currentMedia={currentMedia}
-            fading={fading}
             imgIndex={img}
             onPrev={() => goToImage(prevImage)}
             onNext={() => goToImage(nextImage)}
