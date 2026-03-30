@@ -693,7 +693,7 @@ button {
 .pinned-badge {
   margin-left: 0.6em;
   font-size: 0.75em;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--muted);
   white-space: nowrap;
@@ -1033,7 +1033,7 @@ button {
 }
 
 .header-nav-item.is-active .header-nav-label {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* モバイルメニューボタン */
@@ -1738,7 +1738,7 @@ button {
   gap: var(--space-4);
   font-size: var(--font-body);
   line-height: var(--lh-normal);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* サムネイル: 最終列の右端に揃える（ページ右辺と一致） */
@@ -2306,7 +2306,7 @@ button.tl-photo-cell {
   background: linear-gradient(var(--fg), var(--fg)) bottom center / 100% 0 no-repeat;
   color: var(--fg);
   font-size: var(--font-body);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.08em;
   padding: var(--space-3) var(--space-8);
   cursor: pointer;
@@ -2836,7 +2836,7 @@ img[loading="lazy"] {
 
 .post-recent-type {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 1px 6px;

@@ -12,7 +12,7 @@ const ibmPlexSansJP = IBM_Plex_Sans_JP({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-jp",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "700"],
 });
 
 const siteName = "Hayato Kano";

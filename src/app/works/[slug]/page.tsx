@@ -19,19 +19,23 @@ export async function generateMetadata({
   const work = await getWorkBySlug(slug);
   if (!work) return {};
   const title = `${work.title} | ${work.year}`;
+  /* HTMLタグを除去してプレーンテキストにする */
+  const description = work.excerpt.replace(/<[^>]+>/g, "").trim();
   return {
     title,
-    description: work.excerpt,
+    description,
     openGraph: {
+      type: "article",
       title,
-      description: work.excerpt,
-      /* images は opengraph-image.tsx が自動生成するため省略 */
+      description,
+      url: `https://hayatokano.com/works/${slug}`,
+      siteName: "Hayato Kano",
+      locale: "ja_JP",
     },
     twitter: {
       card: "summary_large_image",
       title,
-      description: work.excerpt,
-      /* images は opengraph-image.tsx が自動生成するため省略 */
+      description,
     },
   };
 }

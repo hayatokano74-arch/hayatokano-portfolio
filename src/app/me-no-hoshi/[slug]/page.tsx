@@ -25,15 +25,17 @@ export async function generateMetadata({
     title: post.title,
     description,
     openGraph: {
+      type: "article",
       title: post.title,
       description,
-      /* images は opengraph-image.tsx が自動生成するため省略 */
+      url: `https://hayatokano.com/me-no-hoshi/${slug}`,
+      siteName: "Hayato Kano",
+      locale: "ja_JP",
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description,
-      /* images は opengraph-image.tsx が自動生成するため省略 */
     },
   };
 }
