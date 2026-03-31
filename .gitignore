@@ -34,5 +34,5 @@ write/api/config.php
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+# Gardenコンテンツはローカルキャッシュのため除外（WordPressから取得）
 content/garden/
-content/
