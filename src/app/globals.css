@@ -3953,7 +3953,7 @@ img[loading="lazy"] {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
-  padding: var(--space-2) 0;
+  padding-bottom: var(--space-2);
 }
 
 .works-list-header-label {
