@@ -110,7 +110,11 @@ function loadMeNoHoshiPosts(): MeNoHoshiPost[] | null {
       if (post) posts.push(post);
     }
 
-    return posts.length > 0 ? posts : null;
+    if (posts.length === 0) return null;
+
+    /* date降順（新しい順）でソート */
+    posts.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+    return posts;
   } catch {
     return null;
   }

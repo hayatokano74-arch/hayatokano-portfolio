@@ -142,7 +142,8 @@ export const getWorks = cache(async (): Promise<Work[]> => {
 
     if (works.length === 0) return fallbackWorks;
 
-    /* ピン留め作品を先頭に（ファイル名順は維持） */
+    /* date降順（新しい順）でソートし、ピン留め作品を先頭に */
+    works.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
     const pinned = works.filter((w) => w.pinned);
     const rest = works.filter((w) => !w.pinned);
     return [...pinned, ...rest];
