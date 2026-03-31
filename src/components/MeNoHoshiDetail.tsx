@@ -68,7 +68,7 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
           />
         </div>
 
-        {/* DETAILS + PROFILE: 共通グリッドで包み subgrid によりラベル列幅を自動同幅化 */}
+        {/* DETAILS + PROFILE + EXHIBITION: 共通グリッドで包み subgrid によりラベル列幅を自動同幅化 */}
         <div className="mnh-meta-tables" style={{ marginTop: "var(--v-heading)" }}>
           {/* DETAILS（展示情報） */}
           <section className="work-details-table">
@@ -118,21 +118,20 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
               ))}
             </section>
           )}
-        </div>
 
-        {/* EXHIBITION: CV風（年号 + 展示情報の2列） */}
-        {post.pastExhibitions.length > 0 && (
-          <div style={{ marginTop: "var(--v-heading)" }}>
-            {/* work-details-table の row-gap:4px 分が存在しないため padding-bottom で補正 */}
-            <div className="work-details-table-header" style={{ paddingBottom: "calc(var(--space-2) + 4px)" }}>EXHIBITION</div>
-            {post.pastExhibitions.map((item, i) => (
-              <div key={`ex-${i}`} className="mnh-exhibition-row">
-                <div className="mnh-exhibition-year">{item.year}</div>
-                <div className="mnh-exhibition-info">{item.info}</div>
-              </div>
-            ))}
-          </div>
-        )}
+          {/* EXHIBITION: DETAILS/PROFILEと同じ subgrid に含め、線の幅を統一 */}
+          {post.pastExhibitions.length > 0 && (
+            <section className="work-details-table" style={{ marginTop: "var(--v-heading)" }}>
+              <div className="work-details-table-header">EXHIBITION</div>
+              {post.pastExhibitions.map((item, i) => (
+                <div key={`ex-${i}`} className="work-details-row">
+                  <div className="work-details-label mnh-exhibition-year">{item.year}</div>
+                  <div className="work-details-value">{item.info}</div>
+                </div>
+              ))}
+            </section>
+          )}
+        </div>
 
         {/* NOTICE（注釈） */}
         <div style={{ marginTop: "var(--v-block)", fontSize: "var(--font-meta)", lineHeight: "var(--lh-relaxed)", color: "var(--muted)" }}>{post.notice}</div>
