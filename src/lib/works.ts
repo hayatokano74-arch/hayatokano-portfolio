@@ -1,59 +1,58 @@
 /**
  * Works データ取得
  *
- * WP REST API → normalize → 型安全な Work[]
- * WP_BASE_URL 未設定 or API失敗時は mock.ts のフォールバックデータを返す
+ * content/works/*.md から gray-matter でパースして返す。
  */
 
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
 import { cache } from "react";
-import type { Work, WorkTag } from "@/lib/types";
+import type { Work } from "@/lib/types";
 import { works as fallbackWorks } from "@/lib/mock";
-import { fetchWpApi } from "@/lib/wp/client";
-import type { WpWorkResponse } from "@/lib/wp/types";
 
-/* モジュールレベルに RegExp を巻き上げ（js-hoist-regexp） */
+const WORKS_DIR = path.join(process.cwd(), "content/works");
+
+/* モジュールレベルに RegExp を巻き上げ */
 const RE_UNICODE_TEST = /u[0-9a-fA-F]{4}/;
 const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
-const RE_HTML_TAGS = /<[^>]*>/g;
-
-/** タグ文字列を正規化（空文字除去のみ） */
-function normalizeTag(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed || null;
-}
-
-/** HTMLタグを除去してプレーンテキストにする */
-function stripHtml(html: string): string {
-  return html.replace(RE_HTML_TAGS, "").trim();
-}
 
 /**
  * 壊れたUnicodeエスケープ（uXXXX → 正しいUnicode文字）を復元
  * WP sanitize_file_name() がCJK文字を壊した場合のフォールバック
  */
 function fixBrokenUnicodeUrl(url: string): string {
-  // uXXXX が連続するパターン（CJKの壊れたエスケープ）を検出
   if (!RE_UNICODE_TEST.test(url)) return url;
   return url.replace(RE_UNICODE_REPLACE, (_match, hex) => {
     const cp = parseInt(hex, 16);
-    // CJK/ひらがな/カタカナ範囲のみ復元（英数字のuXXXXパターンを誤変換しない）
     if (cp >= 0x3000 && cp <= 0x9fff) return String.fromCodePoint(cp);
     if (cp >= 0xf900 && cp <= 0xfaff) return String.fromCodePoint(cp);
     if (cp >= 0xff00 && cp <= 0xffef) return String.fromCodePoint(cp);
-    return _match; // CJK範囲外はそのまま
+    return _match;
   });
 }
 
-function normalizeWork(raw: WpWorkResponse): Work | null {
-  const slug = (raw.slug ?? "").trim();
-  const title = (raw.title ?? "").trim();
+type RawMedia = {
+  id?: string;
+  type?: string;
+  src?: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+  poster?: string;
+};
+
+type RawDetails = Record<string, string | undefined>;
+
+function parseWork(slug: string, data: Record<string, unknown>, content: string): Work | null {
+  const title = (String(data.title ?? "")).trim();
   if (!slug || !title) return null;
 
-  const tags = (raw.tags ?? [])
-    .map(normalizeTag)
-    .filter((t): t is string => Boolean(t));
+  const tags = ((data.tags ?? []) as string[])
+    .map((t) => String(t).trim())
+    .filter(Boolean);
 
-  const media = (raw.media ?? [])
+  const media = ((data.media ?? []) as RawMedia[])
     .filter((m) => m?.id && m?.src)
     .map((m) => ({
       id: m.id!,
@@ -67,8 +66,7 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
 
   if (media.length === 0) return null;
 
-  /* アイキャッチ画像 */
-  const thumb = raw.thumbnail;
+  const thumb = data.thumbnail as { src?: string; alt?: string; width?: number; height?: number } | undefined;
   const thumbnail = thumb?.src
     ? {
         src: fixBrokenUnicodeUrl(thumb.src),
@@ -78,14 +76,14 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
       }
     : undefined;
 
-  const d = raw.details ?? {};
+  const d = (data.details ?? {}) as RawDetails;
   return {
     slug,
-    date: (raw.date ?? "").trim(),
+    date: (String(data.date ?? "")).trim(),
     title,
     tags,
-    year: (raw.year ?? "").trim(),
-    excerpt: (raw.excerpt ?? "").trim(),
+    year: (String(data.year ?? "")).trim(),
+    excerpt: content.trim(),
     ...(thumbnail ? { thumbnail } : {}),
     details: {
       exhibition_type: (d.exhibition_type ?? "").trim() || undefined,
@@ -123,23 +121,34 @@ function normalizeWork(raw: WpWorkResponse): Work | null {
       bio: (d.bio ?? "").trim() || undefined,
     },
     media,
-    ...(raw.pinned ? { pinned: true } : {}),
+    ...(data.pinned ? { pinned: true } : {}),
   };
 }
 
 /** Works 全件取得（React.cache でリクエスト単位の重複排除） */
 export const getWorks = cache(async (): Promise<Work[]> => {
-  const data = await fetchWpApi<WpWorkResponse[]>("hayato/v1/works");
-  if (!data || !Array.isArray(data)) return fallbackWorks;
+  try {
+    const files = fs.readdirSync(WORKS_DIR).filter((f) => f.endsWith(".md"));
+    if (files.length === 0) return fallbackWorks;
 
-  const normalized = data
-    .map(normalizeWork)
-    .filter((w): w is Work => Boolean(w));
-  if (normalized.length === 0) return fallbackWorks;
-  /* ピン留め作品を先頭に（元の順序は維持） */
-  const pinned = normalized.filter((w) => w.pinned);
-  const rest = normalized.filter((w) => !w.pinned);
-  return [...pinned, ...rest];
+    const works: Work[] = [];
+    for (const file of files) {
+      const slug = file.replace(/\.md$/, "");
+      const raw = fs.readFileSync(path.join(WORKS_DIR, file), "utf-8");
+      const { data, content } = matter(raw);
+      const work = parseWork(slug, data, content);
+      if (work) works.push(work);
+    }
+
+    if (works.length === 0) return fallbackWorks;
+
+    /* ピン留め作品を先頭に（ファイル名順は維持） */
+    const pinned = works.filter((w) => w.pinned);
+    const rest = works.filter((w) => !w.pinned);
+    return [...pinned, ...rest];
+  } catch {
+    return fallbackWorks;
+  }
 });
 
 /** slug 指定で1件取得（React.cache でリクエスト単位の重複排除） */
