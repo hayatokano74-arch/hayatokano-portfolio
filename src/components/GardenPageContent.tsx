@@ -6,6 +6,7 @@
  */
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import type { GardenNode } from "@/lib/garden/types";
 import { useGardenState } from "@/hooks/useGardenState";
 import { GardenSearch } from "./GardenSearch";
@@ -25,6 +26,16 @@ const GardenMobileArchiveDrawer = dynamic(
 
 export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
   const state = useGardenState(nodes);
+
+  /* モバイル判定: デスクトップでは検索コンポーネントをマウントしない */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 900px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const archiveButton = (
     <button
@@ -54,11 +65,18 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         showSearch={false}
       />
       <div className="garden-layout">
-        {/* モバイル専用: ヘッダーとコンテンツの間に検索+アーカイブバーを表示 */}
+        {/* モバイル専用: ヘッダーとコンテンツの間に検索+アーカイブバーを表示
+            isMobileがfalseの間（デスクトップ・初期SSR）は検索をマウントしない */}
         <div className="garden-mobile-archive-bar">
-          <div className="garden-mobile-archive-search">
-            {searchElement}
-          </div>
+          {isMobile && (
+            <div className="garden-mobile-archive-search">
+              <GardenSearch
+                search={state.search}
+                onFullSearch={state.handleFullSearch}
+                fullSearchIds={state.fullSearchIds}
+              />
+            </div>
+          )}
           <div className="garden-mobile-archive-tools">
             <span className="filter-bar-separator" aria-hidden="true" />
             {archiveButton}
