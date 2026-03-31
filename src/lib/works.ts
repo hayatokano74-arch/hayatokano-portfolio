@@ -128,7 +128,7 @@ function parseWork(slug: string, data: Record<string, unknown>, content: string)
 /** Works 全件取得（React.cache でリクエスト単位の重複排除） */
 export const getWorks = cache(async (): Promise<Work[]> => {
   try {
-    const files = fs.readdirSync(WORKS_DIR).filter((f) => f.endsWith(".md"));
+    const files = fs.readdirSync(WORKS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_"));
     if (files.length === 0) return fallbackWorks;
 
     const works: Work[] = [];
