@@ -1,7 +1,7 @@
 /**
  * 共通型定義
  *
- * Works, Timeline, Text, News 等で使用する型。
+ * Works, Text, News 等で使用する型。
  * 以前は mock.ts に同居していたが、型とモックデータを分離するためここに移動。
  */
 
@@ -71,21 +71,6 @@ export type Work = {
     poster?: string;
   }[];
   pinned?: boolean;
-};
-
-export type TimelineItem = {
-  id: string;
-  date: string;
-  type: "photo" | "text";
-  title?: string;
-  text: string;
-  tags?: string[];
-  images?: {
-    src: string;
-    alt: string;
-    width: number;
-    height: number;
-  }[];
 };
 
 export type TextPost = {

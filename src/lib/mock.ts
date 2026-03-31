@@ -5,10 +5,10 @@
  * 型定義は types.ts に移動済み。
  */
 
-import type { Work, WorkTag, TimelineItem, TextPost, NewsItem } from "@/lib/types";
+import type { Work, WorkTag, TextPost, NewsItem } from "@/lib/types";
 
 /* 型の re-export（既存の import パスとの互換性を維持） */
-export type { Work, WorkTag, TimelineItem, TextPost, NewsItem };
+export type { Work, WorkTag, TextPost, NewsItem };
 
 export const works: Work[] = Array.from({ length: 24 }).map((_, i) => {
   const n = i + 1;
@@ -80,102 +80,6 @@ export const works: Work[] = Array.from({ length: 24 }).map((_, i) => {
     }),
   };
 });
-
-export const timeline: TimelineItem[] = [
-  {
-    id: "t1",
-    date: "2026.02.09 18:22",
-    type: "photo",
-    text: "夕方の港。水面に映る光が揺れるたび、別の場所のように見える。",
-    images: [
-      { src: "https://picsum.photos/seed/tl-1a/1280/800", alt: "港の夕景", width: 1280, height: 800 },
-    ],
-  },
-  {
-    id: "t2",
-    date: "2026.02.09 10:05",
-    type: "text",
-    text: "朝から現像作業。昨日撮ったフィルムを見返すと、現場で感じた空気感とプリント上の印象にずれがある。そのずれこそが写真の固有性なのだと思うけれど、まだうまく言語化できない。",
-  },
-  {
-    id: "t3",
-    date: "2026.02.08 15:40",
-    type: "photo",
-    text: "土を掘り返していると鳥が寄って来る。地中から出てきた幼虫を摘んでどこかへ飛んでいく。私には見えていないものが見えている。",
-    images: [
-      { src: "https://picsum.photos/seed/tl-3a/1280/800", alt: "畑と鳥", width: 1280, height: 800 },
-      { src: "https://picsum.photos/seed/tl-3b/800/1200", alt: "鳥の近影", width: 800, height: 1200 },
-    ],
-  },
-  {
-    id: "t4",
-    date: "2026.02.08 09:12",
-    type: "text",
-    text: "見えていないのではなくて、きっと違う注意力を持っているのだろう。鳥の視線で世界を見たら、地面はもっと情報に満ちているはずだ。",
-  },
-  {
-    id: "t5",
-    date: "2026.02.07 20:30",
-    type: "text",
-    text: "展示のステートメントを書き直している。言葉にすると写真が持っていた曖昧さが消えてしまう。かといって何も書かないわけにはいかない。最低限の補助線だけ引くつもりで書く。",
-  },
-  {
-    id: "t6",
-    date: "2026.02.06 14:18",
-    type: "photo",
-    text: "午後の光。建物の影が道に落ちて、境界線のように見えた。",
-    images: [
-      { src: "https://picsum.photos/seed/tl-6a/1280/800", alt: "建物の影", width: 1280, height: 800 },
-    ],
-  },
-  {
-    id: "t7",
-    date: "2026.02.06 08:45",
-    type: "text",
-    text: "早朝の散歩。霧が出ていて、50m先がぼやけている。写真を撮る気にはならなかったが、この距離感は覚えておきたい。",
-  },
-  {
-    id: "t8",
-    date: "2026.02.05 16:00",
-    type: "photo",
-    text: "",
-    images: [
-      { src: "https://picsum.photos/seed/tl-8a/1280/800", alt: "河川敷", width: 1280, height: 800 },
-      { src: "https://picsum.photos/seed/tl-8b/1280/800", alt: "河川敷2", width: 1280, height: 800 },
-      { src: "https://picsum.photos/seed/tl-8c/800/1200", alt: "河川敷3", width: 800, height: 1200 },
-    ],
-  },
-  {
-    id: "t9",
-    date: "2026.01.30 11:20",
-    type: "text",
-    text: "プリントのサイズを決めかねている。大きく伸ばすと空間が変わるが、小さいプリントの親密さも捨てがたい。展示空間の図面をもう一度見直す。",
-  },
-  {
-    id: "t10",
-    date: "2026.01.28 19:50",
-    type: "photo",
-    text: "夜の公園。街灯の下だけが異様に明るくて、そこだけ切り取られた舞台のようだった。",
-    images: [
-      { src: "https://picsum.photos/seed/tl-10a/1280/800", alt: "夜の公園", width: 1280, height: 800 },
-    ],
-  },
-  {
-    id: "t11",
-    date: "2026.01.25 13:00",
-    type: "text",
-    text: "撮影は結論ではなく、視線の履歴だと思う。どこで立ち止まり、どの距離で迷い、何を採用し何を捨てたか。そうした判断の連続が、結果として一枚の像に残る。",
-  },
-  {
-    id: "t12",
-    date: "2025.12.20 10:30",
-    type: "photo",
-    text: "冬の海。波打ち際を歩くと、足元の砂が光を反射して銀色に見える。",
-    images: [
-      { src: "https://picsum.photos/seed/tl-12a/1280/800", alt: "冬の海", width: 1280, height: 800 },
-    ],
-  },
-];
 
 export const texts: TextPost[] = [
   {
