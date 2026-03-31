@@ -27,49 +27,32 @@ export default async function AboutPage() {
             {about.statement}
           </div>
 
-          {about.cv.map((row, i) =>
-            /* year が空 → セクション見出し */
-            !row.year ? (
-              <div key={i}>
-                <div
-                  style={{
-                    fontSize: "var(--font-meta)",
-                    letterSpacing: "0.16em",
-                    color: "var(--muted)",
-                    paddingTop: i === 0 ? 0 : "var(--v-section)",
-                    paddingBottom: "var(--v-element)",
-                  }}
-                >
-                  {row.content}:
-                </div>
-              </div>
-            ) : (
-              <div key={i}>
-                <div className="hrline" />
-                <div className="cv-detail-row">
-                  <div
-                    style={{
-                      fontSize: "var(--font-body)",
-                      lineHeight: "var(--lh-normal)",
-                      fontWeight: 700,
-                      color: "var(--muted)",
-                    }}
-                  >
-                    {row.year}
+          {(() => {
+            /* CVをセクションごとにグループ化 */
+            const cvSections = about.cv.reduce<Array<{ label: string; rows: typeof about.cv }>>(
+              (acc, row) => {
+                if (!row.year) {
+                  acc.push({ label: row.content, rows: [] });
+                } else {
+                  if (acc.length === 0) acc.push({ label: "", rows: [] });
+                  acc[acc.length - 1].rows.push(row);
+                }
+                return acc;
+              },
+              [],
+            );
+            return cvSections.map((section, si) => (
+              <section key={si} className="work-details-table" style={si > 0 ? { marginTop: "var(--v-heading)" } : undefined}>
+                {section.label && <div className="work-details-table-header">{section.label}</div>}
+                {section.rows.map((row, i) => (
+                  <div key={i} className="work-details-row">
+                    <div className="work-details-label">{row.year}</div>
+                    <div className="work-details-value">{row.content}</div>
                   </div>
-                  <div
-                    style={{
-                      fontSize: "var(--font-body)",
-                      lineHeight: "var(--lh-normal)",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {row.content}
-                  </div>
-                </div>
-              </div>
-            ),
-          )}
+                ))}
+              </section>
+            ));
+          })()}
         </div>
 
         {/* 右カラム: 写真（縦一列）— me-no-hoshi と同じ width/height 方式 */}
