@@ -13,23 +13,25 @@ import { buildArchiveTree } from "@/lib/garden/pagination";
 import type { GardenArchiveYear } from "@/lib/garden/pagination";
 import { titleToSlug } from "@/lib/garden/slug";
 
-/* ─── 三角形アイコン ─── */
+/* ─── 三角形アイコン（SVGで絵文字化を回避） ─── */
 function ToggleArrow({ open }: { open: boolean }) {
   return (
-    <span
+    <svg
       aria-hidden="true"
+      width="6"
+      height="8"
+      viewBox="0 0 6 8"
+      fill="currentColor"
       style={{
         display: "inline-block",
-        width: 8,
-        fontSize: 8,
-        lineHeight: 1,
+        flexShrink: 0,
         transition: "transform 120ms ease",
         transform: open ? "rotate(90deg)" : "rotate(0deg)",
         color: "var(--muted)",
       }}
     >
-      ▶
-    </span>
+      <path d="M0 0l6 4-6 4V0z" />
+    </svg>
   );
 }
 

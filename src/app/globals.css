@@ -4675,10 +4675,44 @@ img[loading="lazy"] {
   }
 
   /* モバイル専用: ヘッダーとコンテンツの間のアーカイブボタン */
+  /* Worksフィルターバーと同じスタイルのモバイル検索+アーカイブバー */
   .garden-mobile-archive-bar {
     display: flex;
     align-items: center;
-    padding-bottom: var(--space-3);
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--space-4);
+  }
+
+  .garden-mobile-archive-search {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* バー内ではinputのbox borderを外してフラットスタイルに */
+  .garden-mobile-archive-bar .garden-search-wrapper {
+    width: 100%;
+  }
+
+  .garden-mobile-archive-bar .garden-search-input {
+    border: none;
+    border-radius: 0;
+    font-size: 16px; /* iOSズーム防止 */
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
+  }
+
+  .garden-mobile-archive-bar .garden-search-input:focus {
+    border: none;
+    outline: none;
+  }
+
+  .garden-mobile-archive-tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    padding: var(--space-2) 0;
   }
 
   .garden-main {

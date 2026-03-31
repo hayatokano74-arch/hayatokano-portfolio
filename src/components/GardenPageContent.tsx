@@ -54,9 +54,15 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         showSearch={false}
       />
       <div className="garden-layout">
-        {/* モバイル専用: ヘッダーとコンテンツの間にアーカイブボタンを表示 */}
+        {/* モバイル専用: ヘッダーとコンテンツの間に検索+アーカイブバーを表示 */}
         <div className="garden-mobile-archive-bar">
-          {archiveButton}
+          <div className="garden-mobile-archive-search">
+            {searchElement}
+          </div>
+          <div className="garden-mobile-archive-tools">
+            <span className="filter-bar-separator" aria-hidden="true" />
+            {archiveButton}
+          </div>
         </div>
         <div className="garden-main">
           {/* 全文検索結果バー（検索中のみ表示） */}
