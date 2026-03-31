@@ -1227,6 +1227,10 @@ button {
   align-items: center;
   min-height: var(--space-11);
 }
+/* トップページヘッダー内のテーマドットは右ボーダー不要 */
+.top-page-header .theme-dot {
+  border-right: none;
+}
 
 .top-page-name {
   font-size: var(--font-body);
