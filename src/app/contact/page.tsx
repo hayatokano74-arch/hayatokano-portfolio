@@ -18,11 +18,7 @@ export default function ContactPage() {
         {/* 左カラム: イントロ + 連絡先情報 */}
         <div className="contact-info">
           <p className="contact-intro">
-            お仕事のご依頼・お問い合わせは
-            <br />
-            下記フォームまたはメールより
-            <br />
-            お願いいたします。
+            お仕事のご依頼・お問い合わせは下記フォームまたはメールよりお願いいたします。
           </p>
 
           <div className="hrline" />
