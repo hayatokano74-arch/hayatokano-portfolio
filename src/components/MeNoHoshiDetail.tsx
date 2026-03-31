@@ -126,12 +126,9 @@ export function MeNoHoshiDetail({ post }: { post: MeNoHoshiPost }) {
             {/* work-details-table の row-gap:4px 分が存在しないため padding-bottom で補正 */}
             <div className="work-details-table-header" style={{ paddingBottom: "calc(var(--space-2) + 4px)" }}>EXHIBITION</div>
             {post.pastExhibitions.map((item, i) => (
-              <div key={`ex-${i}`}>
-                <div className="hrline" />
-                <div className="mnh-exhibition-row">
-                  <div className="mnh-exhibition-year">{item.year}</div>
-                  <div className="mnh-exhibition-info">{item.info}</div>
-                </div>
+              <div key={`ex-${i}`} className="mnh-exhibition-row">
+                <div className="mnh-exhibition-year">{item.year}</div>
+                <div className="mnh-exhibition-info">{item.info}</div>
               </div>
             ))}
           </div>

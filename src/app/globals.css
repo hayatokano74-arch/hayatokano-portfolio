@@ -1424,8 +1424,6 @@ button {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr);
   column-gap: var(--space-6);
-  padding-top: 4px;
-  padding-bottom: 4px;
   align-items: baseline;
 }
 
@@ -1441,6 +1439,9 @@ button {
   font-size: var(--font-body);
   line-height: var(--lh-normal);
   min-width: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 /* ── 目の星 リッチテキスト ── */
