@@ -265,12 +265,6 @@ export function GardenMobileArchiveDrawer({
           </button>
         </div>
 
-        {searchElement && (
-          <div style={{ marginBottom: "var(--space-5)" }}>
-            {searchElement}
-          </div>
-        )}
-
         <ArchiveYearTree
           tree={tree}
           currentPage={currentPage}
