@@ -1,48 +1,50 @@
 /**
  * About データ取得
  *
- * WP REST API → normalize → 型安全な About オブジェクト
- * WP_BASE_URL 未設定 or API失敗時は mock.ts のフォールバックデータを返す
+ * content/about/index.md から gray-matter でパースして返す。
  */
 
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
 import { about as fallbackAbout } from "@/lib/mock";
-import { fetchWpApi } from "@/lib/wp/client";
-import type { WpAboutResponse } from "@/lib/wp/types";
 
-/** About の型（mock.ts の about と同じ構造） */
+/** About の型 */
 export type About = {
   statement: string;
   photos: { src: string; width: number; height: number }[];
   cv: { year: string; content: string }[];
 };
 
-function normalizeAbout(raw: WpAboutResponse): About | null {
-  const statement = (raw.statement ?? "").trim();
-  if (!statement) return null;
+const ABOUT_FILE = path.join(process.cwd(), "content/about/index.md");
 
-  const photos = (raw.photos ?? [])
-    .filter((p) => p.src)
-    .map((p) => ({
-      src: p.src!,
-      width: p.width ?? 640,
-      height: p.height ?? 420,
-    }));
-
-  const cv = (raw.cv ?? [])
-    .filter((c) => c.content)
-    .map((c) => ({
-      year: c.year ?? "",
-      content: c.content!,
-    }));
-
-  return { statement, photos, cv };
-}
-
-/** About データ取得 */
+/** About データ取得（Markdownファイルから） */
 export async function getAbout(): Promise<About> {
-  const data = await fetchWpApi<WpAboutResponse>("hayato/v1/about");
-  if (!data) return fallbackAbout;
+  try {
+    const raw = fs.readFileSync(ABOUT_FILE, "utf-8");
+    const { data, content } = matter(raw);
 
-  const normalized = normalizeAbout(data);
-  return normalized ?? fallbackAbout;
+    const statement = content.trim();
+    if (!statement) return fallbackAbout;
+
+    const photos = ((data.photos ?? []) as { src: string; width: number; height: number }[])
+      .filter((p) => p.src)
+      .map((p) => ({
+        src: p.src,
+        width: p.width ?? 640,
+        height: p.height ?? 420,
+      }));
+
+    const cv = ((data.cv ?? []) as { year: string; content: string }[])
+      .filter((c) => c.content)
+      .map((c) => ({
+        year: String(c.year ?? ""),
+        content: c.content,
+      }));
+
+    return { statement, photos, cv };
+  } catch {
+    /* ファイルが存在しない場合はフォールバック */
+    return fallbackAbout;
+  }
 }
