@@ -6,15 +6,30 @@ export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    /* TODO: 実際のAPI送信に置き換え */
-    setSent(true);
+    setStatus("sending");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+
+      if (res.ok) {
+        setStatus("sent");
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
   };
 
-  if (sent) {
+  if (status === "sent") {
     return (
       <div
         style={{
@@ -68,8 +83,14 @@ export function ContactForm() {
         />
       </div>
 
-      <button type="submit" className="contact-submit">
-        Send
+      {status === "error" && (
+        <p style={{ fontSize: "var(--font-meta)", color: "var(--muted)", marginTop: "var(--space-2)" }}>
+          送信に失敗しました。時間をおいて再度お試しください。
+        </p>
+      )}
+
+      <button type="submit" className="contact-submit" disabled={status === "sending"}>
+        {status === "sending" ? "Sending..." : "Send"}
       </button>
     </form>
   );
