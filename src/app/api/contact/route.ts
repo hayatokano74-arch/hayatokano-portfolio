@@ -1,10 +1,7 @@
-import { Resend } from "resend";
 import { NextResponse } from "next/server";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const TO_ADDRESSES = ["hayatokano74@gmail.com", "info@hayatokano.com"];
-const FROM_ADDRESS = "contact@hayatokano.com";
+const WP_CONTACT_URL = "https://wp.hayatokano.com/wp-json/hayato/v1/contact";
+const CONTACT_SECRET = process.env.CONTACT_SECRET ?? "";
 
 export async function POST(req: Request) {
   try {
@@ -14,16 +11,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "必須項目が未入力です" }, { status: 400 });
     }
 
-    const { error } = await resend.emails.send({
-      from: FROM_ADDRESS,
-      to: TO_ADDRESSES,
-      replyTo: email,
-      subject: `【お問い合わせ】${name} 様より`,
-      text: `名前: ${name}\nメール: ${email}\n\n${message}`,
+    const res = await fetch(WP_CONTACT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Contact-Secret": CONTACT_SECRET,
+      },
+      body: JSON.stringify({ name, email, message }),
     });
 
-    if (error) {
-      console.error("Resend error:", error);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error("WP contact error:", err);
       return NextResponse.json({ error: "送信に失敗しました" }, { status: 500 });
     }
 
