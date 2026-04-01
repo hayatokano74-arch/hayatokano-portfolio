@@ -22,13 +22,18 @@ export function AdminSidebar() {
 
   return (
     <aside
-      className="w-[200px] shrink-0 flex flex-col border-r"
       style={{
-        background: '#fff',
-        borderColor: '#e0e0e0',
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
+        left: 0,
+        width: '200px',
         height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: '#f8f8f8',
+        borderRight: '1px solid #e0e0e0',
+        zIndex: 100,
+        overflowY: 'auto',
       }}
     >
       {/* ロゴ */}
