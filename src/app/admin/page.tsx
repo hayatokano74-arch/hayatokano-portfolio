@@ -2,53 +2,68 @@ import { DeployButton } from '@/components/admin/DeployButton'
 import Link from 'next/link'
 import fs from 'fs'
 import path from 'path'
+import { A } from '@/components/admin/styles'
 
 function countFiles(dir: string) {
   try {
-    return fs.readdirSync(dir).filter(f => f.endsWith('.mdx') || f.endsWith('.md')).filter(f => !f.startsWith('_')).length
+    return fs.readdirSync(dir)
+      .filter(f => (f.endsWith('.mdx') || f.endsWith('.md')) && !f.startsWith('_'))
+      .length
   } catch { return 0 }
 }
 
-export default function AdminDashboard() {
-  const worksCount = countFiles(path.join(process.cwd(), 'content/works'))
-  const meNoHoshiCount = countFiles(path.join(process.cwd(), 'content/me-no-hoshi'))
-  const newsCount = countFiles(path.join(process.cwd(), 'content/news'))
-  const gardenCount = countFiles(path.join(process.cwd(), 'content/garden'))
+const SECTIONS = [
+  { href: '/admin/works',        label: 'Works',  dir: 'content/works' },
+  { href: '/admin/me-no-hoshi',  label: '目の星', dir: 'content/me-no-hoshi' },
+  { href: '/admin/news',         label: 'News',   dir: 'content/news' },
+  { href: '/admin/garden',       label: 'Garden', dir: 'content/garden' },
+]
 
-  const sections = [
-    { href: '/admin/works', label: 'Works', count: worksCount },
-    { href: '/admin/me-no-hoshi', label: '目の星', count: meNoHoshiCount },
-    { href: '/admin/news', label: 'News', count: newsCount },
-    { href: '/admin/garden', label: 'Garden', count: gardenCount },
-  ]
+export default function AdminDashboard() {
+  const counts = SECTIONS.map(s => ({
+    ...s,
+    count: countFiles(path.join(process.cwd(), s.dir)),
+  }))
 
   return (
-    <div className="max-w-2xl mx-auto px-8 py-10">
-      <h1 className="text-xs font-semibold tracking-[0.12em] uppercase mb-8" style={{ color: 'var(--muted)' }}>
-        Dashboard
+    <div style={{ padding: '36px', maxWidth: '640px' }}>
+      <h1 style={{ fontSize: '24px', fontWeight: 700, color: A.textPrimary, margin: '0 0 28px', letterSpacing: '-0.01em' }}>
+        ダッシュボード
       </h1>
 
-      {/* コンテンツ一覧 */}
-      <div className="grid grid-cols-2 gap-3 mb-10">
-        {sections.map(s => (
+      {/* コンテンツ件数 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '28px' }}>
+        {counts.map(s => (
           <Link
             key={s.href}
             href={s.href}
-            className="bg-white rounded-lg p-5 block hover:shadow-sm transition-shadow"
+            className="admin-dashboard-card"
+            style={{
+              display: 'block',
+              padding: '20px 24px',
+              background: '#ffffff',
+              border: `1px solid ${A.border}`,
+              borderRadius: '12px',
+              textDecoration: 'none',
+            }}
           >
-            <div className="text-2xl font-light mb-1" style={{ color: 'var(--fg)' }}>{s.count}</div>
-            <div className="text-xs tracking-widest uppercase" style={{ color: 'var(--muted)' }}>{s.label}</div>
+            <div style={{ fontSize: '32px', fontWeight: 300, color: A.textPrimary, lineHeight: 1, marginBottom: '6px', letterSpacing: '-0.02em' }}>
+              {s.count}
+            </div>
+            <div style={{ fontSize: '13px', color: A.textMuted, fontWeight: 500 }}>
+              {s.label}
+            </div>
           </Link>
         ))}
       </div>
 
       {/* デプロイ */}
-      <div className="bg-white rounded-lg p-6">
-        <div className="text-xs font-semibold tracking-[0.1em] uppercase mb-1" style={{ color: 'var(--fg)' }}>
-          Deploy
+      <div style={{ background: '#ffffff', border: `1px solid ${A.border}`, borderRadius: '12px', padding: '24px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 600, color: A.textPrimary, marginBottom: '6px' }}>
+          サイトを公開
         </div>
-        <p className="text-xs mb-5" style={{ color: 'var(--muted)' }}>
-          サイトをビルドしてXserverに転送します
+        <p style={{ fontSize: '13px', color: A.textMuted, margin: '0 0 20px', lineHeight: 1.6 }}>
+          ビルドして Xserver に転送します。<br />変更を保存した後にここから公開してください。
         </p>
         <DeployButton />
       </div>

@@ -4787,3 +4787,20 @@ img[loading="lazy"] {
 .admin-list-item:hover {
   background: #f8f8f8 !important;
 }
+
+/* 管理画面: リスト行ホバー */
+.admin-list-row {
+  transition: background 0.1s;
+}
+.admin-list-row:hover {
+  background: #fafaf9 !important;
+}
+
+/* 管理画面: ダッシュボードカードホバー */
+.admin-dashboard-card {
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.admin-dashboard-card:hover {
+  border-color: #c8c8c8 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
