@@ -26,25 +26,27 @@ export function AdminSidebar() {
         position: 'fixed',
         top: 0,
         left: 0,
-        width: '200px',
+        width: '220px',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        background: '#f8f8f8',
-        borderRight: '1px solid #e0e0e0',
+        background: '#141414',
         zIndex: 100,
         overflowY: 'auto',
       }}
     >
       {/* ロゴ */}
-      <div className="px-5 py-6 border-b" style={{ borderColor: '#e0e0e0' }}>
-        <span className="text-xs font-semibold tracking-[0.12em] uppercase" style={{ color: 'var(--fg)' }}>
-          Admin
+      <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>
+          Hayato Kano
         </span>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', marginTop: '4px' }}>
+          管理画面
+        </div>
       </div>
 
       {/* ナビ */}
-      <nav className="flex-1 py-3">
+      <nav style={{ flex: 1, padding: '12px 0' }}>
         {NAV.map(item => {
           const active = item.exact
             ? pathname === item.href
@@ -53,11 +55,17 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center px-5 py-2.5 text-sm transition-colors"
               style={{
-                color: active ? 'var(--fg)' : 'var(--muted)',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '10px 24px',
+                fontSize: '14px',
                 fontWeight: active ? 600 : 400,
-                background: active ? 'var(--bg)' : 'transparent',
+                color: active ? '#ffffff' : 'rgba(255,255,255,0.5)',
+                background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
+                borderLeft: active ? '2px solid #ffffff' : '2px solid transparent',
+                textDecoration: 'none',
+                transition: 'all 0.15s',
               }}
             >
               {item.label}
@@ -67,11 +75,19 @@ export function AdminSidebar() {
       </nav>
 
       {/* ログアウト */}
-      <div className="p-4 border-t" style={{ borderColor: '#e0e0e0' }}>
+      <div style={{ padding: '16px 24px 24px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         <button
           onClick={handleLogout}
-          className="w-full text-left px-2 py-2 text-xs rounded transition-colors"
-          style={{ color: 'var(--muted)' }}
+          style={{
+            width: '100%',
+            textAlign: 'left',
+            padding: '8px 0',
+            fontSize: '13px',
+            color: 'rgba(255,255,255,0.35)',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+          }}
         >
           ログアウト
         </button>

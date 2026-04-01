@@ -7,7 +7,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--fg)' }}>
       <AdminSidebar />
-      <main style={{ marginLeft: '200px', minHeight: '100vh' }}>
+      <main style={{ marginLeft: '220px', minHeight: '100vh', background: '#f2f2f0' }}>
         {children}
       </main>
     </div>

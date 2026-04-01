@@ -4772,3 +4772,18 @@ img[loading="lazy"] {
 
 }
 
+
+/* ═══ 管理画面 ═══ */
+@keyframes admin-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* 管理画面: リストアイテムホバー */
+.admin-list-item {
+  transition: background 0.1s;
+  color: inherit;
+}
+.admin-list-item:hover {
+  background: #f8f8f8 !important;
+}

@@ -76,8 +76,8 @@ export default function AdminMeNoHoshiPage() {
             <Link
               key={item.slug}
               href={`/admin/me-no-hoshi/${item.slug}`}
-              className="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors group hover:border-[#e0e0e0]"
-              style={{ border: '1px solid transparent' }}
+              className="admin-list-item"
+              style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 20px', textDecoration: 'none', borderBottom: '1px solid #e0e0e0' }}
             >
               <div
                 className="w-12 h-12 rounded flex-shrink-0 overflow-hidden"

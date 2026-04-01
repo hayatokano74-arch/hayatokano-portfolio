@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import Link from 'next/link'
+import { A } from '@/components/admin/styles'
 
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'works')
 
@@ -34,26 +35,34 @@ function getWorks(): WorkMeta[] {
           thumbnail: data.media?.[0]?.src ?? null,
         }
       })
-  } catch {
-    return []
-  }
+  } catch { return [] }
 }
 
 export default function AdminWorksPage() {
   const works = getWorks()
 
   return (
-    <div className="p-6">
+    <div style={{ padding: '32px' }}>
       {/* ヘッダー */}
-      <div className="flex items-center justify-between mb-6">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <h1 className="text-lg font-semibold" style={{ color: 'var(--fg)' }}>Works</h1>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{works.length} 件</p>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: A.textPrimary, margin: 0 }}>Works</h1>
+          <p style={{ fontSize: '13px', color: A.textMuted, margin: '4px 0 0' }}>{works.length} 件</p>
         </div>
         <Link
           href="/admin/works/new"
-          className="text-sm px-4 py-1.5 rounded font-medium transition-opacity hover:opacity-80"
-          style={{ background: 'var(--fg)', color: 'var(--bg)' }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            height: '40px',
+            padding: '0 20px',
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#ffffff',
+            background: A.textPrimary,
+            borderRadius: '8px',
+            textDecoration: 'none',
+          }}
         >
           + 新規追加
         </Link>
@@ -61,78 +70,76 @@ export default function AdminWorksPage() {
 
       {/* 一覧 */}
       {works.length === 0 ? (
-        <div
-          className="rounded-lg flex flex-col items-center justify-center py-16 gap-3"
-          style={{ border: '1px dashed #d0d0d0' }}
-        >
-          <span className="text-sm" style={{ color: 'var(--muted)' }}>まだ作品がありません</span>
-          <Link
-            href="/admin/works/new"
-            className="text-xs px-3 py-1.5 rounded transition-opacity hover:opacity-80"
-            style={{ background: 'var(--fg)', color: 'var(--bg)' }}
-          >
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '64px 24px', border: `1.5px dashed ${A.border}`, borderRadius: '12px', gap: '16px',
+        }}>
+          <span style={{ fontSize: '14px', color: A.textMuted }}>まだ作品がありません</span>
+          <Link href="/admin/works/new" style={{ fontSize: '13px', color: A.textPrimary, fontWeight: 600, textDecoration: 'underline' }}>
             最初の作品を追加
           </Link>
         </div>
       ) : (
-        <div className="space-y-1">
-          {works.map(work => (
+        <div style={{
+          background: '#ffffff',
+          border: `1px solid ${A.border}`,
+          borderRadius: '10px',
+          overflow: 'hidden',
+        }}>
+          {works.map((work, i) => (
             <Link
               key={work.slug}
               href={`/admin/works/${work.slug}`}
-              className="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors group hover:border-[#e0e0e0]"
-              style={{ border: '1px solid transparent' }}
+              className="admin-list-item"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                padding: '14px 20px',
+                borderBottom: i < works.length - 1 ? `1px solid ${A.border}` : 'none',
+                textDecoration: 'none',
+              }}
             >
               {/* サムネイル */}
-              <div
-                className="w-12 h-12 rounded flex-shrink-0 overflow-hidden"
-                style={{ background: '#e8e8e8' }}
-              >
+              <div style={{
+                width: '52px', height: '52px', borderRadius: '6px', flexShrink: 0, overflow: 'hidden',
+                background: '#f0f0f0', border: `1px solid ${A.border}`,
+              }}>
                 {work.thumbnail && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={work.thumbnail}
-                    alt={work.title}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={work.thumbnail} alt={work.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
               </div>
 
               {/* テキスト */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {work.pinned && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--fg)', color: 'var(--bg)' }}>
+                    <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', background: A.textPrimary, color: '#fff', fontWeight: 600, flexShrink: 0 }}>
                       PIN
                     </span>
                   )}
-                  <span className="text-sm font-medium truncate" style={{ color: 'var(--fg)' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 600, color: A.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {work.title}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 mt-0.5">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '3px' }}>
                   {work.date && (
-                    <span className="text-[11px]" style={{ color: 'var(--muted)' }}>{work.date}</span>
+                    <span style={{ fontSize: '12px', color: A.textMuted }}>{work.date}</span>
                   )}
-                  {work.tags.length > 0 && (
-                    <div className="flex gap-1 flex-wrap">
-                      {work.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: '#e8e8e8', color: 'var(--muted)' }}>
-                          {tag}
-                        </span>
-                      ))}
-                      {work.tags.length > 3 && (
-                        <span className="text-[10px]" style={{ color: 'var(--muted)' }}>+{work.tags.length - 3}</span>
-                      )}
-                    </div>
+                  {work.tags.slice(0, 3).map(tag => (
+                    <span key={tag} style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '4px', background: '#f0f0f0', color: A.textMuted }}>
+                      {tag}
+                    </span>
+                  ))}
+                  {work.tags.length > 3 && (
+                    <span style={{ fontSize: '12px', color: A.textMuted }}>+{work.tags.length - 3}</span>
                   )}
                 </div>
               </div>
 
               {/* 矢印 */}
-              <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--muted)' }}>
-                →
-              </span>
+              <span style={{ fontSize: '16px', color: A.border, flexShrink: 0 }}>›</span>
             </Link>
           ))}
         </div>

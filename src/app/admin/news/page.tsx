@@ -46,8 +46,8 @@ export default function AdminNewsPage() {
         <div className="space-y-1">
           {items.map(item => (
             <Link key={item.slug} href={`/admin/news/${item.slug}`}
-              className="flex items-center gap-4 px-4 py-3 rounded-lg group hover:border-[#e0e0e0]"
-              style={{ border: '1px solid transparent' }}
+              className="admin-list-item"
+              style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 20px', textDecoration: 'none', borderBottom: '1px solid #e0e0e0' }}
             >
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-medium truncate block" style={{ color: 'var(--fg)' }}>{item.title}</span>

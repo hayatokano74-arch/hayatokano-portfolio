@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, KeyboardEvent } from 'react'
+import { A } from './styles'
 
 type Props = {
   value: string[]
@@ -8,19 +9,13 @@ type Props = {
   placeholder?: string
 }
 
-export function TagInput({ value, onChange, placeholder = 'タグを入力してEnter' }: Props) {
+export function TagInput({ value, onChange, placeholder = '入力してEnterで追加' }: Props) {
   const [input, setInput] = useState('')
 
   function addTag(tag: string) {
     const trimmed = tag.trim()
-    if (trimmed && !value.includes(trimmed)) {
-      onChange([...value, trimmed])
-    }
+    if (trimmed && !value.includes(trimmed)) onChange([...value, trimmed])
     setInput('')
-  }
-
-  function removeTag(tag: string) {
-    onChange(value.filter(t => t !== tag))
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -34,21 +29,50 @@ export function TagInput({ value, onChange, placeholder = 'タグを入力して
 
   return (
     <div
-      className="flex flex-wrap gap-1.5 px-2.5 py-2 rounded min-h-[40px] cursor-text"
-      style={{ background: 'var(--bg)', border: '1px solid #d0d0d0' }}
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '6px',
+        padding: '8px 10px',
+        minHeight: '44px',
+        background: '#ffffff',
+        border: `1px solid ${A.border}`,
+        borderRadius: '6px',
+        cursor: 'text',
+        alignItems: 'center',
+      }}
       onClick={e => (e.currentTarget.querySelector('input') as HTMLInputElement)?.focus()}
     >
       {value.map(tag => (
         <span
           key={tag}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs"
-          style={{ background: 'var(--fg)', color: '#fff' }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '3px 10px',
+            background: '#141414',
+            color: '#ffffff',
+            borderRadius: '4px',
+            fontSize: '13px',
+            lineHeight: 1.4,
+          }}
         >
           {tag}
           <button
             type="button"
-            onClick={() => removeTag(tag)}
-            className="hover:opacity-70 transition-opacity leading-none"
+            onClick={() => onChange(value.filter(t => t !== tag))}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(255,255,255,0.6)',
+              cursor: 'pointer',
+              padding: '0',
+              fontSize: '14px',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+            }}
             aria-label={`${tag}を削除`}
           >
             ×
@@ -62,8 +86,16 @@ export function TagInput({ value, onChange, placeholder = 'タグを入力して
         onKeyDown={handleKeyDown}
         onBlur={() => input.trim() && addTag(input)}
         placeholder={value.length === 0 ? placeholder : ''}
-        className="flex-1 min-w-[120px] text-sm outline-none bg-transparent"
-        style={{ color: 'var(--fg)' }}
+        style={{
+          flex: '1 1 120px',
+          minWidth: '80px',
+          fontSize: '14px',
+          color: A.textPrimary,
+          background: 'transparent',
+          border: 'none',
+          outline: 'none',
+          padding: '2px 0',
+        }}
       />
     </div>
   )
