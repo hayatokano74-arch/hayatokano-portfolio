@@ -22,6 +22,16 @@ type PastWork = {
   image: { src: string; alt: string; width: number; height: number }
 }
 
+type ArchiveWork = {
+  id: string
+  title: string
+  year: string
+  image: { src: string; alt: string; width: number; height: number }
+}
+
+export type PastExhibition = { year: string; info: string }
+export type SnsLink = { label: string; url: string }
+
 export type MeNoHoshiFormData = {
   slug: string
   title: string
@@ -36,14 +46,23 @@ export type MeNoHoshiFormData = {
   media: MediaItem[]
   keyVisuals: KeyVisual[]
   pastWorks: PastWork[]
+  archiveWorks: ArchiveWork[]
   bio: string
+  pastExhibitions: PastExhibition[]
+  snsLinks: SnsLink[]
+  announcement: string
+  notice: string
+  heroCaption: string
+  archiveNote: string
   content: string
 }
 
 const EMPTY: MeNoHoshiFormData = {
   slug: '', title: '', subtitle: '', date: '', year: '', tags: [],
   showKeyVisuals: true, showPastWorks: true, showArchiveWorks: true,
-  details: [], media: [], keyVisuals: [], pastWorks: [], bio: '', content: '',
+  details: [], media: [], keyVisuals: [], pastWorks: [], archiveWorks: [],
+  bio: '', pastExhibitions: [], snsLinks: [],
+  announcement: '', notice: '', heroCaption: '', archiveNote: '', content: '',
 }
 
 type Props = { initialData?: Partial<MeNoHoshiFormData>; isNew?: boolean }
@@ -76,7 +95,7 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) 340px',
+          gridTemplateColumns: 'minmax(0, 1fr) 360px',
           gap: '24px',
           padding: '28px 32px',
           alignItems: 'start',
@@ -100,6 +119,11 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
           </Card>
 
           <Card>
+            <SectionTitle>Archive Works</SectionTitle>
+            <ArchiveWorksEditor value={form.archiveWorks} slug={form.slug} onChange={v => setField('archiveWorks', v)} />
+          </Card>
+
+          <Card>
             <SectionTitle>Bio（アーティスト紹介）</SectionTitle>
             <textarea
               value={form.bio}
@@ -108,6 +132,11 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
               rows={5}
               style={textareaStyle}
             />
+          </Card>
+
+          <Card>
+            <SectionTitle>過去の展示歴</SectionTitle>
+            <PastExhibitionsEditor value={form.pastExhibitions} onChange={v => setField('pastExhibitions', v)} />
           </Card>
 
           <Card>
@@ -180,6 +209,39 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
           <Card>
             <SectionTitle>詳細情報</SectionTitle>
             <DetailsEditor value={form.details} onChange={v => setField('details', v)} />
+          </Card>
+
+          <Card>
+            <SectionTitle>お知らせ・注意事項</SectionTitle>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: A.fieldGap }}>
+              <Field label="アナウンス" hint="展示前のお知らせ等">
+                <textarea value={form.announcement} onChange={e => setField('announcement', e.target.value)}
+                  placeholder="Coming soon... など" rows={3} style={textareaStyle} />
+              </Field>
+              <Field label="注意事項">
+                <textarea value={form.notice} onChange={e => setField('notice', e.target.value)}
+                  placeholder="入場に関する注意など" rows={3} style={textareaStyle} />
+              </Field>
+            </div>
+          </Card>
+
+          <Card>
+            <SectionTitle>キャプション・注釈</SectionTitle>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: A.fieldGap }}>
+              <Field label="ヒーローキャプション" hint="Key Visual下のキャプション">
+                <input type="text" value={form.heroCaption} onChange={e => setField('heroCaption', e.target.value)}
+                  placeholder="メイン画像のキャプション" style={inputStyle} />
+              </Field>
+              <Field label="アーカイブ注釈" hint="Archive Works セクションの説明">
+                <input type="text" value={form.archiveNote} onChange={e => setField('archiveNote', e.target.value)}
+                  placeholder="アーカイブセクションの補足" style={inputStyle} />
+              </Field>
+            </div>
+          </Card>
+
+          <Card>
+            <SectionTitle>SNSリンク</SectionTitle>
+            <SnsLinksEditor value={form.snsLinks} onChange={v => setField('snsLinks', v)} />
           </Card>
         </div>
       </div>
@@ -286,6 +348,50 @@ function PastWorksEditor({ value, slug, onChange }: { value: PastWork[]; slug: s
   )
 }
 
+// ─── Archive Works エディタ ───
+
+function ArchiveWorksEditor({ value, slug, onChange }: { value: ArchiveWork[]; slug: string; onChange: (v: ArchiveWork[]) => void }) {
+  async function handleUpload(files: File[]) {
+    if (!slug) { alert('先にスラグを入力してください'); return }
+    const newItems: ArchiveWork[] = []
+    for (const file of files) {
+      const fd = new FormData()
+      fd.append('file', file); fd.append('section', 'me-no-hoshi'); fd.append('slug', slug)
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+      if (res.ok) {
+        const data = await res.json()
+        newItems.push({ id: `arc-${Date.now()}-${Math.random().toString(36).slice(2)}`, title: '', year: '', image: { src: data.src, alt: '', width: data.width, height: data.height } })
+      }
+    }
+    onChange([...value, ...newItems])
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        {value.map((aw, index) => (
+          <div key={aw.id} style={{ background: '#ffffff', border: `1px solid ${A.border}`, borderRadius: '8px', overflow: 'hidden' }}>
+            <div style={{ position: 'relative', aspectRatio: '1', background: '#f0f0f0' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={aw.image.src} alt={aw.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <span style={{ position: 'absolute', top: '6px', left: '6px', fontSize: '11px', padding: '2px 5px', borderRadius: '4px', background: 'rgba(0,0,0,0.55)', color: '#fff', fontFamily: 'monospace' }}>{index + 1}</span>
+              <button type="button" onClick={() => onChange(value.filter(x => x.id !== aw.id))}
+                style={{ position: 'absolute', top: '6px', right: '6px', width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(0,0,0,0.55)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+            </div>
+            <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px', background: '#fafafa' }}>
+              <input type="text" value={aw.title} onChange={e => onChange(value.map(x => x.id === aw.id ? { ...x, title: e.target.value } : x))}
+                placeholder="作品タイトル" style={{ ...inputStyle, fontSize: '13px', padding: '6px 8px' }} />
+              <input type="text" value={aw.year} onChange={e => onChange(value.map(x => x.id === aw.id ? { ...x, year: e.target.value } : x))}
+                placeholder="年 (例: 2023)" style={{ ...inputStyle, fontSize: '13px', padding: '6px 8px' }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <UploadZone onUpload={handleUpload} />
+    </div>
+  )
+}
+
 // ─── Details エディタ ───
 
 function DetailsEditor({ value, onChange }: { value: DetailItem[]; onChange: (v: DetailItem[]) => void }) {
@@ -304,6 +410,52 @@ function DetailsEditor({ value, onChange }: { value: DetailItem[]; onChange: (v:
       <button type="button" onClick={() => onChange([...value, { key: '', label: '', value: '' }])}
         style={{ width: '100%', padding: '10px', border: `1px dashed ${A.border}`, borderRadius: '6px', background: 'transparent', color: A.textMuted, fontSize: '13px', cursor: 'pointer' }}>
         + 項目を追加
+      </button>
+    </div>
+  )
+}
+
+// ─── 過去展示歴エディタ ───
+
+function PastExhibitionsEditor({ value, onChange }: { value: PastExhibition[]; onChange: (v: PastExhibition[]) => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {value.map((item, i) => (
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr auto', gap: '8px', alignItems: 'center' }}>
+          <input type="text" value={item.year} onChange={e => { const n = [...value]; n[i] = { ...n[i], year: e.target.value }; onChange(n) }}
+            placeholder="年" style={{ ...inputStyle, fontSize: '13px' }} />
+          <input type="text" value={item.info} onChange={e => { const n = [...value]; n[i] = { ...n[i], info: e.target.value }; onChange(n) }}
+            placeholder="展示タイトル / 会場" style={{ ...inputStyle, fontSize: '13px' }} />
+          <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))}
+            style={{ width: '32px', height: '38px', border: `1px solid ${A.border}`, borderRadius: '6px', background: '#fff', cursor: 'pointer', color: A.textMuted, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...value, { year: '', info: '' }])}
+        style={{ width: '100%', padding: '10px', border: `1px dashed ${A.border}`, borderRadius: '6px', background: 'transparent', color: A.textMuted, fontSize: '13px', cursor: 'pointer' }}>
+        + 展示歴を追加
+      </button>
+    </div>
+  )
+}
+
+// ─── SNSリンクエディタ ───
+
+function SnsLinksEditor({ value, onChange }: { value: SnsLink[]; onChange: (v: SnsLink[]) => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {value.map((item, i) => (
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '100px 1fr auto', gap: '8px', alignItems: 'center' }}>
+          <input type="text" value={item.label} onChange={e => { const n = [...value]; n[i] = { ...n[i], label: e.target.value }; onChange(n) }}
+            placeholder="instagram" style={{ ...inputStyle, fontSize: '13px' }} />
+          <input type="text" value={item.url} onChange={e => { const n = [...value]; n[i] = { ...n[i], url: e.target.value }; onChange(n) }}
+            placeholder="https://..." style={{ ...inputStyle, fontSize: '13px' }} />
+          <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))}
+            style={{ width: '32px', height: '38px', border: `1px solid ${A.border}`, borderRadius: '6px', background: '#fff', cursor: 'pointer', color: A.textMuted, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...value, { label: '', url: '' }])}
+        style={{ width: '100%', padding: '10px', border: `1px dashed ${A.border}`, borderRadius: '6px', background: 'transparent', color: A.textMuted, fontSize: '13px', cursor: 'pointer' }}>
+        + SNSリンクを追加
       </button>
     </div>
   )
