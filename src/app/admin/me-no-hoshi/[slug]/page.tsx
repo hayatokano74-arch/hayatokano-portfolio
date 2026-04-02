@@ -38,7 +38,13 @@ export default async function AdminMeNoHoshiEditPage({ params }: Props) {
     media: data.media ?? [],
     keyVisuals: data.keyVisuals ?? [],
     pastWorks: data.pastWorks ?? [],
+    archiveWorks: data.archiveWorks ?? [],
     bio: data.bio ?? '',
+    pastExhibitions: data.pastExhibitions ?? [],
+    snsLinks: data.snsLinks ?? [],
+    notice: data.notice ?? '',
+    heroCaption: data.heroCaption ?? '',
+    archiveNote: data.archiveNote ?? '',
     content,
   }
 

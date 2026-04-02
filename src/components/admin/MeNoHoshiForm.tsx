@@ -50,7 +50,6 @@ export type MeNoHoshiFormData = {
   bio: string
   pastExhibitions: PastExhibition[]
   snsLinks: SnsLink[]
-  announcement: string
   notice: string
   heroCaption: string
   archiveNote: string
@@ -62,7 +61,7 @@ const EMPTY: MeNoHoshiFormData = {
   showKeyVisuals: true, showPastWorks: true, showArchiveWorks: true,
   details: [], media: [], keyVisuals: [], pastWorks: [], archiveWorks: [],
   bio: '', pastExhibitions: [], snsLinks: [],
-  announcement: '', notice: '', heroCaption: '', archiveNote: '', content: '',
+  notice: '', heroCaption: '', archiveNote: '', content: '',
 }
 
 type Props = { initialData?: Partial<MeNoHoshiFormData>; isNew?: boolean }
@@ -92,6 +91,11 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
 
       <ErrorBanner message={error} />
 
+      {/*
+        2カラム構成 — 実際のページ表示に対応:
+        左カラム → ページ右側（ビジュアル: KEY VISUAL / PAST WORKS / ARCHIVE）
+        右カラム → ページ左側（テキスト: TEXT / DETAILS / PROFILE / EXHIBITION / NOTICE）
+      */}
       <div
         style={{
           display: 'grid',
@@ -101,58 +105,55 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
           alignItems: 'start',
         }}
       >
-        {/* 左: ビジュアル系 */}
+        {/* ── 左カラム: ビジュアル系（ページ右側に対応） ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <Card>
-            <SectionTitle>Key Visual 画像</SectionTitle>
-            <KeyVisualsEditor value={form.keyVisuals} slug={form.slug} onChange={v => setField('keyVisuals', v)} />
-          </Card>
 
+          {/* サムネイル */}
           <Card>
-            <SectionTitle>サムネイル（一覧表示用）</SectionTitle>
+            <SectionTitle>サムネイル</SectionTitle>
+            <DisplayHint>一覧ページのカード画像として表示（個別ページには表示されない）</DisplayHint>
             <MediaUpload section="me-no-hoshi" slug={form.slug} value={form.media} onChange={v => setField('media', v)} />
           </Card>
 
+          {/* KEY VISUAL */}
           <Card>
-            <SectionTitle>Past Works</SectionTitle>
+            <SectionTitle>KEY VISUAL</SectionTitle>
+            <DisplayHint>ページ右上・メインビジュアルとして大きく表示</DisplayHint>
+            <KeyVisualsEditor value={form.keyVisuals} slug={form.slug} onChange={v => setField('keyVisuals', v)} />
+            <div style={{ marginTop: '16px' }}>
+              <Field label="KEY VISUALキャプション" hint="KEY VISUALセクション下部に薄い色で表示">
+                <input type="text" value={form.heroCaption} onChange={e => setField('heroCaption', e.target.value)}
+                  placeholder="メイン画像全体へのキャプション（任意）" style={inputStyle} />
+              </Field>
+            </div>
+          </Card>
+
+          {/* PAST WORKS */}
+          <Card>
+            <SectionTitle>PAST WORKS</SectionTitle>
+            <DisplayHint>ページ右下・PAST WORKSセクションに表示（showPastWorks=ONのとき）</DisplayHint>
             <PastWorksEditor value={form.pastWorks} slug={form.slug} onChange={v => setField('pastWorks', v)} />
           </Card>
 
+          {/* ARCHIVE */}
           <Card>
-            <SectionTitle>Archive Works</SectionTitle>
+            <SectionTitle>ARCHIVE</SectionTitle>
+            <DisplayHint>ページ右下・ARCHIVEセクションに表示（showArchiveWorks=ONのとき）</DisplayHint>
             <ArchiveWorksEditor value={form.archiveWorks} slug={form.slug} onChange={v => setField('archiveWorks', v)} />
+            <div style={{ marginTop: '16px' }}>
+              <Field label="ARCHIVEセクション注釈" hint="ARCHIVEセクションへの補足テキスト（未使用・将来用）">
+                <input type="text" value={form.archiveNote} onChange={e => setField('archiveNote', e.target.value)}
+                  placeholder="アーカイブの補足（任意）" style={inputStyle} />
+              </Field>
+            </div>
           </Card>
 
-          <Card>
-            <SectionTitle>Bio（アーティスト紹介）</SectionTitle>
-            <textarea
-              value={form.bio}
-              onChange={e => setField('bio', e.target.value)}
-              placeholder="アーティストの紹介文..."
-              rows={5}
-              style={textareaStyle}
-            />
-          </Card>
-
-          <Card>
-            <SectionTitle>過去の展示歴</SectionTitle>
-            <PastExhibitionsEditor value={form.pastExhibitions} onChange={v => setField('pastExhibitions', v)} />
-          </Card>
-
-          <Card>
-            <SectionTitle>本文（Markdown）</SectionTitle>
-            <textarea
-              value={form.content}
-              onChange={e => setField('content', e.target.value)}
-              placeholder="展示の説明を入力..."
-              rows={10}
-              style={textareaStyle}
-            />
-          </Card>
         </div>
 
-        {/* 右: メタ情報 */}
+        {/* ── 右カラム: テキスト・メタ（ページ左側に対応） ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+          {/* 基本情報 */}
           <Card>
             <SectionTitle>基本情報</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: A.fieldGap }}>
@@ -187,14 +188,15 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
             </div>
           </Card>
 
+          {/* 表示設定 */}
           <Card>
             <SectionTitle>表示設定</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {(
                 [
-                  { key: 'showKeyVisuals', label: 'Key Visual を表示' },
-                  { key: 'showPastWorks', label: 'Past Works を表示' },
-                  { key: 'showArchiveWorks', label: 'Archive Works を表示' },
+                  { key: 'showKeyVisuals', label: 'KEY VISUAL を表示' },
+                  { key: 'showPastWorks', label: 'PAST WORKS を表示' },
+                  { key: 'showArchiveWorks', label: 'ARCHIVE を表示' },
                 ] as const
               ).map(({ key, label }) => (
                 <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', color: A.textPrimary, userSelect: 'none' }}>
@@ -206,47 +208,82 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
             </div>
           </Card>
 
+          {/* TEXT — ステートメント */}
           <Card>
-            <SectionTitle>詳細情報</SectionTitle>
+            <SectionTitle>TEXT — ステートメント</SectionTitle>
+            <DisplayHint>ページ左カラム最上部・TEXTセクションに表示</DisplayHint>
+            <textarea
+              value={form.content}
+              onChange={e => setField('content', e.target.value)}
+              placeholder="展示の説明・ステートメントを入力..."
+              rows={8}
+              style={textareaStyle}
+            />
+          </Card>
+
+          {/* DETAILS — 展示情報テーブル */}
+          <Card>
+            <SectionTitle>DETAILS — 展示情報</SectionTitle>
+            <DisplayHint>ページ左カラム・TEXT下のDETAILSテーブルに表示（PERIOD / VENUE 等）</DisplayHint>
             <DetailsEditor value={form.details} onChange={v => setField('details', v)} />
           </Card>
 
+          {/* PROFILE — Bio + SNS */}
           <Card>
-            <SectionTitle>お知らせ・注意事項</SectionTitle>
+            <SectionTitle>PROFILE — Bio &amp; SNS</SectionTitle>
+            <DisplayHint>ページ左カラム・DETAILS下のPROFILEセクション（BIO / SNSリンク）</DisplayHint>
             <div style={{ display: 'flex', flexDirection: 'column', gap: A.fieldGap }}>
-              <Field label="アナウンス" hint="展示前のお知らせ等">
-                <textarea value={form.announcement} onChange={e => setField('announcement', e.target.value)}
-                  placeholder="Coming soon... など" rows={3} style={textareaStyle} />
+              <Field label="Bio（アーティスト紹介）" hint="改行がそのまま表示される">
+                <textarea value={form.bio} onChange={e => setField('bio', e.target.value)}
+                  placeholder="アーティストの紹介文..." rows={5} style={textareaStyle} />
               </Field>
-              <Field label="注意事項">
-                <textarea value={form.notice} onChange={e => setField('notice', e.target.value)}
-                  placeholder="入場に関する注意など" rows={3} style={textareaStyle} />
+              <Field label="SNSリンク">
+                <SnsLinksEditor value={form.snsLinks} onChange={v => setField('snsLinks', v)} />
               </Field>
             </div>
           </Card>
 
+          {/* EXHIBITION — 過去展示歴 */}
           <Card>
-            <SectionTitle>キャプション・注釈</SectionTitle>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: A.fieldGap }}>
-              <Field label="ヒーローキャプション" hint="Key Visual下のキャプション">
-                <input type="text" value={form.heroCaption} onChange={e => setField('heroCaption', e.target.value)}
-                  placeholder="メイン画像のキャプション" style={inputStyle} />
-              </Field>
-              <Field label="アーカイブ注釈" hint="Archive Works セクションの説明">
-                <input type="text" value={form.archiveNote} onChange={e => setField('archiveNote', e.target.value)}
-                  placeholder="アーカイブセクションの補足" style={inputStyle} />
-              </Field>
-            </div>
+            <SectionTitle>EXHIBITION — 過去展示歴</SectionTitle>
+            <DisplayHint>ページ左カラム・PROFILEの下のEXHIBITIONセクションに年順で表示</DisplayHint>
+            <PastExhibitionsEditor value={form.pastExhibitions} onChange={v => setField('pastExhibitions', v)} />
           </Card>
 
+          {/* NOTICE */}
           <Card>
-            <SectionTitle>SNSリンク</SectionTitle>
-            <SnsLinksEditor value={form.snsLinks} onChange={v => setField('snsLinks', v)} />
+            <SectionTitle>NOTICE — 注意事項</SectionTitle>
+            <DisplayHint>ページ左カラム最下部・EXHIBITIONの下に小さい薄い色のテキストで表示</DisplayHint>
+            <textarea value={form.notice} onChange={e => setField('notice', e.target.value)}
+              placeholder="入場に関する注意・備考など（任意）" rows={3} style={textareaStyle} />
           </Card>
+
         </div>
       </div>
 
       <AdminToast message={toast} />
+    </div>
+  )
+}
+
+// ─── 表示場所ヒント ───
+
+function DisplayHint({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px',
+      fontSize: '11px',
+      color: '#6b7280',
+      background: '#f8f9fa',
+      border: '1px solid #e9ecef',
+      borderRadius: '4px',
+      padding: '5px 8px',
+      marginBottom: '14px',
+    }}>
+      <span style={{ fontSize: '10px' }}>📍</span>
+      {children}
     </div>
   )
 }
@@ -293,7 +330,7 @@ function KeyVisualsEditor({ value, slug, onChange }: { value: KeyVisual[]; slug:
           </div>
           <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '6px', background: '#fafafa' }}>
             <input type="text" value={kv.caption} onChange={e => onChange(value.map(x => x.id === kv.id ? { ...x, caption: e.target.value } : x))}
-              placeholder="キャプション（任意）" style={{ ...inputStyle, fontSize: '13px', padding: '7px 10px' }} />
+              placeholder="この画像のキャプション（任意）" style={{ ...inputStyle, fontSize: '13px', padding: '7px 10px' }} />
             <input type="text" value={kv.image.alt} onChange={e => onChange(value.map(x => x.id === kv.id ? { ...x, image: { ...x.image, alt: e.target.value } } : x))}
               placeholder="alt テキスト（アクセシビリティ用）" style={{ ...inputStyle, fontSize: '13px', padding: '7px 10px' }} />
           </div>
@@ -380,9 +417,9 @@ function ArchiveWorksEditor({ value, slug, onChange }: { value: ArchiveWork[]; s
             </div>
             <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px', background: '#fafafa' }}>
               <input type="text" value={aw.title} onChange={e => onChange(value.map(x => x.id === aw.id ? { ...x, title: e.target.value } : x))}
-                placeholder="作品タイトル" style={{ ...inputStyle, fontSize: '13px', padding: '6px 8px' }} />
+                placeholder="作品タイトル（任意）" style={{ ...inputStyle, fontSize: '13px', padding: '6px 8px' }} />
               <input type="text" value={aw.year} onChange={e => onChange(value.map(x => x.id === aw.id ? { ...x, year: e.target.value } : x))}
-                placeholder="年 (例: 2023)" style={{ ...inputStyle, fontSize: '13px', padding: '6px 8px' }} />
+                placeholder="年（任意）" style={{ ...inputStyle, fontSize: '13px', padding: '6px 8px' }} />
             </div>
           </div>
         ))}
