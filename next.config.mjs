@@ -6,15 +6,20 @@ const wpPattern =
     : [];
 
 const nextConfig = {
+  /* 静的エクスポート（Xserver rsync デプロイ用）
+     STATIC_EXPORT=true の時のみ有効（npm run build では undefined = 通常サーバービルド）
+     deploy.sh が STATIC_EXPORT=true next build を呼ぶ */
+  ...(process.env.STATIC_EXPORT === 'true' ? { output: "export" } : {}),
+  /* /about/ のようにスラッシュ末尾にしてディレクトリ構造で生成（Apache で clean URL が使いやすい） */
+  trailingSlash: true,
   reactStrictMode: true,
   images: {
     remotePatterns: [
       ...wpPattern,
     ],
-    /* AVIF → WebP の優先順でサーバー側変換（AVIF は WebP より 30〜50% 小さい） */
-    formats: ["image/avif", "image/webp"],
-    /* 最適化済み画像のキャッシュ時間: 1時間（デフォルト 60秒）に延長 */
-    minimumCacheTTL: 3600,
+    /* 静的エクスポートでは Next.js 画像最適化サーバーが使えないため unoptimized に設定。
+       画像は外部URL（wp.hayatokano.com）またはpublic/からそのまま配信される。 */
+    unoptimized: true,
   },
 };
 

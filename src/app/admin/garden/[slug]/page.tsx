@@ -1,3 +1,7 @@
+/** 静的エクスポート用: 管理ページは本番に含めない */
+export const dynamicParams = false
+export async function generateStaticParams() { return [{ slug: '_placeholder' }] }
+
 import { GardenForm, GardenFormData } from '@/components/admin/GardenForm'
 import fs from 'fs'
 import path from 'path'

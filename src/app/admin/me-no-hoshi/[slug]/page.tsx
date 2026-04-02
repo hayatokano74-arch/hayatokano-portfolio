@@ -1,3 +1,7 @@
+/** 静的エクスポート用: 管理ページは本番に含めない */
+export const dynamicParams = false
+export async function generateStaticParams() { return [{ slug: '_placeholder' }] }
+
 import { notFound } from 'next/navigation'
 import fs from 'fs'
 import path from 'path'

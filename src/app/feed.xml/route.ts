@@ -1,3 +1,4 @@
+export const dynamic = 'force-static'
 /* RSS 2.0 フィード生成 */
 
 import { getAllNodes } from "@/lib/garden/reader";

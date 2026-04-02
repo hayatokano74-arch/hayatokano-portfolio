@@ -1,3 +1,4 @@
+export const dynamic = 'force-static'
 import { NextResponse } from "next/server";
 
 const WP_CONTACT_URL = "https://wp.hayatokano.com/wp-json/hayato/v1/contact";

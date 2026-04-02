@@ -1,3 +1,5 @@
+export const dynamic = 'force-static'
+
 /* 動的サイトマップ生成 */
 
 import type { MetadataRoute } from "next";

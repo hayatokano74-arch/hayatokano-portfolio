@@ -39,11 +39,9 @@ function loadPage(filenames: string[], page: number) {
   })
 }
 
-export default async function GardenAdminPage(
-  { searchParams }: { searchParams: Promise<{ page?: string }> }
-) {
-  const { page: pageStr } = await searchParams
-  const page = Math.max(1, parseInt(pageStr ?? '1', 10))
+export default async function GardenAdminPage() {
+  /* 静的エクスポート: searchParams 不可のため常にページ1（管理画面はdevサーバー専用） */
+  const page = 1
 
   const allFilenames = getAllFilenames()
   const total = allFilenames.length

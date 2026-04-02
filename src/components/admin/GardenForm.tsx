@@ -29,8 +29,8 @@ export function GardenForm({ initialData, isNew = false }: Props) {
       {
         isNew: isNew ?? false,
         listPath: '/admin/garden',
-        saveUrl: (slug) => isNew ? '/api/admin/garden' : `/api/admin/garden/${slug}`,
-        deleteUrl: (slug) => `/api/admin/garden/${slug}`,
+        saveUrl: (slug) => isNew ? '/api/admin/garden' : `/api/admin/garden?slug=${slug}`,
+        deleteUrl: (slug) => `/api/admin/garden?slug=${slug}`,
       },
     )
 

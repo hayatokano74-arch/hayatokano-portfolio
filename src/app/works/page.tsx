@@ -4,21 +4,15 @@ import { Header } from "@/components/Header";
 import { FilterProvider, FilterLayout } from "@/components/FilterableContent";
 import { FilteredWorksList, FilteredCount } from "@/components/FilteredWorksList";
 import { getWorks } from "@/lib/works";
-import { parseTags, parseYears, buildFilterGroups } from "@/lib/categories";
+import { buildFilterGroups } from "@/lib/categories";
 import { getPerPage } from "@/lib/siteSettings";
 
 export const metadata: Metadata = { title: "Works" };
 
-export default async function WorksPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ view?: string; tags?: string; tag?: string; years?: string; q?: string; page?: string }>;
-}) {
-  const sp = searchParams ? await searchParams : undefined;
-  const view = sp?.view === "grid" ? "grid" : "list";
-  const selectedTags = parseTags(sp);
-  const selectedYears = parseYears(sp);
-  const q = sp?.q?.toLowerCase() ?? "";
+export default async function WorksPage() {
+  /* 静的エクスポート: searchParams はクライアントサイドで処理 */
+  const view = "list";
+  const q = "";
   const [works, perPage] = await Promise.all([getWorks(), getPerPage()]);
 
   /* フィルターグループ構築（全データから） */
@@ -27,28 +21,16 @@ export default async function WorksPage({
     works.map((w) => w.year).filter(Boolean),
   );
 
-  /* 初期選択状態（URLパラメータから） */
-  const initialSelected = { tags: selectedTags, years: selectedYears };
-
-  /* 現在のURLパラメータ（フィルター以外を維持） */
-  const spRecord: Record<string, string> = {};
-  if (sp?.view) spRecord.view = sp.view;
-  if (sp?.q) spRecord.q = sp.q;
-
-  /* Grid/Listトグル用URL */
-  const toggleBase = new URLSearchParams();
-  if (selectedTags.length > 0) toggleBase.set("tags", selectedTags.join(","));
-  if (selectedYears.length > 0) toggleBase.set("years", selectedYears.join(","));
-  if (q) toggleBase.set("q", q);
-  const worksGridHref = `/works?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "grid" }).toString()}`;
-  const worksListHref = `/works?${new URLSearchParams({ ...Object.fromEntries(toggleBase), view: "list" }).toString()}`;
+  const initialSelected = { tags: [] as string[], years: [] as string[] };
+  const worksGridHref = "/works?view=grid";
+  const worksListHref = "/works?view=list";
 
   return (
     <CanvasShell>
       <FilterProvider
         initialSelected={initialSelected}
         basePath="/works"
-        currentSearchParams={spRecord}
+        currentSearchParams={{}}
         groups={filterGroups}
       >
         <Header

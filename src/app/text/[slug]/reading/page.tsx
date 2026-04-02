@@ -4,9 +4,13 @@ import { getTexts, getTextBySlug } from "@/lib/text";
 import { notFound } from "next/navigation";
 import { TextToc } from "@/components/TextToc";
 
+export const dynamicParams = false;
 export async function generateStaticParams() {
-  const texts = await getTexts();
-  return texts.map((t) => ({ slug: t.slug }));
+  try {
+    const texts = await getTexts();
+    if (texts.length > 0) return texts.map((t) => ({ slug: t.slug }));
+  } catch { /* noop */ }
+  return [{ slug: '_placeholder' }];
 }
 
 export default async function ReadingMode({

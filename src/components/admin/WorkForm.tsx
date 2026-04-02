@@ -70,8 +70,8 @@ export function WorkForm({ initialData, isNew = false }: Props) {
       {
         isNew: isNew ?? false,
         listPath: '/admin/works',
-        saveUrl: (slug) => isNew ? '/api/admin/works' : `/api/admin/works/${slug}`,
-        deleteUrl: (slug) => `/api/admin/works/${slug}`,
+        saveUrl: (slug) => isNew ? '/api/admin/works' : `/api/admin/works?slug=${slug}`,
+        deleteUrl: (slug) => `/api/admin/works?slug=${slug}`,
       },
     )
 

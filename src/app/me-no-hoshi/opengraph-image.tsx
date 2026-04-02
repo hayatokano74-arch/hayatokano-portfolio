@@ -1,6 +1,6 @@
 import { generateOgImage, ogSize } from "@/lib/og";
 
-export const runtime = "edge";
+export const dynamic = 'force-static'
 export const alt = "目の星 — Hayato Kano";
 export const size = ogSize;
 export const contentType = "image/png";

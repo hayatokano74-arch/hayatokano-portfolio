@@ -1,3 +1,4 @@
+export const dynamic = 'force-static'
 /* 目の星 個別ページ: Vercel経由でヒーロー画像を配信（WP直接URLはTwitterボットが取得できないため） */
 
 import { ImageResponse } from "next/og";
@@ -47,7 +48,7 @@ export default async function OgImage({ params }: Props) {
             right: 0,
             background: imageUrl
               ? "linear-gradient(transparent, rgba(0,0,0,0.65))"
-              : "none",
+              : "transparent",
             padding: "40px 56px",
             display: "flex",
             flexDirection: "column",
@@ -65,4 +66,21 @@ export default async function OgImage({ params }: Props) {
     ),
     { ...size },
   );
+}
+
+import fs from 'fs'
+import path from 'path'
+import matter from 'gray-matter'
+
+export async function generateStaticParams() {
+  const dir = path.join(process.cwd(), 'content', 'me-no-hoshi')
+  try {
+    return fs.readdirSync(dir)
+      .filter(f => f.endsWith('.mdx') || f.endsWith('.md'))
+      .map(f => {
+        const raw = fs.readFileSync(path.join(dir, f), 'utf-8')
+        const { data } = matter(raw)
+        return { slug: data.slug ?? f.replace(/\.(mdx?|md)$/, '') }
+      })
+  } catch { return [] }
 }

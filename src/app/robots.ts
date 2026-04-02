@@ -1,3 +1,5 @@
+export const dynamic = 'force-static'
+
 /* robots.txt 生成 */
 
 import type { MetadataRoute } from "next";

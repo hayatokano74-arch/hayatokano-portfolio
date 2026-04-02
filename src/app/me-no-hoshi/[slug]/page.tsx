@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { MeNoHoshiDetail } from "@/components/MeNoHoshiDetail";
 import { getMeNoHoshiPosts, getMeNoHoshiBySlug } from "@/lib/meNoHoshi";
 
+export const dynamicParams = false;
 export async function generateStaticParams() {
   const posts = await getMeNoHoshiPosts();
   return posts.map((p) => ({ slug: p.slug }));

@@ -7,25 +7,12 @@ export const metadata: Metadata = { title: "Text" };
 import { getTexts } from "@/lib/text";
 import { buildCategoryMenu, parseCategory } from "@/lib/categories";
 
-export default async function TextListPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ tag?: string; q?: string }>;
-}) {
-  const sp = searchParams ? await searchParams : undefined;
-  const activeCategory = parseCategory(sp?.tag);
-  const q = sp?.q?.toLowerCase() ?? "";
+export default async function TextListPage() {
+  /* 静的エクスポート: searchParams はクライアントサイドで処理 */
+  const activeCategory = parseCategory(undefined);
+  const q = "";
   const texts = await getTexts();
-  let filteredTexts =
-    activeCategory === "All"
-      ? texts
-      : texts.filter((post) => (post.categories as string[]).includes(activeCategory));
-  if (q) {
-    filteredTexts = filteredTexts.filter((post) =>
-      post.title.toLowerCase().includes(q) ||
-      post.body.toLowerCase().includes(q)
-    );
-  }
+  const filteredTexts = texts;
   /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
   const categoryMenu = buildCategoryMenu(texts.flatMap((t) => t.categories));
   const categoryHrefs = Object.fromEntries(

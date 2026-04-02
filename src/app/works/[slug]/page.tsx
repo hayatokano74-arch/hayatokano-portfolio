@@ -5,6 +5,7 @@ import { getWorks, getWorkBySlug } from "@/lib/works";
 import { notFound } from "next/navigation";
 
 
+export const dynamicParams = false;
 export async function generateStaticParams() {
   const works = await getWorks();
   return works.map((w) => ({ slug: w.slug }));

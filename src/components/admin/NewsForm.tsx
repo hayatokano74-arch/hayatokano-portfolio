@@ -14,8 +14,8 @@ export function NewsForm({ initialData, isNew = false }: Props) {
       {
         isNew: isNew ?? false,
         listPath: '/admin/news',
-        saveUrl: (slug) => isNew ? '/api/admin/news' : `/api/admin/news/${slug}`,
-        deleteUrl: (slug) => `/api/admin/news/${slug}`,
+        saveUrl: (slug) => isNew ? '/api/admin/news' : `/api/admin/news?slug=${slug}`,
+        deleteUrl: (slug) => `/api/admin/news?slug=${slug}`,
       },
     )
 

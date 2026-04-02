@@ -13,11 +13,11 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-/* ISR: CDNキャッシュを1時間保持 */
+/* ISR: CDNキャッシュを1時間保持（静的エクスポート時は無視される） */
 export const revalidate = 3600;
 
-/* ビルド時に存在しないページも動的に生成する */
-export const dynamicParams = true;
+/* 静的エクスポート時は dynamicParams 不可 → generateStaticParams の結果のみ生成 */
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   try {

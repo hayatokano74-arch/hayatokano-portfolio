@@ -74,8 +74,8 @@ export function MeNoHoshiForm({ initialData, isNew = false }: Props) {
       {
         isNew: isNew ?? false,
         listPath: '/admin/me-no-hoshi',
-        saveUrl: (slug) => isNew ? '/api/admin/me-no-hoshi' : `/api/admin/me-no-hoshi/${slug}`,
-        deleteUrl: (slug) => `/api/admin/me-no-hoshi/${slug}`,
+        saveUrl: (slug) => isNew ? '/api/admin/me-no-hoshi' : `/api/admin/me-no-hoshi?slug=${slug}`,
+        deleteUrl: (slug) => `/api/admin/me-no-hoshi?slug=${slug}`,
       },
     )
 

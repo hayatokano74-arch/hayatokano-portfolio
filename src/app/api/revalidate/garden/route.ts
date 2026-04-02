@@ -1,3 +1,4 @@
+export const dynamic = 'force-static'
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { clearAllGardenCaches } from "@/lib/garden/reader";
