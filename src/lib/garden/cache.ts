@@ -1,9 +1,47 @@
 /* Garden ファイル取得 + キャッシュ管理
-   データソース: WordPress REST API（Garden カテゴリ ID: 52）
+   データソース: ローカル content/garden/*.md を優先し、なければ WP API にフォールバック
    キャッシュ: ビルド時に .garden-cache.json に保存し、ランタイムはキャッシュから読む */
 
 import fs from "fs";
 import path from "path";
+
+// ============================================================
+// ローカル MDX ファイル読み込み（優先データソース）
+// content/garden/*.md が存在する場合はこちらを使用する。
+// ============================================================
+
+const LOCAL_CONTENT_DIR = path.join(process.cwd(), "content", "garden");
+
+/**
+ * content/garden/*.md からすべての GardenFile を読み込む。
+ * ファイルが存在しない場合は空配列を返す。
+ */
+function readLocalGardenFiles(): GardenFile[] {
+  try {
+    if (!fs.existsSync(LOCAL_CONTENT_DIR)) return [];
+    const entries = fs.readdirSync(LOCAL_CONTENT_DIR, { withFileTypes: true });
+    const files: GardenFile[] = [];
+
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
+      const filepath = path.join(LOCAL_CONTENT_DIR, entry.name);
+      const content = fs.readFileSync(filepath, "utf-8");
+      const stat = fs.statSync(filepath);
+      files.push({
+        path: `/${entry.name}`,
+        filename: entry.name,
+        content,
+        modifiedAt: stat.mtimeMs,
+      });
+    }
+
+    // 新しい順（ファイル名降順）
+    files.sort((a, b) => b.filename.localeCompare(a.filename));
+    return files;
+  } catch {
+    return [];
+  }
+}
 
 /** Garden の1ファイル（WordPress 投稿 or キャッシュから復元） */
 export interface GardenFile {
@@ -97,14 +135,25 @@ function getCacheAge(): number {
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000;
 
 /**
- * Garden ファイルを取得する（WordPress API のみ）
+ * Garden ファイルを取得する
  *
- * キャッシュが5分以内ならキャッシュを使用。
- * 5分を超えたらWP APIから再取得してキャッシュを更新。
- * これにより新しい投稿が自動的に反映される。
+ * 優先順位:
+ * 1. content/garden/*.md（ローカルMDXファイル）— 移行完了後はこちらが使われる
+ * 2. WP API（ローカルファイルが0件の場合のフォールバック）
+ * 3. JSONキャッシュ（WP API失敗時のフォールバック）
  */
 export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
-  // 1. キャッシュが新鮮（5分以内）ならそのまま使う
+  // 1. ローカル MDX ファイルが存在する場合は優先使用（WP API 不要）
+  const localFiles = readLocalGardenFiles();
+  if (localFiles.length > 0) {
+    console.log(`[Garden] ローカルファイル: ${localFiles.length} 件`);
+    return localFiles;
+  }
+
+  // 2. ローカルファイルが0件 → WP API にフォールバック
+  console.log("[Garden] ローカルファイルなし → WP API にフォールバック");
+
+  // JSONキャッシュが新鮮（1時間以内）ならそのまま使う
   const cacheAge = getCacheAge();
   const isFresh = cacheAge > 0 && (Date.now() - cacheAge) < CACHE_MAX_AGE_MS;
 
@@ -115,7 +164,7 @@ export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
     }
   }
 
-  // 2. WP API から取得（キャッシュが古い or 存在しない場合）
+  // WP API から取得
   let wpFiles: GardenFile[] = [];
   try {
     const { fetchGardenFromWP } = await import("./wordpress");
