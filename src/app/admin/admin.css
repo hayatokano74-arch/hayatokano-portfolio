@@ -1,0 +1,93 @@
+/* ── 管理画面専用スタイル ──────────────────────────────────
+   styles.ts の inputStyle から border / outline を除き、
+   このファイルで疑似クラス対応を含めて一元管理する。
+   ─────────────────────────────────────────────────────── */
+
+/* ── 入力欄・テキストエリア共通 ── */
+.admin-input {
+  border: 1px solid #e0e0e0;
+  outline: none;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.admin-input:not([disabled]):hover {
+  border-color: #b0b0b0;
+}
+
+.admin-input:focus {
+  border-color: #141414;
+  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.1);
+  outline: none;
+}
+
+/* ── TagInput コンテナ（border を CSS で管理して focus-within を有効化） ── */
+.admin-tag-container {
+  border: 1px solid #e0e0e0;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.admin-tag-container:focus-within {
+  border-color: #141414;
+  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.1);
+}
+
+/* ── ボタン ── */
+.admin-btn-primary {
+  transition: opacity 0.12s ease, transform 0.1s ease;
+}
+.admin-btn-primary:hover:not([disabled]) { opacity: 0.82; }
+.admin-btn-primary:active:not([disabled]) { transform: scale(0.98); }
+
+.admin-btn-danger { transition: background-color 0.12s ease; }
+.admin-btn-danger:hover:not([disabled]) { background-color: #fef2f2; }
+
+.admin-btn-ghost { transition: color 0.12s ease, background-color 0.12s ease; }
+.admin-btn-ghost:hover { color: #141414; background-color: rgba(0, 0, 0, 0.045); }
+
+/* ── アップロードゾーン（border・background を CSS で管理してホバーを有効化） ── */
+.admin-upload-zone {
+  border: 1.5px dashed #e0e0e0;
+  background: #fafafa;
+  transition: background-color 0.14s ease, border-color 0.14s ease;
+}
+.admin-upload-zone:hover {
+  background-color: #f0f0ee;
+  border-color: #a0a0a0;
+}
+
+/* ── 表示場所ヒント ── */
+.admin-section-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #6b7280;
+  background: #f5f5f3;
+  border-left: 2px solid #d1d5db;
+  padding: 5px 10px;
+  margin-bottom: 16px;
+  border-radius: 0 3px 3px 0;
+}
+
+/* ── フォーカスが sticky ヘッダーで隠れないよう ── */
+.admin-field {
+  scroll-margin-top: 72px;
+}
+
+/* ── トーストアニメーション ── */
+@keyframes admin-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── モーション削減 ── */
+@media (prefers-reduced-motion: reduce) {
+  .admin-input,
+  .admin-tag-container,
+  .admin-btn-primary,
+  .admin-btn-danger,
+  .admin-btn-ghost,
+  .admin-upload-zone { transition: none; }
+  .admin-btn-primary:active:not([disabled]) { transform: none; }
+}

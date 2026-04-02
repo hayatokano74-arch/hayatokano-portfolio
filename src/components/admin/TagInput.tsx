@@ -29,6 +29,7 @@ export function TagInput({ value, onChange, placeholder = '入力してEnterで�
 
   return (
     <div
+      className="admin-tag-container"
       style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -36,7 +37,6 @@ export function TagInput({ value, onChange, placeholder = '入力してEnterで�
         padding: '8px 10px',
         minHeight: '44px',
         background: '#ffffff',
-        border: `1px solid ${A.border}`,
         borderRadius: '6px',
         cursor: 'text',
         alignItems: 'center',

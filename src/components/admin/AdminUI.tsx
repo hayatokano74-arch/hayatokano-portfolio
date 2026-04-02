@@ -68,7 +68,7 @@ export function FormTopBar({ title, isNew, saving, onBack, onSave, onDelete }: T
     >
       {/* 左: 戻る + タイトル */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
-        <button onClick={onBack} style={ghostBtn} aria-label="一覧に戻る">
+        <button onClick={onBack} style={ghostBtn} className="admin-btn-ghost" aria-label="一覧に戻る">
           ← 一覧
         </button>
         <span
@@ -88,7 +88,12 @@ export function FormTopBar({ title, isNew, saving, onBack, onSave, onDelete }: T
       {/* 右: 削除 + 保存 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         {!isNew && onDelete && (
-          <button onClick={onDelete} disabled={saving} style={dangerBtn}>
+          <button
+            onClick={onDelete}
+            disabled={saving}
+            style={dangerBtn}
+            className="admin-btn-danger"
+          >
             削除
           </button>
         )}
@@ -96,6 +101,7 @@ export function FormTopBar({ title, isNew, saving, onBack, onSave, onDelete }: T
           onClick={onSave}
           disabled={saving}
           style={{ ...primaryBtn, opacity: saving ? 0.6 : 1 }}
+          className="admin-btn-primary"
         >
           {saving ? '保存中...' : '保存　⌘S'}
         </button>
@@ -164,7 +170,7 @@ export function Field({
   children: React.ReactNode
 }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+    <div className="admin-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
         <label style={{ fontSize: '13px', fontWeight: 500, color: A.textPrimary }}>
           {label}
@@ -182,7 +188,7 @@ export function Field({
 }
 
 // ─────────────────────────────────────────────
-// カードコンテナ（セクションをカードで包む）
+// カードコンテナ
 // ─────────────────────────────────────────────
 export function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
@@ -198,4 +204,11 @@ export function Card({ children, style }: { children: React.ReactNode; style?: R
       {children}
     </div>
   )
+}
+
+// ─────────────────────────────────────────────
+// 表示場所ヒント（フォーム内でどこに表示されるかを示す）
+// ─────────────────────────────────────────────
+export function DisplayHint({ children }: { children: React.ReactNode }) {
+  return <div className="admin-section-hint">{children}</div>
 }

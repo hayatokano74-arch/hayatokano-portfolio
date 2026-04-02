@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
+import './admin.css'
 
 export const metadata: Metadata = { title: 'Admin — Hayato Kano' }
 

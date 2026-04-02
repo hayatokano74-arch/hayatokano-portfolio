@@ -7,7 +7,7 @@ export const A = {
   surfaceBg: '#ffffff',
   sidebarBg: '#141414',
 
-  // ボーダー
+  // ボーダー（参照用。実際の border は admin.css の .admin-input で管理）
   border: '#e0e0e0',
   borderFocus: '#141414',
 
@@ -22,33 +22,38 @@ export const A = {
   dangerBorder: '#fecaca',
 
   // 共通スペーシング
-  inputPadding: '10px 12px',
+  inputPadding: '10px 14px',
   sectionGap: '32px',
-  fieldGap: '14px',
+  fieldGap: '16px',
 }
 
-/** 入力欄スタイル */
+/**
+ * 入力欄ベーススタイル（border / outline は admin.css の .admin-input で管理）
+ * 使用時は必ず className="admin-input" を付与すること。
+ */
 export const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: A.inputPadding,
   fontSize: '14px',
-  lineHeight: '1.5',
+  lineHeight: '1.6',
   color: A.textPrimary,
   background: A.surfaceBg,
-  border: `1px solid ${A.border}`,
   borderRadius: '6px',
-  outline: 'none',
   boxSizing: 'border-box',
 }
 
-/** テキストエリアスタイル */
+/**
+ * テキストエリアスタイル（Markdown / コード向け monospace）
+ * 長文入力には AutoResizeTextarea を推奨。
+ */
 export const textareaStyle: React.CSSProperties = {
   ...inputStyle,
-  fontFamily: 'monospace',
+  fontFamily: "'SF Mono', ui-monospace, 'Cascadia Code', 'Fira Mono', monospace",
+  lineHeight: '1.65',
   resize: 'vertical',
 }
 
-/** プライマリボタン */
+/** プライマリボタン（hover は admin-btn-primary クラスで管理） */
 export const primaryBtn: React.CSSProperties = {
   height: '38px',
   padding: '0 20px',
@@ -60,10 +65,9 @@ export const primaryBtn: React.CSSProperties = {
   borderRadius: '6px',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
-  transition: 'opacity 0.15s',
 }
 
-/** 危険ボタン */
+/** 危険ボタン（hover は admin-btn-danger クラスで管理） */
 export const dangerBtn: React.CSSProperties = {
   height: '38px',
   padding: '0 16px',
@@ -74,10 +78,9 @@ export const dangerBtn: React.CSSProperties = {
   border: `1px solid ${A.danger}`,
   borderRadius: '6px',
   cursor: 'pointer',
-  transition: 'opacity 0.15s',
 }
 
-/** ゴーストボタン */
+/** ゴーストボタン（hover は admin-btn-ghost クラスで管理） */
 export const ghostBtn: React.CSSProperties = {
   height: '38px',
   padding: '0 14px',
@@ -87,5 +90,4 @@ export const ghostBtn: React.CSSProperties = {
   border: 'none',
   borderRadius: '6px',
   cursor: 'pointer',
-  transition: 'opacity 0.15s',
 }
