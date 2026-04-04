@@ -285,16 +285,19 @@ ob_start();
 
     try {
       const res  = await fetch(`${API_BASE}?${params}`);
-      const body = await res.json();
-      if (!body.ok) throw new Error(body.error ?? '取得失敗');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const d = await res.json();
+      if (d.error) throw new Error(d.error);
 
-      const d = body.data;
-      state = { section, offset, total: d.total };
+      state = { section, offset, total: d.total ?? 0 };
       render_filter_options(d.sections ?? []);
-      render_grid(d.items);
+      render_grid(d.items ?? []);
       render_pagination();
-      countEl.textContent = `${d.total} 件`;
+      countEl.textContent = `${state.total} 件`;
     } catch (err) {
+      grid.querySelectorAll('.media-card').forEach(el => el.remove());
+      emptyEl.style.display = '';
+      countEl.textContent = '0 件';
       show_toast('データの取得に失敗しました: ' + err.message, 'error');
     }
   }
@@ -414,7 +417,7 @@ ob_start();
           headers: { 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest' },
         });
         const body = await res.json();
-        if (!res.ok || !body.ok) throw new Error(body.error ?? '削除に失敗しました');
+        if (!res.ok || body.error) throw new Error(body.error ?? '削除に失敗しました');
         cardEl?.remove();
         state.total--;
         countEl.textContent = `${state.total} 件`;
@@ -500,7 +503,7 @@ ob_start();
           body:    fd,
         });
         const body = await res.json();
-        if (!res.ok || !body.ok) throw new Error(body.error ?? 'アップロードに失敗しました');
+        if (!res.ok || body.error) throw new Error(body.error ?? 'アップロードに失敗しました');
         show_toast(`${file.name} をアップロードしました`, 'success');
       } catch (err) {
         show_toast(`${file.name}: ${err.message}`, 'error');
