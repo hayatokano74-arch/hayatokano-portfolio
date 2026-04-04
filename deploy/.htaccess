@@ -2,13 +2,17 @@
 Options -Indexes
 RewriteEngine On
 
-# HTTPS リダイレクト
+# HTTPS リダイレクト（_cms/ も含む）
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # www なし正規化
 RewriteCond %{HTTP_HOST} ^www\.hayatokano\.com [NC]
 RewriteRule ^(.*)$ https://hayatokano.com/$1 [L,R=301]
+
+# _cms/ はPHPに委譲（Next.jsのrewriteルールを適用しない）
+RewriteCond %{REQUEST_URI} ^/_cms/
+RewriteRule ^ - [L]
 
 # trailingSlash 対応: /about → /about/ → /about/index.html
 # Next.js の output: 'export' + trailingSlash: true はディレクトリ構造で生成
@@ -17,8 +21,8 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !\.
 RewriteRule ^(.+[^/])$ /$1/ [L,R=301]
 
-# ディレクトリのリクエストを index.html に
-DirectoryIndex index.html
+# ディレクトリのリクエストを index.html に（_cms/ は index.php が処理）
+DirectoryIndex index.php index.html
 
 # 404 エラー
 ErrorDocument 404 /404.html

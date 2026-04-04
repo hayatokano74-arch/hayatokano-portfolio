@@ -3,7 +3,8 @@
  * 初期パスワード設定スクリプト
  *
  * 使用方法:
- *   php scripts/setup-password.php
+ *   php scripts/setup-password.php              # 対話形式
+ *   php scripts/setup-password.php --password=xxx  # 引数で直接指定
  *
  * 対話形式でパスワードを設定する。bcrypt でハッシュ化して db/password.hash に保存。
  */
@@ -19,35 +20,52 @@ define('CMS_ROOT', dirname(__DIR__));
 require_once CMS_ROOT . '/config.php';
 require_once CMS_ROOT . '/lib/auth.php';
 
-echo "=== CMS パスワード設定 ===\n\n";
-
-// 既存パスワードの確認
-$existing_hash = get_password_hash();
-if ($existing_hash) {
-    echo "既存のパスワードが設定されています。\n";
-    echo "上書きしますか？ [y/N]: ";
-    $confirm = strtolower(trim(fgets(STDIN)));
-    if ($confirm !== 'y') {
-        echo "キャンセルしました。\n";
-        exit(0);
+// --password=xxx 引数の処理
+$password_from_arg = null;
+foreach ($argv as $arg) {
+    if (strpos($arg, '--password=') === 0) {
+        $password_from_arg = substr($arg, strlen('--password='));
+        break;
     }
 }
 
-// パスワード入力（非表示）
-$password = read_password("パスワードを入力してください: ");
-if ($password === '') {
-    die("エラー: パスワードが空です。\n");
+echo "=== CMS パスワード設定 ===\n\n";
+
+// 既存パスワードの確認（引数指定時はスキップ）
+if ($password_from_arg === null) {
+    $existing_hash = get_password_hash();
+    if ($existing_hash) {
+        echo "既存のパスワードが設定されています。\n";
+        echo "上書きしますか？ [y/N]: ";
+        $confirm = strtolower(trim(fgets(STDIN)));
+        if ($confirm !== 'y') {
+            echo "キャンセルしました。\n";
+            exit(0);
+        }
+    }
 }
 
-// 確認入力
-$confirm_password = read_password("確認入力: ");
-if ($confirm_password === '') {
-    die("エラー: 確認パスワードが空です。\n");
-}
+if ($password_from_arg !== null) {
+    // 引数から直接取得
+    $password = $password_from_arg;
+    echo "（--password 引数からパスワードを設定します）\n";
+} else {
+    // 対話形式で入力
+    $password = read_password("パスワードを入力してください: ");
+    if ($password === '') {
+        die("エラー: パスワードが空です。\n");
+    }
 
-// パスワード一致確認
-if ($password !== $confirm_password) {
-    die("エラー: パスワードが一致しません。\n");
+    // 確認入力
+    $confirm_password = read_password("確認入力: ");
+    if ($confirm_password === '') {
+        die("エラー: 確認パスワードが空です。\n");
+    }
+
+    // パスワード一致確認
+    if ($password !== $confirm_password) {
+        die("エラー: パスワードが一致しません。\n");
+    }
 }
 
 // 最小長チェック（8文字以上）

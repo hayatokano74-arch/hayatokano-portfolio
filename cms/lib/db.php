@@ -28,7 +28,7 @@ function get_db(): PDO {
 function run_migrations(PDO $db): void {
     $db->exec('CREATE TABLE IF NOT EXISTS schema_version (
         version INTEGER PRIMARY KEY,
-        applied_at TEXT NOT NULL DEFAULT (datetime("now"))
+        applied_at TEXT NOT NULL DEFAULT ""
     )');
 
     $current = (int)($db->query('SELECT COALESCE(MAX(version), 0) FROM schema_version')->fetchColumn());
@@ -39,7 +39,7 @@ function run_migrations(PDO $db): void {
             $db->exec('BEGIN');
             try {
                 $db->exec($sql);
-                $db->prepare('INSERT INTO schema_version (version) VALUES (?)')->execute([$version]);
+                $db->prepare('INSERT INTO schema_version (version, applied_at) VALUES (?, ?)')->execute([$version, gmdate('Y-m-d H:i:s')]);
                 $db->exec('COMMIT');
             } catch (Exception $e) {
                 $db->exec('ROLLBACK');
@@ -63,8 +63,8 @@ function get_migrations(): array {
                 pinned     INTEGER NOT NULL DEFAULT 0,
                 data       TEXT NOT NULL DEFAULT "{}",
                 body       TEXT NOT NULL DEFAULT "",
-                created_at TEXT NOT NULL DEFAULT (datetime("now")),
-                updated_at TEXT NOT NULL DEFAULT (datetime("now"))
+                created_at TEXT NOT NULL DEFAULT "",
+                updated_at TEXT NOT NULL DEFAULT ""
             );
             CREATE INDEX IF NOT EXISTS idx_works_date ON works(date DESC);
             CREATE INDEX IF NOT EXISTS idx_works_pinned ON works(pinned DESC);
@@ -81,8 +81,8 @@ function get_migrations(): array {
                 excerpt    TEXT NOT NULL DEFAULT "",
                 data       TEXT NOT NULL DEFAULT "{}",
                 body       TEXT NOT NULL DEFAULT "",
-                created_at TEXT NOT NULL DEFAULT (datetime("now")),
-                updated_at TEXT NOT NULL DEFAULT (datetime("now"))
+                created_at TEXT NOT NULL DEFAULT "",
+                updated_at TEXT NOT NULL DEFAULT ""
             );
             CREATE INDEX IF NOT EXISTS idx_mnh_date ON me_no_hoshi(date DESC);
         ',
@@ -95,8 +95,8 @@ function get_migrations(): array {
                 date       TEXT NOT NULL DEFAULT "",
                 data       TEXT NOT NULL DEFAULT "{}",
                 body       TEXT NOT NULL DEFAULT "",
-                created_at TEXT NOT NULL DEFAULT (datetime("now")),
-                updated_at TEXT NOT NULL DEFAULT (datetime("now"))
+                created_at TEXT NOT NULL DEFAULT "",
+                updated_at TEXT NOT NULL DEFAULT ""
             );
             CREATE INDEX IF NOT EXISTS idx_news_date ON news(date DESC);
         ',
@@ -110,8 +110,8 @@ function get_migrations(): array {
                 type       TEXT NOT NULL DEFAULT "text",
                 images     TEXT NOT NULL DEFAULT "[]",
                 body       TEXT NOT NULL DEFAULT "",
-                created_at TEXT NOT NULL DEFAULT (datetime("now")),
-                updated_at TEXT NOT NULL DEFAULT (datetime("now"))
+                created_at TEXT NOT NULL DEFAULT "",
+                updated_at TEXT NOT NULL DEFAULT ""
             );
             CREATE INDEX IF NOT EXISTS idx_timeline_date ON timeline(date DESC, time_val DESC);
         ',
@@ -126,8 +126,8 @@ function get_migrations(): array {
                 categories TEXT NOT NULL DEFAULT "[]",
                 data       TEXT NOT NULL DEFAULT "{}",
                 body       TEXT NOT NULL DEFAULT "",
-                created_at TEXT NOT NULL DEFAULT (datetime("now")),
-                updated_at TEXT NOT NULL DEFAULT (datetime("now"))
+                created_at TEXT NOT NULL DEFAULT "",
+                updated_at TEXT NOT NULL DEFAULT ""
             );
             CREATE INDEX IF NOT EXISTS idx_texts_date ON texts(date DESC);
         ',
@@ -137,7 +137,7 @@ function get_migrations(): array {
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 data       TEXT NOT NULL DEFAULT "{}",
                 body       TEXT NOT NULL DEFAULT "",
-                updated_at TEXT NOT NULL DEFAULT (datetime("now"))
+                updated_at TEXT NOT NULL DEFAULT ""
             );
             INSERT OR IGNORE INTO about (id, data, body) VALUES (1, "{}", "");
         ',
@@ -151,8 +151,8 @@ function get_migrations(): array {
                 tags       TEXT NOT NULL DEFAULT "[]",
                 type       TEXT NOT NULL DEFAULT "text",
                 body       TEXT NOT NULL DEFAULT "",
-                created_at TEXT NOT NULL DEFAULT (datetime("now")),
-                updated_at TEXT NOT NULL DEFAULT (datetime("now"))
+                created_at TEXT NOT NULL DEFAULT "",
+                updated_at TEXT NOT NULL DEFAULT ""
             );
             CREATE INDEX IF NOT EXISTS idx_garden_date ON garden(date DESC);
             CREATE INDEX IF NOT EXISTS idx_garden_title ON garden(title);
@@ -169,7 +169,7 @@ function get_migrations(): array {
                 height      INTEGER DEFAULT NULL,
                 size_bytes  INTEGER DEFAULT NULL,
                 mime_type   TEXT DEFAULT NULL,
-                created_at  TEXT NOT NULL DEFAULT (datetime("now"))
+                created_at  TEXT NOT NULL DEFAULT ""
             );
             CREATE INDEX IF NOT EXISTS idx_media_section ON media(section);
         ',
@@ -178,7 +178,7 @@ function get_migrations(): array {
             CREATE TABLE IF NOT EXISTS login_attempts (
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 ip         TEXT NOT NULL,
-                attempted_at TEXT NOT NULL DEFAULT (datetime("now"))
+                attempted_at TEXT NOT NULL DEFAULT ""
             );
             CREATE INDEX IF NOT EXISTS idx_login_ip ON login_attempts(ip, attempted_at);
         ',
