@@ -4716,7 +4716,7 @@ img[loading="lazy"] {
     align-items: center;
     gap: 0;
     border-bottom: 1px solid var(--line);
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-7);
   }
 
   .garden-mobile-archive-search {
