@@ -795,30 +795,101 @@ function init_rich_editors() {
     textarea.removeAttribute('name');
     textarea.style.display = 'none';
 
+    // 画像アップロード用の隠しファイル入力
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
+    fileInput.style.display = 'none';
+    container.appendChild(fileInput);
+
+    // アップロード用メタ情報を取得
+    const uploadSection = textarea.dataset.mdUploadSection || 'misc';
+    const uploadSlug = textarea.dataset.mdUploadSlug || '';
+
+    // ツールバー設定: 画像ボタン付き
+    const toolbarOptions = [
+      [{ header: [2, 3, false] }],
+      ['bold', 'italic'],
+      ['blockquote'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'image'],
+      ['clean'],
+    ];
+
     // Quill 初期化
     const quill = new Quill(container, {
       theme: 'snow',
       placeholder: textarea.placeholder || '本文を入力…',
       modules: {
-        toolbar: [
-          [{ header: [2, 3, false] }],
-          ['bold', 'italic'],
-          ['blockquote'],
-          [{ list: 'ordered' }, { list: 'bullet' }],
-          ['link'],
-          ['clean'],
-        ],
+        toolbar: {
+          container: toolbarOptions,
+          handlers: {
+            // 画像ボタンのカスタムハンドラ
+            image: function() {
+              fileInput.click();
+            },
+          },
+        },
       },
+    });
+
+    // ファイル選択時: CMS APIにアップロード → エディタに挿入
+    fileInput.addEventListener('change', async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      fileInput.value = '';
+
+      // アップロード中の表示
+      const range = quill.getSelection(true);
+      quill.insertText(range.index, '画像をアップロード中…', { color: '#999' });
+      quill.setSelection(range.index + 11);
+
+      try {
+        const result = await upload_image_to_api(file, uploadSection, uploadSlug);
+        // プレースホルダーを削除
+        quill.deleteText(range.index, 11);
+        // 画像を挿入
+        quill.insertEmbed(range.index, 'image', result.url);
+        quill.setSelection(range.index + 1);
+        show_toast('画像を挿入しました', 'success');
+      } catch (err) {
+        // プレースホルダーを削除
+        quill.deleteText(range.index, 11);
+        show_toast(err.message || 'アップロードに失敗しました', 'error');
+      }
+    });
+
+    // ドラッグ＆ドロップで画像挿入
+    quill.root.addEventListener('drop', async (e) => {
+      const files = e.dataTransfer?.files;
+      if (!files?.length) return;
+      const file = files[0];
+      if (!file.type.startsWith('image/')) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const range = quill.getSelection(true);
+      quill.insertText(range.index, '画像をアップロード中…', { color: '#999' });
+
+      try {
+        const result = await upload_image_to_api(file, uploadSection, uploadSlug);
+        quill.deleteText(range.index, 11);
+        quill.insertEmbed(range.index, 'image', result.url);
+        quill.setSelection(range.index + 1);
+        show_toast('画像を挿入しました', 'success');
+      } catch (err) {
+        quill.deleteText(range.index, 11);
+        show_toast(err.message || 'アップロードに失敗しました', 'error');
+      }
     });
 
     // 既存コンテンツをセット（HTMLまたはプレーンテキスト）
     const initial = hidden.value;
     if (initial) {
       if (initial.includes('<') && initial.includes('>')) {
-        // HTML
         quill.root.innerHTML = initial;
       } else {
-        // プレーンテキスト → 段落に変換
         quill.root.innerHTML = initial
           .split(/\n{2,}/)
           .map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>')
@@ -829,11 +900,10 @@ function init_rich_editors() {
     // 変更時に hidden input を更新
     quill.on('text-change', () => {
       const html = quill.root.innerHTML;
-      // 空のエディタは空文字にする
       hidden.value = (html === '<p><br></p>' || html === '<p></p>') ? '' : html;
     });
 
-    // フォーム送信前にも同期（念のため）
+    // フォーム送信前にも同期
     const form = textarea.closest('form');
     if (form) {
       form.addEventListener('submit', () => {

@@ -1972,6 +1972,30 @@ textarea.form-control.is-dragover {
   background: transparent;
 }
 
+/* Garden エディタ内の Quill: カードに溶け込むスタイル */
+.garden-entry-editor .rich-editor-container {
+  border: none;
+  background: transparent;
+}
+
+.garden-entry-editor .rich-editor-container .ql-toolbar {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: var(--s-2) 0;
+}
+
+.garden-entry-editor .rich-editor-container .ql-container {
+  border: none;
+}
+
+.garden-entry-editor .rich-editor-container .ql-editor {
+  padding: var(--s-4) 0;
+  min-height: 360px;
+  line-height: 1.9;
+  font-size: var(--font-md);
+}
+
 /* ──────────────────────────────────────────────
    15. ユーティリティ
    ────────────────────────────────────────────── */
@@ -2331,6 +2355,14 @@ textarea.form-control.is-dragover {
 
 .rich-editor-container .ql-editor a {
   color: var(--accent);
+}
+
+/* エディタ内の画像 */
+.rich-editor-container .ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  margin: var(--s-3) 0;
 }
 
 /* ドロップダウンのダークモード対応 */

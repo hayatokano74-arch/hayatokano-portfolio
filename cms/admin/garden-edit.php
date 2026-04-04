@@ -166,19 +166,7 @@ ob_start();
       </div>
     </div>
 
-    <!-- ── 画像アップロード（photo タイプ時） ── -->
-    <div class="form-section form-section--full" id="photo-section"
-         style="<?= $f_type === 'photo' ? '' : 'display:none' ?>">
-      <h3 class="form-section__title">画像アップロード</h3>
-      <div class="upload-zone" id="upload-zone-garden">
-        <div class="upload-zone__inner">
-          <p class="upload-zone__text">クリックまたはドラッグ&amp;ドロップで画像をアップロード</p>
-          <p class="upload-zone__hint">JPEG / PNG / WebP / GIF（最大 20MB）</p>
-        </div>
-        <div class="upload-zone__preview" id="upload-preview-garden"></div>
-      </div>
-      <p class="form-hint" style="margin-top:var(--s-2)">アップロードした URL を本文に貼り付けてください。</p>
-    </div>
+    <!-- 画像はエディタツールバーの画像ボタンまたはドラッグ＆ドロップで挿入 -->
 
   </div>
 
@@ -207,27 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         slugInput.value = dateInput.value;
         slugInput.dataset.prevDate = dateInput.value;
       }
-    });
-  }
-
-  // 種類切替で画像セクションを表示/非表示
-  document.querySelectorAll('input[name="type"]').forEach(r => {
-    r.addEventListener('change', () => {
-      const ps = document.getElementById('photo-section');
-      if (ps) ps.style.display = r.value === 'photo' ? '' : 'none';
-    });
-  });
-
-  // 画像アップロードゾーン
-  const zone = document.getElementById('upload-zone-garden');
-  if (zone) {
-    init_upload_zone(zone, {
-      section: 'garden',
-      slug: '<?= addslashes($row['slug'] ?? '') ?>',
-      onUploaded(url) {
-        insert_at_cursor(document.getElementById('body'), `\n![](${url})\n`);
-        show_toast('画像を挿入しました', 'success');
-      },
     });
   }
 
