@@ -250,3 +250,35 @@ function db_count(string $table): int {
 function db_touch(string $table, int $id): void {
     get_db()->prepare("UPDATE {$table} SET updated_at = datetime('now') WHERE id = ?")->execute([$id]);
 }
+
+/**
+ * 壊れた Unicode エスケープ URL を修正する
+ * WP sanitize_file_name が CJK 文字を uXXXX 形式に壊した URL を
+ * 正しい %XX エンコードに変換する。
+ */
+function fix_broken_unicode_url(string $url): string {
+    if (strpos($url, 'u3') === false && strpos($url, 'u4') === false &&
+        strpos($url, 'u5') === false && strpos($url, 'u6') === false &&
+        strpos($url, 'u7') === false && strpos($url, 'u8') === false &&
+        strpos($url, 'u9') === false && strpos($url, 'uf') === false) {
+        return $url;
+    }
+    $decoded = preg_replace_callback('/u([0-9a-fA-F]{4})/', function($m) {
+        $cp = hexdec($m[1]);
+        if (($cp >= 0x3000 && $cp <= 0x9fff) ||
+            ($cp >= 0xf900 && $cp <= 0xfaff) ||
+            ($cp >= 0xff00 && $cp <= 0xffef)) {
+            return mb_chr($cp, 'UTF-8');
+        }
+        return $m[0];
+    }, $url);
+    // 日本語文字をURLエンコード
+    $parts = parse_url($decoded);
+    if (!isset($parts['path'])) return $decoded;
+    $segments = explode('/', $parts['path']);
+    $encoded_segments = array_map(function($s) {
+        return rawurlencode(rawurldecode($s));
+    }, $segments);
+    $parts['path'] = implode('/', $encoded_segments);
+    return ($parts['scheme'] ?? 'https') . '://' . ($parts['host'] ?? '') . $parts['path'];
+}

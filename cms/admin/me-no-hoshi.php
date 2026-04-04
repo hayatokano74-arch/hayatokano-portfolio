@@ -42,7 +42,7 @@ ob_start();
         $tags      = json_decode($row['tags'] ?? '[]', true) ?? [];
         $data      = json_decode($row['data'] ?? '{}', true) ?? [];
         $media     = $data['media'] ?? [];
-        $thumb_src = $media[0]['src'] ?? '';
+        $thumb_src = fix_broken_unicode_url($media[0]['src'] ?? '');
         // details から artist を取得
         $details   = $data['details'] ?? [];
         $artist    = '';
