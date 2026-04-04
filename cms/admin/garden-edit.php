@@ -149,6 +149,7 @@ ob_start();
         <div class="form-group">
           <textarea id="body" name="body" class="form-control garden-body-textarea"
                     rows="18"
+                    data-rich-editor
                     data-md-upload-section="garden"
                     data-md-upload-slug="<?= htmlspecialchars($row['slug'] ?? '', ENT_QUOTES) ?>"
                     placeholder="本文を入力..."><?= $f_body ?></textarea>
