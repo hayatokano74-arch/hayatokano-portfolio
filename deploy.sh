@@ -58,6 +58,20 @@ echo "=== [1/4] 静的ビルド ==="
 cd "$PROJECT_DIR"
 STATIC_EXPORT=true npx next build
 
+# フォールバックページを生成（CMS経由で追加された新しいスラッグ用）
+echo ""
+echo "=== フォールバックページ生成 ==="
+for section in garden works me-no-hoshi text; do
+  fallback_dir="out/${section}/_fallback"
+  mkdir -p "$fallback_dir"
+  # 既存の[slug]ページのHTMLを1つコピー（クライアントJSが動けばよい）
+  src=$(find "out/${section}" -mindepth 2 -name "index.html" -not -path "*_fallback*" -not -path "*opengraph*" | head -1)
+  if [ -n "$src" ]; then
+    cp "$src" "$fallback_dir/index.html"
+    echo "  ${section}/_fallback/index.html ← $(basename $(dirname $src))"
+  fi
+done
+
 echo ""
 echo "=== [2/4] フロントエンド → Xserver ==="
 rsync -avz --delete \

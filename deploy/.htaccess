@@ -24,5 +24,31 @@ RewriteRule ^(.+[^/])$ /$1/ [L,R=301]
 # ディレクトリのリクエストを index.html に（_cms/ は index.php が処理）
 DirectoryIndex index.html
 
+# Garden フォールバック: 静的HTMLが存在しないスラッグはクライアントサイドで処理
+# 既知のスラッグはindex.htmlがあるのでそのまま表示される
+# CMS経由で追加された新しいスラッグはHTMLがないのでフォールバック
+RewriteCond %{REQUEST_URI} ^/garden/[^/]+/?$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}/index.html !-f
+RewriteRule ^garden/[^/]+/?$ /garden/_fallback/index.html [L]
+
+# Works フォールバック（同上）
+RewriteCond %{REQUEST_URI} ^/works/[^/]+/?$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}/index.html !-f
+RewriteRule ^works/[^/]+/?$ /works/_fallback/index.html [L]
+
+# 目の星 フォールバック（同上）
+RewriteCond %{REQUEST_URI} ^/me-no-hoshi/[^/]+/?$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}/index.html !-f
+RewriteRule ^me-no-hoshi/[^/]+/?$ /me-no-hoshi/_fallback/index.html [L]
+
+# Text フォールバック（同上）
+RewriteCond %{REQUEST_URI} ^/text/[^/]+/?$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}/index.html !-f
+RewriteRule ^text/[^/]+/?$ /text/_fallback/index.html [L]
+
 # 404 エラー
 ErrorDocument 404 /404.html
