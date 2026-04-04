@@ -85,7 +85,11 @@ function parseCmsWork(item: CmsWork): Work | null {
     tags,
     year: item.year,
     excerpt: item.excerpt || item.body,
-    ...(thumbnail ? { thumbnail } : {}),
+    ...(thumbnail
+      ? { thumbnail }
+      : media.length > 0 && media[0].type === "image"
+        ? { thumbnail: { src: media[0].src, alt: media[0].alt, width: media[0].width, height: media[0].height } }
+        : {}),
     details: {
       exhibition_type: (d.exhibition_type ?? "").trim() || undefined,
       exhibition_title: (d.exhibition_title ?? "").trim() || undefined,
