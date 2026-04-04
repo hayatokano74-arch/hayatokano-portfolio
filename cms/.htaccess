@@ -1,0 +1,26 @@
+# cms/ セキュリティ設定
+Options -Indexes
+
+# DB ファイルへの直接アクセスを禁止
+<FilesMatch "\.(sqlite3|sqlite|db)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# .env.php への直接アクセスを禁止
+<FilesMatch "^\.env\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# lib/ と scripts/ への直接アクセスを禁止
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^lib/     - [F,L]
+    RewriteRule ^scripts/ - [F,L]
+    RewriteRule ^db/      - [F,L]
+</IfModule>
+
+# PHP エラーをブラウザに表示しない（本番用）
+php_flag display_errors Off
+php_value error_reporting 0

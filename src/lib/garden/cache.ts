@@ -1,21 +1,19 @@
 /* Garden ファイル取得 + キャッシュ管理
-   データソース: ローカル content/garden/*.md を優先し、なければ WP API にフォールバック
+   データソース優先順位:
+    1. PHP CMS API（https://hayatokano.com/_cms/api/garden.php?all=1）
+    2. content/garden/*.md のローカルファイル（CMS が空 / 未到達時のフォールバック）
    キャッシュ: ビルド時に .garden-cache.json に保存し、ランタイムはキャッシュから読む */
 
 import fs from "fs";
 import path from "path";
+import { fetchCms, type CmsGardenItem } from "@/lib/cms/client";
 
 // ============================================================
-// ローカル MDX ファイル読み込み（優先データソース）
-// content/garden/*.md が存在する場合はこちらを使用する。
+// ローカル MDX ファイル読み込み（フォールバック）
 // ============================================================
 
 const LOCAL_CONTENT_DIR = path.join(process.cwd(), "content", "garden");
 
-/**
- * content/garden/*.md からすべての GardenFile を読み込む。
- * ファイルが存在しない場合は空配列を返す。
- */
 function readLocalGardenFiles(): GardenFile[] {
   try {
     if (!fs.existsSync(LOCAL_CONTENT_DIR)) return [];
@@ -35,7 +33,6 @@ function readLocalGardenFiles(): GardenFile[] {
       });
     }
 
-    // 新しい順（ファイル名降順）
     files.sort((a, b) => b.filename.localeCompare(a.filename));
     return files;
   } catch {
@@ -43,7 +40,7 @@ function readLocalGardenFiles(): GardenFile[] {
   }
 }
 
-/** Garden の1ファイル（WordPress 投稿 or キャッシュから復元） */
+/** Garden の1ファイル */
 export interface GardenFile {
   /** ファイルパス（互換用） */
   path: string;
@@ -57,27 +54,19 @@ export interface GardenFile {
 
 // ============================================================
 // ファイルキャッシュ
-// ビルド時に WP API から取得したデータを JSON ファイルに保存する。
-// ランタイム（ISR）ではこのファイルから読み取り、WP API は呼ばない。
 // ============================================================
 
-/** キャッシュファイルのパス（プロジェクトルート） */
 const CACHE_PATH = path.join(process.cwd(), ".garden-cache.json");
-
-/** /tmp/ のフォールバックパス（Vercel ランタイムで書き込み可能） */
 const TMP_CACHE_PATH = "/tmp/garden-cache.json";
 
-/** キャッシュファイルに書き込む（ビルド時のみ成功） */
 export function writeCache(files: GardenFile[]): void {
   const json = JSON.stringify(files);
-  // プロジェクトルート（ビルド時に書き込み可能、デプロイに含まれる）
   try {
     fs.writeFileSync(CACHE_PATH, json, "utf-8");
     console.log(`[Garden] キャッシュ保存: ${files.length} ファイル → ${CACHE_PATH}`);
   } catch {
     // ランタイムでは読み取り専用のため失敗する — 正常
   }
-  // /tmp/（ランタイムでも書き込み可能、ただし揮発性）
   try {
     fs.writeFileSync(TMP_CACHE_PATH, json, "utf-8");
   } catch {
@@ -85,7 +74,6 @@ export function writeCache(files: GardenFile[]): void {
   }
 }
 
-/** キャッシュファイルから読み取る */
 export function readCache(): GardenFile[] | null {
   for (const p of [CACHE_PATH, TMP_CACHE_PATH]) {
     try {
@@ -103,7 +91,6 @@ export function readCache(): GardenFile[] | null {
   return null;
 }
 
-/** キャッシュファイルを削除する（On-demand revalidate時に呼び出す） */
 export function clearCache(): void {
   for (const p of [CACHE_PATH, TMP_CACHE_PATH]) {
     try {
@@ -117,76 +104,56 @@ export function clearCache(): void {
   }
 }
 
-/** キャッシュの最終更新時刻を取得（ミリ秒） */
-function getCacheAge(): number {
-  for (const p of [CACHE_PATH, TMP_CACHE_PATH]) {
-    try {
-      if (fs.existsSync(p)) {
-        return fs.statSync(p).mtimeMs;
-      }
-    } catch {
-      continue;
-    }
-  }
-  return 0;
-}
+// ============================================================
+// CMS API からの GardenFile 生成
+// ============================================================
 
-/** キャッシュの有効期限（ミリ秒）— 1時間 */
-const CACHE_MAX_AGE_MS = 60 * 60 * 1000;
+/**
+ * CMS API レスポンス1件を GardenFile に変換する。
+ * reader.ts の既存パイプライン（remark/unified）をそのまま利用するため、
+ * YAML frontmatter 付きの合成 content 文字列を生成する。
+ * frontmatter に slug: フィールドを含めることで reader.ts がそれを使用できる。
+ */
+function cmsItemToGardenFile(item: CmsGardenItem): GardenFile {
+  // YAML frontmatter を合成（slug を明示的に含める）
+  const tagsYaml =
+    item.tags.length > 0
+      ? `tags:\n${item.tags.map((t) => `  - ${t}`).join("\n")}\n`
+      : "";
+
+  const content =
+    `---\nslug: ${item.slug}\ntitle: ${item.title}\ndate: ${item.date}\n${tagsYaml}---\n\n${item.body}`;
+
+  return {
+    path: `/${item.slug}.md`,
+    filename: `${item.slug}.md`,
+    content,
+    modifiedAt: new Date(item.updated_at).getTime(),
+  };
+}
 
 /**
  * Garden ファイルを取得する
  *
  * 優先順位:
- * 1. content/garden/*.md（ローカルMDXファイル）— 移行完了後はこちらが使われる
- * 2. WP API（ローカルファイルが0件の場合のフォールバック）
- * 3. JSONキャッシュ（WP API失敗時のフォールバック）
+ *  1. CMS API（?all=1 で全件取得）
+ *  2. content/garden/*.md のローカルファイル
  */
 export async function fetchAllGardenFiles(): Promise<GardenFile[]> {
-  // 1. ローカル MDX ファイルが存在する場合は優先使用（WP API 不要）
-  const localFiles = readLocalGardenFiles();
-  if (localFiles.length > 0) {
-    console.log(`[Garden] ローカルファイル: ${localFiles.length} 件`);
-    return localFiles;
-  }
-
-  // 2. ローカルファイルが0件 → WP API にフォールバック
-  console.log("[Garden] ローカルファイルなし → WP API にフォールバック");
-
-  // JSONキャッシュが新鮮（1時間以内）ならそのまま使う
-  const cacheAge = getCacheAge();
-  const isFresh = cacheAge > 0 && (Date.now() - cacheAge) < CACHE_MAX_AGE_MS;
-
-  if (isFresh) {
-    const cached = readCache();
-    if (cached && cached.length > 0) {
-      return cached;
-    }
-  }
-
-  // WP API から取得
-  let wpFiles: GardenFile[] = [];
+  // 1. CMS API を試みる
   try {
-    const { fetchGardenFromWP } = await import("./wordpress");
-    wpFiles = await fetchGardenFromWP();
-    console.log(`[Garden] WordPress API: ${wpFiles.length} 件取得`);
-  } catch (e) {
-    console.error("[Garden] WordPress API 取得失敗:", e);
-    // API失敗時は古いキャッシュにフォールバック
-    const cached = readCache();
-    if (cached && cached.length > 0) {
-      console.log("[Garden] API失敗 → 古いキャッシュにフォールバック");
-      return cached;
+    const items = await fetchCms<CmsGardenItem[]>("garden.php?all=1");
+    if (Array.isArray(items) && items.length > 0) {
+      const files = items.map(cmsItemToGardenFile);
+      console.log(`[Garden] CMS API から取得: ${files.length} 件`);
+      return files;
     }
+  } catch {
+    // CMS 未到達時はフォールバックへ
   }
 
-  // 3. 取得できたらキャッシュを更新
-  if (wpFiles.length > 0) {
-    writeCache(wpFiles);
-    return wpFiles;
-  }
-
-  // 4. WP も空ならエラー
-  console.error("[Garden] データソースが空です（WP API 0件、キャッシュなし）");
-  return [];
+  // 2. ローカル MD ファイル
+  const localFiles = readLocalGardenFiles();
+  console.log(`[Garden] ローカルファイル: ${localFiles.length} 件`);
+  return localFiles;
 }

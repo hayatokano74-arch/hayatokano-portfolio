@@ -1,7 +1,9 @@
 /**
  * Text データ取得
  *
- * content/text/*.md から gray-matter でパースして返す。
+ * 優先順位:
+ *  1. PHP CMS API（https://hayatokano.com/_cms/api/text.php）
+ *  2. content/text/*.md のローカルファイル（CMS が空 / 未到達時のフォールバック）
  */
 
 import fs from "fs";
@@ -9,13 +11,54 @@ import path from "path";
 import matter from "gray-matter";
 import { cache } from "react";
 import type { TextPost } from "@/lib/types";
+import { fetchCms, type CmsText } from "@/lib/cms/client";
 
 const TEXT_DIR = path.join(process.cwd(), "content/text");
 
-/** Text 全件取得（React.cache でリクエスト単位の重複排除） */
-export const getTexts = cache(async (): Promise<TextPost[]> => {
+/** CMS レスポンスを TextPost 型に正規化 */
+function parseCmsText(item: CmsText): TextPost | null {
+  const title = item.title.trim();
+  if (!item.slug || !title) return null;
+
+  const categories = (item.categories ?? [])
+    .map((c) => String(c).trim())
+    .filter(Boolean);
+
+  const toc = ((item.data.toc ?? []) as { id?: string; label?: string }[])
+    .filter((t) => t.id && t.label)
+    .map((t) => ({ id: t.id!, label: t.label! }));
+
+  const sections = (
+    (item.data.sections ?? []) as {
+      id?: string;
+      heading?: string;
+      body?: string;
+    }[]
+  )
+    .filter((s) => s.id && s.heading)
+    .map((s) => ({
+      id: s.id!,
+      heading: s.heading!,
+      body: (s.body ?? "").trim(),
+    }));
+
+  return {
+    slug: item.slug,
+    year: item.year,
+    title,
+    categories,
+    body: item.body,
+    ...(toc.length > 0 ? { toc } : {}),
+    ...(sections.length > 0 ? { sections } : {}),
+  };
+}
+
+/** ローカル MD ファイルから Text を読み込む（フォールバック用） */
+function loadTextsFromLocal(): TextPost[] {
   try {
-    const files = fs.readdirSync(TEXT_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_"));
+    const files = fs
+      .readdirSync(TEXT_DIR)
+      .filter((f) => f.endsWith(".md") && !f.startsWith("_"));
     if (files.length === 0) return [];
 
     const posts: TextPost[] = [];
@@ -35,7 +78,13 @@ export const getTexts = cache(async (): Promise<TextPost[]> => {
         .filter((t) => t.id && t.label)
         .map((t) => ({ id: t.id!, label: t.label! }));
 
-      const sections = ((data.sections ?? []) as { id?: string; heading?: string; body?: string }[])
+      const sections = (
+        (data.sections ?? []) as {
+          id?: string;
+          heading?: string;
+          body?: string;
+        }[]
+      )
         .filter((s) => s.id && s.heading)
         .map((s) => ({
           id: s.id!,
@@ -53,15 +102,42 @@ export const getTexts = cache(async (): Promise<TextPost[]> => {
         ...(sections.length > 0 ? { sections } : {}),
       });
     }
-
     return posts;
   } catch {
     return [];
   }
+}
+
+/** Text 全件取得
+ *  1. CMS API → 2. ローカル MD → 3. 空配列
+ */
+export const getTexts = cache(async (): Promise<TextPost[]> => {
+  // 1. CMS API
+  try {
+    const items = await fetchCms<CmsText[]>("text.php");
+    if (Array.isArray(items) && items.length > 0) {
+      const posts: TextPost[] = [];
+      for (const item of items) {
+        const p = parseCmsText(item);
+        if (p) posts.push(p);
+      }
+      if (posts.length > 0) return posts;
+    }
+  } catch {
+    // CMS 未到達時はフォールバックへ
+  }
+
+  // 2. ローカル MD ファイル
+  const local = loadTextsFromLocal();
+  if (local.length > 0) return local;
+
+  return [];
 });
 
-/** slug 指定で1件取得（React.cache でリクエスト単位の重複排除） */
-export const getTextBySlug = cache(async (slug: string): Promise<TextPost | undefined> => {
-  const all = await getTexts();
-  return all.find((t) => t.slug === slug);
-});
+/** slug 指定で1件取得 */
+export const getTextBySlug = cache(
+  async (slug: string): Promise<TextPost | undefined> => {
+    const all = await getTexts();
+    return all.find((t) => t.slug === slug);
+  },
+);

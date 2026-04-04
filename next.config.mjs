@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
-const wpMediaHost = process.env.WP_MEDIA_HOST;
-const wpPattern =
-  wpMediaHost && wpMediaHost.trim().length > 0
-    ? [{ protocol: "https", hostname: wpMediaHost.trim(), pathname: "/**" }]
-    : [];
+
+// CMS メディアホスト（hayatokano.com/_cms/uploads/ から配信）
+const cmsMediaHost = process.env.CMS_MEDIA_HOST ?? "hayatokano.com";
 
 const nextConfig = {
   /* 静的エクスポート（Xserver rsync デプロイ用）
@@ -15,10 +13,11 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      ...wpPattern,
+      // CMS メディア（Xserver: hayatokano.com/_cms/uploads/）
+      { protocol: "https", hostname: cmsMediaHost, pathname: "/**" },
     ],
     /* 静的エクスポートでは Next.js 画像最適化サーバーが使えないため unoptimized に設定。
-       画像は外部URL（wp.hayatokano.com）またはpublic/からそのまま配信される。 */
+       画像は外部URLまたはpublic/からそのまま配信される。 */
     unoptimized: true,
   },
 };

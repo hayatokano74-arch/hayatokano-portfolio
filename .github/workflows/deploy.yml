@@ -1,0 +1,116 @@
+name: Xserver へデプロイ
+
+# トリガー
+# 1. workflow_dispatch: PHP CMS の「デプロイ」ボタンから GitHub Actions API 経由で呼び出す
+# 2. push to main: コード変更を main に push した場合も自動デプロイ
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: ビルド & Xserver へ rsync
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ────────────────────────────────────────────
+      # 1. コードを取得
+      # ────────────────────────────────────────────
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      # ────────────────────────────────────────────
+      # 2. Node.js セットアップ（npm ci キャッシュ付き）
+      # ────────────────────────────────────────────
+      - name: Node.js をセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 依存関係をインストール
+        run: npm ci
+
+      # ────────────────────────────────────────────
+      # 3. 静的サイトをビルド
+      #    prebuild スクリプト（Garden キャッシュ生成等）は package.json の
+      #    "prebuild" フックで自動実行される
+      # ────────────────────────────────────────────
+      - name: 静的サイトをビルド
+        run: STATIC_EXPORT=true npx next build
+        env:
+          # PHP CMS API（Xserver: https://hayatokano.com/_cms/api/）
+          CMS_API_URL: ${{ secrets.CMS_API_URL }}
+
+      # ────────────────────────────────────────────
+      # 4. SSH 鍵を設定
+      # ────────────────────────────────────────────
+      - name: SSH 鍵を設定
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.XSERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # Xserver はポート 10022 を使用
+          ssh-keyscan -p 10022 -H "${{ secrets.XSERVER_HOST }}" >> ~/.ssh/known_hosts
+
+      # ────────────────────────────────────────────
+      # 5. ビルド成果物を Xserver へ rsync
+      #    deploy.sh と同じ除外リストを使用
+      #    --delete: out/ にないファイルをサーバーから削除
+      #    ただし Xserver 固有のディレクトリ・ファイルは除外
+      # ────────────────────────────────────────────
+      - name: Xserver へ rsync
+        run: |
+          rsync -avz --delete \
+            -e "ssh -p 10022 -i ~/.ssh/id_rsa" \
+            --exclude="wp/" \
+            --exclude="wp-*" \
+            --exclude="kiwamarisou.hayatokano.com/" \
+            --exclude="media.hayatokano.com/" \
+            --exclude="media/" \
+            --exclude="uploads/" \
+            --exclude=".htaccess" \
+            --exclude="*.php" \
+            --exclude="license.txt" \
+            --exclude="readme.html" \
+            --exclude="default_page.png" \
+            --exclude="_cms/" \
+            out/ "${{ secrets.XSERVER_USER }}@${{ secrets.XSERVER_HOST }}:~/hayatokano.com/public_html/"
+
+      # ────────────────────────────────────────────
+      # 6. .htaccess を配置
+      #    deploy/.htaccess をサーバーに rsync する
+      #    （Next.js の out/ には含まれないため別途転送）
+      # ────────────────────────────────────────────
+      - name: .htaccess を配置
+        run: |
+          rsync -avz \
+            -e "ssh -p 10022 -i ~/.ssh/id_rsa" \
+            deploy/.htaccess \
+            "${{ secrets.XSERVER_USER }}@${{ secrets.XSERVER_HOST }}:~/hayatokano.com/public_html/.htaccess"
+
+      # ────────────────────────────────────────────
+      # 7. PHP CMS を Xserver へ転送
+      #    db/（SQLite）・uploads/・.env.php はサーバー側のデータを保護するため除外
+      #    --delete は使わない（Xserver 上のデータを消さないため）
+      # ────────────────────────────────────────────
+      - name: PHP CMS を転送
+        run: |
+          rsync -avz \
+            -e "ssh -p 10022 -i ~/.ssh/id_rsa" \
+            --exclude="db/*.sqlite3" \
+            --exclude="db/password.hash" \
+            --exclude="uploads/" \
+            --exclude=".env.php" \
+            cms/ "${{ secrets.XSERVER_USER }}@${{ secrets.XSERVER_HOST }}:~/hayatokano.com/public_html/_cms/"
+
+      # ────────────────────────────────────────────
+      # 8. 完了通知
+      # ────────────────────────────────────────────
+      - name: デプロイ完了
+        run: |
+          echo "✅ https://hayatokano.com へのデプロイが完了しました"
+          echo "🛠 CMS: https://hayatokano.com/_cms/"

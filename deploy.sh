@@ -32,33 +32,24 @@ rsync -avz --delete \
 
 echo ""
 echo "=== [3/3] .htaccess を配置 ==="
-ssh "$REMOTE_USER_HOST" "cat > ${REMOTE_DIR}/.htaccess" << 'HTACCESS'
-# hayatokano.com — Next.js 静的エクスポート用 .htaccess
-Options -Indexes
-RewriteEngine On
+# deploy/.htaccess をサーバーに転送（GitHub Actions でも同じファイルを使用）
+rsync -avz \
+  deploy/.htaccess \
+  "${REMOTE_USER_HOST}:${REMOTE_DIR}/.htaccess"
 
-# HTTPS リダイレクト
-RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-# www なし正規化
-RewriteCond %{HTTP_HOST} ^www\.hayatokano\.com [NC]
-RewriteRule ^(.*)$ https://hayatokano.com/$1 [L,R=301]
-
-# trailingSlash 対応: /about → /about/ → /about/index.html
-# Next.js の output: 'export' + trailingSlash: true はディレクトリ構造で生成
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !\.
-RewriteRule ^(.+[^/])$ /$1/ [L,R=301]
-
-# ディレクトリのリクエストを index.html に
-DirectoryIndex index.html
-
-# 404 エラー
-ErrorDocument 404 /404.html
-HTACCESS
+echo ""
+echo "=== [4/4] PHP CMS を Xserver へ転送 ==="
+# cms/ を _cms/ として転送
+# --delete は使わない（db/hayatokano.sqlite3 と uploads/ を保護するため）
+# db/ と uploads/ は除外（サーバー側のデータを上書きしない）
+rsync -avz \
+  --exclude="db/*.sqlite3" \
+  --exclude="db/password.hash" \
+  --exclude="uploads/" \
+  --exclude=".env.php" \
+  cms/ "${REMOTE_USER_HOST}:${REMOTE_DIR}/_cms/"
 
 echo ""
 echo "=== デプロイ完了 ==="
 echo "本番サイト: https://hayatokano.com"
+echo "CMS: https://hayatokano.com/_cms/"
