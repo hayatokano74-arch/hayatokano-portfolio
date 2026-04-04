@@ -806,65 +806,54 @@ function init_rich_editors() {
     const uploadSection = textarea.dataset.mdUploadSection || 'misc';
     const uploadSlug = textarea.dataset.mdUploadSlug || '';
 
-    // ツールバーをHTML で直接構築（カスタムボタン対応）
-    const toolbarId = 'ql-toolbar-' + Math.random().toString(36).slice(2, 8);
-    const toolbarEl = document.createElement('div');
-    toolbarEl.id = toolbarId;
-    toolbarEl.innerHTML = `
-      <span class="ql-formats">
-        <select class="ql-header">
-          <option value="">本文</option>
-          <option value="2">見出し 2</option>
-          <option value="3">見出し 3</option>
-        </select>
-      </span>
-      <span class="ql-formats">
-        <button class="ql-bold"></button>
-        <button class="ql-italic"></button>
-      </span>
-      <span class="ql-formats">
-        <button class="ql-blockquote"></button>
-        <button class="ql-list" value="ordered"></button>
-        <button class="ql-list" value="bullet"></button>
-      </span>
-      <span class="ql-formats">
-        <button class="ql-link"></button>
-        <button class="ql-image"></button>
-        <button class="ql-bracket-link" title="ブラケットリンク [[ページ名]]">[[ ]]</button>
-      </span>
-      <span class="ql-formats">
-        <button class="ql-clean"></button>
-      </span>
-    `;
-    container.appendChild(toolbarEl);
-
-    // Quill 初期化
+    // Quill 初期化（標準ツールバー）
     const quill = new Quill(container, {
       theme: 'snow',
       placeholder: textarea.placeholder || '本文を入力…',
       modules: {
         toolbar: {
-          container: '#' + toolbarId,
+          container: [
+            [{ header: [2, 3, false] }],
+            ['bold', 'italic'],
+            ['blockquote'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            ['clean'],
+          ],
           handlers: {
             image: function() {
               fileInput.click();
-            },
-            'bracket-link': function() {
-              const range = quill.getSelection(true);
-              if (range.length > 0) {
-                const text = quill.getText(range.index, range.length);
-                quill.deleteText(range.index, range.length);
-                quill.insertText(range.index, `[[${text}]]`);
-                quill.setSelection(range.index + text.length + 4);
-              } else {
-                quill.insertText(range.index, '[[]]');
-                quill.setSelection(range.index + 2);
-              }
             },
           },
         },
       },
     });
+
+    // [[リンク]] ボタンをツールバー末尾に追加
+    const toolbar = container.querySelector('.ql-toolbar');
+    if (toolbar) {
+      const group = document.createElement('span');
+      group.className = 'ql-formats';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ql-bracket-link';
+      btn.title = 'ブラケットリンク [[ページ名]]';
+      btn.textContent = '[[ ]]';
+      btn.addEventListener('click', () => {
+        const range = quill.getSelection(true);
+        if (range.length > 0) {
+          const text = quill.getText(range.index, range.length);
+          quill.deleteText(range.index, range.length);
+          quill.insertText(range.index, `[[${text}]]`);
+          quill.setSelection(range.index + text.length + 4);
+        } else {
+          quill.insertText(range.index, '[[]]');
+          quill.setSelection(range.index + 2);
+        }
+      });
+      group.appendChild(btn);
+      toolbar.appendChild(group);
+    }
 
     // ファイル選択時: CMS APIにアップロード → エディタに挿入
     fileInput.addEventListener('change', async () => {
