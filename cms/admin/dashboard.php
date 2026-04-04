@@ -95,8 +95,8 @@ ob_start();
   <?php if (empty($recent)): ?>
   <p class="empty-state">まだコンテンツがありません。</p>
   <?php else: ?>
-  <div class="table-wrap">
-    <table class="data-table">
+  <div class="table-wrapper">
+    <table class="table">
       <thead>
         <tr>
           <th>セクション</th>

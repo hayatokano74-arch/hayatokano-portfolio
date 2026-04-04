@@ -468,11 +468,26 @@ code, pre {
 }
 
 /* ステータスカード（ダッシュボード用） */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--s-4);
+}
+
 .stat-card {
+  display: block;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--s-5) var(--s-6);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.stat-card:hover {
+  border-color: var(--accent);
+  background: var(--card-hover, var(--card));
 }
 
 .stat-card__label {
@@ -482,7 +497,9 @@ code, pre {
   margin-bottom: var(--s-2);
 }
 
-.stat-card__value {
+/* stat-card__count は stat-card__value の別名 */
+.stat-card__value,
+.stat-card__count {
   font-size: var(--font-2xl);
   font-weight: 700;
   color: var(--text);
@@ -499,12 +516,16 @@ code, pre {
 /* ──────────────────────────────────────────────
    5. テーブル
    ────────────────────────────────────────────── */
-.table-wrapper {
+/* table-wrap は table-wrapper の別名 */
+.table-wrapper,
+.table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.table {
+/* data-table は table の別名 */
+.table,
+.data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-base);
@@ -1338,7 +1359,72 @@ code, pre {
 }
 
 /* ──────────────────────────────────────────────
-   14. ユーティリティ
+   14. ダッシュボード専用
+   ────────────────────────────────────────────── */
+.dashboard-section {
+  margin-bottom: var(--s-8);
+}
+
+.section-heading {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--s-4);
+}
+
+/* デプロイパネル */
+.deploy-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-6);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s-6);
+}
+
+.deploy-panel__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.deploy-panel__desc {
+  font-size: var(--font-sm);
+  color: var(--text-2);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* デプロイボタン大サイズ */
+.btn-deploy--large {
+  height: 44px;
+  padding: 0 var(--s-7);
+  font-size: var(--font-base);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 空状態メッセージ */
+.empty-state {
+  padding: var(--s-8) var(--s-6);
+  text-align: center;
+  color: var(--text-3);
+  font-size: var(--font-sm);
+}
+
+/* 相対時間表示 */
+.rel-time {
+  color: var(--text-2);
+  font-size: var(--font-sm);
+  white-space: nowrap;
+}
+
+/* ──────────────────────────────────────────────
+   15. ユーティリティ
    ────────────────────────────────────────────── */
 
 /* セパレーター */
