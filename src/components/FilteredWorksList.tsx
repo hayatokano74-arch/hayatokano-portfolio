@@ -105,7 +105,7 @@ export function FilteredWorksList<T extends WorkLike>({
   const renderListDetail = basePath === "/works"
     ? (work: T) => <WorkDetailsTable details={(work as unknown as Work).details} />
     : basePath === "/me-no-hoshi"
-      ? (work: T) => <MeNoHoshiListDetails details={work.details as { key: string; label: string; value: string }[]} />
+      ? (work: T) => <MeNoHoshiListDetails details={work.details as { key: string; label: string; value: string }[]} gridSettings={gridSettings} />
       : undefined;
 
   return (
@@ -127,10 +127,27 @@ export function FilteredWorksList<T extends WorkLike>({
   );
 }
 
-/** 目の星のリスト詳細 */
-function MeNoHoshiListDetails({ details }: { details: { key: string; label: string; value: string }[] }) {
-  /* リスト表示ではBIOを除外（個別ページのみ表示） */
-  const rows = details.filter((row) => row.value && !row.key.startsWith("bio-"));
+/** 目の星のリスト詳細（グリッド設定に基づいてフィルタ＋並べ替え） */
+function MeNoHoshiListDetails({
+  details,
+  gridSettings,
+}: {
+  details: { key: string; label: string; value: string }[];
+  gridSettings?: MeNoHoshiGridField[];
+}) {
+  let rows: { key: string; label: string; value: string }[];
+
+  if (gridSettings && gridSettings.length > 0) {
+    /* グリッド設定の順序で、visibleなフィールドのみ表示 */
+    const visibleKeys = gridSettings.filter((f) => f.visible).map((f) => f.key);
+    const detailMap = new Map(details.map((d) => [d.key, d]));
+    rows = visibleKeys
+      .map((key) => detailMap.get(key))
+      .filter((d): d is { key: string; label: string; value: string } => !!d && !!d.value);
+  } else {
+    rows = details.filter((row) => row.value && !row.key.startsWith("bio-"));
+  }
+
   if (rows.length === 0) return null;
 
   return (
