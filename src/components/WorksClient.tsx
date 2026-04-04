@@ -3,7 +3,6 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Work } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
-import { RichBody } from "@/components/RichBody";
 import type { MeNoHoshiGridField } from "@/lib/me-no-hoshi/api";
 
 /** WorksClient が受け取れる最小型（details を柔軟に） */
@@ -302,7 +301,7 @@ function WorksList<T extends WorkLike>({
               {/* 本文(ディテール+抜粋+View All): モバイルで order: 3 */}
               <div className="works-list-body">
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
-                <RichBody html={w.excerpt} className="works-list-excerpt" />
+                <div className="works-list-excerpt">{truncateText(w.excerpt, excerptMaxLength)}</div>
                 <div className="works-list-view">
                   <Link className="action-link" href={detailHref(w.slug)}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
