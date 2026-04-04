@@ -41,10 +41,9 @@ echo ""
 echo "=== [4/4] PHP CMS を Xserver へ転送 ==="
 # cms/ を _cms/ として転送
 # --delete は使わない（db/hayatokano.sqlite3 と uploads/ を保護するため）
-# db/ と uploads/ は除外（サーバー側のデータを上書きしない）
+# db/ と uploads/ はディレクトリごと除外（サーバー側のデータを絶対に上書きしない）
 rsync -avz \
-  --exclude="db/*.sqlite3" \
-  --exclude="db/password.hash" \
+  --exclude="db/" \
   --exclude="uploads/" \
   --exclude=".env.php" \
   cms/ "${REMOTE_USER_HOST}:${REMOTE_DIR}/_cms/"
