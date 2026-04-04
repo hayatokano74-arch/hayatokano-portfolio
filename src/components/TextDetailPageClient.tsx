@@ -6,7 +6,6 @@
  */
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import { RichBody } from "@/components/RichBody";
 import type { TextPost } from "@/lib/types";
@@ -14,14 +13,18 @@ import { fetchTextsFromCms } from "@/lib/cms/text-client";
 import { Header } from "./Header";
 import { TextToc } from "./TextToc";
 
-export function TextDetailPageClient() {
-  const params = useParams<{ slug: string }>();
-  const slug = params.slug ? decodeURIComponent(params.slug) : "";
+function slugFromPath(): string {
+  const parts = window.location.pathname.replace(/\/+$/, "").split("/");
+  return decodeURIComponent(parts[parts.length - 1] || "");
+}
 
+export function TextDetailPageClient() {
+  const [slug, setSlug] = useState("");
   const [texts, setTexts] = useState<TextPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSlug(slugFromPath());
     fetchTextsFromCms()
       .then(setTexts)
       .catch(() => setTexts([]))

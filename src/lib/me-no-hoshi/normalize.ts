@@ -63,13 +63,14 @@ export function normalizeDetails(raw: WpMeNoHoshiResponse["details"]): MeNoHoshi
   /* 新形式: 配列 */
   if (Array.isArray(raw)) {
     return raw
-      .filter((item): item is { key: string; label: string; value: string } =>
+      .filter((item): item is { key: string; label: string; value: string; gridVisible?: boolean } =>
         typeof item === "object" && item !== null && typeof item.key === "string",
       )
       .map((item) => ({
         key: item.key,
         label: item.label || labels[item.key] || item.key.toUpperCase(),
         value: String(item.value ?? "").trim(),
+        ...(item.gridVisible !== undefined ? { gridVisible: item.gridVisible } : {}),
       }));
   }
 

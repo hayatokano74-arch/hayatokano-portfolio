@@ -46,18 +46,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $show_past_works     = isset($_POST['showPastWorks'])     ? true : false;
         $show_archive_works  = isset($_POST['showArchiveWorks'])  ? true : false;
 
-        // details（key/label/value の動的行）
-        $det_keys   = $_POST['detail_key']   ?? [];
-        $det_labels = $_POST['detail_label'] ?? [];
-        $det_values = $_POST['detail_value'] ?? [];
-        $details    = [];
+        // details（key/label/value/gridVisible の動的行）
+        $det_keys    = $_POST['detail_key']    ?? [];
+        $det_labels  = $_POST['detail_label']  ?? [];
+        $det_values  = $_POST['detail_value']  ?? [];
+        $det_grid    = $_POST['detail_grid']   ?? [];
+        $details     = [];
         foreach ($det_keys as $i => $k) {
             $k = trim($k);
             if ($k === '') continue;
             $details[] = [
-                'key'   => $k,
-                'label' => trim($det_labels[$i] ?? ''),
-                'value' => trim($det_values[$i] ?? ''),
+                'key'         => $k,
+                'label'       => trim($det_labels[$i] ?? ''),
+                'value'       => trim($det_values[$i] ?? ''),
+                'gridVisible' => in_array((string)$i, $det_grid, true),
             ];
         }
 
@@ -280,52 +282,78 @@ ob_start();
       <p class="form-hint">PERIOD / OPEN / HOURS / ADDRESS / ARTIST など。行を追加・削除できます。</p>
 
       <div id="details-list" class="dynamic-list">
-        <?php foreach ($f_details as $i => $d): ?>
+        <?php foreach ($f_details as $i => $d):
+          $grid_checked = !empty($d['gridVisible']) ? 'checked' : '';
+        ?>
         <div class="dynamic-row" data-index="<?= $i ?>">
-          <div class="form-row form-row--3col">
-            <div class="form-group">
+          <div class="form-row form-row--detail">
+            <div class="form-group form-group--key">
               <label class="form-label">KEY</label>
               <input type="text" name="detail_key[]" class="form-control"
                      value="<?= htmlspecialchars($d['key'] ?? '', ENT_QUOTES) ?>"
                      placeholder="例: period">
             </div>
-            <div class="form-group">
-              <label class="form-label">ラベル（表示名）</label>
+            <div class="form-group form-group--label">
+              <label class="form-label">ラベル</label>
               <input type="text" name="detail_label[]" class="form-control"
                      value="<?= htmlspecialchars($d['label'] ?? '', ENT_QUOTES) ?>"
                      placeholder="例: PERIOD">
             </div>
-            <div class="form-group">
+            <div class="form-group form-group--value">
               <label class="form-label">値</label>
               <input type="text" name="detail_value[]" class="form-control"
                      value="<?= htmlspecialchars($d['value'] ?? '', ENT_QUOTES) ?>"
                      placeholder="例: 2025.10.04 – 2026.01.11">
+            </div>
+            <div class="form-group form-group--grid">
+              <label class="form-label">一覧</label>
+              <label class="detail-grid-toggle" title="一覧グリッドに表示する">
+                <input type="checkbox" name="detail_grid[]" value="<?= $i ?>" <?= $grid_checked ?>>
+                <span class="detail-grid-toggle__icon">📋</span>
+              </label>
             </div>
           </div>
           <button type="button" class="btn btn-sm btn-ghost dynamic-remove" title="この行を削除">✕</button>
         </div>
         <?php endforeach; ?>
         <?php if (empty($f_details)): ?>
-        <!-- 空の場合はデフォルト行を表示 -->
-        <?php foreach (['period' => ['PERIOD', ''], 'open_date' => ['OPEN', ''], 'hours' => ['HOURS', ''], 'address' => ['ADDRESS', ''], 'artist' => ['ARTIST', '']] as $k => [$lbl, $val]): ?>
+        <?php
+          $defaults = [
+            'artist'    => ['ARTIST', '', true],
+            'period'    => ['PERIOD', '', true],
+            'open_date' => ['OPEN', '', true],
+            'hours'     => ['HOURS', '', true],
+            'venue'     => ['VENUE', '', true],
+            'address'   => ['ADDRESS', '', false],
+          ];
+          $di = 0;
+        ?>
+        <?php foreach ($defaults as $k => [$lbl, $val, $grid]): ?>
         <div class="dynamic-row">
-          <div class="form-row form-row--3col">
-            <div class="form-group">
+          <div class="form-row form-row--detail">
+            <div class="form-group form-group--key">
               <label class="form-label">KEY</label>
               <input type="text" name="detail_key[]" class="form-control" value="<?= $k ?>">
             </div>
-            <div class="form-group">
-              <label class="form-label">ラベル（表示名）</label>
+            <div class="form-group form-group--label">
+              <label class="form-label">ラベル</label>
               <input type="text" name="detail_label[]" class="form-control" value="<?= $lbl ?>">
             </div>
-            <div class="form-group">
+            <div class="form-group form-group--value">
               <label class="form-label">値</label>
-              <input type="text" name="detail_value[]" class="form-control" value="<?= htmlspecialchars($val, ENT_QUOTES) ?>">
+              <input type="text" name="detail_value[]" class="form-control" value="">
+            </div>
+            <div class="form-group form-group--grid">
+              <label class="form-label">一覧</label>
+              <label class="detail-grid-toggle" title="一覧グリッドに表示する">
+                <input type="checkbox" name="detail_grid[]" value="<?= $di ?>" <?= $grid ? 'checked' : '' ?>>
+                <span class="detail-grid-toggle__icon">📋</span>
+              </label>
             </div>
           </div>
           <button type="button" class="btn btn-sm btn-ghost dynamic-remove" title="この行を削除">✕</button>
         </div>
-        <?php endforeach; ?>
+        <?php $di++; endforeach; ?>
         <?php endif; ?>
       </div>
       <button type="button" class="btn btn-sm btn-ghost" id="details-add">+ 行を追加</button>
@@ -587,18 +615,25 @@ ob_start();
 <!-- 動的行テンプレート -->
 <template id="tpl-detail-row">
   <div class="dynamic-row">
-    <div class="form-row form-row--3col">
-      <div class="form-group">
+    <div class="form-row form-row--detail">
+      <div class="form-group form-group--key">
         <label class="form-label">KEY</label>
         <input type="text" name="detail_key[]" class="form-control" placeholder="例: venue">
       </div>
-      <div class="form-group">
-        <label class="form-label">ラベル（表示名）</label>
+      <div class="form-group form-group--label">
+        <label class="form-label">ラベル</label>
         <input type="text" name="detail_label[]" class="form-control" placeholder="例: VENUE">
       </div>
-      <div class="form-group">
+      <div class="form-group form-group--value">
         <label class="form-label">値</label>
         <input type="text" name="detail_value[]" class="form-control" placeholder="値">
+      </div>
+      <div class="form-group form-group--grid">
+        <label class="form-label">一覧</label>
+        <label class="detail-grid-toggle" title="一覧グリッドに表示する">
+          <input type="checkbox" name="detail_grid[]" value="__INDEX__" checked>
+          <span class="detail-grid-toggle__icon">📋</span>
+        </label>
       </div>
     </div>
     <button type="button" class="btn btn-sm btn-ghost dynamic-remove" title="削除">✕</button>

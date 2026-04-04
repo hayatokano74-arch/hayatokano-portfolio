@@ -1,21 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import type { GardenNode } from "@/lib/garden/types";
 import { fetchGardenFromCms } from "@/lib/cms/garden-client";
 import { Header } from "./Header";
 import { GardenBody } from "./GardenBody";
 import { GardenNavigation } from "./GardenNavigation";
 
-export function GardenDetailPageClient() {
-  const params = useParams<{ slug: string }>();
-  const slug = params.slug ? decodeURIComponent(params.slug) : "";
+/** URLパスからslugを取得 */
+function slugFromPath(): string {
+  const parts = window.location.pathname.replace(/\/+$/, "").split("/");
+  return decodeURIComponent(parts[parts.length - 1] || "");
+}
 
+export function GardenDetailPageClient() {
+  const [slug, setSlug] = useState("");
   const [allNodes, setAllNodes] = useState<GardenNode[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSlug(slugFromPath());
     fetchGardenFromCms()
       .then(setAllNodes)
       .catch(() => setAllNodes([]))

@@ -3064,8 +3064,6 @@ img[loading="lazy"] {
 /* サイドバー内の検索（アーカイブ下） */
 .garden-sidebar-search {
   margin-top: var(--space-6);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--line);
 }
 
 .garden-sidebar-search .garden-search-input {

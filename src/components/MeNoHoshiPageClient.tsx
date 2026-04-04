@@ -14,17 +14,25 @@ import { FilterProvider, FilterLayout } from "./FilterableContent";
 import { FilteredWorksList, FilteredCount } from "./FilteredWorksList";
 import { ViewModeProvider } from "./ViewModeContext";
 
-const defaultGridFields: MeNoHoshiGridField[] = [
-  { key: "artist",    label: "ARTIST",    visible: true  },
-  { key: "period",    label: "PERIOD",    visible: true  },
-  { key: "open_date", label: "OPEN",      visible: true  },
-  { key: "hours",     label: "HOURS",     visible: true  },
-  { key: "closed",    label: "CLOSED",    visible: false },
-  { key: "admission", label: "ADMISSION", visible: false },
-  { key: "venue",     label: "VENUE",     visible: true  },
-  { key: "address",   label: "ADDRESS",   visible: false },
-  { key: "access",    label: "ACCESS",    visible: false },
-];
+/** 全投稿のdetailsからグリッド表示設定を動的に生成 */
+function buildGridFields(posts: MeNoHoshiPost[]): MeNoHoshiGridField[] {
+  const seen = new Map<string, MeNoHoshiGridField>();
+  for (const post of posts) {
+    for (const d of post.details) {
+      if (!seen.has(d.key)) {
+        seen.set(d.key, {
+          key: d.key,
+          label: d.label,
+          visible: d.gridVisible ?? false,
+        });
+      } else if (d.gridVisible) {
+        /* いずれかの投稿で gridVisible なら表示する */
+        seen.get(d.key)!.visible = true;
+      }
+    }
+  }
+  return Array.from(seen.values());
+}
 
 export function MeNoHoshiPageClient() {
   const [posts, setPosts] = useState<MeNoHoshiPost[]>([]);
@@ -84,7 +92,7 @@ export function MeNoHoshiPageClient() {
             basePath="/me-no-hoshi"
             detailQuery=""
             searchQuery={q}
-            gridSettings={defaultGridFields}
+            gridSettings={buildGridFields(posts)}
           />
         </FilterLayout>
       </FilterProvider>

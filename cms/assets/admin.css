@@ -789,6 +789,42 @@ input[type="number"].form-control {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+/* 展示情報の4列レイアウト: KEY / ラベル / 値 / 一覧チェック */
+.form-row--detail {
+  display: grid;
+  grid-template-columns: 120px 120px 1fr 48px;
+  gap: var(--s-3);
+  align-items: end;
+}
+
+.form-group--grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.detail-grid-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: var(--s-2);
+}
+
+.detail-grid-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.detail-grid-toggle__icon {
+  font-size: 18px;
+  opacity: 0.3;
+  transition: opacity var(--transition);
+}
+
+.detail-grid-toggle input:checked + .detail-grid-toggle__icon {
+  opacity: 1;
+}
+
 .form-group--center {
   justify-content: flex-start;
   padding-top: calc(var(--font-sm) + var(--s-2) + 2px); /* label 高さ分下げる */

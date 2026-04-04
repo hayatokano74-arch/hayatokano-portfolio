@@ -6,20 +6,23 @@
  */
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import type { MeNoHoshiPost } from "@/lib/me-no-hoshi/types";
 import { fetchMeNoHoshiFromCms } from "@/lib/cms/me-no-hoshi-client";
 import { Header } from "./Header";
 import { MeNoHoshiDetail } from "./MeNoHoshiDetail";
 
-export function MeNoHoshiDetailPageClient() {
-  const params = useParams<{ slug: string }>();
-  const slug = params.slug ? decodeURIComponent(params.slug) : "";
+function slugFromPath(): string {
+  const parts = window.location.pathname.replace(/\/+$/, "").split("/");
+  return decodeURIComponent(parts[parts.length - 1] || "");
+}
 
+export function MeNoHoshiDetailPageClient() {
+  const [slug, setSlug] = useState("");
   const [posts, setPosts] = useState<MeNoHoshiPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSlug(slugFromPath());
     fetchMeNoHoshiFromCms()
       .then(setPosts)
       .catch(() => setPosts([]))

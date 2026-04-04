@@ -8,6 +8,8 @@ export type MeNoHoshiDetailItem = {
   key: string;
   label: string;
   value: string;
+  /** 一覧グリッドに表示するか（CMS で設定） */
+  gridVisible?: boolean;
 };
 
 export type MeNoHoshiArchiveWork = {

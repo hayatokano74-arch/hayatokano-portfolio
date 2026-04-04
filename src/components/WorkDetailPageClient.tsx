@@ -6,20 +6,23 @@
  */
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import type { Work } from "@/lib/types";
 import { fetchWorksFromCms } from "@/lib/cms/works-client";
 import { Header } from "./Header";
 import { WorkDetailClient } from "./WorkDetailClient";
 
-export function WorkDetailPageClient() {
-  const params = useParams<{ slug: string }>();
-  const slug = params.slug ? decodeURIComponent(params.slug) : "";
+function slugFromPath(): string {
+  const parts = window.location.pathname.replace(/\/+$/, "").split("/");
+  return decodeURIComponent(parts[parts.length - 1] || "");
+}
 
+export function WorkDetailPageClient() {
+  const [slug, setSlug] = useState("");
   const [allWorks, setAllWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSlug(slugFromPath());
     fetchWorksFromCms()
       .then(setAllWorks)
       .catch(() => setAllWorks([]))
