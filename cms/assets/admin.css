@@ -2310,12 +2310,12 @@ textarea.form-control.is-dragover {
 .rich-editor-container .ql-editor {
   min-height: 200px;
   padding: var(--s-4);
-  line-height: 1.8;
+  line-height: 1.7;
 }
 
-/* 段落（Enter）: 段落間に余白を表示 */
+/* 段落（Enter）: 段落間に余白 */
 .rich-editor-container .ql-editor p {
-  margin-bottom: 0.6em;
+  margin-bottom: 0.35em;
 }
 
 .rich-editor-container .ql-editor p:last-child {
