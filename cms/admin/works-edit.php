@@ -41,15 +41,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tags      = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
         $tags_json = json_encode($tags, JSON_UNESCAPED_UNICODE);
 
-        // details: 固定フィールド
-        $details = [
-            'exhibition_type' => trim($_POST['det_exhibition_type'] ?? ''),
-            'period'          => trim($_POST['det_period'] ?? ''),
-            'venue'           => trim($_POST['det_venue'] ?? ''),
-            'address'         => trim($_POST['det_address'] ?? ''),
+        // details: 全フィールド
+        $all_det_keys = [
+            'exhibition_type', 'exhibition_title', 'artist', 'period',
+            'venue', 'address', 'access', 'hours', 'closed', 'admission',
+            'organizer', 'curator', 'artists', 'supported_by', 'url',
+            'medium', 'dimensions', 'edition', 'series',
+            'publisher', 'pages', 'binding', 'price',
+            'credit_photo', 'credit_design', 'credit_text',
+            'credit_sound', 'credit_video', 'credit_translation', 'credit_cooperation',
+            'award', 'collection', 'bio',
         ];
-        // 空のフィールドは除去
-        $details = array_filter($details, fn($v) => $v !== '');
+        $details = [];
+        foreach ($all_det_keys as $k) {
+            $v = trim($_POST["det_$k"] ?? '');
+            if ($v !== '') $details[$k] = $v;
+        }
 
         // media: 動的画像リスト
         $med_ids     = $_POST['media_id']     ?? [];
@@ -129,11 +136,51 @@ $data    = json_decode($row['data'] ?? '{}', true) ?? [];
 $details = $data['details'] ?? [];
 $media   = $data['media']   ?? [];
 
-// details は旧形式（object）と新形式（object）どちらも対応
-$f_det_type    = htmlspecialchars($details['exhibition_type'] ?? '', ENT_QUOTES);
-$f_det_period  = htmlspecialchars($details['period']          ?? '', ENT_QUOTES);
-$f_det_venue   = htmlspecialchars($details['venue']           ?? '', ENT_QUOTES);
-$f_det_address = htmlspecialchars($details['address']         ?? '', ENT_QUOTES);
+// 全detailsフィールドをエスケープ
+$det_fields = [
+    // 展示情報
+    ['exhibition_type',   '展示形式',     '例: Solo Exhibition, Group Exhibition'],
+    ['exhibition_title',  '展覧会名',     '例: Reborn-Art Festival 2019'],
+    ['artist',            'アーティスト', ''],
+    ['period',            '会期',         '例: 2023.04.08 - 2023.06.04'],
+    ['venue',             '会場名',       '例: Glvanize gallery'],
+    ['address',           '住所',         ''],
+    ['access',            'アクセス',     ''],
+    ['hours',             '開場時間',     '例: 12:00 - 18:00'],
+    ['closed',            '休廊日',       '例: 月・火・水'],
+    ['admission',         '入場料',       '例: 無料'],
+    ['organizer',         '主催',         ''],
+    ['curator',           'キュレーター', ''],
+    ['artists',           '出展作家',     'グループ展の場合'],
+    ['supported_by',      '後援・協賛',   ''],
+    ['url',               'ウェブサイト', 'https://...'],
+    // 作品情報
+    ['medium',            '素材・技法',   '例: Inkjet Print, Lenticular Lens'],
+    ['dimensions',        'サイズ',       '例: 1200 x 900 mm'],
+    ['edition',           'エディション', '例: 1/5'],
+    ['series',            'シリーズ名',   ''],
+    // 出版情報
+    ['publisher',         '出版社',       ''],
+    ['pages',             'ページ数',     ''],
+    ['binding',           '製本',         '例: ソフトカバー'],
+    ['price',             '価格',         ''],
+    // クレジット
+    ['credit_photo',      'C: 写真',      ''],
+    ['credit_design',     'C: デザイン',  ''],
+    ['credit_text',       'C: テキスト',  ''],
+    ['credit_sound',      'C: 音響',      ''],
+    ['credit_video',      'C: 映像',      ''],
+    ['credit_translation','C: 翻訳',      ''],
+    ['credit_cooperation','C: 協力',      ''],
+    // 実績
+    ['award',             '受賞',         ''],
+    ['collection',        '所蔵',         '例: ○○美術館'],
+    ['bio',               '略歴',         ''],
+];
+$f_det = [];
+foreach ($det_fields as [$key, $label, $ph]) {
+    $f_det[$key] = htmlspecialchars($details[$key] ?? '', ENT_QUOTES);
+}
 
 $page_title = $is_new ? 'Works 新規追加' : 'Works 編集: ' . ($row['title'] ?: $row['slug']);
 $active_nav = 'works';
@@ -204,34 +251,23 @@ ob_start();
     <!-- ── 展示情報 ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">展示情報</h3>
+      <p class="form-hint">値が空の項目は表示されません。必要な項目だけ入力してください。</p>
+      <?php
+        // 2列ずつ表示
+        $chunks = array_chunk($det_fields, 2);
+        foreach ($chunks as $pair):
+      ?>
       <div class="form-row form-row--2col">
+        <?php foreach ($pair as [$key, $label, $ph]): ?>
         <div class="form-group">
-          <label class="form-label" for="det_exhibition_type">展示形式</label>
-          <input type="text" id="det_exhibition_type" name="det_exhibition_type"
-                 class="form-control" value="<?= $f_det_type ?>"
-                 placeholder="例: Solo Exhibition, Group Exhibition">
+          <label class="form-label" for="det_<?= $key ?>"><?= $label ?></label>
+          <input type="text" id="det_<?= $key ?>" name="det_<?= $key ?>"
+                 class="form-control" value="<?= $f_det[$key] ?>"
+                 placeholder="<?= htmlspecialchars($ph, ENT_QUOTES) ?>">
         </div>
-        <div class="form-group">
-          <label class="form-label" for="det_period">会期</label>
-          <input type="text" id="det_period" name="det_period"
-                 class="form-control" value="<?= $f_det_period ?>"
-                 placeholder="例: 2023.04.08 - 2023.06.04">
-        </div>
+        <?php endforeach; ?>
       </div>
-      <div class="form-row form-row--2col">
-        <div class="form-group">
-          <label class="form-label" for="det_venue">会場名</label>
-          <input type="text" id="det_venue" name="det_venue"
-                 class="form-control" value="<?= $f_det_venue ?>"
-                 placeholder="例: Glvanize gallery">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="det_address">住所</label>
-          <input type="text" id="det_address" name="det_address"
-                 class="form-control" value="<?= $f_det_address ?>"
-                 placeholder="例: 宮城県石巻市...">
-        </div>
-      </div>
+      <?php endforeach; ?>
     </div>
 
     <!-- ── 作品画像（media） ── -->
