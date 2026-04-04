@@ -806,13 +806,13 @@ function init_rich_editors() {
     const uploadSection = textarea.dataset.mdUploadSection || 'misc';
     const uploadSlug = textarea.dataset.mdUploadSlug || '';
 
-    // ツールバー設定: 画像ボタン付き
+    // ツールバー設定: 画像 + [[リンク]] ボタン付き
     const toolbarOptions = [
       [{ header: [2, 3, false] }],
       ['bold', 'italic'],
       ['blockquote'],
       [{ list: 'ordered' }, { list: 'bullet' }],
-      ['link', 'image'],
+      ['link', 'image', 'bracket-link'],
       ['clean'],
     ];
 
@@ -828,10 +828,32 @@ function init_rich_editors() {
             image: function() {
               fileInput.click();
             },
+            // [[ブラケットリンク]] ボタン
+            'bracket-link': function() {
+              const range = quill.getSelection(true);
+              if (range.length > 0) {
+                // 選択テキストを[[]]で囲む
+                const text = quill.getText(range.index, range.length);
+                quill.deleteText(range.index, range.length);
+                quill.insertText(range.index, `[[${text}]]`);
+                quill.setSelection(range.index + text.length + 4);
+              } else {
+                // カーソル位置に[[]]を挿入してカーソルを中に
+                quill.insertText(range.index, '[[]]');
+                quill.setSelection(range.index + 2);
+              }
+            },
           },
         },
       },
     });
+
+    // [[リンク]] ボタンのラベルを設定
+    const bracketBtn = container.querySelector('.ql-bracket-link');
+    if (bracketBtn) {
+      bracketBtn.innerHTML = '[[ ]]';
+      bracketBtn.title = 'ブラケットリンク（ページ間リンク）';
+    }
 
     // ファイル選択時: CMS APIにアップロード → エディタに挿入
     fileInput.addEventListener('change', async () => {
