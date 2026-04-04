@@ -329,7 +329,17 @@ ob_start();
         </div>
         <?php endforeach; ?>
       </div>
-      <button type="button" class="btn btn-sm btn-ghost" id="media-add">+ 画像を追加</button>
+      <div class="media-add-actions">
+        <label class="btn btn-sm btn-primary" id="media-upload-label">
+          <input type="file" id="media-upload-input" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+          + ファイルをアップロード
+        </label>
+        <button type="button" class="btn btn-sm btn-ghost" id="media-pick-from-library">+ メディアから選択</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="media-add">+ 空の行を追加</button>
+      </div>
+      <div class="media-drop-zone" id="media-drop-zone">
+        <p style="color:var(--text-3);font-size:var(--font-sm);">画像をドラッグ＆ドロップでも追加できます</p>
+      </div>
     </div>
 
     <!-- ── 本文 ── -->
@@ -391,27 +401,163 @@ ob_start();
   </div>
 </template>
 
+<!-- メディアライブラリモーダル -->
+<div class="modal-backdrop" id="media-library-modal" style="display:none">
+  <div class="modal" style="width:min(900px,95vw);max-height:85vh;display:flex;flex-direction:column;">
+    <div class="modal__header">
+      <h3 class="modal__title">メディアライブラリ</h3>
+      <button type="button" class="modal__close" id="media-lib-close">✕</button>
+    </div>
+    <div class="modal__body" style="overflow-y:auto;flex:1;">
+      <div class="media-lib-grid" id="media-lib-grid"></div>
+      <div id="media-lib-loading" style="text-align:center;padding:var(--s-8);color:var(--text-3);">読み込み中…</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.media-add-actions { display:flex; gap:var(--s-3); flex-wrap:wrap; margin-top:var(--s-3); }
+.media-drop-zone {
+  margin-top:var(--s-3); padding:var(--s-4); text-align:center;
+  border:2px dashed var(--border); border-radius:var(--radius); transition:border-color var(--transition);
+}
+.media-drop-zone.is-dragover { border-color:var(--accent); background:var(--accent-bg); }
+.media-lib-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:var(--s-2);
+}
+.media-lib-item {
+  aspect-ratio:1; overflow:hidden; border-radius:var(--radius); cursor:pointer;
+  border:2px solid transparent; transition:border-color var(--transition);
+}
+.media-lib-item:hover { border-color:var(--accent); }
+.media-lib-item.is-selected { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-bg); }
+.media-lib-item img { width:100%; height:100%; object-fit:cover; display:block; }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const list   = document.getElementById('media-list');
   const addBtn = document.getElementById('media-add');
   const tpl    = document.getElementById('tpl-media-row');
+  const slug   = '<?= addslashes($f_slug) ?>';
+  const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-  if (addBtn && list && tpl) {
-    addBtn.addEventListener('click', () => {
-      const clone = tpl.content.cloneNode(true);
-      clone.querySelectorAll('[data-upload-section]').forEach(el => {
-        el.dataset.uploadSlug = '<?= addslashes($f_slug) ?>';
-      });
-      list.appendChild(clone);
-      init_upload_fields(list.lastElementChild);
-    });
-    list.addEventListener('click', (e) => {
-      const btn = e.target.closest('.dynamic-remove');
-      if (btn) btn.closest('.dynamic-row')?.remove();
+  // 行追加ヘルパー
+  function addMediaRow(src, alt, width, height, id) {
+    const clone = tpl.content.cloneNode(true);
+    clone.querySelectorAll('[data-upload-section]').forEach(el => el.dataset.uploadSlug = slug);
+    const row = clone.querySelector('.dynamic-row') || clone.firstElementChild;
+    if (src) {
+      row.querySelector('[name="media_src[]"]').value = src;
+      row.querySelector('[name="media_alt[]"]').value = alt || '';
+      row.querySelector('[name="media_width[]"]').value = width || 0;
+      row.querySelector('[name="media_height[]"]').value = height || 0;
+      row.querySelector('[name="media_id[]"]').value = id || 'media-' + Date.now();
+      // プレビュー
+      const preview = row.querySelector('.media-row-preview');
+      if (preview && src) {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = '';
+        img.style.cssText = 'width:80px;height:60px;object-fit:cover;border-radius:4px;';
+        preview.appendChild(img);
+      }
+    }
+    list.appendChild(clone);
+    init_upload_fields(list.lastElementChild);
+  }
+
+  // 空の行を追加
+  if (addBtn) addBtn.addEventListener('click', () => addMediaRow('', '', 0, 0, ''));
+
+  // 行削除
+  list.addEventListener('click', (e) => {
+    const btn = e.target.closest('.dynamic-remove');
+    if (btn) btn.closest('.dynamic-row')?.remove();
+  });
+
+  // ── 複数ファイルアップロード ──
+  const uploadInput = document.getElementById('media-upload-input');
+  if (uploadInput) {
+    uploadInput.addEventListener('change', async () => {
+      const files = Array.from(uploadInput.files);
+      if (!files.length) return;
+      uploadInput.value = '';
+      await uploadFiles(files);
     });
   }
 
+  async function uploadFiles(files) {
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) continue;
+      try {
+        const result = await upload_image_to_api(file, 'works', slug);
+        addMediaRow(result.url, '', result.width, result.height, 'media-' + Date.now());
+        show_toast(file.name + ' をアップロードしました', 'success');
+      } catch (err) {
+        show_toast(file.name + ': ' + err.message, 'error');
+      }
+    }
+  }
+
+  // ── ドラッグ＆ドロップ ──
+  const dropZone = document.getElementById('media-drop-zone');
+  if (dropZone) {
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('is-dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('is-dragover'));
+    dropZone.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('is-dragover');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+      if (files.length) await uploadFiles(files);
+    });
+  }
+
+  // ── メディアライブラリから選択 ──
+  const libBtn   = document.getElementById('media-pick-from-library');
+  const libModal = document.getElementById('media-library-modal');
+  const libGrid  = document.getElementById('media-lib-grid');
+  const libLoad  = document.getElementById('media-lib-loading');
+  const libClose = document.getElementById('media-lib-close');
+
+  if (libBtn && libModal) {
+    libBtn.addEventListener('click', async () => {
+      libModal.style.display = '';
+      libGrid.innerHTML = '';
+      libLoad.style.display = '';
+
+      try {
+        const res = await fetch('../api/media.php?limit=200');
+        const data = await res.json();
+        const items = data.items || data.data?.items || [];
+        libLoad.style.display = 'none';
+
+        items.forEach(item => {
+          const url = (item.url || ('<?= UPLOAD_URL_PREFIX ?>' + item.path));
+          const div = document.createElement('div');
+          div.className = 'media-lib-item';
+          div.innerHTML = '<img src="' + url + '" alt="" loading="lazy">';
+          div.addEventListener('click', () => {
+            addMediaRow(url, '', item.width || 0, item.height || 0, 'media-' + Date.now());
+            show_toast('画像を追加しました', 'success');
+          });
+          libGrid.appendChild(div);
+        });
+
+        if (!items.length) {
+          libLoad.style.display = '';
+          libLoad.textContent = 'メディアがありません';
+        }
+      } catch (err) {
+        libLoad.textContent = '読み込みに失敗しました';
+      }
+    });
+
+    libClose.addEventListener('click', () => { libModal.style.display = 'none'; });
+    libModal.addEventListener('click', (e) => { if (e.target === libModal) libModal.style.display = 'none'; });
+  }
+
+  // 削除ボタン
   const delBtn = document.querySelector('[data-delete]');
   if (delBtn) {
     delBtn.addEventListener('click', () => {
