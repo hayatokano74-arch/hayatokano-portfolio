@@ -243,35 +243,15 @@ body {
 
 html {
   scroll-behavior: smooth;
-  /* スクロールバーのスペースを左右対称に確保（レイアウトシフト防止） */
+  /* スクロールバーをオーバーレイ表示（コンテンツ幅に影響しない） */
   overflow-y: auto;
-  scrollbar-gutter: stable both-edges;
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
+  scrollbar-width: none;
 }
 
-html.is-scrolling {
-  scrollbar-color: var(--muted) transparent;
-}
-
-/* WebKit: 常に6px確保、普段はサム透明、スクロール中だけ表示 */
+/* WebKit/Blink: スクロールバーを非表示（スクロール機能は維持） */
 html::-webkit-scrollbar {
-  width: 6px;
+  display: none;
 }
-
-html::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-html::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 3px;
-}
-
-html.is-scrolling::-webkit-scrollbar-thumb {
-  background: var(--muted);
-}
-
 
 @media (prefers-reduced-motion: reduce) {
   html {
