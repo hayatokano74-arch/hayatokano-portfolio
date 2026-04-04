@@ -14,6 +14,29 @@ RewriteRule ^(.*)$ https://hayatokano.com/$1 [L,R=301]
 RewriteCond %{REQUEST_URI} ^/_cms/
 RewriteRule ^ - [L]
 
+# ── WebP 自動配信 ──
+# ブラウザがWebP対応 かつ .webp版が存在する場合、WebPを配信
+# 元画像（.jpg/.png）のリクエストに対して .jpg.webp を返す
+RewriteCond %{HTTP_ACCEPT} image/webp
+RewriteCond %{REQUEST_FILENAME}.webp -f
+RewriteRule ^(.+)\.(jpe?g|png)$ $1.$2.webp [T=image/webp,L]
+
+# WebPのContent-Typeを正しく設定
+<IfModule mod_headers.c>
+  <FilesMatch "\.webp$">
+    Header set Content-Type "image/webp"
+    Header append Vary "Accept"
+  </FilesMatch>
+</IfModule>
+
+# キャッシュ: 画像は1年間キャッシュ
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+</IfModule>
+
 # ── 動的コンテンツのフォールバック ──
 # 静的HTMLが存在しないスラッグ → _fallback/index.html にリライト
 # %{REQUEST_FILENAME} ではなく %{REQUEST_URI} ベースでindex.htmlの存在をチェック

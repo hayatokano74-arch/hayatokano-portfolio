@@ -1,7 +1,10 @@
 <?php
 /**
  * 画像アップロード処理
- * MIME 検証 → GD でリサイズ → WebP 変換して保存
+ *
+ * 1. 元画像をリサイズして保存（原本保護）
+ * 2. WebP版を横に生成（.jpg → .jpg.webp）
+ * 3. .htaccess でブラウザがWebP対応なら .webp を自動配信
  */
 
 require_once dirname(__DIR__) . '/config.php';
@@ -11,22 +14,20 @@ require_once __DIR__ . '/db.php';
  * アップロードされた画像を処理して保存する
  *
  * @param array  $file     $_FILES['field'] の値
- * @param string $section  保存先セクション（works, garden, timeline 等）
+ * @param string $section  保存先セクション（works, garden 等）
  * @param string $slug     紐付ける slug（任意）
  * @return array { path: string, url: string, width: int, height: int }
  */
 function upload_image(array $file, string $section = 'misc', string $slug = ''): array {
-    // アップロードエラー確認
     if ($file['error'] !== UPLOAD_ERR_OK) {
         throw new RuntimeException('アップロードエラー: ' . upload_error_message($file['error']));
     }
 
-    // ファイルサイズ確認
     if ($file['size'] > UPLOAD_MAX_BYTES) {
         throw new RuntimeException('ファイルサイズが大きすぎます（最大 ' . (UPLOAD_MAX_BYTES / 1024 / 1024) . 'MB）');
     }
 
-    // MIME タイプを GD で確認（拡張子は信用しない）
+    // MIME タイプを GD で確認
     $info = @getimagesize($file['tmp_name']);
     if (!$info || !in_array($info['mime'], ALLOWED_MIME_TYPES, true)) {
         throw new RuntimeException('許可されていない画像形式です');
@@ -40,21 +41,27 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
     if ($slug) $dest_dir .= '/' . preg_replace('/[^a-z0-9_\-]/', '', $slug);
     if (!is_dir($dest_dir)) mkdir($dest_dir, 0755, true);
 
-    // ファイル名（タイムスタンプ + ランダム8文字、重複を避ける）
+    // ファイル名
     $basename = date('YmdHis') . '_' . bin2hex(random_bytes(4));
-    $webp_filename = $basename . '.webp';
-    $dest_path = $dest_dir . '/' . $webp_filename;
-    $public_path = '/' . $section . ($slug ? '/' . $slug : '') . '/' . $webp_filename;
+    $ext = match ($mime) {
+        'image/jpeg' => 'jpg',
+        'image/png'  => 'png',
+        'image/webp' => 'webp',
+        'image/gif'  => 'gif',
+        default      => 'jpg',
+    };
+    $filename    = $basename . '.' . $ext;
+    $dest_path   = $dest_dir . '/' . $filename;
+    $public_path = '/' . $section . ($slug ? '/' . $slug : '') . '/' . $filename;
 
     // GD で読み込み
     $src = image_create_from_mime($file['tmp_name'], $mime);
     if (!$src) throw new RuntimeException('画像の読み込みに失敗しました');
 
-    // 長辺がリサイズ閾値を超える場合はリサイズ
+    // リサイズ
     [$new_w, $new_h] = calc_resize($orig_w, $orig_h, IMAGE_MAX_DIMENSION);
     if ($new_w !== $orig_w || $new_h !== $orig_h) {
         $dst = imagecreatetruecolor($new_w, $new_h);
-        // PNG/WebP の透明処理
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $new_w, $new_h, $orig_w, $orig_h);
@@ -65,11 +72,25 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
         $new_h = $orig_h;
     }
 
-    // WebP として保存（品質 85）
-    if (!imagewebp($src, $dest_path, 85)) {
+    // 1. 元画像を保存
+    $saved = match ($mime) {
+        'image/jpeg' => imagejpeg($src, $dest_path, 90),
+        'image/png'  => imagepng($src, $dest_path, 6),
+        'image/webp' => imagewebp($src, $dest_path, 85),
+        'image/gif'  => imagegif($src, $dest_path),
+        default      => imagejpeg($src, $dest_path, 90),
+    };
+    if (!$saved) {
         imagedestroy($src);
-        throw new RuntimeException('WebP 変換に失敗しました');
+        throw new RuntimeException('画像の保存に失敗しました');
     }
+
+    // 2. WebP版を横に生成（元画像が既にWebPの場合はスキップ）
+    if ($mime !== 'image/webp') {
+        $webp_path = $dest_path . '.webp';
+        imagewebp($src, $webp_path, 80);
+    }
+
     imagedestroy($src);
 
     // DB にメディアレコードを保存
@@ -78,14 +99,14 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
         INSERT INTO media (filename, path, section, slug, width, height, size_bytes, mime_type)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ')->execute([
-        $webp_filename,
+        $filename,
         $public_path,
         $section,
         $slug,
         $new_w,
         $new_h,
         filesize($dest_path),
-        'image/webp',
+        $mime,
     ]);
 
     return [
