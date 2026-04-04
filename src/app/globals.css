@@ -2990,7 +2990,6 @@ img[loading="lazy"] {
 .garden-sidebar-inner {
   position: sticky;
   top: var(--space-7);
-  margin-top: var(--space-6);
 }
 
 .garden-content {
