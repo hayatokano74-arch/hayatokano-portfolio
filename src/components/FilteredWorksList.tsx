@@ -47,17 +47,15 @@ export function FilteredWorksList<T extends WorkLike>({
   perPage,
   basePath = "/works",
   detailQuery,
-  searchQuery = "",
   gridSettings,
 }: {
   allWorks: T[];
   perPage: number;
   basePath?: "/works" | "/me-no-hoshi";
   detailQuery?: string;
-  searchQuery?: string;
   gridSettings?: MeNoHoshiGridField[];
 }) {
-  const { selected } = useFilterContext();
+  const { selected, searchQuery } = useFilterContext();
   const { view } = useViewMode();
   const selectedTags = selected.tags ?? [];
   const selectedYears = selected.years ?? [];
@@ -166,14 +164,12 @@ function MeNoHoshiListDetails({
 /** フィルター結果の件数を表示するクライアントコンポーネント */
 export function FilteredCount<T extends WorkLike>({
   allWorks,
-  searchQuery = "",
   basePath = "/works",
 }: {
   allWorks: T[];
-  searchQuery?: string;
   basePath?: "/works" | "/me-no-hoshi";
 }) {
-  const { selected } = useFilterContext();
+  const { selected, searchQuery } = useFilterContext();
   const selectedTags = selected.tags ?? [];
   const selectedYears = selected.years ?? [];
   const getSearchFields = basePath === "/me-no-hoshi" ? getMeNoHoshiSearchFields : getWorksSearchFields;

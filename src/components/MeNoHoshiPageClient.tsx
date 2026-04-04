@@ -55,7 +55,6 @@ export function MeNoHoshiPageClient() {
     posts.map((p) => p.year).filter(Boolean),
   );
 
-  const q = "";
 
   if (loading) {
     return (
@@ -83,7 +82,7 @@ export function MeNoHoshiPageClient() {
       >
         <Header
           active="目の星"
-          title={<>目の星 / Menohoshi<FilteredCount allWorks={posts} searchQuery={q} basePath="/me-no-hoshi" /></>}
+          title={<>目の星 / Menohoshi<FilteredCount allWorks={posts} basePath="/me-no-hoshi" /></>}
           showTitleRow={false}
           brandLabel="目の星"
           brandHref="/me-no-hoshi"
@@ -96,7 +95,6 @@ export function MeNoHoshiPageClient() {
             perPage={15}
             basePath="/me-no-hoshi"
             detailQuery=""
-            searchQuery={q}
             gridSettings={gridFields}
           />
         </FilterLayout>

@@ -4,15 +4,19 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { FilterSidebar, type SelectedFilters } from "@/components/FilterSidebar";
 import type { FilterGroup } from "@/lib/categories";
 
-/* フィルター開閉・選択状態を共有するContext */
+/* フィルター開閉・選択・検索状態を共有するContext */
 type FilterCtx = {
   filterOpen: boolean;
   onFilterToggle: () => void;
   filterCount: number;
-  /** 現在のフィルター選択状態（クライアント側で即時更新） */
+  /** 現在のフィルター選択状態 */
   selected: SelectedFilters;
   /** フィルター値をトグル */
   onToggle: (paramKey: string, value: string) => void;
+  /** 検索クエリ */
+  searchQuery: string;
+  /** 検索クエリ更新 */
+  setSearchQuery: (q: string) => void;
 };
 
 const FilterContext = createContext<FilterCtx>({
@@ -21,6 +25,8 @@ const FilterContext = createContext<FilterCtx>({
   filterCount: 0,
   selected: {},
   onToggle: () => {},
+  searchQuery: "",
+  setSearchQuery: () => {},
 });
 
 /** Header等からフィルター開閉stateを参照するフック */
@@ -47,6 +53,7 @@ export function FilterProvider({
 }) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selected, setSelected] = useState<SelectedFilters>(initialSelected);
+  const [searchQuery, setSearchQuery] = useState("");
   const onFilterToggle = useCallback(() => setFilterOpen((prev) => !prev), []);
 
   /* フィルター値のトグル: state即更新 + URL同期（サーバー再フェッチなし） */
@@ -85,7 +92,9 @@ export function FilterProvider({
     filterCount,
     selected,
     onToggle,
-  }), [filterOpen, onFilterToggle, filterCount, selected, onToggle]);
+    searchQuery,
+    setSearchQuery,
+  }), [filterOpen, onFilterToggle, filterCount, selected, onToggle, searchQuery]);
 
   return (
     <FilterContext.Provider value={ctx}>

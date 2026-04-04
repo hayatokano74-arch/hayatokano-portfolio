@@ -30,8 +30,6 @@ export function WorksPageClient() {
     works.map((w) => w.year).filter(Boolean),
   );
 
-  const q = "";
-
   if (loading) {
     return (
       <ViewModeProvider defaultView="list">
@@ -56,7 +54,7 @@ export function WorksPageClient() {
       >
         <Header
           active="Works"
-          title={<>Works<FilteredCount allWorks={works} searchQuery={q} basePath="/works" /></>}
+          title={<>Works<FilteredCount allWorks={works} basePath="/works" /></>}
           showTitleRow={false}
           showWorksToggle
           showFilterButton
@@ -66,7 +64,6 @@ export function WorksPageClient() {
             allWorks={works}
             perPage={15}
             basePath="/works"
-            searchQuery={q}
           />
         </FilterLayout>
       </FilterProvider>
