@@ -57,9 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
         if (login($password)) {
             // ログイン成功: リダイレクト先を確認
             $redirect = $_GET['redirect'] ?? '';
-            $redirect = filter_var($redirect, FILTER_SANITIZE_URL);
-            // 外部URLへのオープンリダイレクト対策: 先頭が / で始まる場合のみ許可
-            if ($redirect && str_starts_with($redirect, '/') && !str_starts_with($redirect, '//')) {
+            // オープンリダイレクト対策:
+            //   - 先頭が "/" かつ次文字が "/" や "\" でないもののみ許可
+            //   - 制御文字を含む場合は無効とする
+            if ($redirect
+                && preg_match('#^/[^/\\\\]#', $redirect)
+                && !preg_match('/[\x00-\x1f]/', $redirect)
+            ) {
                 header('Location: ' . $redirect);
             } else {
                 header('Location: ' . cms_url('/admin/dashboard.php'));

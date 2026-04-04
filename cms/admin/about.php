@@ -51,7 +51,11 @@ if (!$row) {
 }
 
 $f_body      = htmlspecialchars($row['body'] ?? '', ENT_QUOTES);
-$data_decoded = json_decode($row['data'] ?? '{}', true) ?? [];
+$data_decoded = json_decode($row['data'] ?? '{}', true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    error_log('[CMS] about data JSON デコードエラー: ' . json_last_error_msg());
+}
+$data_decoded = is_array($data_decoded) ? $data_decoded : [];
 
 $photos_arr  = $data_decoded['photos'] ?? [];
 $f_photos    = htmlspecialchars(json_encode($photos_arr, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), ENT_QUOTES);
@@ -133,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const zone = document.getElementById('upload-zone-about');
   if (zone) {
     init_upload_zone(zone, {
-      apiUrl: '../api/upload.php',
       section: 'about',
       slug: 'about',
       onUploaded(url, width, height) {

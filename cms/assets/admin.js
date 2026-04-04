@@ -212,72 +212,24 @@ function confirm_delete(message, callback, confirmLabel = '削除する') {
 
 
 /* ══════════════════════════════════════════════
-   4. フォームの AJAX 送信
+   4. セッションタイムアウト警告
    ══════════════════════════════════════════════ */
 
 /**
- * フォームを AJAX で送信する
- * @param {HTMLFormElement} form      - 対象フォーム
- * @param {string}          url       - 送信先 URL
- * @param {Function}        onSuccess - 成功時コールバック (data) => void
- * @param {Function}        [onError] - エラー時コールバック (error) => void
+ * セッション期限（14日）の残り1時間前にトーストで警告する
+ * ページロード時刻を基準に計算（厳密ではないが実用上十分）
  */
-async function submit_form(form, url, onSuccess, onError) {
-  if (!form) return;
-
-  const submitBtn = form.querySelector('[type="submit"]');
-  const originalText = submitBtn?.textContent ?? '';
-
-  // 送信中状態
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.classList.add('is-loading');
-    submitBtn.textContent = '送信中…';
+(function init_session_warning() {
+  // セッション有効期間 14日 → 残り1時間（3600秒）前に警告
+  const SESSION_SECONDS   = 14 * 24 * 60 * 60;
+  const WARN_BEFORE       = 60 * 60; // 1時間前
+  const warnAfterMs = (SESSION_SECONDS - WARN_BEFORE) * 1000;
+  if (warnAfterMs > 0) {
+    setTimeout(() => {
+      show_toast('セッションの期限が1時間以内に切れます。作業を保存してください。', 'warning', '', 10000);
+    }, warnAfterMs);
   }
-
-  try {
-    const formData = new FormData(form);
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    });
-
-    const text = await response.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { message: text };
-    }
-
-    if (!response.ok) {
-      const errMsg = data?.error ?? `HTTP ${response.status}`;
-      throw new Error(errMsg);
-    }
-
-    if (typeof onSuccess === 'function') {
-      onSuccess(data);
-    } else {
-      show_toast(data?.message ?? '保存しました', 'success');
-    }
-  } catch (err) {
-    const msg = err.message ?? '予期しないエラーが発生しました';
-    if (typeof onError === 'function') {
-      onError(err);
-    } else {
-      show_toast(msg, 'error');
-    }
-  } finally {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('is-loading');
-      submitBtn.textContent = originalText;
-    }
-  }
-}
+})();
 
 
 /* ══════════════════════════════════════════════
@@ -588,29 +540,6 @@ function _create_file_input(accept) {
   input.accept    = accept.join(',');
   input.className = 'upload-zone__input';
   return input;
-}
-
-/** プレビューグリッドにサムネイルを追加（旧互換） */
-function _render_preview(zone, files, previewContainer) {
-  const container = typeof previewContainer === 'string'
-    ? document.querySelector(previewContainer)
-    : previewContainer;
-  if (!container) return;
-
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const item = document.createElement('div');
-      item.className = 'upload-preview__item';
-      item.innerHTML = `
-        <img src="${e.target.result}" alt="${_escape(file.name)}" class="upload-preview__img">
-        <button type="button" class="upload-preview__remove" aria-label="削除">✕</button>
-      `;
-      item.querySelector('.upload-preview__remove').addEventListener('click', () => item.remove());
-      container.appendChild(item);
-    };
-    reader.readAsDataURL(file);
-  });
 }
 
 

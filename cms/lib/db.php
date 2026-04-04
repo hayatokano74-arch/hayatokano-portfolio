@@ -187,14 +187,44 @@ function get_migrations(): array {
 
 // ─── 汎用 CRUD ヘルパー ──────────────────────────────────────
 
+/** 許可テーブル名一覧 */
+const DB_ALLOWED_TABLES = [
+    'works', 'me_no_hoshi', 'news', 'timeline',
+    'texts', 'about', 'garden', 'media', 'login_attempts', 'schema_version',
+];
+
+/**
+ * ORDER BY 句をホワイトリスト検証する
+ * "column ASC" / "column DESC" / 複数カラムをカンマ区切りで許可
+ * カラム名は英数字・アンダースコアのみ
+ */
+function db_safe_order(string $order): string {
+    $parts = array_map('trim', explode(',', $order));
+    $safe  = [];
+    foreach ($parts as $part) {
+        if (!preg_match('/^([a-zA-Z_][a-zA-Z0-9_]*)(?:\s+(ASC|DESC))?$/i', $part, $m)) {
+            throw new InvalidArgumentException("不正な ORDER BY 句: {$part}");
+        }
+        $safe[] = $m[1] . ' ' . (isset($m[2]) ? strtoupper($m[2]) : 'ASC');
+    }
+    return implode(', ', $safe);
+}
+
 /** レコード全件取得 */
 function db_all(string $table, string $order = 'id DESC'): array {
+    if (!in_array($table, DB_ALLOWED_TABLES, true)) {
+        throw new InvalidArgumentException("不正なテーブル名: {$table}");
+    }
+    $safe_order = db_safe_order($order);
     $db = get_db();
-    return $db->query("SELECT * FROM {$table} ORDER BY {$order}")->fetchAll();
+    return $db->query("SELECT * FROM {$table} ORDER BY {$safe_order}")->fetchAll();
 }
 
 /** slug で1件取得 */
 function db_find_by_slug(string $table, string $slug): ?array {
+    if (!in_array($table, DB_ALLOWED_TABLES, true)) {
+        throw new InvalidArgumentException("不正なテーブル名: {$table}");
+    }
     $db = get_db();
     $stmt = $db->prepare("SELECT * FROM {$table} WHERE slug = ?");
     $stmt->execute([$slug]);

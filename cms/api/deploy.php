@@ -16,6 +16,16 @@ $method = $_SERVER['REQUEST_METHOD'];
 // GET・POST ともに認証必須
 api_require_auth();
 
+// POST は CSRF 検証も実施
+if ($method === 'POST') {
+    $csrf_header = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    $csrf_post   = $_POST['_csrf'] ?? '';
+    $token       = $csrf_header ?: $csrf_post;
+    if (!hash_equals(csrf_token(), $token)) {
+        json_error('CSRFトークンが不正です', 403);
+    }
+}
+
 switch ($method) {
     case 'GET':
         handle_get();
