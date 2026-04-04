@@ -813,7 +813,7 @@ function init_rich_editors() {
       modules: {
         toolbar: {
           container: [
-            [{ header: [2, 3, false] }],
+            [{ header: [1, 2, 3, 4, false] }],
             ['bold', 'italic'],
             ['blockquote'],
             [{ list: 'ordered' }, { list: 'bullet' }],

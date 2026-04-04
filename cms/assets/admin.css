@@ -2260,14 +2260,14 @@ textarea.form-control.is-dragover {
    ══════════════════════════════════════════════ */
 
 .rich-editor-container {
-  background: var(--surface-1);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
 }
 
 .rich-editor-container .ql-toolbar {
-  background: var(--surface-2);
+  background: var(--card);
   border: none;
   border-bottom: 1px solid var(--border);
   padding: var(--s-2) var(--s-3);
@@ -2304,7 +2304,7 @@ textarea.form-control.is-dragover {
   border: none;
   font-family: var(--font-family);
   font-size: var(--font-base);
-  color: var(--text-1);
+  color: var(--text);
 }
 
 .rich-editor-container .ql-editor {
@@ -2318,8 +2318,16 @@ textarea.form-control.is-dragover {
   font-style: normal;
 }
 
+/* 見出し: H1〜H4 */
+.rich-editor-container .ql-editor h1 {
+  font-size: 1.6em;
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
 .rich-editor-container .ql-editor h2 {
-  font-size: 1.25em;
+  font-size: 1.3em;
   font-weight: 700;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
@@ -2327,6 +2335,13 @@ textarea.form-control.is-dragover {
 
 .rich-editor-container .ql-editor h3 {
   font-size: 1.1em;
+  font-weight: 700;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+}
+
+.rich-editor-container .ql-editor h4 {
+  font-size: 1.0em;
   font-weight: 700;
   margin-top: 1.25em;
   margin-bottom: 0.5em;
@@ -2356,12 +2371,13 @@ textarea.form-control.is-dragover {
   font-family: var(--font-family);
 }
 
+/* ── 見出しピッカー ── */
 .ql-snow .ql-picker-label {
   padding: 2px 8px;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  color: var(--text-1);
+  background: var(--card);
+  color: var(--text);
 }
 
 .ql-snow .ql-picker-label:hover {
@@ -2369,22 +2385,21 @@ textarea.form-control.is-dragover {
   border-color: var(--accent) !important;
 }
 
-/* 見出しピッカー: 幅を適切に */
 .ql-snow .ql-picker.ql-header {
-  width: 108px;
+  width: 120px;
 }
 
-/* ドロップダウンパネル: 不透明背景 */
+/* ドロップダウンパネル */
 .ql-toolbar .ql-picker-options {
-  background: var(--surface-1) !important;
+  background: var(--card) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   padding: var(--s-1) !important;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
 }
 
 .ql-toolbar .ql-picker-item {
-  color: var(--text-1) !important;
+  color: var(--text) !important;
   padding: var(--s-2) var(--s-3) !important;
   border-radius: var(--radius-sm) !important;
   font-family: var(--font-family) !important;
@@ -2395,21 +2410,27 @@ textarea.form-control.is-dragover {
   background: var(--accent-bg) !important;
 }
 
+/* 見出しプレビュー: ドロップダウン内で実際のサイズ感を表示 */
+.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before { font-size: 1.6em; font-weight: 700; }
+.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before { font-size: 1.3em; font-weight: 700; }
+.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before { font-size: 1.1em; font-weight: 700; }
+.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="4"]::before { font-size: 1.0em; font-weight: 700; }
+
 /* ── ツールチップ ── */
 .ql-snow .ql-tooltip {
-  background: var(--surface-1);
+  background: var(--card);
   border-color: var(--border);
-  color: var(--text-1);
+  color: var(--text);
   border-radius: var(--radius);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   padding: var(--s-3);
   z-index: 100;
 }
 
 .ql-snow .ql-tooltip input[type="text"] {
-  background: var(--surface-2);
+  background: var(--surface);
   border-color: var(--border);
-  color: var(--text-1);
+  color: var(--text);
   border-radius: var(--radius-sm);
   padding: var(--s-2) var(--s-3);
   font-family: var(--font-family);
@@ -2432,7 +2453,7 @@ textarea.form-control.is-dragover {
   letter-spacing: -0.5px;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-sm) !important;
-  background: var(--surface-2) !important;
+  background: var(--card) !important;
   line-height: 1 !important;
 }
 
