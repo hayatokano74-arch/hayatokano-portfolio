@@ -501,6 +501,7 @@ ob_start();
       <h3 class="form-section__title">アーティストプロフィール (Bio)</h3>
       <div class="form-group">
         <textarea id="bio" name="bio" class="form-control" rows="5"
+                  data-rich-editor
                   placeholder="アーティストのプロフィール文"><?= $f_bio ?></textarea>
       </div>
     </div>
@@ -510,6 +511,7 @@ ob_start();
       <h3 class="form-section__title">ステートメント / 本文</h3>
       <div class="form-group">
         <textarea id="body" name="body" class="form-control form-control--large" rows="10"
+                  data-rich-editor
                   placeholder="展示ステートメントや説明文"><?= $f_body ?></textarea>
       </div>
     </div>

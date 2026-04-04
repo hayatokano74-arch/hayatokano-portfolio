@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { RichBody } from "@/components/RichBody";
 import type { TextPost } from "@/lib/types";
 import { fetchTextsFromCms } from "@/lib/cms/text-client";
 import { Header } from "./Header";
@@ -107,30 +108,12 @@ export function TextDetailPageClient() {
                   >
                     {section.heading}
                   </h2>
-                  <div
-                    style={{
-                      fontSize: "var(--font-body)",
-                      lineHeight: "var(--lh-relaxed)",
-                      whiteSpace: "pre-wrap",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {section.body}
-                  </div>
+                  <RichBody html={section.body ?? ""} />
                 </section>
               ))}
             </div>
           ) : (
-            <div
-              style={{
-                fontSize: "var(--font-body)",
-                lineHeight: "var(--lh-relaxed)",
-                whiteSpace: "pre-wrap",
-                fontWeight: 500,
-              }}
-            >
-              {post.body}
-            </div>
+            <RichBody html={post.body} />
           )}
         </div>
 

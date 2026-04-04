@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { type NewsItem } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
+import { RichBody } from "@/components/RichBody";
 
 /* 画像なしプレースホルダー: 正方形 + 対角線× */
 function NoImagePlaceholder() {
@@ -59,9 +60,7 @@ export function NewsView({ items }: { items: NewsItem[] }) {
             <div className="news-accord-spacer" />
             {/* 中央: 本文 */}
             <div className="news-accord-body">
-              <div style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)", fontWeight: 500 }}>
-                {item.body}
-              </div>
+              <RichBody html={item.body} />
             </div>
             {/* 右: 画像（Works と同じ配置） */}
             <div className="news-accord-media">

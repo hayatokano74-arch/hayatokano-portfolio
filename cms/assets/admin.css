@@ -2244,3 +2244,118 @@ textarea.form-control.is-dragover {
     font-size: var(--font-base);
   }
 }
+
+/* ══════════════════════════════════════════════
+   Quill リッチエディタ カスタマイズ
+   ══════════════════════════════════════════════ */
+
+.rich-editor-container {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.rich-editor-container .ql-toolbar {
+  background: var(--surface-2);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: var(--s-2) var(--s-3);
+}
+
+.rich-editor-container .ql-toolbar .ql-stroke {
+  stroke: var(--text-2);
+}
+
+.rich-editor-container .ql-toolbar .ql-fill {
+  fill: var(--text-2);
+}
+
+.rich-editor-container .ql-toolbar .ql-picker-label {
+  color: var(--text-2);
+}
+
+.rich-editor-container .ql-toolbar button:hover .ql-stroke,
+.rich-editor-container .ql-toolbar button.ql-active .ql-stroke {
+  stroke: var(--accent);
+}
+
+.rich-editor-container .ql-toolbar button:hover .ql-fill,
+.rich-editor-container .ql-toolbar button.ql-active .ql-fill {
+  fill: var(--accent);
+}
+
+.rich-editor-container .ql-toolbar .ql-picker-label:hover,
+.rich-editor-container .ql-toolbar .ql-picker-item:hover {
+  color: var(--accent);
+}
+
+.rich-editor-container .ql-container {
+  border: none;
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  color: var(--text-1);
+}
+
+.rich-editor-container .ql-editor {
+  min-height: 200px;
+  padding: var(--s-4);
+  line-height: 1.8;
+}
+
+.rich-editor-container .ql-editor.ql-blank::before {
+  color: var(--text-3);
+  font-style: normal;
+}
+
+.rich-editor-container .ql-editor h2 {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.rich-editor-container .ql-editor h3 {
+  font-size: 1.1em;
+  font-weight: 700;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+}
+
+.rich-editor-container .ql-editor blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: var(--s-4);
+  color: var(--text-2);
+  margin: 1em 0;
+}
+
+.rich-editor-container .ql-editor a {
+  color: var(--accent);
+}
+
+/* ドロップダウンのダークモード対応 */
+.ql-toolbar .ql-picker-options {
+  background: var(--surface-1) !important;
+  border-color: var(--border) !important;
+}
+
+.ql-toolbar .ql-picker-item {
+  color: var(--text-1) !important;
+}
+
+.ql-toolbar .ql-picker-item:hover {
+  color: var(--accent) !important;
+}
+
+.ql-snow .ql-tooltip {
+  background: var(--surface-1);
+  border-color: var(--border);
+  color: var(--text-1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.ql-snow .ql-tooltip input[type="text"] {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
+}

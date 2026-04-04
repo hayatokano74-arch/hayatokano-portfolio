@@ -289,6 +289,7 @@ ob_start();
       <h3 class="form-section__title">本文</h3>
       <div class="form-group">
         <textarea id="body" name="body" class="form-control form-control--large" rows="14"
+                  data-rich-editor
                   placeholder="ステートメント・説明文"><?= $f_body ?></textarea>
       </div>
     </div>

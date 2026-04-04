@@ -93,7 +93,8 @@ ob_start();
     <div class="form-section form-section--full">
       <h3 class="form-section__title">本文（body）</h3>
       <div class="form-group">
-        <textarea id="body" name="body" class="form-control form-control--large" rows="10"><?= $f_body ?></textarea>
+        <textarea id="body" name="body" class="form-control form-control--large" rows="10"
+                  data-rich-editor><?= $f_body ?></textarea>
       </div>
     </div>
 

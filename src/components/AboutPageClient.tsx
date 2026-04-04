@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import type { About } from "@/lib/about";
 import { fetchAboutFromCms } from "@/lib/cms/about-client";
+import { RichBody } from "@/components/RichBody";
 import { Header } from "./Header";
 
 export function AboutPageClient() {
@@ -60,17 +61,10 @@ export function AboutPageClient() {
       <div className="about-layout">
         {/* 左カラム: テキスト */}
         <div className="about-text">
-          <div
-            style={{
-              fontSize: "var(--font-body)",
-              lineHeight: "var(--lh-relaxed)",
-              fontWeight: 500,
-              whiteSpace: "pre-wrap",
-              marginBottom: "var(--v-page)",
-            }}
-          >
-            {about.statement}
-          </div>
+          <RichBody
+            html={about.statement}
+            style={{ marginBottom: "var(--v-page)" }}
+          />
 
           {cvSections.map((section, si) => (
             <section

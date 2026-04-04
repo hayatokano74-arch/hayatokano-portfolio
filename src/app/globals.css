@@ -818,6 +818,56 @@ button {
   margin-top: var(--space-4);
 }
 
+/* ── Rich Body（CMS HTML表示・共通） ── */
+.rich-body {
+  font-size: var(--font-body);
+  line-height: var(--lh-relaxed);
+  font-weight: 500;
+}
+.rich-body p {
+  margin-bottom: 0.75em;
+}
+.rich-body p:last-child {
+  margin-bottom: 0;
+}
+.rich-body strong {
+  font-weight: 700;
+}
+.rich-body em {
+  font-style: italic;
+}
+.rich-body a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  color: var(--fg);
+}
+.rich-body h2 {
+  font-size: var(--font-heading);
+  font-weight: 700;
+  margin-top: var(--v-heading);
+  margin-bottom: var(--v-element);
+}
+.rich-body h3 {
+  font-size: var(--font-body);
+  font-weight: 700;
+  margin-top: var(--v-block);
+  margin-bottom: var(--v-element);
+}
+.rich-body blockquote {
+  border-left: 2px solid var(--muted);
+  padding-left: var(--space-5);
+  color: var(--muted);
+  margin: 1em 0;
+}
+.rich-body ul,
+.rich-body ol {
+  padding-left: 1.5em;
+  margin: 0.75em 0;
+}
+.rich-body li {
+  margin-bottom: 0.25em;
+}
+
 /* スクロールバー: 常にスペース確保（シフト防止）、普段は透明 */
 .hide-scrollbar {
   scrollbar-width: thin;

@@ -764,4 +764,82 @@ document.addEventListener('DOMContentLoaded', () => {
   init_rel_time();
   init_delete_buttons();
   init_upload_fields();
+  init_rich_editors();
 });
+
+/* ══════════════════════════════════════════════
+   Quill リッチテキストエディタ初期化
+   ══════════════════════════════════════════════ */
+
+/**
+ * data-rich-editor 属性を持つ textarea を Quill エディタに変換する。
+ * フォーム送信時に hidden input へ HTML を書き戻す。
+ */
+function init_rich_editors() {
+  if (typeof Quill === 'undefined') return;
+
+  document.querySelectorAll('textarea[data-rich-editor]').forEach(textarea => {
+    // hidden input を作成（フォーム送信用）
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = textarea.name;
+    hidden.value = textarea.value;
+    textarea.parentNode.insertBefore(hidden, textarea);
+
+    // エディタ用コンテナ
+    const container = document.createElement('div');
+    container.className = 'rich-editor-container';
+    textarea.parentNode.insertBefore(container, textarea);
+
+    // textarea を非表示
+    textarea.removeAttribute('name');
+    textarea.style.display = 'none';
+
+    // Quill 初期化
+    const quill = new Quill(container, {
+      theme: 'snow',
+      placeholder: textarea.placeholder || '本文を入力…',
+      modules: {
+        toolbar: [
+          [{ header: [2, 3, false] }],
+          ['bold', 'italic'],
+          ['blockquote'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          ['link'],
+          ['clean'],
+        ],
+      },
+    });
+
+    // 既存コンテンツをセット（HTMLまたはプレーンテキスト）
+    const initial = hidden.value;
+    if (initial) {
+      if (initial.includes('<') && initial.includes('>')) {
+        // HTML
+        quill.root.innerHTML = initial;
+      } else {
+        // プレーンテキスト → 段落に変換
+        quill.root.innerHTML = initial
+          .split(/\n{2,}/)
+          .map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>')
+          .join('');
+      }
+    }
+
+    // 変更時に hidden input を更新
+    quill.on('text-change', () => {
+      const html = quill.root.innerHTML;
+      // 空のエディタは空文字にする
+      hidden.value = (html === '<p><br></p>' || html === '<p></p>') ? '' : html;
+    });
+
+    // フォーム送信前にも同期（念のため）
+    const form = textarea.closest('form');
+    if (form) {
+      form.addEventListener('submit', () => {
+        const html = quill.root.innerHTML;
+        hidden.value = (html === '<p><br></p>' || html === '<p></p>') ? '' : html;
+      });
+    }
+  });
+}
