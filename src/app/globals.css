@@ -2969,10 +2969,10 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
-/* garden-main直下の要素はデフォルトでカラム4〜7に配置（中央4カラム）
-   ただし .garden-sections は全幅を使う（subgrid用） */
+/* garden-main直下の要素はデフォルトでカラム5〜8に配置（12グリッド中央4カラム）
+   garden-mainは9カラム内部グリッドなので、5/span4 = 親グリッドの5〜8列 */
 .garden-main > * {
-  grid-column: 4 / span 4;
+  grid-column: 5 / span 4;
   min-width: 0;
 }
 
@@ -3245,18 +3245,18 @@ img[loading="lazy"] {
   padding-bottom: 0;
 }
 
-/* 日付: 左マージン（カラム1〜3）に配置 */
+/* 日付: 左マージン（カラム1〜4）に配置 */
 .garden-entry-date {
-  grid-column: 1 / span 3;
+  grid-column: 1 / span 4;
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
   padding-top: 0.35em; /* タイトルのベースラインに揃える */
 }
 
-/* 本文エリア: 中央4カラム */
+/* 本文エリア: 中央4カラム（9カラム中5〜8 = 12カラム中5〜8） */
 .garden-entry-content {
-  grid-column: 4 / span 4;
+  grid-column: 5 / span 4;
   min-width: 0;
 }
 
