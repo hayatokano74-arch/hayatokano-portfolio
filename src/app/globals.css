@@ -3215,72 +3215,12 @@ img[loading="lazy"] {
   border-color: var(--fg);
 }
 
-/* 年月セクションの親コンテナ */
+/* 投稿全体のコンテナ: subgrid で親の9カラムを引き継ぐ */
 .garden-sections {
-  margin-top: var(--space-6);
-  grid-column: 1 / -1;
-}
-
-/* 年月セクション: subgrid で親の9カラムを引き継ぐ */
-.garden-section {
   display: grid;
   grid-template-columns: subgrid;
   grid-column: 1 / -1;
-  margin-bottom: var(--space-7);
-}
-
-.garden-section:last-child {
-  margin-bottom: 0;
-}
-
-/* 年月見出し（sticky、クリック可能） */
-.garden-section-heading {
-  all: unset;
-  box-sizing: border-box;
-  grid-column: 4 / span 6;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  width: 100%;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--bg);
-  font-size: var(--font-body);
-  font-weight: 700;
-  letter-spacing: normal;
-  color: var(--muted);
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--line);
-  cursor: pointer;
-  transition: color var(--duration-normal) ease;
-}
-
-.garden-section-heading:hover {
-  color: var(--fg);
-}
-
-.garden-section-heading:focus-visible {
-  outline: 2px solid var(--fg);
-  outline-offset: 2px;
-}
-
-.garden-section-label {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-}
-
-.garden-section-chevron {
-  font-size: 0.75em;
-  display: inline-block;
-  transition: transform var(--duration-fast) ease;
-}
-
-.garden-section-meta {
-  font-size: var(--font-meta);
-  letter-spacing: 0.04em;
-  color: var(--muted);
+  margin-top: var(--space-6);
 }
 
 /* 投稿リスト: subgrid で親の9カラムを引き継ぐ */
@@ -4778,10 +4718,6 @@ img[loading="lazy"] {
   }
 
   /* モバイル: 2列構造→1列に戻す */
-  .garden-section {
-    display: block;
-  }
-
   .garden-list {
     display: block;
   }
@@ -4799,10 +4735,6 @@ img[loading="lazy"] {
 
   .garden-entry-date {
     margin-bottom: var(--space-2);
-  }
-
-  .garden-section-heading {
-    width: 100%;
   }
 
   .garden-entry-body {
