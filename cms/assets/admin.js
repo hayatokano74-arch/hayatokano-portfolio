@@ -830,7 +830,10 @@ function init_rich_editors() {
     });
 
     // [[リンク]] ボタンをツールバー末尾に追加
-    const toolbar = container.querySelector('.ql-toolbar');
+    // Quill snow テーマはツールバーを container の直前の兄弟要素として生成する
+    const toolbar = container.previousElementSibling?.classList.contains('ql-toolbar')
+      ? container.previousElementSibling
+      : container.querySelector('.ql-toolbar');
     if (toolbar) {
       const group = document.createElement('span');
       group.className = 'ql-formats';

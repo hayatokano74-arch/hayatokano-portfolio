@@ -1144,25 +1144,11 @@ input[type="number"].form-control {
   flex-shrink: 0;
 }
 
-/* デプロイボタン（特別デザイン） */
-.btn-deploy {
-  background: linear-gradient(135deg, #4a7be8 0%, #6f4fd8 100%);
-  color: #fff;
-  border-color: transparent;
-  font-weight: 600;
-}
-
-.btn-deploy:hover {
-  background: linear-gradient(135deg, #3a6fd8 0%, #5f3fc8 100%);
-  color: #fff;
-}
-
-.btn-deploy.is-deploying {
-  background: var(--warning-bg);
-  color: var(--warning);
-  border-color: var(--warning);
-  animation: pulse 1.5s ease-in-out infinite;
-  pointer-events: none;
+/* ライブ反映バッジ */
+.topbar__live-badge {
+  font-size: var(--font-xs);
+  color: #4ade80;
+  letter-spacing: 0.02em;
 }
 
 /* ──────────────────────────────────────────────

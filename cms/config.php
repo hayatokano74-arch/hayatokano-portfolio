@@ -34,20 +34,9 @@ define('LOGIN_MAX_ATTEMPTS', 5);
 define('LOGIN_LOCKOUT_SECONDS', 300);
 
 // ─── デプロイ設定 ────────────────────────────────────────────
-/** GitHub Personal Access Token（.env.php で設定） */
-define('GITHUB_TOKEN', defined('GITHUB_TOKEN_VALUE') ? GITHUB_TOKEN_VALUE : '');
-
-/** GitHub リポジトリ（owner/repo） */
-define('GITHUB_REPO', 'hayatokano74-arch/hayatokano-portfolio');
-
-/** デプロイするブランチ */
-define('GITHUB_DEPLOY_BRANCH', 'main');
-
-/** トリガーするワークフローファイル名 */
-define('GITHUB_WORKFLOW', 'deploy.yml');
-
-/** デプロイ受信 Webhook のシークレット（.env.php で設定） */
-define('DEPLOY_WEBHOOK_SECRET', defined('DEPLOY_WEBHOOK_SECRET_VALUE') ? DEPLOY_WEBHOOK_SECRET_VALUE : '');
+// コンテンツはクライアントサイドで CMS API から取得するため、
+// CMS での編集・保存は本番サイトに即座に反映される。
+// コード変更（CSS・レイアウト等）のデプロイはローカルで ./deploy.sh を実行する。
 
 // ─── 画像設定 ────────────────────────────────────────────────
 /** アップロード最大サイズ（バイト）: 20MB */

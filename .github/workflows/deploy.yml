@@ -1,17 +1,14 @@
-name: ビルド＆デプロイ
+name: ビルド検証
 
 on:
-  # CMS のデプロイボタンからトリガー
-  workflow_dispatch:
-  # main ブランチへの push でもビルド検証（デプロイはしない）
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  build-and-deploy:
-    name: 静的ビルド＆デプロイ
+  build:
+    name: 静的ビルド検証
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -32,49 +29,3 @@ jobs:
         run: STATIC_EXPORT=true npx next build
         env:
           CMS_API_URL: ${{ secrets.CMS_API_URL }}
-
-      # ── workflow_dispatch の場合のみデプロイ ──
-      - name: デプロイ用 tar.gz を作成
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          # フロントエンド（out/）とCMS（cms/、DB・uploads・.env除外）をまとめる
-          tar czf deploy.tar.gz \
-            --exclude='cms/db/*.sqlite3' \
-            --exclude='cms/db/*.sqlite3-wal' \
-            --exclude='cms/db/*.sqlite3-shm' \
-            --exclude='cms/db/password.hash' \
-            --exclude='cms/uploads' \
-            --exclude='cms/.env.php' \
-            out/ cms/ deploy/.htaccess
-          echo "tar.gz サイズ: $(du -h deploy.tar.gz | cut -f1)"
-
-      - name: GitHub Release にアップロード
-        if: github.event_name == 'workflow_dispatch'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest-deploy
-          name: "自動デプロイ (${{ github.run_number }})"
-          body: "CMS からトリガーされた自動デプロイ"
-          files: deploy.tar.gz
-          make_latest: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Xserver に展開を通知
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          HTTP_STATUS=$(curl -s -o /tmp/webhook-response.txt -w "%{http_code}" \
-            -X POST "${{ secrets.DEPLOY_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_SECRET }}" \
-            -d '{"run_id": "${{ github.run_id }}", "run_number": "${{ github.run_number }}"}')
-          echo "Webhook response: $HTTP_STATUS"
-          cat /tmp/webhook-response.txt
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "::error::デプロイ展開に失敗しました (HTTP $HTTP_STATUS)"
-            exit 1
-          fi
-
-      - name: ビルド完了（push/PR）
-        if: github.event_name != 'workflow_dispatch'
-        run: echo "✅ ビルド検証完了"

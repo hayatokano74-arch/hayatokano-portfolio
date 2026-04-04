@@ -135,15 +135,7 @@ $js_ver  = @filemtime(CMS_ROOT . '/assets/admin.js')  ?: '1';
       </div>
 
       <div class="topbar__right">
-        <!-- デプロイステータス -->
-        <div class="deploy-status deploy-status--idle" id="deploy-status">
-          <div class="deploy-status__dot" aria-hidden="true"></div>
-          <span class="deploy-status__text">スタンバイ</span>
-        </div>
-        <!-- デプロイボタン -->
-        <button class="btn btn-deploy" id="deploy-btn" type="button">
-          デプロイ
-        </button>
+        <span class="topbar__live-badge">● コンテンツは保存時に即反映</span>
       </div>
     </header><!-- /.topbar -->
 
