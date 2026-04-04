@@ -87,8 +87,9 @@ $f_title = htmlspecialchars($row['title'] ?? '', ENT_QUOTES);
 $f_type  = $row['type'] ?? 'text';
 $f_body  = htmlspecialchars($row['body'] ?? '', ENT_QUOTES);
 
-$tags_arr = json_decode($row['tags'] ?? '[]', true) ?? [];
-$f_tags   = htmlspecialchars(implode(', ', $tags_arr), ENT_QUOTES);
+$tags_decoded = json_decode($row['tags'] ?? '[]', true);
+$tags_arr     = is_array($tags_decoded) ? $tags_decoded : [];
+$f_tags       = htmlspecialchars(implode(', ', $tags_arr), ENT_QUOTES);
 
 $page_title = $is_new ? 'Garden 新規追加' : 'Garden: ' . ($row['date'] ?: $row['slug']);
 $active_nav = 'garden';
@@ -140,17 +141,15 @@ ob_start();
     <!-- ── 本文エリア（タイトル + 本文を一体化） ── -->
     <div class="form-section form-section--full">
       <div class="garden-entry-editor">
-        <div class="form-group" style="margin-bottom:var(--s-3);">
+        <div class="form-group garden-title-group">
           <input type="text" id="title" name="title" class="form-control garden-title-input"
                  value="<?= $f_title ?>"
-                 placeholder="タイトル（省略すると日付がタイトルになります）"
-                 style="font-size:var(--font-lg,18px);font-weight:600;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:var(--s-2) 0;background:transparent;">
+                 placeholder="タイトル（省略すると日付がタイトルになります）">
         </div>
         <div class="form-group">
-          <textarea id="body" name="body" class="form-control"
+          <textarea id="body" name="body" class="form-control garden-body-textarea"
                     rows="18"
-                    placeholder="本文を入力..."
-                    style="border:none;border-radius:0;background:transparent;padding:var(--s-2) 0;resize:vertical;line-height:1.9;"><?= $f_body ?></textarea>
+                    placeholder="本文を入力..."><?= $f_body ?></textarea>
         </div>
       </div>
     </div>

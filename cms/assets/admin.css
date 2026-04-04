@@ -563,7 +563,7 @@ code, pre {
 }
 
 .table tbody tr:hover {
-  background: rgba(255,255,255,0.03);
+  background: var(--surface);
 }
 
 /* クリッカブル行 */
@@ -617,6 +617,211 @@ code, pre {
   display: flex;
   flex-direction: column;
   gap: var(--s-5);
+}
+
+/* ── 編集フォーム全体 ── */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── フォームセクション ── */
+.form-section {
+  padding: var(--s-6) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.form-section__title {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--s-5);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ── フォームアクション（保存・削除ボタン行） ── */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-5) 0 var(--s-2);
+  margin-top: var(--s-2);
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border-subtle);
+  z-index: 10;
+}
+
+/* キャンセル・削除は左寄せ、保存は右端 */
+.form-actions .btn-primary {
+  margin-left: auto;
+}
+
+/* ── .form-control（input/textarea/select の共通スタイル） ── */
+.form-control {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: var(--font-base);
+  font-family: inherit;
+  padding: var(--s-2) var(--s-3);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-control::placeholder {
+  color: var(--text-3);
+}
+
+.form-control:hover {
+  border-color: var(--text-3);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,142,240,0.12);
+}
+
+.form-control[readonly] {
+  background: var(--card);
+  color: var(--text-2);
+  cursor: default;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.7;
+}
+
+select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23777'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+.form-control--large {
+  min-height: 300px;
+  line-height: 1.8;
+}
+
+.form-control--code {
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: var(--font-xs);
+  line-height: 1.6;
+  min-height: 200px;
+}
+
+/* ── form-row バリアント ── */
+.form-row--2col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.form-row--3col {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.form-group--center {
+  justify-content: flex-end;
+}
+
+/* ── 必須マーク ── */
+.required {
+  color: var(--danger);
+  margin-left: 2px;
+}
+
+/* ── char-hint ── */
+.char-hint {
+  font-size: var(--font-xs);
+  color: var(--text-3);
+  font-weight: 400;
+  margin-left: var(--s-2);
+}
+
+/* ── toggle-label（チェックボックス・ラジオの横並び） ── */
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  cursor: pointer;
+  font-size: var(--font-base);
+  color: var(--text-2);
+  user-select: none;
+}
+
+.toggle-label input[type="checkbox"],
+.toggle-label input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── page-actions（一覧ページのヘッダーアクション行） ── */
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-bottom: var(--s-5);
+  flex-wrap: wrap;
+}
+
+/* ── 検索フォーム ── */
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.search-input {
+  max-width: 280px;
+}
+
+/* ── アラート ── */
+.alert {
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--s-5);
+}
+
+.alert-error {
+  background: var(--danger-bg);
+  border: 1px solid rgba(224,85,85,0.3);
+  color: var(--danger);
+}
+
+.alert ul {
+  margin: 0;
+  padding-left: var(--s-5);
+}
+
+.alert li {
+  font-size: var(--font-sm);
 }
 
 .form-group {
@@ -806,14 +1011,15 @@ code, pre {
 
 /* デンジャー */
 .btn-danger {
-  background: transparent;
+  background: var(--danger-bg);
   color: var(--danger);
-  border-color: var(--danger);
+  border-color: rgba(224,85,85,0.4);
 }
 
 .btn-danger:hover {
-  background: var(--danger-bg);
-  color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
 }
 
 /* ゴースト */
@@ -1494,10 +1700,42 @@ code, pre {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--s-5) var(--s-6);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.garden-entry-editor .form-group {
+.garden-title-group {
   margin-bottom: 0;
+}
+
+.garden-title-input.form-control {
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: var(--s-2) 0;
+  background: transparent;
+}
+
+.garden-title-input.form-control:focus {
+  box-shadow: none;
+  border-bottom-color: var(--accent);
+}
+
+.garden-body-textarea.form-control {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: var(--s-3) 0;
+  resize: vertical;
+  line-height: 1.9;
+  min-height: 360px;
+}
+
+.garden-body-textarea.form-control:focus {
+  box-shadow: none;
 }
 
 /* ──────────────────────────────────────────────
@@ -1730,7 +1968,9 @@ code, pre {
     grid-template-columns: 1fr;
   }
 
-  .form-row {
+  .form-row,
+  .form-row--2col,
+  .form-row--3col {
     grid-template-columns: 1fr;
   }
 

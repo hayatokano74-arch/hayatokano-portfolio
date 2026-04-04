@@ -121,7 +121,8 @@ $f_excerpt = htmlspecialchars($row['excerpt'] ?? '', ENT_QUOTES);
 $f_pinned  = !empty($row['pinned']);
 $f_body    = htmlspecialchars($row['body'] ?? '', ENT_QUOTES);
 
-$tags_arr = json_decode($row['tags'] ?? '[]', true) ?? [];
+$tags_decoded = json_decode($row['tags'] ?? '[]', true);
+$tags_arr     = is_array($tags_decoded) ? $tags_decoded : [];
 $f_tags   = htmlspecialchars(implode(', ', $tags_arr), ENT_QUOTES);
 
 $data    = json_decode($row['data'] ?? '{}', true) ?? [];
