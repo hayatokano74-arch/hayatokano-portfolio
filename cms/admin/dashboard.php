@@ -22,17 +22,18 @@ $counts = [
 $recent = [];
 
 $recent_queries = [
-    ['table' => 'works',       'label' => 'Works',    'url' => cms_url('/admin/works-edit.php?slug=%s')],
-    ['table' => 'me_no_hoshi', 'label' => '目の星',   'url' => cms_url('/admin/me-no-hoshi-edit.php?slug=%s')],
-    ['table' => 'news',        'label' => 'News',     'url' => cms_url('/admin/news-edit.php?slug=%s')],
-    ['table' => 'garden',      'label' => 'Garden',   'url' => cms_url('/admin/garden-edit.php?slug=%s')],
-    ['table' => 'timeline',    'label' => 'Timeline', 'url' => cms_url('/admin/timeline-edit.php?slug=%s')],
-    ['table' => 'texts',       'label' => 'Text',     'url' => cms_url('/admin/text-edit.php?slug=%s')],
+    ['table' => 'works',       'label' => 'Works',    'url' => cms_url('/admin/works-edit.php?slug=%s'),       'title_col' => 'title'],
+    ['table' => 'me_no_hoshi', 'label' => '目の星',   'url' => cms_url('/admin/me-no-hoshi-edit.php?slug=%s'), 'title_col' => 'title'],
+    ['table' => 'news',        'label' => 'News',     'url' => cms_url('/admin/news-edit.php?slug=%s'),        'title_col' => 'title'],
+    ['table' => 'garden',      'label' => 'Garden',   'url' => cms_url('/admin/garden-edit.php?slug=%s'),      'title_col' => 'title'],
+    ['table' => 'timeline',    'label' => 'Timeline', 'url' => cms_url('/admin/timeline-edit.php?slug=%s'),    'title_col' => 'date'],
+    ['table' => 'texts',       'label' => 'Text',     'url' => cms_url('/admin/text-edit.php?slug=%s'),        'title_col' => 'title'],
 ];
 
 $db = get_db();
 foreach ($recent_queries as $q) {
-    $stmt = $db->prepare("SELECT slug, title, updated_at, '{$q['label']}' AS section FROM {$q['table']} ORDER BY updated_at DESC LIMIT 5");
+    $title_col = $q['title_col'] ?? 'title';
+    $stmt = $db->prepare("SELECT slug, {$title_col} AS title, updated_at, '{$q['label']}' AS section FROM {$q['table']} ORDER BY updated_at DESC LIMIT 5");
     $stmt->execute();
     $rows = $stmt->fetchAll();
     foreach ($rows as &$row) {
