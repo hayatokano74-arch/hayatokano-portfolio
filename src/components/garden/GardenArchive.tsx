@@ -96,29 +96,39 @@ function ArchiveYearTree({
                   const monthOpen = openKeys.has(monthKey);
                   return (
                     <div key={monthKey} style={{ marginBottom: "var(--space-1)" }}>
-                      {/* 月 */}
-                      <button
-                        type="button"
-                        onClick={() => onToggle(monthKey)}
-                        aria-expanded={monthOpen}
-                        style={{
-                          ...btnStyle,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "var(--space-2)",
-                          fontSize: "var(--font-body)",
-                          lineHeight: "var(--lh-normal)",
-                          fontWeight: 500,
-                          color: "var(--muted)",
-                          fontFamily: "inherit",
-                        }}
-                      >
-                        <ToggleArrow open={monthOpen} />
-                        <span>{m.label}</span>
+                      {/* 月: ラベルクリックで開閉、月名リンクで最初の記事へ */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+                        <button
+                          type="button"
+                          onClick={() => onToggle(monthKey)}
+                          aria-expanded={monthOpen}
+                          aria-label={`${m.groupLabel}の記事を展開`}
+                          style={{
+                            ...btnStyle,
+                            display: "flex",
+                            alignItems: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <ToggleArrow open={monthOpen} />
+                        </button>
+                        <Link
+                          href={`/garden/${encodeURIComponent(m.firstSlug)}`}
+                          onClick={() => onClose?.()}
+                          style={{
+                            fontSize: "var(--font-body)",
+                            lineHeight: "var(--lh-normal)",
+                            fontWeight: 500,
+                            color: "var(--muted)",
+                            textDecoration: "none",
+                          }}
+                        >
+                          {m.label}
+                        </Link>
                         <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
                           ({m.count})
                         </span>
-                      </button>
+                      </div>
 
                       {/* 投稿タイトル一覧 */}
                       {monthOpen && (

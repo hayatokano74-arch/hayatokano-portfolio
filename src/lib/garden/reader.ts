@@ -482,6 +482,26 @@ export async function getAllPageSlugs(): Promise<string[]> {
   return [...all];
 }
 
+/** 前後のノードを取得（時系列順で隣接するエントリ） */
+export async function getAdjacentNodes(slug: string): Promise<{
+  prev: { slug: string; title: string; date: string } | null;
+  next: { slug: string; title: string; date: string } | null;
+}> {
+  const allNodes = await getAllNodes();
+  // allNodes は日付降順（新しい順）
+  const idx = allNodes.findIndex((n) => n.slug === slug);
+  if (idx === -1) return { prev: null, next: null };
+
+  // prev = より新しい記事（配列上で前）、next = より古い記事（配列上で後）
+  const newer = idx > 0 ? allNodes[idx - 1] : null;
+  const older = idx < allNodes.length - 1 ? allNodes[idx + 1] : null;
+
+  return {
+    prev: older ? { slug: older.slug, title: older.title, date: older.date } : null,
+    next: newer ? { slug: newer.slug, title: newer.title, date: newer.date } : null,
+  };
+}
+
 /**
  * 仮想ページのタイトルを取得。
  * MDファイルがないがリンクされているページのタイトルを返す。

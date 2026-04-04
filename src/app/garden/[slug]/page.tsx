@@ -3,8 +3,8 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { Header } from "@/components/Header";
 import { GardenBody } from "@/components/GardenBody";
 import { GardenDetailRelated } from "@/components/GardenDetailRelated";
-import { GardenBackLink } from "@/components/GardenBackLink";
-import { getNodeBySlug, getAllPageSlugs, getVirtualPageTitle } from "@/lib/garden/reader";
+import { GardenNavigation } from "@/components/GardenNavigation";
+import { getNodeBySlug, getAllPageSlugs, getVirtualPageTitle, getAdjacentNodes } from "@/lib/garden/reader";
 import { getLinkedPages, getTwoHopLinks } from "@/lib/garden/backlinks";
 
 const BASE_URL = "https://hayatokano.com";
@@ -76,6 +76,7 @@ export default async function GardenNodePage({ params }: Props) {
 
   const linkedPages = await getLinkedPages(pageSlug);
   const twoHopGroups = await getTwoHopLinks(pageSlug);
+  const adjacent = await getAdjacentNodes(pageSlug);
 
   /* JSON-LD 構造化データ（BlogPosting） */
   const jsonLd = node
@@ -108,7 +109,6 @@ export default async function GardenNodePage({ params }: Props) {
           <>
             <div className="garden-detail-meta">
               <time className="garden-detail-date">{node.date}</time>
-              <span className="garden-reading-time">約{node.readingTime}分</span>
             </div>
             <GardenBody html={node.contentHtml} className="garden-detail-body" />
           </>
@@ -116,7 +116,7 @@ export default async function GardenNodePage({ params }: Props) {
 
         <GardenDetailRelated linkedPages={linkedPages} twoHopGroups={twoHopGroups} />
 
-        <GardenBackLink />
+        <GardenNavigation prev={adjacent.prev} next={adjacent.next} />
       </article>
     </CanvasShell>
   );

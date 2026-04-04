@@ -5,6 +5,7 @@
 
 import type { MonthGroup } from "./group-by-month";
 import type { GardenNode } from "./types";
+import { titleToSlug } from "./slug";
 
 /** 1ページあたりの表示件数 */
 export const NODES_PER_PAGE = 15;
@@ -23,6 +24,8 @@ export type GardenArchiveMonth = {
   groupLabel: string;  // "2026年2月"（MonthGroup.label と一致）
   count: number;
   posts: GardenArchivePost[];
+  /** この月の最初の投稿のslug（月リンク用） */
+  firstSlug: string;
 };
 
 export type GardenArchiveYear = {
@@ -107,6 +110,7 @@ export function buildArchiveTree(nodes: GardenNode[]): GardenArchiveYear[] {
         groupLabel,
         count: 0,
         posts: [],
+        firstSlug: titleToSlug(node.title),
       };
       yearNode.months.push(monthNode);
     }

@@ -2969,10 +2969,10 @@ img[loading="lazy"] {
   min-width: 0;
 }
 
-/* garden-main直下の要素はデフォルトでカラム4〜9に配置
+/* garden-main直下の要素はデフォルトでカラム4〜7に配置（中央4カラム）
    ただし .garden-sections は全幅を使う（subgrid用） */
 .garden-main > * {
-  grid-column: 4 / span 6;
+  grid-column: 4 / span 4;
   min-width: 0;
 }
 
@@ -3254,9 +3254,9 @@ img[loading="lazy"] {
   padding-top: 0.35em; /* タイトルのベースラインに揃える */
 }
 
-/* 本文エリア: 右側6カラム */
+/* 本文エリア: 中央4カラム */
 .garden-entry-content {
-  grid-column: 4 / span 6;
+  grid-column: 4 / span 4;
   min-width: 0;
 }
 
@@ -3365,7 +3365,7 @@ img[loading="lazy"] {
 }
 
 .garden-detail > * {
-  grid-column: 4 / span 6;
+  grid-column: 5 / span 4;
   min-width: 0;
 }
 
@@ -3737,10 +3737,44 @@ img[loading="lazy"] {
   margin-top: var(--space-7);
 }
 
-/* 戻るリンク */
-.garden-detail-back {
+/* 前後ナビゲーション */
+.garden-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-5);
   margin-top: var(--space-9);
-  padding-top: var(--space-5);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--line);
+}
+
+.garden-nav-link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-decoration: none;
+  color: inherit;
+  max-width: 45%;
+}
+
+.garden-nav-next {
+  text-align: right;
+  margin-left: auto;
+}
+
+.garden-nav-label {
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.garden-nav-title {
+  font-size: var(--font-body);
+  font-weight: 500;
+  line-height: var(--lh-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ═══ フィルターシステム ═══ */
