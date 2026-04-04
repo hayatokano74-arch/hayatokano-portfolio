@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import createDOMPurify from "dompurify";
 import type { Work } from "@/lib/types";
+import { RichBody } from "@/components/RichBody";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 
 /**
@@ -31,11 +31,9 @@ export function InfoOverlay({
               ))}
             </div>
             )}
-            <div
-              className="work-excerpt-html"
-              style={{ marginTop: "var(--v-heading)", fontSize: "var(--font-body)", lineHeight: "var(--lh-relaxed)" }}
-              suppressHydrationWarning
-              dangerouslySetInnerHTML={{ __html: typeof window !== "undefined" ? createDOMPurify(window).sanitize(work.excerpt.replace(/\r\n/g, "\n").replace(/\n/g, "<br>")) : "" }}
+            <RichBody
+              html={work.excerpt}
+              style={{ marginTop: "var(--v-heading)" }}
             />
             <div style={{ marginTop: "var(--v-heading)" }}>
               <WorkDetailsTable details={work.details} />
