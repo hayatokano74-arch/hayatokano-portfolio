@@ -1423,6 +1423,83 @@ code, pre {
   white-space: nowrap;
 }
 
+/* ── 動的リスト（詳細行・メディア行） ── */
+.dynamic-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+
+.dynamic-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+}
+
+.dynamic-row > .form-row {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.dynamic-remove {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 24px; /* label高さ分のオフセット */
+  color: var(--text-3);
+}
+
+.dynamic-remove:hover {
+  color: var(--danger);
+}
+
+/* メディア行 */
+.dynamic-row--media {
+  gap: var(--s-4);
+}
+
+.media-row-preview {
+  flex-shrink: 0;
+  width: 80px;
+}
+
+.media-row-fields {
+  flex: 1;
+  min-width: 0;
+}
+
+.media-row-fields .form-row {
+  margin-bottom: var(--s-3);
+}
+
+.media-row-fields .form-row:last-child {
+  margin-bottom: 0;
+}
+
+.media-row-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  align-self: flex-start;
+}
+
+/* Garden エントリエディター（タイトル + 本文一体） */
+.garden-entry-editor {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s-5) var(--s-6);
+}
+
+.garden-entry-editor .form-group {
+  margin-bottom: 0;
+}
+
 /* ──────────────────────────────────────────────
    15. ユーティリティ
    ────────────────────────────────────────────── */

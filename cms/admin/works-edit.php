@@ -1,5 +1,5 @@
 <?php
-// Works 編集 — Works の新規作成・既存編集・削除を行うフォームページ
+// Works 編集
 
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
@@ -10,7 +10,6 @@ require_auth();
 
 $db     = get_db();
 $errors = [];
-$notice = '';
 $is_new = false;
 $row    = null;
 
@@ -22,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['_action'] ?? 'save';
 
         if ($action === 'delete') {
-            // 削除処理
             $del_slug = trim($_POST['slug'] ?? '');
             if ($del_slug) {
                 $db->prepare("DELETE FROM works WHERE slug = ?")->execute([$del_slug]);
@@ -31,46 +29,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // 保存処理
-        $slug   = preg_replace('/[^a-zA-Z0-9\-_]/', '', trim($_POST['slug'] ?? ''));
-        $title  = trim($_POST['title'] ?? '');
-        $date   = trim($_POST['date'] ?? '');
-        $year   = trim($_POST['year'] ?? '');
+        $slug    = preg_replace('/[^a-zA-Z0-9\-_]/', '', trim($_POST['slug'] ?? ''));
+        $title   = trim($_POST['title'] ?? '');
+        $date    = trim($_POST['date'] ?? '');
+        $year    = trim($_POST['year'] ?? '');
         $excerpt = trim($_POST['excerpt'] ?? '');
-        $pinned = isset($_POST['pinned']) ? 1 : 0;
-        $body   = trim($_POST['body'] ?? '');
+        $pinned  = isset($_POST['pinned']) ? 1 : 0;
+        $body    = trim($_POST['body'] ?? '');
 
-        // タグを JSON 配列に変換
-        $tags_raw = trim($_POST['tags'] ?? '');
-        $tags = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
+        $tags_raw  = trim($_POST['tags'] ?? '');
+        $tags      = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
         $tags_json = json_encode($tags, JSON_UNESCAPED_UNICODE);
 
-        // サムネイル情報
-        $thumb = [
-            'src'    => trim($_POST['thumbnail_src'] ?? ''),
-            'alt'    => trim($_POST['thumbnail_alt'] ?? ''),
-            'width'  => (int)($_POST['thumbnail_width'] ?? 0),
-            'height' => (int)($_POST['thumbnail_height'] ?? 0),
+        // details: 固定フィールド
+        $details = [
+            'exhibition_type' => trim($_POST['det_exhibition_type'] ?? ''),
+            'period'          => trim($_POST['det_period'] ?? ''),
+            'venue'           => trim($_POST['det_venue'] ?? ''),
+            'address'         => trim($_POST['det_address'] ?? ''),
         ];
+        // 空のフィールドは除去
+        $details = array_filter($details, fn($v) => $v !== '');
 
-        // details / media JSON
-        $details_raw = trim($_POST['details'] ?? '{}');
-        $media_raw   = trim($_POST['media'] ?? '[]');
-
-        // JSON 検証
-        if ($details_raw !== '' && json_decode($details_raw) === null) {
-            $errors[] = 'details が正しい JSON ではありません。';
+        // media: 動的画像リスト
+        $med_ids     = $_POST['media_id']     ?? [];
+        $med_srcs    = $_POST['media_src']    ?? [];
+        $med_alts    = $_POST['media_alt']    ?? [];
+        $med_widths  = $_POST['media_width']  ?? [];
+        $med_heights = $_POST['media_height'] ?? [];
+        $media       = [];
+        foreach ($med_srcs as $i => $src) {
+            $src = trim($src);
+            if ($src === '') continue;
+            $media[] = [
+                'id'     => trim($med_ids[$i] ?? ('media-' . ($i + 1))),
+                'type'   => 'image',
+                'src'    => $src,
+                'alt'    => trim($med_alts[$i] ?? ''),
+                'width'  => (int)($med_widths[$i] ?? 0),
+                'height' => (int)($med_heights[$i] ?? 0),
+            ];
         }
-        if ($media_raw !== '' && json_decode($media_raw) === null) {
-            $errors[] = 'media が正しい JSON ではありません。';
-        }
 
-        // data フィールドに統合
-        $data_arr = [
-            'thumbnail' => $thumb,
-            'details'   => json_decode($details_raw, true) ?? [],
-            'media'     => json_decode($media_raw, true) ?? [],
-        ];
+        $data_arr  = ['details' => $details, 'media' => $media];
         $data_json = json_encode($data_arr, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (!$slug)  $errors[] = 'スラッグは必須です。';
@@ -79,17 +80,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($errors)) {
             $existing = db_find_by_slug('works', $slug);
-
             if ($existing) {
-                // 更新
                 $stmt = $db->prepare("UPDATE works SET title=?, date=?, year=?, tags=?, excerpt=?, pinned=?, body=?, data=?, updated_at=datetime('now') WHERE slug=?");
                 $stmt->execute([$title, $date, $year, $tags_json, $excerpt, $pinned, $body, $data_json, $slug]);
             } else {
-                // 新規
                 $stmt = $db->prepare("INSERT INTO works (slug, title, date, year, tags, excerpt, pinned, body, data) VALUES (?,?,?,?,?,?,?,?,?)");
                 $stmt->execute([$slug, $title, $date, $year, $tags_json, $excerpt, $pinned, $body, $data_json]);
             }
-
             header('Location: ' . cms_url('/admin/works.php'));
             exit;
         }
@@ -102,23 +99,20 @@ $slug_param   = $_GET['slug']   ?? '';
 
 if ($action_param === 'new') {
     $is_new = true;
-    $row = [
-        'slug' => '', 'title' => '', 'date' => date('Y-m-d'), 'year' => date('Y'),
-        'tags' => '[]', 'excerpt' => '', 'pinned' => 0, 'body' => '',
-        'data' => '{}',
-    ];
+    $row = ['slug' => '', 'title' => '', 'date' => date('Y-m-d'), 'year' => date('Y'),
+            'tags' => '[]', 'excerpt' => '', 'pinned' => 0, 'body' => '', 'data' => '{}'];
 } elseif ($slug_param) {
     $row = db_find_by_slug('works', $slug_param);
     if (!$row) {
         $errors[] = '指定された Works が見つかりません。';
-        $row = ['slug' => $slug_param, 'title' => '', 'date' => '', 'year' => '', 'tags' => '[]', 'excerpt' => '', 'pinned' => 0, 'body' => '', 'data' => '{}'];
+        $row = ['slug' => $slug_param, 'title' => '', 'date' => '', 'year' => '',
+                'tags' => '[]', 'excerpt' => '', 'pinned' => 0, 'body' => '', 'data' => '{}'];
     }
 } else {
     header('Location: ' . cms_url('/admin/works.php'));
     exit;
 }
 
-// フォーム用データの準備
 $f_slug    = htmlspecialchars($row['slug'] ?? '', ENT_QUOTES);
 $f_title   = htmlspecialchars($row['title'] ?? '', ENT_QUOTES);
 $f_date    = htmlspecialchars($row['date'] ?? '', ENT_QUOTES);
@@ -127,21 +121,18 @@ $f_excerpt = htmlspecialchars($row['excerpt'] ?? '', ENT_QUOTES);
 $f_pinned  = !empty($row['pinned']);
 $f_body    = htmlspecialchars($row['body'] ?? '', ENT_QUOTES);
 
-$data_decoded = json_decode($row['data'] ?? '{}', true) ?? [];
-$thumb        = $data_decoded['thumbnail'] ?? [];
-$f_thumb_src  = htmlspecialchars($thumb['src'] ?? '', ENT_QUOTES);
-$f_thumb_alt  = htmlspecialchars($thumb['alt'] ?? '', ENT_QUOTES);
-$f_thumb_w    = (int)($thumb['width'] ?? 0);
-$f_thumb_h    = (int)($thumb['height'] ?? 0);
+$tags_arr = json_decode($row['tags'] ?? '[]', true) ?? [];
+$f_tags   = htmlspecialchars(implode(', ', $tags_arr), ENT_QUOTES);
 
-$tags_arr  = json_decode($row['tags'] ?? '[]', true) ?? [];
-$f_tags    = htmlspecialchars(implode(', ', $tags_arr), ENT_QUOTES);
+$data    = json_decode($row['data'] ?? '{}', true) ?? [];
+$details = $data['details'] ?? [];
+$media   = $data['media']   ?? [];
 
-$details_arr = $data_decoded['details'] ?? [];
-$f_details   = htmlspecialchars(json_encode($details_arr, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), ENT_QUOTES);
-
-$media_arr = $data_decoded['media'] ?? [];
-$f_media   = htmlspecialchars(json_encode($media_arr, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), ENT_QUOTES);
+// details は旧形式（object）と新形式（object）どちらも対応
+$f_det_type    = htmlspecialchars($details['exhibition_type'] ?? '', ENT_QUOTES);
+$f_det_period  = htmlspecialchars($details['period']          ?? '', ENT_QUOTES);
+$f_det_venue   = htmlspecialchars($details['venue']           ?? '', ENT_QUOTES);
+$f_det_address = htmlspecialchars($details['address']         ?? '', ENT_QUOTES);
 
 $page_title = $is_new ? 'Works 新規追加' : 'Works 編集: ' . ($row['title'] ?: $row['slug']);
 $active_nav = 'works';
@@ -160,21 +151,17 @@ ob_start();
 
   <div class="form-grid">
 
-    <!-- 基本情報 -->
+    <!-- ── 基本情報 ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">基本情報</h3>
       <div class="form-row form-row--2col">
         <div class="form-group">
           <label class="form-label" for="slug">スラッグ <span class="required">*</span></label>
           <input type="text" id="slug" name="slug" class="form-control"
-                 value="<?= $f_slug ?>"
-                 pattern="[a-zA-Z0-9\-_]+"
-                 title="英数字・ハイフン・アンダースコアのみ"
-                 required
+                 value="<?= $f_slug ?>" pattern="[a-zA-Z0-9\-_]+"
+                 title="英数字・ハイフン・アンダースコアのみ" required
                  <?= !$is_new ? 'readonly' : '' ?>>
-          <?php if (!$is_new): ?>
-          <p class="form-hint">スラッグは変更できません。</p>
-          <?php endif; ?>
+          <?php if (!$is_new): ?><p class="form-hint">スラッグは変更できません。</p><?php endif; ?>
         </div>
         <div class="form-group">
           <label class="form-label" for="title">タイトル <span class="required">*</span></label>
@@ -202,79 +189,110 @@ ob_start();
 
       <div class="form-group">
         <label class="form-label" for="tags">タグ（カンマ区切り）</label>
-        <input type="text" id="tags" name="tags" class="form-control" value="<?= $f_tags ?>" placeholder="例: photography, portrait, 2024">
+        <input type="text" id="tags" name="tags" class="form-control" value="<?= $f_tags ?>"
+               placeholder="例: Exhibition, Photography, 2024">
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="excerpt">抜粋 <span class="char-hint">(200字)</span></label>
+        <label class="form-label" for="excerpt">抜粋</label>
         <textarea id="excerpt" name="excerpt" class="form-control" rows="3"
-                  data-max-chars="200"><?= $f_excerpt ?></textarea>
+                  placeholder="一覧ページに表示する短い説明"><?= $f_excerpt ?></textarea>
       </div>
     </div>
 
-    <!-- 本文 -->
+    <!-- ── 展示情報 ── -->
     <div class="form-section form-section--full">
-      <h3 class="form-section__title">本文</h3>
-      <div class="form-group">
-        <label class="form-label" for="body">body（HTML / Markdown）</label>
-        <textarea id="body" name="body" class="form-control form-control--large" rows="12"><?= $f_body ?></textarea>
-      </div>
-    </div>
-
-    <!-- サムネイル -->
-    <div class="form-section form-section--full">
-      <h3 class="form-section__title">サムネイル</h3>
-
-      <!-- 画像アップロードゾーン -->
-      <div class="upload-zone" id="upload-zone-thumb" data-section="works" data-slug="<?= $f_slug ?>">
-        <div class="upload-zone__inner">
-          <p class="upload-zone__text">クリックまたはドラッグ&amp;ドロップで画像をアップロード</p>
-          <p class="upload-zone__hint">JPEG / PNG / WebP / GIF（最大 20MB）</p>
-        </div>
-        <div class="upload-zone__preview" id="upload-preview-thumb"></div>
-      </div>
-
-      <div class="form-row form-row--2col" style="margin-top:var(--s-4)">
+      <h3 class="form-section__title">展示情報</h3>
+      <div class="form-row form-row--2col">
         <div class="form-group">
-          <label class="form-label" for="thumbnail_src">画像 URL</label>
-          <input type="text" id="thumbnail_src" name="thumbnail_src" class="form-control" value="<?= $f_thumb_src ?>" placeholder="/uploads/...">
+          <label class="form-label" for="det_exhibition_type">展示形式</label>
+          <input type="text" id="det_exhibition_type" name="det_exhibition_type"
+                 class="form-control" value="<?= $f_det_type ?>"
+                 placeholder="例: Solo Exhibition, Group Exhibition">
         </div>
         <div class="form-group">
-          <label class="form-label" for="thumbnail_alt">alt テキスト</label>
-          <input type="text" id="thumbnail_alt" name="thumbnail_alt" class="form-control" value="<?= $f_thumb_alt ?>">
+          <label class="form-label" for="det_period">会期</label>
+          <input type="text" id="det_period" name="det_period"
+                 class="form-control" value="<?= $f_det_period ?>"
+                 placeholder="例: 2023.04.08 - 2023.06.04">
         </div>
       </div>
       <div class="form-row form-row--2col">
         <div class="form-group">
-          <label class="form-label" for="thumbnail_width">幅 (px)</label>
-          <input type="number" id="thumbnail_width" name="thumbnail_width" class="form-control" value="<?= $f_thumb_w ?>" min="0">
+          <label class="form-label" for="det_venue">会場名</label>
+          <input type="text" id="det_venue" name="det_venue"
+                 class="form-control" value="<?= $f_det_venue ?>"
+                 placeholder="例: Glvanize gallery">
         </div>
         <div class="form-group">
-          <label class="form-label" for="thumbnail_height">高さ (px)</label>
-          <input type="number" id="thumbnail_height" name="thumbnail_height" class="form-control" value="<?= $f_thumb_h ?>" min="0">
+          <label class="form-label" for="det_address">住所</label>
+          <input type="text" id="det_address" name="det_address"
+                 class="form-control" value="<?= $f_det_address ?>"
+                 placeholder="例: 宮城県石巻市...">
         </div>
       </div>
     </div>
 
-    <!-- 詳細情報（JSON） -->
-    <div class="form-section">
-      <h3 class="form-section__title">展示情報（details JSON）</h3>
-      <div class="form-group">
-        <textarea id="details" name="details" class="form-control form-control--code" rows="10"><?= $f_details ?></textarea>
+    <!-- ── 作品画像（media） ── -->
+    <div class="form-section form-section--full">
+      <h3 class="form-section__title">作品画像</h3>
+      <p class="form-hint">先頭の画像がサムネイルになります。</p>
+      <div id="media-list" class="dynamic-list">
+        <?php foreach ($media as $i => $m): ?>
+        <div class="dynamic-row dynamic-row--media">
+          <div class="media-row-preview">
+            <?php if (!empty($m['src'])): ?>
+            <img src="<?= htmlspecialchars($m['src'], ENT_QUOTES) ?>" alt=""
+                 style="width:80px;height:60px;object-fit:cover;border-radius:4px;">
+            <?php endif; ?>
+          </div>
+          <div class="media-row-fields">
+            <input type="hidden" name="media_id[]" value="<?= htmlspecialchars($m['id'] ?? '', ENT_QUOTES) ?>">
+            <div class="form-row form-row--2col">
+              <div class="form-group">
+                <label class="form-label">画像 URL</label>
+                <input type="text" name="media_src[]" class="form-control"
+                       value="<?= htmlspecialchars($m['src'] ?? '', ENT_QUOTES) ?>" placeholder="/uploads/...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">alt テキスト</label>
+                <input type="text" name="media_alt[]" class="form-control"
+                       value="<?= htmlspecialchars($m['alt'] ?? '', ENT_QUOTES) ?>">
+              </div>
+            </div>
+            <div class="form-row form-row--2col">
+              <div class="form-group">
+                <label class="form-label">幅 (px)</label>
+                <input type="number" name="media_width[]" class="form-control"
+                       value="<?= (int)($m['width'] ?? 0) ?>" min="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">高さ (px)</label>
+                <input type="number" name="media_height[]" class="form-control"
+                       value="<?= (int)($m['height'] ?? 0) ?>" min="0">
+              </div>
+            </div>
+          </div>
+          <div class="media-row-actions">
+            <button type="button" class="btn btn-sm btn-ghost dynamic-remove">✕</button>
+          </div>
+        </div>
+        <?php endforeach; ?>
       </div>
+      <button type="button" class="btn btn-sm btn-ghost" id="media-add">+ 画像を追加</button>
     </div>
 
-    <!-- メディア配列（JSON） -->
-    <div class="form-section">
-      <h3 class="form-section__title">メディア配列（media JSON）</h3>
+    <!-- ── 本文 ── -->
+    <div class="form-section form-section--full">
+      <h3 class="form-section__title">本文</h3>
       <div class="form-group">
-        <textarea id="media" name="media" class="form-control form-control--code" rows="10"><?= $f_media ?></textarea>
+        <textarea id="body" name="body" class="form-control form-control--large" rows="14"
+                  placeholder="ステートメント・説明文"><?= $f_body ?></textarea>
       </div>
     </div>
 
   </div><!-- /.form-grid -->
 
-  <!-- フォームアクション -->
   <div class="form-actions">
     <a href="<?= cms_url('/admin/works.php') ?>" class="btn btn-ghost">キャンセル</a>
     <?php if (!$is_new && $row): ?>
@@ -282,39 +300,65 @@ ob_start();
             data-delete
             data-message="「<?= htmlspecialchars($row['title'] ?: $row['slug'], ENT_QUOTES) ?>」を削除しますか？この操作は元に戻せません。"
             data-form-action="delete"
-            data-form-id="works-form">
-      削除
-    </button>
+            data-form-id="works-form">削除</button>
     <?php endif; ?>
     <button type="submit" class="btn btn-primary">保存</button>
   </div>
 
 </form>
 
+<template id="tpl-media-row">
+  <div class="dynamic-row dynamic-row--media">
+    <div class="media-row-preview"></div>
+    <div class="media-row-fields">
+      <input type="hidden" name="media_id[]" value="">
+      <div class="form-row form-row--2col">
+        <div class="form-group">
+          <label class="form-label">画像 URL</label>
+          <input type="text" name="media_src[]" class="form-control" placeholder="/uploads/...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">alt テキスト</label>
+          <input type="text" name="media_alt[]" class="form-control">
+        </div>
+      </div>
+      <div class="form-row form-row--2col">
+        <div class="form-group">
+          <label class="form-label">幅 (px)</label>
+          <input type="number" name="media_width[]" class="form-control" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">高さ (px)</label>
+          <input type="number" name="media_height[]" class="form-control" value="0" min="0">
+        </div>
+      </div>
+    </div>
+    <div class="media-row-actions">
+      <button type="button" class="btn btn-sm btn-ghost dynamic-remove">✕</button>
+    </div>
+  </div>
+</template>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // 画像アップロードゾーン初期化
-  const zone = document.getElementById('upload-zone-thumb');
-  if (zone) {
-    init_upload_zone(zone, {
-      apiUrl: '../api/upload.php',
-      section: 'works',
-      slug: '<?= addslashes($row['slug'] ?? '') ?>',
-      onUploaded(url, width, height) {
-        document.getElementById('thumbnail_src').value    = url;
-        document.getElementById('thumbnail_width').value  = width  ?? '';
-        document.getElementById('thumbnail_height').value = height ?? '';
-        show_toast('画像をアップロードしました', 'success');
-      },
+  const list   = document.getElementById('media-list');
+  const addBtn = document.getElementById('media-add');
+  const tpl    = document.getElementById('tpl-media-row');
+
+  if (addBtn && list && tpl) {
+    addBtn.addEventListener('click', () => {
+      list.appendChild(tpl.content.cloneNode(true));
+    });
+    list.addEventListener('click', (e) => {
+      const btn = e.target.closest('.dynamic-remove');
+      if (btn) btn.closest('.dynamic-row')?.remove();
     });
   }
 
-  // 削除ボタン
   const delBtn = document.querySelector('[data-delete]');
   if (delBtn) {
     delBtn.addEventListener('click', () => {
-      const msg = delBtn.dataset.message || '削除しますか？';
-      confirm_delete(msg, () => {
+      confirm_delete(delBtn.dataset.message || '削除しますか？', () => {
         const form = document.getElementById('works-form');
         form.querySelector('[name="_action"]').value = 'delete';
         form.submit();

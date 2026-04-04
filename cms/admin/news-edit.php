@@ -1,5 +1,5 @@
 <?php
-// News 編集 — ニュース記事の新規作成・既存編集・削除を行うフォームページ
+// News 編集
 
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
@@ -34,11 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $date  = trim($_POST['date'] ?? '');
         $body  = trim($_POST['body'] ?? '');
 
-        $image_raw = trim($_POST['image'] ?? '{}');
-        if ($image_raw !== '' && json_decode($image_raw) === null) {
-            $errors[] = 'image が正しい JSON ではありません。';
-        }
-        $data_json = json_encode(['image' => json_decode($image_raw, true) ?? []], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // 画像フィールド（構造化）
+        $image = [
+            'src'    => trim($_POST['image_src']    ?? ''),
+            'alt'    => trim($_POST['image_alt']    ?? ''),
+            'width'  => (int)($_POST['image_width']  ?? 0),
+            'height' => (int)($_POST['image_height'] ?? 0),
+        ];
+        // 空なら空配列
+        if ($image['src'] === '') $image = [];
+        $data_json = json_encode(['image' => $image], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (!$slug)  $errors[] = 'スラッグは必須です。';
         if (!$title) $errors[] = 'タイトルは必須です。';
@@ -84,7 +89,10 @@ $f_body  = htmlspecialchars($row['body'] ?? '', ENT_QUOTES);
 
 $data_decoded = json_decode($row['data'] ?? '{}', true) ?? [];
 $image_arr    = $data_decoded['image'] ?? [];
-$f_image      = htmlspecialchars(json_encode($image_arr, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), ENT_QUOTES);
+$f_img_src    = htmlspecialchars($image_arr['src']    ?? '', ENT_QUOTES);
+$f_img_alt    = htmlspecialchars($image_arr['alt']    ?? '', ENT_QUOTES);
+$f_img_w      = (int)($image_arr['width']  ?? 0);
+$f_img_h      = (int)($image_arr['height'] ?? 0);
 
 $page_title = $is_new ? 'News 新規追加' : 'News 編集: ' . ($row['title'] ?: $row['slug']);
 $active_nav = 'news';
@@ -103,6 +111,7 @@ ob_start();
 
   <div class="form-grid">
 
+    <!-- ── 基本情報 ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">基本情報</h3>
       <div class="form-row form-row--2col">
@@ -111,37 +120,65 @@ ob_start();
           <input type="text" id="slug" name="slug" class="form-control"
                  value="<?= $f_slug ?>" pattern="[a-zA-Z0-9\-_]+" required
                  <?= !$is_new ? 'readonly' : '' ?>>
+          <?php if (!$is_new): ?><p class="form-hint">変更不可</p><?php endif; ?>
         </div>
         <div class="form-group">
-          <label class="form-label" for="title">タイトル <span class="required">*</span></label>
-          <input type="text" id="title" name="title" class="form-control" value="<?= $f_title ?>" required>
+          <label class="form-label" for="date">日付 <span class="required">*</span></label>
+          <input type="date" id="date" name="date" class="form-control" value="<?= $f_date ?>" required>
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label" for="date">日付 <span class="required">*</span></label>
-        <input type="date" id="date" name="date" class="form-control" value="<?= $f_date ?>" required>
+        <label class="form-label" for="title">タイトル <span class="required">*</span></label>
+        <input type="text" id="title" name="title" class="form-control" value="<?= $f_title ?>" required>
       </div>
     </div>
 
+    <!-- ── 本文 ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">本文</h3>
       <div class="form-group">
-        <textarea id="body" name="body" class="form-control form-control--large" rows="14"><?= $f_body ?></textarea>
+        <textarea id="body" name="body" class="form-control form-control--large" rows="14"
+                  placeholder="本文を入力..."><?= $f_body ?></textarea>
       </div>
     </div>
 
+    <!-- ── 画像 ── -->
     <div class="form-section form-section--full">
-      <h3 class="form-section__title">画像（image JSON）</h3>
-      <div class="upload-zone" id="upload-zone-news" data-section="news" data-slug="<?= $f_slug ?>">
+      <h3 class="form-section__title">画像（任意）</h3>
+      <div class="upload-zone" id="upload-zone-news">
         <div class="upload-zone__inner">
           <p class="upload-zone__text">クリックまたはドラッグ&amp;ドロップで画像をアップロード</p>
           <p class="upload-zone__hint">JPEG / PNG / WebP / GIF（最大 20MB）</p>
         </div>
-        <div class="upload-zone__preview" id="upload-preview-news"></div>
+        <div class="upload-zone__preview" id="upload-preview-news">
+          <?php if ($f_img_src): ?>
+          <img src="<?= $f_img_src ?>" alt="" style="max-width:200px;border-radius:4px;">
+          <?php endif; ?>
+        </div>
       </div>
-      <div class="form-group" style="margin-top:var(--s-4)">
-        <label class="form-label" for="image">image JSON</label>
-        <textarea id="image" name="image" class="form-control form-control--code" rows="6"><?= $f_image ?></textarea>
+      <div style="margin-top:var(--s-4);">
+        <div class="form-row form-row--2col">
+          <div class="form-group">
+            <label class="form-label" for="image_src">画像 URL</label>
+            <input type="text" id="image_src" name="image_src" class="form-control"
+                   value="<?= $f_img_src ?>" placeholder="/uploads/...">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="image_alt">alt テキスト</label>
+            <input type="text" id="image_alt" name="image_alt" class="form-control"
+                   value="<?= $f_img_alt ?>">
+          </div>
+        </div>
+        <div class="form-row form-row--2col">
+          <div class="form-group">
+            <label class="form-label">幅 (px)</label>
+            <input type="number" name="image_width" class="form-control" value="<?= $f_img_w ?>" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">高さ (px)</label>
+            <input type="number" name="image_height" class="form-control" value="<?= $f_img_h ?>" min="0">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -150,10 +187,11 @@ ob_start();
   <div class="form-actions">
     <a href="<?= cms_url('/admin/news.php') ?>" class="btn btn-ghost">キャンセル</a>
     <?php if (!$is_new && $row): ?>
-    <button type="button" class="btn btn-danger" data-delete
-            data-message="「<?= htmlspecialchars($row['title'] ?: $row['slug'], ENT_QUOTES) ?>」を削除しますか？この操作は元に戻せません。">
-      削除
-    </button>
+    <button type="button" class="btn btn-danger"
+            data-delete
+            data-message="「<?= htmlspecialchars($row['title'] ?: $row['slug'], ENT_QUOTES) ?>」を削除しますか？この操作は元に戻せません。"
+            data-form-action="delete"
+            data-form-id="news-form">削除</button>
     <?php endif; ?>
     <button type="submit" class="btn btn-primary">保存</button>
   </div>
@@ -162,6 +200,7 @@ ob_start();
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // 画像アップロードゾーン
   const zone = document.getElementById('upload-zone-news');
   if (zone) {
     init_upload_zone(zone, {
@@ -169,27 +208,22 @@ document.addEventListener('DOMContentLoaded', () => {
       section: 'news',
       slug: '<?= addslashes($row['slug'] ?? '') ?>',
       onUploaded(url, width, height) {
-        // 画像 URL を image JSON に反映
-        try {
-          const ta  = document.getElementById('image');
-          const obj = JSON.parse(ta.value || '{}');
-          obj.src    = url;
-          obj.width  = width  ?? obj.width;
-          obj.height = height ?? obj.height;
-          ta.value   = JSON.stringify(obj, null, 2);
-        } catch (e) {
-          document.getElementById('image').value = JSON.stringify({ src: url, width, height }, null, 2);
-        }
+        document.getElementById('image_src').value = url;
+        if (width)  document.querySelector('[name="image_width"]').value  = width;
+        if (height) document.querySelector('[name="image_height"]').value = height;
         show_toast('画像をアップロードしました', 'success');
       },
     });
   }
+
+  // 削除ボタン
   const delBtn = document.querySelector('[data-delete]');
   if (delBtn) {
     delBtn.addEventListener('click', () => {
-      confirm_delete(delBtn.dataset.message, () => {
-        document.getElementById('news-form').querySelector('[name="_action"]').value = 'delete';
-        document.getElementById('news-form').submit();
+      confirm_delete(delBtn.dataset.message || '削除しますか？', () => {
+        const form = document.getElementById('news-form');
+        form.querySelector('[name="_action"]').value = 'delete';
+        form.submit();
       });
     });
   }

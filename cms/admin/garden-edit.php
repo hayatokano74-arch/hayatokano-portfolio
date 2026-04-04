@@ -1,5 +1,5 @@
 <?php
-// Garden 編集 — Garden エントリの新規作成・既存編集・削除を行うフォームページ
+// Garden 編集
 
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
@@ -35,13 +35,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $type  = in_array($_POST['type'] ?? '', ['text', 'photo']) ? $_POST['type'] : 'text';
         $body  = trim($_POST['body'] ?? '');
 
+        // タイトルが空なら日付をタイトルにする
+        if ($title === '' && $date !== '') {
+            $title = $date;
+        }
+
         $tags_raw  = trim($_POST['tags'] ?? '');
         $tags      = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
         $tags_json = json_encode($tags, JSON_UNESCAPED_UNICODE);
 
-        if (!$slug)  $errors[] = 'スラッグは必須です。';
-        if (!$date)  $errors[] = '日付は必須です。';
-        if (!$title) $errors[] = 'タイトルは必須です。';
+        if (!$slug) $errors[] = 'スラッグは必須です。';
+        if (!$date) $errors[] = '日付は必須です。';
 
         if (empty($errors)) {
             $existing = db_find_by_slug('garden', $slug);
@@ -64,7 +68,8 @@ $slug_param   = $_GET['slug']   ?? '';
 
 if ($action_param === 'new') {
     $is_new = true;
-    $row = ['slug' => '', 'date' => date('Y-m-d'), 'title' => '', 'type' => 'text', 'tags' => '[]', 'body' => ''];
+    $today  = date('Y-m-d');
+    $row = ['slug' => $today, 'date' => $today, 'title' => '', 'type' => 'text', 'tags' => '[]', 'body' => ''];
 } elseif ($slug_param) {
     $row = db_find_by_slug('garden', $slug_param);
     if (!$row) {
@@ -85,7 +90,7 @@ $f_body  = htmlspecialchars($row['body'] ?? '', ENT_QUOTES);
 $tags_arr = json_decode($row['tags'] ?? '[]', true) ?? [];
 $f_tags   = htmlspecialchars(implode(', ', $tags_arr), ENT_QUOTES);
 
-$page_title = $is_new ? 'Garden 新規追加' : 'Garden 編集: ' . ($row['title'] ?: $row['slug']);
+$page_title = $is_new ? 'Garden 新規追加' : 'Garden: ' . ($row['date'] ?: $row['slug']);
 $active_nav = 'garden';
 ob_start();
 ?>
@@ -102,58 +107,75 @@ ob_start();
 
   <div class="form-grid">
 
+    <!-- ── ヘッダー行: 日付 + 種類 ── -->
     <div class="form-section form-section--full">
-      <h3 class="form-section__title">基本情報</h3>
-      <div class="form-row form-row--2col">
+      <div class="form-row form-row--3col" style="align-items:flex-end;">
+        <div class="form-group">
+          <label class="form-label" for="date">日付 <span class="required">*</span></label>
+          <input type="date" id="date" name="date" class="form-control" value="<?= $f_date ?>" required>
+        </div>
         <div class="form-group">
           <label class="form-label" for="slug">スラッグ <span class="required">*</span></label>
           <input type="text" id="slug" name="slug" class="form-control"
                  value="<?= $f_slug ?>" pattern="[a-zA-Z0-9\-_]+" required
                  <?= !$is_new ? 'readonly' : '' ?>>
+          <?php if (!$is_new): ?><p class="form-hint">変更不可</p><?php endif; ?>
         </div>
         <div class="form-group">
-          <label class="form-label" for="date">日付 <span class="required">*</span></label>
-          <input type="date" id="date" name="date" class="form-control" value="<?= $f_date ?>" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="title">タイトル <span class="required">*</span></label>
-        <input type="text" id="title" name="title" class="form-control" value="<?= $f_title ?>" required>
-      </div>
-      <div class="form-row form-row--2col">
-        <div class="form-group">
-          <label class="form-label" for="type">タイプ</label>
-          <select id="type" name="type" class="form-control" id="garden-type">
-            <option value="text"  <?= $f_type === 'text'  ? 'selected' : '' ?>>text</option>
-            <option value="photo" <?= $f_type === 'photo' ? 'selected' : '' ?>>photo</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="tags">タグ（カンマ区切り）</label>
-          <input type="text" id="tags" name="tags" class="form-control" value="<?= $f_tags ?>">
+          <label class="form-label">種類</label>
+          <div style="display:flex;gap:var(--s-4);align-items:center;padding-top:var(--s-2);">
+            <label style="display:flex;align-items:center;gap:var(--s-2);cursor:pointer;">
+              <input type="radio" name="type" value="text"  <?= $f_type !== 'photo' ? 'checked' : '' ?>>
+              <span>テキスト</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--s-2);cursor:pointer;">
+              <input type="radio" name="type" value="photo" <?= $f_type === 'photo' ? 'checked' : '' ?>>
+              <span>写真</span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 本文 -->
+    <!-- ── 本文エリア（タイトル + 本文を一体化） ── -->
     <div class="form-section form-section--full">
-      <h3 class="form-section__title">本文</h3>
-      <div class="form-group">
-        <textarea id="body" name="body" class="form-control form-control--large" rows="16"><?= $f_body ?></textarea>
+      <div class="garden-entry-editor">
+        <div class="form-group" style="margin-bottom:var(--s-3);">
+          <input type="text" id="title" name="title" class="form-control garden-title-input"
+                 value="<?= $f_title ?>"
+                 placeholder="タイトル（省略すると日付がタイトルになります）"
+                 style="font-size:var(--font-lg,18px);font-weight:600;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:var(--s-2) 0;background:transparent;">
+        </div>
+        <div class="form-group">
+          <textarea id="body" name="body" class="form-control"
+                    rows="18"
+                    placeholder="本文を入力..."
+                    style="border:none;border-radius:0;background:transparent;padding:var(--s-2) 0;resize:vertical;line-height:1.9;"><?= $f_body ?></textarea>
+        </div>
       </div>
     </div>
 
-    <!-- 画像アップロードゾーン（photo タイプ時に使用） -->
-    <div class="form-section form-section--full" id="photo-section" style="<?= $f_type === 'photo' ? '' : 'display:none' ?>">
-      <h3 class="form-section__title">画像アップロード（photo タイプ）</h3>
-      <div class="upload-zone" id="upload-zone-garden" data-section="garden" data-slug="<?= $f_slug ?>">
+    <!-- ── タグ ── -->
+    <div class="form-section form-section--full">
+      <div class="form-group">
+        <label class="form-label" for="tags">タグ（カンマ区切り、任意）</label>
+        <input type="text" id="tags" name="tags" class="form-control" value="<?= $f_tags ?>"
+               placeholder="例: 日記, 石巻, 2021">
+      </div>
+    </div>
+
+    <!-- ── 画像アップロード（photo タイプ時） ── -->
+    <div class="form-section form-section--full" id="photo-section"
+         style="<?= $f_type === 'photo' ? '' : 'display:none' ?>">
+      <h3 class="form-section__title">画像アップロード</h3>
+      <div class="upload-zone" id="upload-zone-garden">
         <div class="upload-zone__inner">
           <p class="upload-zone__text">クリックまたはドラッグ&amp;ドロップで画像をアップロード</p>
           <p class="upload-zone__hint">JPEG / PNG / WebP / GIF（最大 20MB）</p>
         </div>
         <div class="upload-zone__preview" id="upload-preview-garden"></div>
       </div>
-      <p class="form-hint" style="margin-top:var(--s-2)">アップロードした URL は手動で本文に追記してください。</p>
+      <p class="form-hint" style="margin-top:var(--s-2)">アップロードした URL を本文に貼り付けてください。</p>
     </div>
 
   </div>
@@ -161,10 +183,11 @@ ob_start();
   <div class="form-actions">
     <a href="<?= cms_url('/admin/garden.php') ?>" class="btn btn-ghost">キャンセル</a>
     <?php if (!$is_new && $row): ?>
-    <button type="button" class="btn btn-danger" data-delete
-            data-message="「<?= htmlspecialchars($row['title'] ?: $row['slug'], ENT_QUOTES) ?>」を削除しますか？この操作は元に戻せません。">
-      削除
-    </button>
+    <button type="button" class="btn btn-danger"
+            data-delete
+            data-message="「<?= htmlspecialchars($row['date'] ?: $row['slug'], ENT_QUOTES) ?>」を削除しますか？この操作は元に戻せません。"
+            data-form-action="delete"
+            data-form-id="garden-form">削除</button>
     <?php endif; ?>
     <button type="submit" class="btn btn-primary">保存</button>
   </div>
@@ -173,16 +196,27 @@ ob_start();
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // タイプ切替で画像セクションを表示/非表示
-  const typeSelect    = document.getElementById('garden-type');
-  const photoSection  = document.getElementById('photo-section');
-  if (typeSelect && photoSection) {
-    typeSelect.addEventListener('change', () => {
-      photoSection.style.display = typeSelect.value === 'photo' ? '' : 'none';
+  // 日付 → スラッグ自動入力（新規時）
+  const dateInput = document.getElementById('date');
+  const slugInput = document.getElementById('slug');
+  if (dateInput && slugInput && slugInput.readOnly === false) {
+    dateInput.addEventListener('change', () => {
+      if (slugInput.value === '' || slugInput.value === slugInput.dataset.prevDate) {
+        slugInput.value = dateInput.value;
+        slugInput.dataset.prevDate = dateInput.value;
+      }
     });
   }
 
-  // 画像アップロードゾーン初期化
+  // 種類切替で画像セクションを表示/非表示
+  document.querySelectorAll('input[name="type"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const ps = document.getElementById('photo-section');
+      if (ps) ps.style.display = r.value === 'photo' ? '' : 'none';
+    });
+  });
+
+  // 画像アップロードゾーン
   const zone = document.getElementById('upload-zone-garden');
   if (zone) {
     init_upload_zone(zone, {
@@ -190,9 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
       section: 'garden',
       slug: '<?= addslashes($row['slug'] ?? '') ?>',
       onUploaded(url) {
-        // URL をクリップボードにコピーして通知
         navigator.clipboard?.writeText(url).catch(() => {});
-        show_toast('アップロード完了: ' + url, 'success');
+        show_toast('URL をクリップボードにコピーしました: ' + url, 'success');
       },
     });
   }
@@ -201,9 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const delBtn = document.querySelector('[data-delete]');
   if (delBtn) {
     delBtn.addEventListener('click', () => {
-      confirm_delete(delBtn.dataset.message, () => {
-        document.getElementById('garden-form').querySelector('[name="_action"]').value = 'delete';
-        document.getElementById('garden-form').submit();
+      confirm_delete(delBtn.dataset.message || '削除しますか？', () => {
+        const form = document.getElementById('garden-form');
+        form.querySelector('[name="_action"]').value = 'delete';
+        form.submit();
       });
     });
   }

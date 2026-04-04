@@ -1,5 +1,5 @@
 <?php
-// Text 一覧 — 全テキスト記事をテーブル表示し、編集・新規追加へのリンクを提供する
+// Text 一覧
 
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
@@ -23,16 +23,15 @@ ob_start();
 <?php if (empty($rows)): ?>
 <p class="empty-state">まだ Text 記事がありません。</p>
 <?php else: ?>
-<div class="table-wrap">
-  <table class="data-table data-table--clickable">
+<div class="table-wrapper">
+  <table class="table">
     <thead>
       <tr>
         <th>タイトル</th>
-        <th>日付</th>
-        <th>年</th>
+        <th style="width:120px;">日付</th>
         <th>カテゴリ</th>
-        <th>更新日時</th>
-        <th></th>
+        <th style="width:110px;">更新</th>
+        <th style="width:56px;"></th>
       </tr>
     </thead>
     <tbody>
@@ -41,19 +40,18 @@ ob_start();
         $edit_url   = cms_url('/admin/text-edit.php?slug=' . urlencode($row['slug']));
         $categories = json_decode($row['categories'] ?? '[]', true) ?? [];
       ?>
-      <tr data-href="<?= htmlspecialchars($edit_url, ENT_QUOTES) ?>" class="clickable-row">
+      <tr class="is-clickable" data-href="<?= htmlspecialchars($edit_url, ENT_QUOTES) ?>">
         <td>
-          <?= htmlspecialchars($row['title'] ?: '（無題）', ENT_QUOTES) ?>
+          <span style="font-weight:500;color:var(--text);"><?= htmlspecialchars($row['title'] ?: '（無題）', ENT_QUOTES) ?></span>
           <br><small class="text-muted"><?= htmlspecialchars($row['slug'], ENT_QUOTES) ?></small>
         </td>
-        <td><?= htmlspecialchars($row['date'], ENT_QUOTES) ?></td>
-        <td><?= htmlspecialchars($row['year'], ENT_QUOTES) ?></td>
+        <td class="text-muted"><?= htmlspecialchars($row['date'], ENT_QUOTES) ?></td>
         <td>
           <?php foreach ($categories as $cat): ?>
           <span class="badge badge--sm"><?= htmlspecialchars($cat, ENT_QUOTES) ?></span>
           <?php endforeach; ?>
         </td>
-        <td class="rel-time" data-datetime="<?= htmlspecialchars($row['updated_at'], ENT_QUOTES) ?>">
+        <td class="text-muted" data-rel-time="<?= htmlspecialchars($row['updated_at'], ENT_QUOTES) ?>">
           <?= htmlspecialchars($row['updated_at'], ENT_QUOTES) ?>
         </td>
         <td>

@@ -150,24 +150,16 @@ ob_start();
       </div>
     </div>
 
-    <!-- 追加データ JSON -->
-    <div class="form-section form-section--full">
-      <h3 class="form-section__title">追加データ（data JSON）</h3>
-      <p class="form-hint">関連リンク・クレジット等の付加情報を JSON で記述します。</p>
-      <div class="form-group">
-        <textarea id="data" name="data" class="form-control form-control--code" rows="10"><?= $f_data ?></textarea>
-      </div>
-    </div>
-
   </div>
 
   <div class="form-actions">
     <a href="<?= cms_url('/admin/text.php') ?>" class="btn btn-ghost">キャンセル</a>
     <?php if (!$is_new && $row): ?>
-    <button type="button" class="btn btn-danger" data-delete
-            data-message="「<?= htmlspecialchars($row['title'] ?: $row['slug'], ENT_QUOTES) ?>」を削除しますか？この操作は元に戻せません。">
-      削除
-    </button>
+    <button type="button" class="btn btn-danger"
+            data-delete
+            data-message="「<?= htmlspecialchars($row['title'] ?: $row['slug'], ENT_QUOTES) ?>」を削除しますか？この操作は元に戻せません。"
+            data-form-action="delete"
+            data-form-id="text-form">削除</button>
     <?php endif; ?>
     <button type="submit" class="btn btn-primary">保存</button>
   </div>

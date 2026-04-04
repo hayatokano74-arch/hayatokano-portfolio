@@ -1,5 +1,5 @@
 <?php
-// News 一覧 — 全ニュース記事をテーブル表示し、編集・新規追加へのリンクを提供する
+// News 一覧
 
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
@@ -23,26 +23,26 @@ ob_start();
 <?php if (empty($rows)): ?>
 <p class="empty-state">まだ News がありません。</p>
 <?php else: ?>
-<div class="table-wrap">
-  <table class="data-table data-table--clickable">
+<div class="table-wrapper">
+  <table class="table">
     <thead>
       <tr>
         <th>タイトル</th>
-        <th>日付</th>
-        <th>更新日時</th>
-        <th></th>
+        <th style="width:120px;">日付</th>
+        <th style="width:110px;">更新</th>
+        <th style="width:56px;"></th>
       </tr>
     </thead>
     <tbody>
       <?php foreach ($rows as $row): ?>
       <?php $edit_url = cms_url('/admin/news-edit.php?slug=' . urlencode($row['slug'])); ?>
-      <tr data-href="<?= htmlspecialchars($edit_url, ENT_QUOTES) ?>" class="clickable-row">
+      <tr class="is-clickable" data-href="<?= htmlspecialchars($edit_url, ENT_QUOTES) ?>">
         <td>
-          <?= htmlspecialchars($row['title'] ?: '（無題）', ENT_QUOTES) ?>
+          <span style="font-weight:500;color:var(--text);"><?= htmlspecialchars($row['title'] ?: '（無題）', ENT_QUOTES) ?></span>
           <br><small class="text-muted"><?= htmlspecialchars($row['slug'], ENT_QUOTES) ?></small>
         </td>
-        <td><?= htmlspecialchars($row['date'], ENT_QUOTES) ?></td>
-        <td class="rel-time" data-datetime="<?= htmlspecialchars($row['updated_at'], ENT_QUOTES) ?>">
+        <td class="text-muted"><?= htmlspecialchars($row['date'], ENT_QUOTES) ?></td>
+        <td class="text-muted" data-rel-time="<?= htmlspecialchars($row['updated_at'], ENT_QUOTES) ?>">
           <?= htmlspecialchars($row['updated_at'], ENT_QUOTES) ?>
         </td>
         <td>
