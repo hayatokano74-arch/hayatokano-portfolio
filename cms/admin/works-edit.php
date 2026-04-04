@@ -242,8 +242,20 @@ ob_start();
         <?php foreach ($media as $i => $m): ?>
         <div class="dynamic-row dynamic-row--media">
           <div class="media-row-preview">
-            <?php if (!empty($m['src'])): ?>
-            <img src="<?= htmlspecialchars($m['src'], ENT_QUOTES) ?>" alt=""
+            <?php
+              $preview_src = '';
+              if (!empty($m['src'])) {
+                  if (($m['type'] ?? '') === 'video' && str_contains($m['src'], 'youtube')) {
+                      if (preg_match('/[?&]v=([^&]+)/', $m['src'], $ym)) {
+                          $preview_src = 'https://img.youtube.com/vi/' . $ym[1] . '/hqdefault.jpg';
+                      }
+                  } else {
+                      $preview_src = fix_broken_unicode_url($m['src']);
+                  }
+              }
+            ?>
+            <?php if ($preview_src): ?>
+            <img src="<?= htmlspecialchars($preview_src, ENT_QUOTES) ?>" alt=""
                  style="width:80px;height:60px;object-fit:cover;border-radius:4px;">
             <?php endif; ?>
           </div>
