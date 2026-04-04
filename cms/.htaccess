@@ -1,5 +1,6 @@
 # cms/ セキュリティ設定
 Options -Indexes
+DirectoryIndex index.php
 
 # DB ファイルへの直接アクセスを禁止
 <FilesMatch "\.(sqlite3|sqlite|db)$">
@@ -21,6 +22,4 @@ Options -Indexes
     RewriteRule ^db/      - [F,L]
 </IfModule>
 
-# PHP エラーをブラウザに表示しない（本番用）
-php_flag display_errors Off
-php_value error_reporting 0
+# ※ Xserver では php_flag/php_value は .htaccess 不許可のため削除

@@ -22,7 +22,7 @@ RewriteCond %{REQUEST_URI} !\.
 RewriteRule ^(.+[^/])$ /$1/ [L,R=301]
 
 # ディレクトリのリクエストを index.html に（_cms/ は index.php が処理）
-DirectoryIndex index.php index.html
+DirectoryIndex index.html
 
 # 404 エラー
 ErrorDocument 404 /404.html
