@@ -14,7 +14,6 @@ $counts = [
     'me_no_hoshi' => db_count('me_no_hoshi'),
     'news'        => db_count('news'),
     'garden'      => db_count('garden'),
-    'timeline'    => db_count('timeline'),
     'texts'       => db_count('texts'),
 ];
 
@@ -26,7 +25,6 @@ $recent_queries = [
     ['table' => 'me_no_hoshi', 'label' => '目の星',   'url' => cms_url('/admin/me-no-hoshi-edit.php?slug=%s'), 'title_col' => 'title'],
     ['table' => 'news',        'label' => 'News',     'url' => cms_url('/admin/news-edit.php?slug=%s'),        'title_col' => 'title'],
     ['table' => 'garden',      'label' => 'Garden',   'url' => cms_url('/admin/garden-edit.php?slug=%s'),      'title_col' => 'title'],
-    ['table' => 'timeline',    'label' => 'Timeline', 'url' => cms_url('/admin/timeline-edit.php?slug=%s'),    'title_col' => 'date'],
     ['table' => 'texts',       'label' => 'Text',     'url' => cms_url('/admin/text-edit.php?slug=%s'),        'title_col' => 'title'],
 ];
 
@@ -53,7 +51,6 @@ $cards = [
     ['label' => '目の星',   'count' => $counts['me_no_hoshi'], 'key' => 'me-no-hoshi', 'url' => cms_url('/admin/me-no-hoshi.php'), 'color' => 'purple'],
     ['label' => 'News',     'count' => $counts['news'],        'key' => 'news',         'url' => cms_url('/admin/news.php'),        'color' => 'green'],
     ['label' => 'Garden',   'count' => $counts['garden'],      'key' => 'garden',       'url' => cms_url('/admin/garden.php'),      'color' => 'teal'],
-    ['label' => 'Timeline', 'count' => $counts['timeline'],    'key' => 'timeline',     'url' => cms_url('/admin/timeline.php'),    'color' => 'orange'],
     ['label' => 'Text',     'count' => $counts['texts'],       'key' => 'text',         'url' => cms_url('/admin/text.php'),        'color' => 'pink'],
 ];
 
