@@ -825,7 +825,7 @@ button {
   font-weight: 500;
 }
 .rich-body p {
-  margin-bottom: 0.35em;
+  margin-bottom: 1em;
 }
 .rich-body p:last-child {
   margin-bottom: 0;
