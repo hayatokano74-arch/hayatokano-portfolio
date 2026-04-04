@@ -51,6 +51,8 @@ function ArchiveYearTree({
   onToggle,
   onSelect,
   onClose,
+  onMonthSelect,
+  activeMonth,
 }: {
   tree: GardenArchiveYear[];
   currentPage: number;
@@ -58,6 +60,8 @@ function ArchiveYearTree({
   onToggle: (key: string) => void;
   onSelect: (page: number) => void;
   onClose?: () => void;
+  onMonthSelect?: (month: string | null) => void;
+  activeMonth?: string | null;
 }) {
   return (
     <>
@@ -96,7 +100,7 @@ function ArchiveYearTree({
                   const monthOpen = openKeys.has(monthKey);
                   return (
                     <div key={monthKey} style={{ marginBottom: "var(--space-1)" }}>
-                      {/* 月: ラベルクリックで開閉、月名リンクで最初の記事へ */}
+                      {/* 月: 三角クリックで開閉、月名クリックでフィルタ */}
                       <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
                         <button
                           type="button"
@@ -112,19 +116,26 @@ function ArchiveYearTree({
                         >
                           <ToggleArrow open={monthOpen} />
                         </button>
-                        <Link
-                          href={`/garden/${encodeURIComponent(m.firstSlug)}`}
-                          onClick={() => onClose?.()}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            /* YYYY-MM 形式を生成 */
+                            const monthStr = m.posts[0]?.date.slice(0, 7) ?? null;
+                            const isActive = activeMonth === monthStr;
+                            onMonthSelect?.(isActive ? null : monthStr);
+                            onClose?.();
+                          }}
                           style={{
+                            ...btnStyle,
                             fontSize: "var(--font-body)",
                             lineHeight: "var(--lh-normal)",
-                            fontWeight: 500,
-                            color: "var(--muted)",
-                            textDecoration: "none",
+                            fontWeight: activeMonth === m.posts[0]?.date.slice(0, 7) ? 700 : 500,
+                            color: activeMonth === m.posts[0]?.date.slice(0, 7) ? "var(--fg)" : "var(--muted)",
+                            fontFamily: "inherit",
                           }}
                         >
                           {m.label}
-                        </Link>
+                        </button>
                         <span style={{ fontSize: "var(--font-meta)", fontWeight: 400, color: "var(--muted)" }}>
                           ({m.count})
                         </span>
@@ -196,12 +207,18 @@ export function GardenArchiveSidebar({
   currentPage,
   onPageChange,
   searchElement,
+  onMonthSelect,
+  activeMonth,
 }: {
   nodes: GardenNode[];
   currentPage: number;
   onPageChange: (page: number) => void;
   searchElement?: React.ReactNode;
+  onMonthSelect?: (month: string | null) => void;
+  activeMonth?: string | null;
 }) {
+  /* フィルタ中はフィルタ前の全ノードでツリーを構築する必要があるが、
+     nodes は既にフィルタ済みの場合があるため、ツリーは全ノードから構築済みを期待 */
   const tree = buildArchiveTree(nodes);
   const { openKeys, toggle } = useArchiveToggle(tree);
 
@@ -214,6 +231,8 @@ export function GardenArchiveSidebar({
           openKeys={openKeys}
           onToggle={toggle}
           onSelect={onPageChange}
+          onMonthSelect={onMonthSelect}
+          activeMonth={activeMonth}
         />
         {searchElement && (
           <div className="garden-sidebar-search">
@@ -233,6 +252,8 @@ export function GardenMobileArchiveDrawer({
   open,
   onClose,
   searchElement,
+  onMonthSelect,
+  activeMonth,
 }: {
   nodes: GardenNode[];
   currentPage: number;
@@ -240,6 +261,8 @@ export function GardenMobileArchiveDrawer({
   open: boolean;
   onClose: () => void;
   searchElement?: React.ReactNode;
+  onMonthSelect?: (month: string | null) => void;
+  activeMonth?: string | null;
 }) {
   const tree = buildArchiveTree(nodes);
   const { openKeys, toggle } = useArchiveToggle(tree);
@@ -282,6 +305,8 @@ export function GardenMobileArchiveDrawer({
           onToggle={toggle}
           onSelect={handleSelect}
           onClose={onClose}
+          onMonthSelect={onMonthSelect}
+          activeMonth={activeMonth}
         />
       </div>
     </>

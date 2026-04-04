@@ -3220,7 +3220,6 @@ img[loading="lazy"] {
   display: grid;
   grid-template-columns: subgrid;
   grid-column: 1 / -1;
-  margin-top: var(--space-6);
 }
 
 /* 投稿リスト: subgrid で親の9カラムを引き継ぐ */
@@ -3228,7 +3227,6 @@ img[loading="lazy"] {
   display: grid;
   grid-template-columns: subgrid;
   grid-column: 1 / -1;
-  margin-top: var(--space-7);
 }
 
 /* 投稿エントリ: 日付（左）+ 本文（右）の2列構造 */
@@ -4760,11 +4758,6 @@ img[loading="lazy"] {
     display: block;
     padding-bottom: var(--space-9);
     margin-bottom: var(--space-9);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .garden-entry:last-child {
-    border-bottom: none;
   }
 
   .garden-entry-date {

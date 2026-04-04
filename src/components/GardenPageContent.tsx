@@ -95,16 +95,30 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
               </button>
             </div>
           )}
+          {/* 月フィルタバー（月フィルタ中のみ表示） */}
+          {state.monthFilter && (
+            <div className="garden-search-result-bar-standalone">
+              <span>{state.monthFilter.replace("-", "年")}月: {state.filteredNodes.length} 件</span>
+              <button
+                className="garden-search-result-clear"
+                onClick={() => state.handleMonthFilter(null)}
+              >
+                クリア
+              </button>
+            </div>
+          )}
           <GardenGrid
             groups={state.pageGroups}
           />
         </div>
         {state.showArchive && (
           <GardenArchiveSidebar
-            nodes={state.filteredNodes}
+            nodes={nodes}
             currentPage={state.safePage}
             onPageChange={state.handlePageChange}
             searchElement={searchElement}
+            onMonthSelect={state.handleMonthFilter}
+            activeMonth={state.monthFilter}
           />
         )}
       </div>
@@ -119,12 +133,14 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
         </div>
       )}
       <GardenMobileArchiveDrawer
-        nodes={state.filteredNodes}
+        nodes={nodes}
         currentPage={state.safePage}
         onPageChange={state.handlePageChange}
         open={state.drawerOpen}
         onClose={state.closeDrawer}
         searchElement={searchElement}
+        onMonthSelect={state.handleMonthFilter}
+        activeMonth={state.monthFilter}
       />
     </>
   );

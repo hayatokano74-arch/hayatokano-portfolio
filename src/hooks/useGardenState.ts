@@ -48,13 +48,19 @@ export interface GardenState {
   openDrawer: () => void;
   /** ドロワーを閉じる */
   closeDrawer: () => void;
+  /** 月フィルタ（"2026-03" 形式、null = フィルタなし） */
+  monthFilter: string | null;
+  /** 月フィルタハンドラ */
+  handleMonthFilter: (month: string | null) => void;
 }
 
 export function useGardenState(nodes: GardenNode[]): GardenState {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
   const initialPage = parseInt(searchParams.get("page") ?? "1", 10);
+  const initialMonth = searchParams.get("month") ?? "";
   const [searchQuery, setSearchQuery] = useState<string | null>(initialQuery || null);
+  const [monthFilter, setMonthFilter] = useState<string | null>(initialMonth || null);
   const [currentPage, setCurrentPage] = useState(isNaN(initialPage) ? 1 : initialPage);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const search = useGardenSearch();
@@ -104,12 +110,37 @@ export function useGardenState(nodes: GardenNode[]): GardenState {
     return search.fullResults.map((r) => r.id);
   }, [searchQuery, search.fullResults]);
 
-  // フィルタされたノード
+  // 月フィルタハンドラ
+  const handleMonthFilter = useCallback(
+    (month: string | null) => {
+      setMonthFilter(month);
+      setCurrentPage(1);
+      const url = new URL(window.location.href);
+      if (month) {
+        url.searchParams.set("month", month);
+        url.searchParams.delete("page");
+      } else {
+        url.searchParams.delete("month");
+      }
+      window.history.replaceState({}, "", url.toString());
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [],
+  );
+
+  // フィルタされたノード（検索 + 月フィルタ）
   const filteredNodes = useMemo(() => {
-    if (!fullSearchIds) return nodes;
-    const idSet = new Set(fullSearchIds);
-    return nodes.filter((n) => idSet.has(n.title));
-  }, [nodes, fullSearchIds]);
+    let result = nodes;
+    if (fullSearchIds) {
+      const idSet = new Set(fullSearchIds);
+      result = result.filter((n) => idSet.has(n.title));
+    }
+    if (monthFilter) {
+      // monthFilter = "2026-03" 形式
+      result = result.filter((n) => n.date.startsWith(monthFilter!));
+    }
+    return result;
+  }, [nodes, fullSearchIds, monthFilter]);
 
   // 全グループ（月単位）
   const allGroups = useMemo(() => groupByYearMonth(filteredNodes), [filteredNodes]);
@@ -178,5 +209,7 @@ export function useGardenState(nodes: GardenNode[]): GardenState {
     drawerOpen,
     openDrawer: useCallback(() => setDrawerOpen(true), []),
     closeDrawer: useCallback(() => setDrawerOpen(false), []),
+    monthFilter,
+    handleMonthFilter,
   };
 }
