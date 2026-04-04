@@ -13,13 +13,20 @@ const RE_HTML_TAG = /<[a-z][\s\S]*?>/i;
  */
 export function fixBrokenUnicodeUrl(url: string): string {
   if (!RE_UNICODE_TEST.test(url)) return url;
-  return url.replace(RE_UNICODE_REPLACE, (_match, hex) => {
+  const decoded = url.replace(RE_UNICODE_REPLACE, (_match, hex) => {
     const cp = parseInt(hex, 16);
     if (cp >= 0x3000 && cp <= 0x9fff) return String.fromCodePoint(cp);
     if (cp >= 0xf900 && cp <= 0xfaff) return String.fromCodePoint(cp);
     if (cp >= 0xff00 && cp <= 0xffef) return String.fromCodePoint(cp);
     return _match;
   });
+  try {
+    const u = new URL(decoded);
+    u.pathname = u.pathname.split('/').map(s => encodeURIComponent(decodeURIComponent(s))).join('/');
+    return u.toString();
+  } catch {
+    return decoded;
+  }
 }
 
 /** HTMLタグがなければ改行をbrに変換、HTMLがあればそのまま返す */
