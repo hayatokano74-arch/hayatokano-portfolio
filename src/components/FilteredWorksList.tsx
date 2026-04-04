@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useFilterContext } from "@/components/FilterableContent";
+import { useViewMode } from "@/components/ViewModeContext";
 import { WorksClient } from "@/components/WorksClient";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 import type { Work } from "@/lib/types";
@@ -43,7 +44,6 @@ function getMeNoHoshiSearchFields(w: WorkLike): string[] {
  */
 export function FilteredWorksList<T extends WorkLike>({
   allWorks,
-  view,
   perPage,
   basePath = "/works",
   detailQuery,
@@ -51,7 +51,6 @@ export function FilteredWorksList<T extends WorkLike>({
   gridSettings,
 }: {
   allWorks: T[];
-  view: "grid" | "list";
   perPage: number;
   basePath?: "/works" | "/me-no-hoshi";
   detailQuery?: string;
@@ -59,6 +58,7 @@ export function FilteredWorksList<T extends WorkLike>({
   gridSettings?: MeNoHoshiGridField[];
 }) {
   const { selected } = useFilterContext();
+  const { view } = useViewMode();
   const selectedTags = selected.tags ?? [];
   const selectedYears = selected.years ?? [];
 

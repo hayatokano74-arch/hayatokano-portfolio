@@ -12,9 +12,6 @@ type CategoryRowProps = {
   showFilterButton: boolean;
   showSearch: boolean;
   showWorksToggle: boolean;
-  worksView: "grid" | "list";
-  worksGridHref: string;
-  worksListHref: string;
   activeCategory: Category;
   categoryHrefs?: Partial<Record<Category, string>>;
 };
@@ -26,36 +23,21 @@ export function CategoryRow({
   showFilterButton,
   showSearch,
   showWorksToggle,
-  worksView,
-  worksGridHref,
-  worksListHref,
   activeCategory,
   categoryHrefs,
 }: CategoryRowProps) {
-  const { filterOpen, onFilterToggle, filterCount } = useFilterContext();
-  const view = worksView;
-
   return (
     <div className={`header-category-row ${showFilterButton ? "is-filter-mode" : ""}`}>
       {showFilterButton ? (
         <FilterModeBar
           showSearch={showSearch}
-          filterOpen={filterOpen}
-          onFilterToggle={onFilterToggle}
-          filterCount={filterCount}
           showWorksToggle={showWorksToggle}
-          view={view}
-          worksGridHref={worksGridHref}
-          worksListHref={worksListHref}
         />
       ) : (
         <ClassicModeBar
           categoryHrefs={categoryHrefs}
           activeCategory={activeCategory}
           showWorksToggle={showWorksToggle}
-          view={view}
-          worksGridHref={worksGridHref}
-          worksListHref={worksListHref}
           showSearch={showSearch}
         />
       )}
@@ -67,25 +49,15 @@ export function CategoryRow({
 
 type FilterModeBarProps = {
   showSearch: boolean;
-  filterOpen: boolean;
-  onFilterToggle: () => void;
-  filterCount: number;
   showWorksToggle: boolean;
-  view: "grid" | "list";
-  worksGridHref: string;
-  worksListHref: string;
 };
 
 function FilterModeBar({
   showSearch,
-  filterOpen,
-  onFilterToggle,
-  filterCount,
   showWorksToggle,
-  view,
-  worksGridHref,
-  worksListHref,
 }: FilterModeBarProps) {
+  const { filterOpen, onFilterToggle, filterCount } = useFilterContext();
+
   return (
     <div className="header-filter-search">
       {showSearch ? (
@@ -109,11 +81,7 @@ function FilterModeBar({
         {showWorksToggle ? (
           <>
             <span className="filter-bar-separator" aria-hidden="true" />
-            <ViewToggleLinks
-              view={view}
-              gridHref={worksGridHref}
-              listHref={worksListHref}
-            />
+            <ViewToggleLinks />
           </>
         ) : null}
       </div>
@@ -127,9 +95,6 @@ type ClassicModeBarProps = {
   categoryHrefs?: Partial<Record<Category, string>>;
   activeCategory: Category;
   showWorksToggle: boolean;
-  view: "grid" | "list";
-  worksGridHref: string;
-  worksListHref: string;
   showSearch: boolean;
 };
 
@@ -137,9 +102,6 @@ function ClassicModeBar({
   categoryHrefs,
   activeCategory,
   showWorksToggle,
-  view,
-  worksGridHref,
-  worksListHref,
   showSearch,
 }: ClassicModeBarProps) {
   return (
@@ -159,11 +121,7 @@ function ClassicModeBar({
 
       {showWorksToggle ? (
         <div className="works-view-toggle">
-          <ViewToggleLinks
-            view={view}
-            gridHref={worksGridHref}
-            listHref={worksListHref}
-          />
+          <ViewToggleLinks />
         </div>
       ) : null}
 
@@ -175,4 +133,3 @@ function ClassicModeBar({
     </>
   );
 }
-

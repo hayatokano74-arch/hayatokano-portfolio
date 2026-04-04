@@ -1,34 +1,35 @@
 "use client";
 
-import Link from "next/link";
+import { useViewMode } from "@/components/ViewModeContext";
 import { GridIcon, ListIcon } from "./icons";
 
-export type ViewToggleLinksProps = {
-  view: "grid" | "list";
-  gridHref: string;
-  listHref: string;
-};
-
 /**
- * Grid/List 表示切替リンク（フィルターモード・従来モード共通）
+ * Grid/List 表示切替ボタン
+ * ViewModeContext を使い、クリックで即座に切り替え（ページ遷移なし）
  */
-export function ViewToggleLinks({ view, gridHref, listHref }: ViewToggleLinksProps) {
+export function ViewToggleLinks() {
+  const { view, setView } = useViewMode();
+
   return (
     <>
-      <Link
-        href={gridHref}
+      <button
+        type="button"
         className={`view-toggle-seg ${view === "grid" ? "is-active" : ""}`}
         aria-label="グリッド表示"
+        aria-pressed={view === "grid"}
+        onClick={() => setView("grid")}
       >
         <GridIcon />
-      </Link>
-      <Link
-        href={listHref}
+      </button>
+      <button
+        type="button"
         className={`view-toggle-seg ${view === "list" ? "is-active" : ""}`}
         aria-label="リスト表示"
+        aria-pressed={view === "list"}
+        onClick={() => setView("list")}
       >
         <ListIcon />
-      </Link>
+      </button>
     </>
   );
 }

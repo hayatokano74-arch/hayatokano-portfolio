@@ -20,9 +20,6 @@ export function Header({
   brandHref = "/",
   showTitleRow = true,
   showWorksToggle = false,
-  worksView = "grid",
-  worksGridHref = "/works?view=grid",
-  worksListHref = "/works?view=list",
   showCategoryRow = true,
   showSearch = true,
   activeCategory = "Video",
@@ -36,9 +33,6 @@ export function Header({
   brandHref?: string;
   showTitleRow?: boolean;
   showWorksToggle?: boolean;
-  worksView?: "grid" | "list";
-  worksGridHref?: string;
-  worksListHref?: string;
   showCategoryRow?: boolean;
   showSearch?: boolean;
   activeCategory?: Category;
@@ -130,9 +124,6 @@ export function Header({
           showFilterButton={showFilterButton}
           showSearch={showSearch}
           showWorksToggle={showWorksToggle}
-          worksView={worksView}
-          worksGridHref={worksGridHref}
-          worksListHref={worksListHref}
           activeCategory={activeCategory}
           categoryHrefs={categoryHrefs}
         />
