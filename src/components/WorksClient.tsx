@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Work } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
+import { RichBody } from "@/components/RichBody";
 import type { MeNoHoshiGridField } from "@/lib/me-no-hoshi/api";
 
 /** WorksClient が受け取れる最小型（details を柔軟に） */
@@ -214,6 +215,55 @@ function truncateText(text: string, maxLength: number): string {
   return plain.slice(0, maxLength) + "...";
 }
 
+/** HTMLを保持したまま、テキスト文字数で切り詰める */
+function truncateHtml(html: string, maxLength: number): string {
+  if (maxLength <= 0) return html;
+  const plain = stripHtml(html);
+  if (plain.length <= maxLength) return html;
+
+  // テキスト文字数をカウントしながらHTMLを走査
+  let textCount = 0;
+  let result = "";
+  const openTags: string[] = [];
+  let i = 0;
+
+  while (i < html.length && textCount < maxLength) {
+    if (html[i] === "<") {
+      const tagEnd = html.indexOf(">", i);
+      if (tagEnd === -1) break;
+      const tag = html.slice(i, tagEnd + 1);
+      result += tag;
+
+      // 閉じタグ
+      const closeMatch = tag.match(/^<\/(\w+)/);
+      if (closeMatch) {
+        const idx = openTags.lastIndexOf(closeMatch[1]);
+        if (idx !== -1) openTags.splice(idx, 1);
+      }
+      // 自己閉じでない開きタグ
+      else if (!tag.match(/\/\s*>$/) && !tag.startsWith("<!")) {
+        const openMatch = tag.match(/^<(\w+)/);
+        if (openMatch) openTags.push(openMatch[1]);
+      }
+
+      i = tagEnd + 1;
+    } else {
+      result += html[i];
+      textCount++;
+      i++;
+    }
+  }
+
+  result += "…";
+
+  // 開いたタグを閉じる
+  for (let j = openTags.length - 1; j >= 0; j--) {
+    result += `</${openTags[j]}>`;
+  }
+
+  return result;
+}
+
 function WorksList<T extends WorkLike>({
   works,
   detailHref,
@@ -301,7 +351,7 @@ function WorksList<T extends WorkLike>({
               {/* 本文(ディテール+抜粋+View All): モバイルで order: 3 */}
               <div className="works-list-body">
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
-                <div className="works-list-excerpt">{truncateText(w.excerpt, excerptMaxLength)}</div>
+                <RichBody html={truncateHtml(w.excerpt, excerptMaxLength)} className="works-list-excerpt" />
                 <div className="works-list-view">
                   <Link className="action-link" href={detailHref(w.slug)}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
