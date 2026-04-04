@@ -3249,7 +3249,7 @@ img[loading="lazy"] {
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
-  padding-top: 1px; /* タイトル（22px lh1.5）とキャップハイトを揃える */
+  padding-top: 3px; /* キャップハイト揃え: (titleHalfLeading 6.18 - dateHalfLeading 3.06) */
 }
 
 /* 本文エリア: 中央4カラム（9カラム中5〜8 = 12カラム中5〜8） */
