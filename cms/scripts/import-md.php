@@ -521,7 +521,26 @@ function parse_yaml_simple(string $yaml): array {
             $key = $m[1];
             $val = $m[2];
 
-            if ($val === '' || $val === null) {
+            if ($val === '|' || $val === '|-' || $val === '|+') {
+                // ブロックリテラル（複数行テキスト）を収集
+                $i++;
+                $base_i   = $i;
+                $lit_indent = -1;
+                $lines_buf  = [];
+                while ($i < $n) {
+                    $nl  = $lines[$i];
+                    $ni  = strlen($nl) - strlen(ltrim($nl));
+                    $nt  = ltrim($nl);
+                    if ($nt === '') { $lines_buf[] = ''; $i++; continue; }
+                    if ($lit_indent < 0) $lit_indent = $ni;
+                    if ($ni < $lit_indent) break;
+                    $lines_buf[] = substr($nl, $lit_indent);
+                    $i++;
+                }
+                // 末尾の空行を削除
+                while (count($lines_buf) > 0 && end($lines_buf) === '') array_pop($lines_buf);
+                $result[$key] = implode("\n", $lines_buf);
+            } elseif ($val === '' || $val === null) {
                 // 次の行がインデントされていれば配列またはオブジェクト
                 $i++;
                 if ($i < $n) {
@@ -564,6 +583,7 @@ function parse_yaml_simple(string $yaml): array {
 
 /**
  * インデントされた配列を収集する
+ * ネストオブジェクト（"  - key: val\n    key2: val2" 形式）も対応
  * @param array  $lines 全行
  * @param int    $start 開始インデックス（"  - item" の行）
  * @return array [収集した配列, 次の処理開始インデックス]
@@ -577,24 +597,69 @@ function collect_array(array $lines, int $start): array {
     $base_indent = strlen($lines[$start]) - strlen(ltrim($lines[$start]));
 
     while ($i < $n) {
-        $line   = $lines[$i];
-        $indent = strlen($line) - strlen(ltrim($line));
+        $line    = $lines[$i];
+        $indent  = strlen($line) - strlen(ltrim($line));
         $trimmed = ltrim($line);
 
-        if ($trimmed === '') {
-            $i++;
-            continue;
-        }
+        if ($trimmed === '') { $i++; continue; }
+        if ($indent < $base_indent) break;
 
-        // インデントが基準より浅くなったら終了
-        if ($indent < $base_indent) {
-            break;
-        }
-
-        // "  - value" 形式
+        // "  - rest" 形式
         if (preg_match('/^-\s+(.+)$/', $trimmed, $m)) {
-            $result[] = parse_yaml_value($m[1]);
-            $i++;
+            $rest = $m[1];
+
+            // "- key: value" 形式 → ネストオブジェクトアイテム
+            if (preg_match('/^([a-zA-Z_][a-zA-Z0-9_\-]*):\s*(.*)$/', $rest, $km)) {
+                $obj = [];
+                $obj[$km[1]] = $km[2] !== '' ? parse_yaml_value($km[2]) : null;
+                $i++;
+
+                // 残りのキー:値（インデントが base_indent より深い行）を収集
+                while ($i < $n) {
+                    $nl  = $lines[$i];
+                    $ni  = strlen($nl) - strlen(ltrim($nl));
+                    $nt  = ltrim($nl);
+                    if ($nt === '') { $i++; continue; }
+                    if ($ni <= $base_indent) break; // 次のアイテムか親レベルへ
+
+                    if (preg_match('/^([a-zA-Z_][a-zA-Z0-9_\-]*):\s*(.*)$/', $nt, $skm)) {
+                        $sk = $skm[1];
+                        $sv = $skm[2];
+                        if ($sv === '') {
+                            // 値なし → 次の行を確認（ネストか null か）
+                            $i++;
+                            if ($i < $n) {
+                                $snl = $lines[$i];
+                                $sni = strlen($snl) - strlen(ltrim($snl));
+                                $snt = ltrim($snl);
+                                if ($snt !== '' && $sni > $ni) {
+                                    if (preg_match('/^-\s/', $snt)) {
+                                        [$sub_arr, $i] = collect_array($lines, $i);
+                                        $obj[$sk] = $sub_arr;
+                                    } else {
+                                        [$sub_obj, $i] = collect_object($lines, $i, $sni);
+                                        $obj[$sk] = $sub_obj;
+                                    }
+                                } else {
+                                    $obj[$sk] = null;
+                                }
+                            } else {
+                                $obj[$sk] = null;
+                            }
+                        } else {
+                            $obj[$sk] = parse_yaml_value($sv);
+                            $i++;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                $result[] = $obj;
+            } else {
+                // 単純な値
+                $result[] = parse_yaml_value($rest);
+                $i++;
+            }
         } elseif ($trimmed === '-') {
             $result[] = null;
             $i++;

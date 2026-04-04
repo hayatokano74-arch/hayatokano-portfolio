@@ -70,6 +70,9 @@
 
   /* トップバー高さ */
   --topbar-h: 52px;
+
+  /* ネイティブUIコントロールをダークモードに */
+  color-scheme: dark;
 }
 
 /* ──────────────────────────────────────────────
@@ -79,6 +82,16 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* オートフィルのダークモード対応（ブラウザが背景を上書きするのを防ぐ） */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 40px var(--card) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text);
 }
 
 html {
@@ -96,6 +109,24 @@ body {
   display: flex;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── 全 input/textarea/select をダークテーマで強制 ─────────── */
+/* （.form-control クラスが付いていない要素も含む） */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]),
+textarea,
+select {
+  background-color: var(--card);
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
+  border-color: var(--border);
+  color-scheme: dark;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"])::placeholder,
+textarea::placeholder {
+  color: var(--text-3);
+  -webkit-text-fill-color: var(--text-3);
 }
 
 a {
@@ -624,6 +655,7 @@ code, pre {
   display: flex;
   flex-direction: column;
   gap: 0;
+  max-width: 900px;
 }
 
 .form-grid {
@@ -634,7 +666,7 @@ code, pre {
 
 /* ── フォームセクション ── */
 .form-section {
-  padding: var(--s-6) 0;
+  padding: var(--s-8) 0;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -643,14 +675,12 @@ code, pre {
 }
 
 .form-section__title {
-  font-size: var(--font-sm);
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text-3);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: var(--s-5);
-  padding-bottom: var(--s-3);
-  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--s-6);
 }
 
 /* ── フォームアクション（保存・削除ボタン行） ── */
@@ -658,12 +688,12 @@ code, pre {
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-5) 0 var(--s-2);
-  margin-top: var(--s-2);
+  padding: var(--s-4) 0 var(--s-4);
+  margin-top: var(--s-4);
   position: sticky;
   bottom: 0;
-  background: var(--bg);
-  border-top: 1px solid var(--border-subtle);
+  background: linear-gradient(transparent, var(--bg) 30%);
+  border-top: none;
   z-index: 10;
 }
 
@@ -675,59 +705,76 @@ code, pre {
 /* ── .form-control（input/textarea/select の共通スタイル） ── */
 .form-control {
   width: 100%;
-  background: var(--surface);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
-  font-size: var(--font-base);
+  font-size: var(--font-md);
   font-family: inherit;
-  padding: var(--s-2) var(--s-3);
-  transition: border-color var(--transition), box-shadow var(--transition);
+  line-height: 1.5;
+  padding: 10px 14px;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
   appearance: none;
   -webkit-appearance: none;
+  /* ブラウザデフォルトのカラーを明示的に上書き */
+  -webkit-text-fill-color: var(--text);
 }
 
 .form-control::placeholder {
   color: var(--text-3);
+  -webkit-text-fill-color: var(--text-3);
 }
 
 .form-control:hover {
   border-color: var(--text-3);
+  background: var(--surface);
 }
 
 .form-control:focus {
   outline: none;
+  background: var(--card);
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91,142,240,0.12);
+  box-shadow: 0 0 0 3px rgba(91,142,240,0.14);
 }
 
 .form-control[readonly] {
-  background: var(--card);
+  background: var(--surface);
   color: var(--text-2);
+  -webkit-text-fill-color: var(--text-2);
   cursor: default;
+  opacity: 0.8;
 }
 
 textarea.form-control {
   resize: vertical;
-  min-height: 100px;
-  line-height: 1.7;
+  min-height: 120px;
+  line-height: 1.75;
+  -webkit-text-fill-color: var(--text);
 }
 
 select.form-control {
-  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23777'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 28px;
+  background-position: right 12px center;
+  padding-right: 32px;
   cursor: pointer;
 }
 
+/* date/number/time のネイティブUIもダークに */
+input[type="date"].form-control,
+input[type="time"].form-control,
+input[type="number"].form-control {
+  color-scheme: dark;
+}
+
 .form-control--large {
-  min-height: 300px;
-  line-height: 1.8;
+  min-height: 400px;
+  line-height: 1.85;
+  font-size: var(--font-md);
 }
 
 .form-control--code {
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   font-size: var(--font-xs);
   line-height: 1.6;
   min-height: 200px;
@@ -743,7 +790,8 @@ select.form-control {
 }
 
 .form-group--center {
-  justify-content: flex-end;
+  justify-content: flex-start;
+  padding-top: calc(var(--font-sm) + var(--s-2) + 2px); /* label 高さ分下げる */
 }
 
 /* ── 必須マーク ── */
@@ -760,15 +808,35 @@ select.form-control {
   margin-left: var(--s-2);
 }
 
+/* ── toggle-group（チェックボックスまとめグループ） ── */
+.toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-left: calc(var(--s-3) * -1); /* toggle-label の padding 分オフセット */
+}
+
+/* ── image-meta-fields（画像アップロード後のURL/サイズフィールド） ── */
+.image-meta-fields {
+  margin-top: var(--s-4);
+}
+
 /* ── toggle-label（チェックボックス・ラジオの横並び） ── */
 .toggle-label {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
   cursor: pointer;
-  font-size: var(--font-base);
-  color: var(--text-2);
+  font-size: var(--font-md);
+  color: var(--text);
   user-select: none;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius);
+  transition: background var(--transition);
+}
+
+.toggle-label:hover {
+  background: var(--card);
 }
 
 .toggle-label input[type="checkbox"],
@@ -778,6 +846,7 @@ select.form-control {
   accent-color: var(--accent);
   cursor: pointer;
   flex-shrink: 0;
+  color-scheme: dark;
 }
 
 /* ── page-actions（一覧ページのヘッダーアクション行） ── */
@@ -828,6 +897,11 @@ select.form-control {
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
 }
 
 .form-row {
@@ -836,11 +910,17 @@ select.form-control {
   gap: var(--s-4);
 }
 
+/* form-row 内の form-group のマージンはゼロ（行ごとに gap で管理） */
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
 .form-label {
   font-size: var(--font-sm);
   font-weight: 500;
   color: var(--text-2);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  display: block;
 }
 
 .form-label--required::after {
@@ -853,18 +933,21 @@ select.form-control {
   color: var(--text-3);
 }
 
-/* 入力フィールド共通 */
+/* 入力フィールド共通（.form-control のエイリアス） */
 .form-input,
 .form-textarea,
 .form-select {
   width: 100%;
-  background: var(--surface);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
-  font-size: var(--font-base);
-  padding: var(--s-2) var(--s-3);
-  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-text-fill-color: var(--text);
+  font-size: var(--font-md);
+  font-family: inherit;
+  padding: 10px 14px;
+  line-height: 1.5;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
   appearance: none;
   -webkit-appearance: none;
 }
@@ -872,12 +955,14 @@ select.form-control {
 .form-input::placeholder,
 .form-textarea::placeholder {
   color: var(--text-3);
+  -webkit-text-fill-color: var(--text-3);
 }
 
 .form-input:hover,
 .form-textarea:hover,
 .form-select:hover {
   border-color: var(--text-3);
+  background: var(--surface);
 }
 
 .form-input:focus,
@@ -885,7 +970,7 @@ select.form-control {
 .form-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91,142,240,0.12);
+  box-shadow: 0 0 0 3px rgba(91,142,240,0.14);
 }
 
 .form-input.is-error,
@@ -1637,14 +1722,26 @@ select.form-control {
   margin-bottom: var(--s-3);
 }
 
+.dynamic-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+
 .dynamic-row {
   display: flex;
   align-items: flex-start;
-  gap: var(--s-3);
-  padding: var(--s-4);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
+  gap: var(--s-4);
+  padding: var(--s-5) var(--s-5);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition);
+}
+
+.dynamic-row:hover {
+  border-color: var(--text-3);
 }
 
 .dynamic-row > .form-row {
@@ -1655,27 +1752,61 @@ select.form-control {
 .dynamic-remove {
   flex-shrink: 0;
   align-self: flex-start;
-  margin-top: 24px; /* label高さ分のオフセット */
+  margin-top: 26px; /* label高さ分のオフセット */
   color: var(--text-3);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
 }
 
 .dynamic-remove:hover {
   color: var(--danger);
+  background: var(--danger-bg);
 }
 
 /* メディア行 */
 .dynamic-row--media {
   gap: var(--s-4);
+  padding: var(--s-4) var(--s-5);
 }
 
 .media-row-preview {
   flex-shrink: 0;
-  width: 80px;
+  width: 120px;
+  height: 90px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: var(--font-xs);
+}
+
+.media-row-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .media-row-fields {
   flex: 1;
   min-width: 0;
+}
+
+.media-row-fields .form-group {
+  margin-bottom: var(--s-3);
+}
+
+.media-row-fields .form-group:last-child {
+  margin-bottom: 0;
 }
 
 .media-row-fields .form-row {
@@ -1692,6 +1823,7 @@ select.form-control {
   flex-direction: column;
   gap: var(--s-2);
   align-self: flex-start;
+  padding-top: 4px;
 }
 
 /* Garden エントリエディター（タイトル + 本文一体） */
@@ -1710,32 +1842,40 @@ select.form-control {
 }
 
 .garden-title-input.form-control {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   border: none;
   border-bottom: 1px solid var(--border);
   border-radius: 0;
-  padding: var(--s-2) 0;
+  padding: var(--s-3) 0;
   background: transparent;
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
 }
 
 .garden-title-input.form-control:focus {
   box-shadow: none;
   border-bottom-color: var(--accent);
+  background: transparent;
 }
 
 .garden-body-textarea.form-control {
   border: none;
   border-radius: 0;
   background: transparent;
-  padding: var(--s-3) 0;
+  padding: var(--s-4) 0;
   resize: vertical;
   line-height: 1.9;
-  min-height: 360px;
+  min-height: 400px;
+  font-size: var(--font-md);
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
 }
 
 .garden-body-textarea.form-control:focus {
   box-shadow: none;
+  background: transparent;
 }
 
 /* ──────────────────────────────────────────────

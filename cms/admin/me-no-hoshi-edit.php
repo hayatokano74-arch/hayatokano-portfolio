@@ -321,7 +321,7 @@ ob_start();
     <!-- ── 表示設定 ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">表示設定</h3>
-      <div class="form-row" style="gap:var(--s-6);">
+      <div class="toggle-group">
         <label class="toggle-label">
           <input type="checkbox" name="showKeyVisuals" <?= $f_show_kv ? 'checked' : '' ?>>
           <span>キービジュアルを表示</span>

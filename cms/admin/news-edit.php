@@ -156,7 +156,7 @@ ob_start();
           <?php endif; ?>
         </div>
       </div>
-      <div style="margin-top:var(--s-4);">
+      <div class="image-meta-fields">
         <div class="form-row form-row--2col">
           <div class="form-group">
             <label class="form-label" for="image_src">画像 URL</label>
