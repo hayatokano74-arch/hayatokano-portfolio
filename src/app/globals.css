@@ -243,8 +243,9 @@ body {
 
 html {
   scroll-behavior: smooth;
-  /* 常にスクロールバーのスペースを確保（レイアウトシフト防止） */
-  overflow-y: scroll;
+  /* スクロールバーのスペースを左右対称に確保（レイアウトシフト防止） */
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
 }
