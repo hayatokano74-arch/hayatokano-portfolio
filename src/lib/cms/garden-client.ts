@@ -6,6 +6,7 @@
  */
 
 import type { GardenNode } from "@/lib/garden/types";
+import { titleToSlug } from "@/lib/garden/slug";
 
 const CMS_API_BASE = "https://hayatokano.com/_cms/api";
 
@@ -46,7 +47,7 @@ export async function fetchGardenFromCms(): Promise<GardenNode[]> {
   const items: CmsGardenItem[] = await res.json();
 
   return items.map((item) => ({
-    slug: item.slug,
+    slug: titleToSlug(item.title),
     title: item.title,
     date: item.date,
     tags: item.tags ?? [],
