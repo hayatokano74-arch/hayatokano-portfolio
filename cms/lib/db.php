@@ -182,6 +182,13 @@ function get_migrations(): array {
             );
             CREATE INDEX IF NOT EXISTS idx_login_ip ON login_attempts(ip, attempted_at);
         ',
+
+        10 => /** サイト設定（key-value） */ '
+            CREATE TABLE IF NOT EXISTS settings (
+                key   TEXT PRIMARY KEY,
+                value TEXT NOT NULL DEFAULT "{}"
+            );
+        ',
     ];
 }
 
@@ -190,7 +197,7 @@ function get_migrations(): array {
 /** 許可テーブル名一覧 */
 const DB_ALLOWED_TABLES = [
     'works', 'me_no_hoshi', 'news', 'timeline',
-    'texts', 'about', 'garden', 'media', 'login_attempts', 'schema_version',
+    'texts', 'about', 'garden', 'media', 'login_attempts', 'settings', 'schema_version',
 ];
 
 /**

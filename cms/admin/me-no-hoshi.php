@@ -17,6 +17,7 @@ ob_start();
 ?>
 
 <div class="page-actions">
+  <a href="<?= cms_url('/admin/me-no-hoshi-grid.php') ?>" class="btn btn-ghost btn-sm">⚙ グリッド表示設定</a>
   <a href="<?= cms_url('/admin/me-no-hoshi-edit.php?action=new') ?>" class="btn btn-primary">+ 新規追加</a>
 </div>
 

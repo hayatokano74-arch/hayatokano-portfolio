@@ -14,33 +14,38 @@ import { FilterProvider, FilterLayout } from "./FilterableContent";
 import { FilteredWorksList, FilteredCount } from "./FilteredWorksList";
 import { ViewModeProvider } from "./ViewModeContext";
 
-/** 全投稿のdetailsからグリッド表示設定を動的に生成 */
-function buildGridFields(posts: MeNoHoshiPost[]): MeNoHoshiGridField[] {
-  const seen = new Map<string, MeNoHoshiGridField>();
-  for (const post of posts) {
-    for (const d of post.details) {
-      if (!seen.has(d.key)) {
-        seen.set(d.key, {
-          key: d.key,
-          label: d.label,
-          visible: d.gridVisible ?? false,
-        });
-      } else if (d.gridVisible) {
-        /* いずれかの投稿で gridVisible なら表示する */
-        seen.get(d.key)!.visible = true;
-      }
-    }
+const CMS_API = "https://hayatokano.com/_cms/api";
+
+/** デフォルトのグリッド表示フィールド（API未設定時のフォールバック） */
+const fallbackGridFields: MeNoHoshiGridField[] = [
+  { key: "artist", label: "ARTIST", visible: true },
+  { key: "period", label: "PERIOD", visible: true },
+  { key: "open_date", label: "OPEN", visible: true },
+  { key: "hours", label: "HOURS", visible: true },
+  { key: "venue", label: "VENUE", visible: true },
+];
+
+/** CMS設定APIからグリッド表示設定を取得 */
+async function fetchGridSettings(): Promise<MeNoHoshiGridField[]> {
+  try {
+    const res = await fetch(`${CMS_API}/settings.php?key=me_no_hoshi_grid_fields`);
+    if (!res.ok) return fallbackGridFields;
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) return data;
+    return fallbackGridFields;
+  } catch {
+    return fallbackGridFields;
   }
-  return Array.from(seen.values());
 }
 
 export function MeNoHoshiPageClient() {
   const [posts, setPosts] = useState<MeNoHoshiPost[]>([]);
+  const [gridFields, setGridFields] = useState<MeNoHoshiGridField[]>(fallbackGridFields);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchMeNoHoshiFromCms()
-      .then(setPosts)
+    Promise.all([fetchMeNoHoshiFromCms(), fetchGridSettings()])
+      .then(([p, g]) => { setPosts(p); setGridFields(g); })
       .catch(() => setPosts([]))
       .finally(() => setLoading(false));
   }, []);
@@ -92,7 +97,7 @@ export function MeNoHoshiPageClient() {
             basePath="/me-no-hoshi"
             detailQuery=""
             searchQuery={q}
-            gridSettings={buildGridFields(posts)}
+            gridSettings={gridFields}
           />
         </FilterLayout>
       </FilterProvider>

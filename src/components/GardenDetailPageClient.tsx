@@ -26,7 +26,9 @@ export function GardenDetailPageClient() {
       .finally(() => setLoading(false));
   }, []);
 
-  const node = allNodes.find((n) => n.slug === slug);
+  /* slugマッチ: ハイフン有無の両方に対応（CMS: 2026-04-01, ローカル: 20260401） */
+  const normalizedSlug = slug.replace(/-/g, "");
+  const node = allNodes.find((n) => n.slug === slug || n.slug.replace(/-/g, "") === normalizedSlug);
 
   /* 前後ノード（時系列順: allNodesは日付降順） */
   const idx = node ? allNodes.indexOf(node) : -1;
