@@ -15,6 +15,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/markdown.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -175,7 +176,7 @@ function handle_delete(): never {
     json_ok(['deleted' => $slug]);
 }
 
-/** JSON 文字列フィールドをデコードして返す */
+/** JSON 文字列フィールドをデコードし、bodyをHTML変換して返す */
 function decode_json_fields(array $row): array {
     foreach (['tags'] as $field) {
         if (isset($row[$field]) && is_string($row[$field])) {
@@ -184,6 +185,10 @@ function decode_json_fields(array $row): array {
                 $row[$field] = $decoded;
             }
         }
+    }
+    // Markdown → HTML 変換（画像・ブラケットリンク・段落等）
+    if (isset($row['body']) && is_string($row['body'])) {
+        $row['body'] = markdown_to_html($row['body']);
     }
     return $row;
 }
