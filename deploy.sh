@@ -8,13 +8,24 @@ set -e
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REMOTE_USER_HOST="xserver"
 REMOTE_DIR="~/hayatokano.com/public_html"
+DB_PATH="_cms/db/hayatokano.sqlite3"
 
-echo "=== [1/3] 静的ビルド ==="
+# ─── デプロイ前: サーバーDBの件数を記録 ───
+echo "=== [0/4] デプロイ前DBチェック ==="
+BEFORE_COUNTS=$(ssh "$REMOTE_USER_HOST" "sqlite3 ~/${REMOTE_DIR#~/}/${DB_PATH} \
+  'SELECT \"works:\" || COUNT(*) FROM works; \
+   SELECT \"news:\" || COUNT(*) FROM news; \
+   SELECT \"me_no_hoshi:\" || COUNT(*) FROM me_no_hoshi; \
+   SELECT \"garden:\" || COUNT(*) FROM garden;'" 2>/dev/null || echo "接続失敗")
+echo "$BEFORE_COUNTS"
+
+echo ""
+echo "=== [1/4] 静的ビルド ==="
 cd "$PROJECT_DIR"
 STATIC_EXPORT=true npx next build
 
 echo ""
-echo "=== [2/3] Xserver へ rsync ==="
+echo "=== [2/4] Xserver へ rsync ==="
 # --delete で不要ファイルを削除するが、サーバー固有のディレクトリは除外
 rsync -avz --delete \
   --exclude="wp/" \
@@ -28,19 +39,17 @@ rsync -avz --delete \
   --exclude="license.txt" \
   --exclude="readme.html" \
   --exclude="default_page.png" \
+  --exclude="_cms/" \
   out/ "${REMOTE_USER_HOST}:${REMOTE_DIR}/"
 
 echo ""
-echo "=== [3/3] .htaccess を配置 ==="
-# deploy/.htaccess をサーバーに転送（GitHub Actions でも同じファイルを使用）
+echo "=== [3/4] .htaccess を配置 ==="
 rsync -avz \
   deploy/.htaccess \
   "${REMOTE_USER_HOST}:${REMOTE_DIR}/.htaccess"
 
 echo ""
 echo "=== [4/4] PHP CMS を Xserver へ転送 ==="
-# cms/ を _cms/ として転送
-# --delete は使わない（db/hayatokano.sqlite3 と uploads/ を保護するため）
 # db/ と uploads/ はディレクトリごと除外（サーバー側のデータを絶対に上書きしない）
 rsync -avz \
   --exclude="db/" \
@@ -48,7 +57,31 @@ rsync -avz \
   --exclude=".env.php" \
   cms/ "${REMOTE_USER_HOST}:${REMOTE_DIR}/_cms/"
 
+# ─── デプロイ後: サーバーDBの件数を検証 ───
 echo ""
-echo "=== デプロイ完了 ==="
+echo "=== デプロイ後DBチェック ==="
+AFTER_COUNTS=$(ssh "$REMOTE_USER_HOST" "sqlite3 ~/${REMOTE_DIR#~/}/${DB_PATH} \
+  'SELECT \"works:\" || COUNT(*) FROM works; \
+   SELECT \"news:\" || COUNT(*) FROM news; \
+   SELECT \"me_no_hoshi:\" || COUNT(*) FROM me_no_hoshi; \
+   SELECT \"garden:\" || COUNT(*) FROM garden;'" 2>/dev/null || echo "接続失敗")
+echo "$AFTER_COUNTS"
+
+# 件数比較: デプロイ後にデータが減っていたら警告
+if [ "$BEFORE_COUNTS" != "$AFTER_COUNTS" ]; then
+  echo ""
+  echo "⚠️  警告: デプロイ前後でDB件数が変わっています！"
+  echo "BEFORE:"
+  echo "$BEFORE_COUNTS"
+  echo "AFTER:"
+  echo "$AFTER_COUNTS"
+  echo ""
+  echo "データが消失した場合: ローカルDBからリストアしてください"
+  echo "  rsync -avz cms/db/hayatokano.sqlite3 xserver:~/hayatokano.com/public_html/_cms/db/"
+  exit 1
+fi
+
+echo ""
+echo "=== デプロイ完了（DB件数変化なし ✓） ==="
 echo "本番サイト: https://hayatokano.com"
 echo "CMS: https://hayatokano.com/_cms/"
