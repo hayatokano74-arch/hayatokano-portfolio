@@ -355,7 +355,8 @@ ob_start();
                 <label class="form-label">画像 URL</label>
                 <input type="text" name="media_src[]" class="form-control media-src-input"
                        value="<?= htmlspecialchars($m['src'] ?? '', ENT_QUOTES) ?>"
-                       placeholder="/uploads/...">
+                       placeholder="/uploads/..."
+                       data-upload-section="me-no-hoshi" data-upload-slug="<?= $f_slug ?>">
               </div>
               <div class="form-group">
                 <label class="form-label">alt テキスト</label>
@@ -375,9 +376,6 @@ ob_start();
             </div>
           </div>
           <div class="media-row-actions">
-            <div class="upload-zone upload-zone--sm" data-target-src="media_src" data-row-index="<?= $i ?>">
-              <span>アップロード</span>
-            </div>
             <button type="button" class="btn btn-sm btn-ghost dynamic-remove">✕</button>
           </div>
         </div>
@@ -410,7 +408,8 @@ ob_start();
               <div class="form-group">
                 <label class="form-label">画像 URL</label>
                 <input type="text" name="kv_src[]" class="form-control"
-                       value="<?= htmlspecialchars($img['src'] ?? '', ENT_QUOTES) ?>" placeholder="/uploads/...">
+                       value="<?= htmlspecialchars($img['src'] ?? '', ENT_QUOTES) ?>" placeholder="/uploads/..."
+                       data-upload-section="me-no-hoshi" data-upload-slug="<?= $f_slug ?>">
               </div>
               <div class="form-group">
                 <label class="form-label">alt</label>
@@ -468,7 +467,8 @@ ob_start();
               <div class="form-group">
                 <label class="form-label">画像 URL</label>
                 <input type="text" name="pw_src[]" class="form-control"
-                       value="<?= htmlspecialchars($img['src'] ?? '', ENT_QUOTES) ?>" placeholder="/uploads/...">
+                       value="<?= htmlspecialchars($img['src'] ?? '', ENT_QUOTES) ?>" placeholder="/uploads/..."
+                       data-upload-section="me-no-hoshi" data-upload-slug="<?= $f_slug ?>">
               </div>
               <div class="form-group">
                 <label class="form-label">alt</label>
@@ -559,7 +559,8 @@ ob_start();
       <div class="form-row form-row--2col">
         <div class="form-group">
           <label class="form-label">画像 URL</label>
-          <input type="text" name="media_src[]" class="form-control" placeholder="/uploads/...">
+          <input type="text" name="media_src[]" class="form-control" placeholder="/uploads/..."
+                 data-upload-section="me-no-hoshi" data-upload-slug="">
         </div>
         <div class="form-group">
           <label class="form-label">alt テキスト</label>
@@ -595,7 +596,8 @@ ob_start();
       <div class="form-row form-row--2col">
         <div class="form-group">
           <label class="form-label">画像 URL</label>
-          <input type="text" name="kv_src[]" class="form-control" placeholder="/uploads/...">
+          <input type="text" name="kv_src[]" class="form-control" placeholder="/uploads/..."
+                 data-upload-section="me-no-hoshi" data-upload-slug="">
         </div>
         <div class="form-group">
           <label class="form-label">alt</label>
@@ -637,7 +639,8 @@ ob_start();
       <div class="form-row form-row--2col">
         <div class="form-group">
           <label class="form-label">画像 URL</label>
-          <input type="text" name="pw_src[]" class="form-control" placeholder="/uploads/...">
+          <input type="text" name="pw_src[]" class="form-control" placeholder="/uploads/..."
+                 data-upload-section="me-no-hoshi" data-upload-slug="">
         </div>
         <div class="form-group">
           <label class="form-label">alt</label>
@@ -664,6 +667,9 @@ ob_start();
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   // 汎用: 動的行の追加・削除
+  // 現在のスラッグ（アップロード用）
+  const current_slug = '<?= addslashes($row['slug'] ?? '') ?>';
+
   function init_dynamic_list(listId, addBtnId, templateId) {
     const list   = document.getElementById(listId);
     const addBtn = document.getElementById(addBtnId);
@@ -673,6 +679,12 @@ document.addEventListener('DOMContentLoaded', () => {
     addBtn.addEventListener('click', () => {
       const clone = tpl.content.cloneNode(true);
       list.appendChild(clone);
+      const added = list.lastElementChild;
+      // 新規行のアップロード入力にスラッグをセット
+      added.querySelectorAll('[data-upload-slug]').forEach(el => {
+        el.dataset.uploadSlug = current_slug;
+      });
+      if (typeof init_upload_fields === 'function') init_upload_fields(added);
     });
 
     list.addEventListener('click', (e) => {

@@ -161,6 +161,7 @@ ob_start();
           <div class="form-group">
             <label class="form-label" for="image_src">画像 URL</label>
             <input type="text" id="image_src" name="image_src" class="form-control"
+                   data-upload-section="news" data-upload-slug="<?= $f_slug ?>"
                    value="<?= $f_img_src ?>" placeholder="/uploads/...">
           </div>
           <div class="form-group">

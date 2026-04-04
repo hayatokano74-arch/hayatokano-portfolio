@@ -281,82 +281,316 @@ async function submit_form(form, url, onSuccess, onError) {
 
 
 /* ══════════════════════════════════════════════
-   5. 画像アップロードのドラッグ&ドロップ
+   5. 画像アップロード
    ══════════════════════════════════════════════ */
 
 /**
- * アップロードゾーンを初期化する
- * @param {HTMLElement} zone     - .upload-zone 要素
+ * 画像ファイルを api/media.php に POST してアップロードする
+ * @param {File}   file    - アップロードするファイル
+ * @param {string} section - 保存先セクション（works, garden 等）
+ * @param {string} slug    - 紐付ける投稿スラッグ（任意）
+ * @returns {Promise<{url:string, path:string, width:number, height:number}>}
+ */
+async function upload_image_to_api(file, section = 'misc', slug = '') {
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+  const fd   = new FormData();
+  fd.append('file',    file);
+  fd.append('section', section);
+  if (slug) fd.append('slug', slug);
+
+  const res  = await fetch('../api/media.php', {
+    method:  'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': csrf },
+    body:    fd,
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error ?? 'アップロードに失敗しました');
+  return data.data; // { url, path, width, height }
+}
+
+/**
+ * .upload-zone 要素を初期化する
+ * クリック・ファイル選択ボタン・ドラッグ&ドロップに対応し、
+ * options.section が指定されていれば api/media.php に自動アップロードする
+ *
+ * @param {HTMLElement} zone
  * @param {Object}      options
- * @param {Function}    options.onFiles - ファイル選択時コールバック (files: FileList) => void
- * @param {string[]}    [options.accept=['image/jpeg','image/png','image/webp','image/gif']]
+ * @param {string}      [options.section]     - アップロード先セクション
+ * @param {string}      [options.slug]        - 投稿スラッグ
+ * @param {Function}    [options.onUploaded]  - 完了コールバック (url, width, height) => void
+ * @param {Function}    [options.onFiles]     - 独自処理コールバック（apiUrl 不使用時）
+ * @param {string[]}    [options.accept]      - 許可 MIME タイプ
  */
 function init_upload_zone(zone, options = {}) {
   if (!zone) return;
 
-  const accept  = options.accept ?? ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-  const input   = zone.querySelector('.upload-zone__input') ?? _create_file_input(accept);
+  const accept    = options.accept ?? ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const fileInput = _create_file_input(accept);
+  zone.appendChild(fileInput);
 
-  if (!zone.contains(input)) zone.appendChild(input);
+  // 「ファイルを選択」ボタンを注入（まだなければ）
+  if (!zone.querySelector('.upload-zone__select-btn')) {
+    const btn = document.createElement('button');
+    btn.type      = 'button';
+    btn.className = 'btn btn-ghost upload-zone__select-btn';
+    btn.textContent = 'ファイルを選択';
+    const inner = zone.querySelector('.upload-zone__inner');
+    if (inner) inner.appendChild(btn);
+    else zone.appendChild(btn);
+    btn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+  }
 
-  // クリックでファイル選択
+  // ゾーン全体クリックでも選択
   zone.addEventListener('click', (e) => {
-    if (e.target !== input) input.click();
+    if (e.target.closest('button, a, input')) return;
+    fileInput.click();
   });
 
-  // ファイル選択
-  input.addEventListener('change', () => {
-    if (input.files?.length) _handle_files(input.files);
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files?.length) _handle_zone_files(Array.from(fileInput.files));
+    fileInput.value = '';
   });
 
-  // ドラッグオーバー
-  zone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    zone.classList.add('is-dragover');
-  });
-
-  zone.addEventListener('dragleave', (e) => {
-    if (!zone.contains(e.relatedTarget)) {
-      zone.classList.remove('is-dragover');
-    }
-  });
-
-  // ドロップ
+  zone.addEventListener('dragover',  (e) => { e.preventDefault(); zone.classList.add('is-dragover'); });
+  zone.addEventListener('dragleave', (e) => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('is-dragover'); });
   zone.addEventListener('drop', (e) => {
     e.preventDefault();
     zone.classList.remove('is-dragover');
-    const files = e.dataTransfer?.files;
-    if (files?.length) _handle_files(files);
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    if (files.length) _handle_zone_files(files);
   });
 
-  function _handle_files(files) {
-    // 許可 MIME タイプでフィルタ
-    const valid = Array.from(files).filter(f => accept.includes(f.type));
-    if (valid.length === 0) {
-      show_toast('対応していないファイル形式です（JPEG / PNG / WebP / GIF）', 'error');
-      return;
+  async function _handle_zone_files(files) {
+    const valid = files.filter(f => accept.includes(f.type));
+    if (!valid.length) { show_toast('対応していないファイル形式です（JPEG / PNG / WebP / GIF）', 'error'); return; }
+
+    if (typeof options.onFiles === 'function') { options.onFiles(valid); return; }
+
+    _zone_set_loading(zone, true);
+    for (const file of valid) {
+      try {
+        const result = await upload_image_to_api(file, options.section ?? 'misc', options.slug ?? '');
+        if (typeof options.onUploaded === 'function') options.onUploaded(result.url, result.width, result.height);
+        show_toast('アップロードしました', 'success');
+      } catch (err) {
+        show_toast(err.message, 'error');
+      }
     }
-    if (typeof options.onFiles === 'function') {
-      options.onFiles(valid);
-    }
-    // プレビュー表示（オプション）
-    if (options.preview) {
-      _render_preview(zone, valid, options.preview);
-    }
+    _zone_set_loading(zone, false);
   }
+}
+
+/** アップロードゾーンのローディング状態を切り替える */
+function _zone_set_loading(zone, loading) {
+  zone.classList.toggle('is-uploading', loading);
+  const btn = zone.querySelector('.upload-zone__select-btn');
+  if (btn) { btn.disabled = loading; btn.textContent = loading ? 'アップロード中…' : 'ファイルを選択'; }
+}
+
+/**
+ * URL テキスト入力欄の隣にアップロードボタンを追加する
+ * input[data-upload-section] に自動適用される
+ *
+ * @param {HTMLInputElement} inputEl
+ * @param {Object}           options
+ * @param {string}           options.section
+ * @param {string}           [options.slug]
+ * @param {Function}         [options.onUploaded]
+ */
+function init_url_upload_btn(inputEl, options = {}) {
+  if (!inputEl || inputEl.dataset.uploadInited) return;
+  inputEl.dataset.uploadInited = '1';
+
+  const wrapper = inputEl.parentElement;
+  wrapper.classList.add('input-with-upload');
+
+  const btn = document.createElement('button');
+  btn.type      = 'button';
+  btn.className = 'btn btn-ghost btn-icon upload-url-btn';
+  btn.title     = 'ファイルを選択してアップロード（ドロップも可）';
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+
+  const fileInput = document.createElement('input');
+  fileInput.type    = 'file';
+  fileInput.accept  = 'image/jpeg,image/png,image/webp,image/gif';
+  fileInput.style.display = 'none';
+
+  wrapper.appendChild(btn);
+  wrapper.appendChild(fileInput);
+
+  btn.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    await _do_url_upload(file, inputEl, btn, options);
+    fileInput.value = '';
+  });
+
+  // URL 欄へのドロップも対応
+  inputEl.addEventListener('dragover',  (e) => { e.preventDefault(); inputEl.classList.add('is-dragover'); });
+  inputEl.addEventListener('dragleave', ()  => inputEl.classList.remove('is-dragover'));
+  inputEl.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    inputEl.classList.remove('is-dragover');
+    const file = e.dataTransfer?.files[0];
+    if (file) await _do_url_upload(file, inputEl, btn, options);
+  });
+}
+
+/** URL フィールドへのアップロード共通処理 */
+async function _do_url_upload(file, inputEl, btn, options) {
+  const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!ALLOWED.includes(file.type)) { show_toast('対応していないファイル形式です', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner spinner--sm"></span>';
+
+  try {
+    const result = await upload_image_to_api(file, options.section ?? 'misc', options.slug ?? '');
+
+    inputEl.value = result.url;
+    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // 同じ .dynamic-row--media 内の幅・高さ・プレビューを更新
+    const row = inputEl.closest('.dynamic-row--media');
+    if (row) {
+      const preview = row.querySelector('.media-row-preview');
+      if (preview) preview.innerHTML = `<img src="${_escape(result.url)}" alt="">`;
+      const wEl = row.querySelector('input[name$="_width[]"], input[name="image_width"]');
+      const hEl = row.querySelector('input[name$="_height[]"], input[name="image_height"]');
+      if (wEl && result.width)  wEl.value = result.width;
+      if (hEl && result.height) hEl.value = result.height;
+    }
+
+    if (typeof options.onUploaded === 'function') options.onUploaded(result.url, result.width, result.height);
+    show_toast('アップロードしました', 'success');
+  } catch (err) {
+    show_toast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+  }
+}
+
+/**
+ * Markdown テキストエリアの上部にアップロードツールバーを追加する
+ * textarea[data-md-upload-section] に自動適用される
+ *
+ * @param {HTMLTextAreaElement} textareaEl
+ * @param {Object}              options
+ * @param {string}              options.section
+ * @param {string}              [options.slug]
+ */
+function init_markdown_upload_toolbar(textareaEl, options = {}) {
+  if (!textareaEl || textareaEl.dataset.mdToolbarInited) return;
+  textareaEl.dataset.mdToolbarInited = '1';
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'md-toolbar';
+
+  const btn = document.createElement('button');
+  btn.type      = 'button';
+  btn.className = 'btn btn-sm btn-ghost md-toolbar__btn';
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>画像を挿入';
+
+  const fileInput = document.createElement('input');
+  fileInput.type     = 'file';
+  fileInput.accept   = 'image/jpeg,image/png,image/webp,image/gif';
+  fileInput.multiple = true;
+  fileInput.style.display = 'none';
+
+  toolbar.appendChild(btn);
+  toolbar.appendChild(fileInput);
+
+  btn.addEventListener('click', () => fileInput.click());
+
+  const _md_upload_files = async (files) => {
+    btn.disabled    = true;
+    btn.textContent = 'アップロード中…';
+    for (const file of files) {
+      try {
+        const result = await upload_image_to_api(file, options.section ?? 'misc', options.slug ?? '');
+        insert_at_cursor(textareaEl, `\n![](${result.url})\n`);
+        show_toast('画像を挿入しました', 'success');
+      } catch (err) {
+        show_toast(err.message, 'error');
+      }
+    }
+    btn.disabled  = false;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>画像を挿入';
+    fileInput.value = '';
+  };
+
+  fileInput.addEventListener('change', async () => {
+    const files = Array.from(fileInput.files ?? []);
+    if (files.length) await _md_upload_files(files);
+  });
+
+  // テキストエリアへの直接ドロップで画像挿入
+  textareaEl.addEventListener('dragover', (e) => {
+    if (Array.from(e.dataTransfer?.items ?? []).some(i => i.type.startsWith('image/'))) {
+      e.preventDefault();
+      textareaEl.classList.add('is-dragover');
+    }
+  });
+  textareaEl.addEventListener('dragleave', () => textareaEl.classList.remove('is-dragover'));
+  textareaEl.addEventListener('drop', async (e) => {
+    const files = Array.from(e.dataTransfer?.files ?? []).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    e.preventDefault();
+    textareaEl.classList.remove('is-dragover');
+    await _md_upload_files(files);
+  });
+
+  textareaEl.parentElement.insertBefore(toolbar, textareaEl);
+}
+
+/**
+ * テキストエリアのカーソル位置にテキストを挿入する
+ * @param {HTMLTextAreaElement} el
+ * @param {string}              text
+ */
+function insert_at_cursor(el, text) {
+  const start = el.selectionStart ?? el.value.length;
+  const end   = el.selectionEnd   ?? el.value.length;
+  el.value = el.value.substring(0, start) + text + el.value.substring(end);
+  el.selectionStart = el.selectionEnd = start + text.length;
+  el.focus();
+}
+
+/**
+ * 指定コンテナ内の [data-upload-section] 入力欄と
+ * [data-md-upload-section] テキストエリアを一括初期化する
+ * 動的に追加された行（テンプレートのクローン）にも適用可能
+ * @param {HTMLElement} [root=document]
+ */
+function init_upload_fields(root = document) {
+  root.querySelectorAll('input[data-upload-section]').forEach(input => {
+    init_url_upload_btn(input, {
+      section: input.dataset.uploadSection,
+      slug:    input.dataset.uploadSlug ?? '',
+    });
+  });
+  root.querySelectorAll('textarea[data-md-upload-section]').forEach(ta => {
+    init_markdown_upload_toolbar(ta, {
+      section: ta.dataset.mdUploadSection,
+      slug:    ta.dataset.mdUploadSlug ?? '',
+    });
+  });
 }
 
 /** ファイル input を生成 */
 function _create_file_input(accept) {
   const input = document.createElement('input');
-  input.type     = 'file';
-  input.multiple = true;
-  input.accept   = accept.join(',');
+  input.type      = 'file';
+  input.multiple  = true;
+  input.accept    = accept.join(',');
   input.className = 'upload-zone__input';
   return input;
 }
 
-/** プレビューグリッドにサムネイルを追加 */
+/** プレビューグリッドにサムネイルを追加（旧互換） */
 function _render_preview(zone, files, previewContainer) {
   const container = typeof previewContainer === 'string'
     ? document.querySelector(previewContainer)
@@ -600,4 +834,5 @@ document.addEventListener('DOMContentLoaded', () => {
   init_char_counters();
   init_rel_time();
   init_delete_buttons();
+  init_upload_fields();
 });

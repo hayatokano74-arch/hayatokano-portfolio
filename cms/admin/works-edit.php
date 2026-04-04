@@ -253,6 +253,7 @@ ob_start();
               <div class="form-group">
                 <label class="form-label">画像 URL</label>
                 <input type="text" name="media_src[]" class="form-control"
+                       data-upload-section="works" data-upload-slug="<?= $f_slug ?>"
                        value="<?= htmlspecialchars($m['src'] ?? '', ENT_QUOTES) ?>" placeholder="/uploads/...">
               </div>
               <div class="form-group">
@@ -316,7 +317,8 @@ ob_start();
       <div class="form-row form-row--2col">
         <div class="form-group">
           <label class="form-label">画像 URL</label>
-          <input type="text" name="media_src[]" class="form-control" placeholder="/uploads/...">
+          <input type="text" name="media_src[]" class="form-control"
+                 data-upload-section="works" data-upload-slug="" placeholder="/uploads/...">
         </div>
         <div class="form-group">
           <label class="form-label">alt テキスト</label>
@@ -348,7 +350,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (addBtn && list && tpl) {
     addBtn.addEventListener('click', () => {
-      list.appendChild(tpl.content.cloneNode(true));
+      const clone = tpl.content.cloneNode(true);
+      clone.querySelectorAll('[data-upload-section]').forEach(el => {
+        el.dataset.uploadSlug = '<?= addslashes($f_slug) ?>';
+      });
+      list.appendChild(clone);
+      init_upload_fields(list.lastElementChild);
     });
     list.addEventListener('click', (e) => {
       const btn = e.target.closest('.dynamic-remove');

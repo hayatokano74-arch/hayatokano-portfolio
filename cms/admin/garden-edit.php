@@ -149,6 +149,8 @@ ob_start();
         <div class="form-group">
           <textarea id="body" name="body" class="form-control garden-body-textarea"
                     rows="18"
+                    data-md-upload-section="garden"
+                    data-md-upload-slug="<?= htmlspecialchars($row['slug'] ?? '', ENT_QUOTES) ?>"
                     placeholder="本文を入力..."><?= $f_body ?></textarea>
         </div>
       </div>
@@ -219,12 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const zone = document.getElementById('upload-zone-garden');
   if (zone) {
     init_upload_zone(zone, {
-      apiUrl: '../api/upload.php',
       section: 'garden',
       slug: '<?= addslashes($row['slug'] ?? '') ?>',
       onUploaded(url) {
-        navigator.clipboard?.writeText(url).catch(() => {});
-        show_toast('URL をクリップボードにコピーしました: ' + url, 'success');
+        insert_at_cursor(document.getElementById('body'), `\n![](${url})\n`);
+        show_toast('画像を挿入しました', 'success');
       },
     });
   }
