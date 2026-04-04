@@ -3249,7 +3249,7 @@ img[loading="lazy"] {
   font-size: var(--font-meta);
   letter-spacing: 0.08em;
   color: var(--muted);
-  padding-top: 3px; /* キャップハイト揃え: (titleHalfLeading 6.18 - dateHalfLeading 3.06) */
+  padding-top: 7px; /* キャップハイト揃え: Helvetica Neue cap-height(0.72)考慮した正確な値 */
 }
 
 /* 本文エリア: 中央4カラム（9カラム中5〜8 = 12カラム中5〜8） */
