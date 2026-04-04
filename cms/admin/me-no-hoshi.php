@@ -42,7 +42,25 @@ ob_start();
         $tags      = json_decode($row['tags'] ?? '[]', true) ?? [];
         $data      = json_decode($row['data'] ?? '{}', true) ?? [];
         $media     = $data['media'] ?? [];
-        $thumb_src = fix_broken_unicode_url($media[0]['src'] ?? '');
+        // サムネイル: 最初の画像を探す → YouTubeサムネイル
+        $thumb_src = '';
+        foreach ($media as $m) {
+            if (($m['type'] ?? '') === 'image' && !empty($m['src'])) {
+                $thumb_src = $m['src'];
+                break;
+            }
+        }
+        if (!$thumb_src) {
+            foreach ($media as $m) {
+                if (($m['type'] ?? '') === 'video' && !empty($m['src']) && str_contains($m['src'], 'youtube')) {
+                    if (preg_match('/[?&]v=([^&]+)/', $m['src'], $ym)) {
+                        $thumb_src = 'https://img.youtube.com/vi/' . $ym[1] . '/hqdefault.jpg';
+                    }
+                    break;
+                }
+            }
+        }
+        $thumb_src = fix_broken_unicode_url($thumb_src);
         // details から artist を取得
         $details   = $data['details'] ?? [];
         $artist    = '';

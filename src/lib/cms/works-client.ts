@@ -74,11 +74,19 @@ function parseCmsWork(item: CmsWork): Work | null {
     tags,
     year: item.year,
     excerpt: item.excerpt || item.body,
-    ...(thumbnail
-      ? { thumbnail }
-      : media.length > 0 && media[0].type === "image"
-        ? { thumbnail: { src: media[0].src, alt: media[0].alt, width: media[0].width, height: media[0].height } }
-        : {}),
+    ...((() => {
+      if (thumbnail) return { thumbnail };
+      /* 最初の画像メディアを探す */
+      const firstImg = media.find((m) => m.type === "image");
+      if (firstImg) return { thumbnail: { src: firstImg.src, alt: firstImg.alt, width: firstImg.width, height: firstImg.height } };
+      /* 画像がなければYouTubeサムネイルを取得 */
+      const firstVideo = media.find((m) => m.type === "video" && m.src.includes("youtube"));
+      if (firstVideo) {
+        const match = firstVideo.src.match(/[?&]v=([^&]+)/);
+        if (match) return { thumbnail: { src: `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`, alt: title, width: 480, height: 360 } };
+      }
+      return {};
+    })()),
     details: {
       exhibition_type: (d.exhibition_type ?? "").trim() || undefined,
       exhibition_title: (d.exhibition_title ?? "").trim() || undefined,

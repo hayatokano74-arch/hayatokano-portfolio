@@ -42,7 +42,30 @@ ob_start();
         $tags      = json_decode($row['tags'] ?? '[]', true) ?? [];
         $data      = json_decode($row['data'] ?? '{}', true) ?? [];
         $media     = $data['media'] ?? [];
-        $thumb_src = fix_broken_unicode_url($media[0]['src'] ?? ($data['thumbnail']['src'] ?? ''));
+        // サムネイル: thumbnail → 最初の画像 → YouTubeサムネイル の順で探す
+        $thumb_src = '';
+        if (!empty($data['thumbnail']['src'])) {
+            $thumb_src = $data['thumbnail']['src'];
+        } else {
+            foreach ($media as $m) {
+                if (($m['type'] ?? '') === 'image' && !empty($m['src'])) {
+                    $thumb_src = $m['src'];
+                    break;
+                }
+            }
+        }
+        // 画像がなければ動画（YouTube）のサムネイルを取得
+        if (!$thumb_src) {
+            foreach ($media as $m) {
+                if (($m['type'] ?? '') === 'video' && !empty($m['src']) && str_contains($m['src'], 'youtube')) {
+                    if (preg_match('/[?&]v=([^&]+)/', $m['src'], $ym)) {
+                        $thumb_src = 'https://img.youtube.com/vi/' . $ym[1] . '/hqdefault.jpg';
+                    }
+                    break;
+                }
+            }
+        }
+        $thumb_src = fix_broken_unicode_url($thumb_src);
       ?>
       <tr class="is-clickable" data-href="<?= htmlspecialchars($edit_url, ENT_QUOTES) ?>">
         <td>
