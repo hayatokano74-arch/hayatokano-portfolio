@@ -129,6 +129,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
         }
 
+        // pastExhibitions（年, 情報の動的行）
+        $pe_years = $_POST['pe_year'] ?? [];
+        $pe_infos = $_POST['pe_info'] ?? [];
+        $past_exhibitions = [];
+        foreach ($pe_years as $i => $py) {
+            $py   = trim($py);
+            $info = trim($pe_infos[$i] ?? '');
+            if ($py === '' && $info === '') continue;
+            $past_exhibitions[] = ['year' => $py, 'info' => $info];
+        }
+
         $data_arr = [
             'subtitle'          => $subtitle,
             'showKeyVisuals'    => $show_key_visuals,
@@ -138,6 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'media'             => $media,
             'keyVisuals'        => $key_visuals,
             'pastWorks'         => $past_works,
+            'pastExhibitions'   => $past_exhibitions,
             'bio'               => $bio,
         ];
         $data_json = json_encode($data_arr, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -201,8 +213,9 @@ $f_show_pw   = !empty($data['showPastWorks']);
 $f_show_aw   = !empty($data['showArchiveWorks']);
 $f_details   = $data['details']   ?? [];
 $f_media     = $data['media']     ?? [];
-$f_kv        = $data['keyVisuals'] ?? [];
-$f_pw        = $data['pastWorks']  ?? [];
+$f_kv        = $data['keyVisuals']      ?? [];
+$f_pw        = $data['pastWorks']       ?? [];
+$f_pe        = $data['pastExhibitions'] ?? [];
 
 $page_title = $is_new ? '目の星 新規追加' : '目の星 編集: ' . ($row['title'] ?: $row['slug']);
 $active_nav = 'me-no-hoshi';
@@ -508,6 +521,33 @@ ob_start();
       <button type="button" class="btn btn-sm btn-ghost" id="pw-add">+ 過去作品を追加</button>
     </div>
 
+    <!-- ── 過去の展示 ── -->
+    <div class="form-section form-section--full">
+      <h3 class="form-section__title">過去の展示</h3>
+      <div id="pe-list" class="dynamic-list">
+        <?php foreach ($f_pe as $pe): ?>
+        <div class="dynamic-row">
+          <div class="form-row form-row--2col" style="flex:1">
+            <div class="form-group">
+              <label class="form-label">年</label>
+              <input type="text" name="pe_year[]" class="form-control"
+                     value="<?= htmlspecialchars($pe['year'] ?? '', ENT_QUOTES) ?>" placeholder="例: 2024">
+            </div>
+            <div class="form-group">
+              <label class="form-label">展示情報</label>
+              <input type="text" name="pe_info[]" class="form-control"
+                     value="<?= htmlspecialchars($pe['info'] ?? '', ENT_QUOTES) ?>" placeholder="例: 「展示名」会場名">
+            </div>
+          </div>
+          <div class="media-row-actions">
+            <button type="button" class="btn btn-sm btn-ghost dynamic-remove">✕</button>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <button type="button" class="btn btn-sm btn-ghost" id="pe-add">+ 展示を追加</button>
+    </div>
+
     <!-- ── アーティストプロフィール ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">アーティストプロフィール (Bio)</h3>
@@ -678,6 +718,24 @@ ob_start();
   </div>
 </template>
 
+<template id="tpl-pe-row">
+  <div class="dynamic-row">
+    <div class="form-row form-row--2col" style="flex:1">
+      <div class="form-group">
+        <label class="form-label">年</label>
+        <input type="text" name="pe_year[]" class="form-control" placeholder="例: 2024">
+      </div>
+      <div class="form-group">
+        <label class="form-label">展示情報</label>
+        <input type="text" name="pe_info[]" class="form-control" placeholder="例: 「展示名」会場名">
+      </div>
+    </div>
+    <div class="media-row-actions">
+      <button type="button" class="btn btn-sm btn-ghost dynamic-remove">✕</button>
+    </div>
+  </div>
+</template>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   // 汎用: 動的行の追加・削除
@@ -712,6 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
   init_dynamic_list('media-list',   'media-add',   'tpl-media-row');
   init_dynamic_list('kv-list',      'kv-add',      'tpl-kv-row');
   init_dynamic_list('pw-list',      'pw-add',      'tpl-pw-row');
+  init_dynamic_list('pe-list',      'pe-add',      'tpl-pe-row');
 
   // 削除ボタン
   const delBtn = document.querySelector('[data-delete]');
