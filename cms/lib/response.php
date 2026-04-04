@@ -1,6 +1,15 @@
 <?php
 /** JSON レスポンスヘルパー */
 
+/* CORS: フロントエンドからのクライアントサイドフェッチを許可 */
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Accept, Content-Type');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 function json_ok(mixed $data, int $status = 200): never {
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8');

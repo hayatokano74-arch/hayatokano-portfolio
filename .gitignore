@@ -35,3 +35,5 @@ write/api/config.php
 *.tsbuildinfo
 next-env.d.ts
 # content/garden/ は管理画面で管理するためgit追跡対象（Obsidianシンボリックリンクから移行済み）
+.claude/worktrees/
+cms/db/*.sqlite3

@@ -1,49 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { CanvasShell } from "@/components/CanvasShell";
-import { Header } from "@/components/Header";
+import { TextPageClient } from "@/components/TextPageClient";
 
 export const metadata: Metadata = { title: "Text" };
-import { getTexts } from "@/lib/text";
-import { buildCategoryMenu, parseCategory } from "@/lib/categories";
 
-export default async function TextListPage() {
-  /* 静的エクスポート: searchParams はクライアントサイドで処理 */
-  const activeCategory = parseCategory(undefined);
-  const q = "";
-  const texts = await getTexts();
-  const filteredTexts = texts;
-  /* 投稿に含まれるタグだけをカテゴリメニューに表示 */
-  const categoryMenu = buildCategoryMenu(texts.flatMap((t) => t.categories));
-  const categoryHrefs = Object.fromEntries(
-    categoryMenu.map((category) => {
-      const params = new URLSearchParams();
-      if (category !== "All") params.set("tag", category);
-      const qs = params.toString();
-      return [category, qs ? `/text?${qs}` : "/text"];
-    }),
-  );
-
+export default function TextListPage() {
   return (
     <CanvasShell>
-      <Header active="Text" title="Text" showTitleRow={false} activeCategory={activeCategory} categoryHrefs={categoryHrefs} />
-      <div>
-        {filteredTexts.map((t) => (
-          <div key={t.slug}>
-            <div className="hrline" />
-            <Link
-              href={`/text/${t.slug}`}
-              className="action-link text-list-row"
-            >
-              <div className="text-list-year" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700, color: "var(--muted)" }}>{t.year}</div>
-              <div className="text-list-title" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", fontWeight: 700 }}>{t.title}</div>
-              <div className="text-list-categories" style={{ fontSize: "var(--font-body)", lineHeight: "var(--lh-normal)", color: "var(--muted)", fontWeight: 600 }}>
-                {t.categories.join("    ")}
-              </div>
-            </Link>
-          </div>
-        ))}
-      </div>
+      <TextPageClient />
     </CanvasShell>
   );
 }

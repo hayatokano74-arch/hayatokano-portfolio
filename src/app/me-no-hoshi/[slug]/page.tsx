@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { CanvasShell } from "@/components/CanvasShell";
-import { Header } from "@/components/Header";
-import { MeNoHoshiDetail } from "@/components/MeNoHoshiDetail";
+import { MeNoHoshiDetailPageClient } from "@/components/MeNoHoshiDetailPageClient";
 import { getMeNoHoshiPosts, getMeNoHoshiBySlug } from "@/lib/meNoHoshi";
 
 export const dynamicParams = false;
@@ -41,26 +39,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function MeNoHoshiDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const post = await getMeNoHoshiBySlug(slug);
-  if (!post) return notFound();
-
+export default function MeNoHoshiDetailPage() {
   return (
     <CanvasShell>
-      <Header
-        active="目の星"
-        title={post.title}
-        brandLabel="目の星"
-        brandHref="/me-no-hoshi"
-        showTitleRow={false}
-        showCategoryRow={false}
-      />
-      <MeNoHoshiDetail post={post} />
+      <MeNoHoshiDetailPageClient />
     </CanvasShell>
   );
 }

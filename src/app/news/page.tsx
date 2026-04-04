@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
-import { Header } from "@/components/Header";
-import { NewsView } from "@/components/NewsView";
-import { getNews } from "@/lib/news";
+import { NewsPageClient } from "@/components/NewsPageClient";
 
 export const metadata: Metadata = { title: "News" };
 
-export default async function NewsPage() {
-  const news = await getNews();
+export default function NewsPage() {
   return (
     <CanvasShell>
-      <Header active="News" title={<>News<span className="page-title-count">({news.length})</span></>} showTitleRow={false} showCategoryRow={false} />
-      <NewsView items={news} />
+      <NewsPageClient />
     </CanvasShell>
   );
 }

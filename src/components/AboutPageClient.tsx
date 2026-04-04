@@ -1,0 +1,115 @@
+"use client";
+
+/**
+ * About ページ（クライアントサイドデータ取得版）
+ * CMS API から直接 About データを取得して表示する。
+ */
+
+import { useEffect, useState } from "react";
+import type { About } from "@/lib/about";
+import { fetchAboutFromCms } from "@/lib/cms/about-client";
+import { Header } from "./Header";
+
+export function AboutPageClient() {
+  const [about, setAbout] = useState<About | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAboutFromCms()
+      .then(setAbout)
+      .catch(() => setAbout(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <>
+        <Header active="About" title="About" showTitleRow={false} showCategoryRow={false} />
+        <div style={{ minHeight: "50vh" }} />
+      </>
+    );
+  }
+
+  if (!about) {
+    return (
+      <>
+        <Header active="About" title="About" showTitleRow={false} showCategoryRow={false} />
+        <div style={{ textAlign: "center", padding: "var(--space-12) 0", color: "var(--muted)" }}>
+          データの取得に失敗しました
+        </div>
+      </>
+    );
+  }
+
+  /* CVをセクションごとにグループ化 */
+  const cvSections = about.cv.reduce<
+    Array<{ label: string; rows: typeof about.cv }>
+  >((acc, row) => {
+    if (!row.year) {
+      acc.push({ label: row.content, rows: [] });
+    } else {
+      if (acc.length === 0) acc.push({ label: "", rows: [] });
+      acc[acc.length - 1].rows.push(row);
+    }
+    return acc;
+  }, []);
+
+  return (
+    <>
+      <Header active="About" title="About" showTitleRow={false} showCategoryRow={false} />
+      <div className="about-layout">
+        {/* 左カラム: テキスト */}
+        <div className="about-text">
+          <div
+            style={{
+              fontSize: "var(--font-body)",
+              lineHeight: "var(--lh-relaxed)",
+              fontWeight: 500,
+              whiteSpace: "pre-wrap",
+              marginBottom: "var(--v-page)",
+            }}
+          >
+            {about.statement}
+          </div>
+
+          {cvSections.map((section, si) => (
+            <section
+              key={si}
+              className="work-details-table"
+              style={si > 0 ? { marginTop: "var(--v-heading)" } : undefined}
+            >
+              {section.label && (
+                <div className="work-details-table-header">{section.label}</div>
+              )}
+              {section.rows.map((row, i) => (
+                <div key={i} className="work-details-row">
+                  <div className="work-details-label">{row.year}</div>
+                  <div className="work-details-value">{row.content}</div>
+                </div>
+              ))}
+            </section>
+          ))}
+        </div>
+
+        {/* 右カラム: 写真（縦一列）— クライアントサイドなので img タグを使用 */}
+        <div className="about-photos">
+          {about.photos.map((photo, idx) => (
+            <img
+              key={idx}
+              src={photo.src}
+              alt="Hayato Kano"
+              width={photo.width}
+              height={photo.height}
+              loading={idx === 0 ? "eager" : "lazy"}
+              style={{
+                display: "block",
+                width: "100%",
+                height: "auto",
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
