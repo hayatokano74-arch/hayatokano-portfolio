@@ -806,15 +806,37 @@ function init_rich_editors() {
     const uploadSection = textarea.dataset.mdUploadSection || 'misc';
     const uploadSlug = textarea.dataset.mdUploadSlug || '';
 
-    // ツールバー設定: 画像 + [[リンク]] ボタン付き
-    const toolbarOptions = [
-      [{ header: [2, 3, false] }],
-      ['bold', 'italic'],
-      ['blockquote'],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      ['link', 'image', 'bracket-link'],
-      ['clean'],
-    ];
+    // ツールバーをHTML で直接構築（カスタムボタン対応）
+    const toolbarId = 'ql-toolbar-' + Math.random().toString(36).slice(2, 8);
+    const toolbarEl = document.createElement('div');
+    toolbarEl.id = toolbarId;
+    toolbarEl.innerHTML = `
+      <span class="ql-formats">
+        <select class="ql-header">
+          <option value="">本文</option>
+          <option value="2">見出し 2</option>
+          <option value="3">見出し 3</option>
+        </select>
+      </span>
+      <span class="ql-formats">
+        <button class="ql-bold"></button>
+        <button class="ql-italic"></button>
+      </span>
+      <span class="ql-formats">
+        <button class="ql-blockquote"></button>
+        <button class="ql-list" value="ordered"></button>
+        <button class="ql-list" value="bullet"></button>
+      </span>
+      <span class="ql-formats">
+        <button class="ql-link"></button>
+        <button class="ql-image"></button>
+        <button class="ql-bracket-link" title="ブラケットリンク [[ページ名]]">[[ ]]</button>
+      </span>
+      <span class="ql-formats">
+        <button class="ql-clean"></button>
+      </span>
+    `;
+    container.appendChild(toolbarEl);
 
     // Quill 初期化
     const quill = new Quill(container, {
@@ -822,23 +844,19 @@ function init_rich_editors() {
       placeholder: textarea.placeholder || '本文を入力…',
       modules: {
         toolbar: {
-          container: toolbarOptions,
+          container: '#' + toolbarId,
           handlers: {
-            // 画像ボタンのカスタムハンドラ
             image: function() {
               fileInput.click();
             },
-            // [[ブラケットリンク]] ボタン
             'bracket-link': function() {
               const range = quill.getSelection(true);
               if (range.length > 0) {
-                // 選択テキストを[[]]で囲む
                 const text = quill.getText(range.index, range.length);
                 quill.deleteText(range.index, range.length);
                 quill.insertText(range.index, `[[${text}]]`);
                 quill.setSelection(range.index + text.length + 4);
               } else {
-                // カーソル位置に[[]]を挿入してカーソルを中に
                 quill.insertText(range.index, '[[]]');
                 quill.setSelection(range.index + 2);
               }
@@ -847,13 +865,6 @@ function init_rich_editors() {
         },
       },
     });
-
-    // [[リンク]] ボタンのラベルを設定
-    const bracketBtn = container.querySelector('.ql-bracket-link');
-    if (bracketBtn) {
-      bracketBtn.innerHTML = '[[ ]]';
-      bracketBtn.title = 'ブラケットリンク（ページ間リンク）';
-    }
 
     // ファイル選択時: CMS APIにアップロード → エディタに挿入
     fileInput.addEventListener('change', async () => {

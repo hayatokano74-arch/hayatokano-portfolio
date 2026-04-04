@@ -2372,65 +2372,36 @@ textarea.form-control.is-dragover {
 
 .ql-snow .ql-picker-label {
   padding: 2px 8px;
-  border-color: transparent !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-1);
 }
 
 .ql-snow .ql-picker-label:hover {
   color: var(--accent) !important;
+  border-color: var(--accent) !important;
 }
 
 /* 見出しピッカー: 幅を適切に */
 .ql-snow .ql-picker.ql-header {
-  width: 100px;
+  width: 108px;
 }
 
-.ql-snow .ql-picker.ql-header .ql-picker-label::before,
-.ql-snow .ql-picker.ql-header .ql-picker-item::before {
-  font-size: var(--font-sm);
-  font-weight: 500;
-}
-
-.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
-  content: '見出し 2' !important;
-  font-size: var(--font-base);
-  font-weight: 700;
-}
-
-.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
-  content: '見出し 3' !important;
-  font-size: var(--font-sm);
-  font-weight: 700;
-}
-
-.ql-snow .ql-picker.ql-header .ql-picker-item::before {
-  content: '本文' !important;
-}
-
-.ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before {
-  content: 'H2' !important;
-}
-
-.ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before {
-  content: 'H3' !important;
-}
-
-.ql-snow .ql-picker.ql-header .ql-picker-label::before {
-  content: '¶' !important;
-}
-
-/* ドロップダウンパネル */
+/* ドロップダウンパネル: 不透明背景 */
 .ql-toolbar .ql-picker-options {
   background: var(--surface-1) !important;
-  border-color: var(--border) !important;
+  border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   padding: var(--s-1) !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18) !important;
 }
 
 .ql-toolbar .ql-picker-item {
   color: var(--text-1) !important;
   padding: var(--s-2) var(--s-3) !important;
   border-radius: var(--radius-sm) !important;
+  font-family: var(--font-family) !important;
 }
 
 .ql-toolbar .ql-picker-item:hover {
@@ -2465,14 +2436,22 @@ textarea.form-control.is-dragover {
 
 /* ── [[リンク]] ボタン ── */
 .ql-bracket-link {
-  font-size: var(--font-sm) !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
-  font-family: var(--font-family) !important;
+  font-family: monospace !important;
   color: var(--text-2) !important;
   width: auto !important;
-  padding: 0 6px !important;
+  min-width: 40px !important;
+  padding: 2px 6px !important;
+  letter-spacing: -0.5px;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--surface-2) !important;
+  line-height: 1 !important;
 }
 
 .ql-bracket-link:hover {
   color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  background: var(--accent-bg) !important;
 }
