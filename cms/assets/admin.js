@@ -936,5 +936,11 @@ function init_rich_editors() {
         hidden.value = (html === '<p><br></p>' || html === '<p></p>') ? '' : html;
       });
     }
+
+    // 操作ヒントを追加
+    const hint = document.createElement('div');
+    hint.className = 'rich-editor-hint';
+    hint.innerHTML = '<span><kbd>Enter</kbd> 段落（余白あり）</span><span><kbd>Shift</kbd>+<kbd>Enter</kbd> 改行（余白なし）</span>';
+    container.appendChild(hint);
   });
 }

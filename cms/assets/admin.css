@@ -2313,9 +2313,40 @@ textarea.form-control.is-dragover {
   line-height: 1.8;
 }
 
+/* 段落（Enter）: 段落間に余白を表示 */
+.rich-editor-container .ql-editor p {
+  margin-bottom: 0.6em;
+}
+
+.rich-editor-container .ql-editor p:last-child {
+  margin-bottom: 0;
+}
+
 .rich-editor-container .ql-editor.ql-blank::before {
   color: var(--text-3);
   font-style: normal;
+}
+
+/* 操作ヒント */
+.rich-editor-hint {
+  display: flex;
+  gap: var(--s-4);
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--font-xs);
+  color: var(--text-3);
+  border-top: 1px solid var(--border);
+  background: var(--card);
+}
+
+.rich-editor-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-family: var(--font-family);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  line-height: 1.4;
 }
 
 /* 見出し: H1〜H4 */
