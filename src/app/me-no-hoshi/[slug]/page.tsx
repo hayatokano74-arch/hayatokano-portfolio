@@ -5,8 +5,14 @@ import { getMeNoHoshiPosts, getMeNoHoshiBySlug } from "@/lib/meNoHoshi";
 
 export const dynamicParams = false;
 export async function generateStaticParams() {
-  const posts = await getMeNoHoshiPosts();
-  return posts.map((p) => ({ slug: p.slug }));
+  try {
+    const posts = await getMeNoHoshiPosts();
+    const params = posts.map((p) => ({ slug: p.slug }));
+    params.push({ slug: "_placeholder" });
+    return params;
+  } catch {
+    return [{ slug: "_placeholder" }];
+  }
 }
 
 export async function generateMetadata({

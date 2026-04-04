@@ -10,9 +10,11 @@ export const dynamicParams = false;
 export async function generateStaticParams() {
   try {
     const works = await getWorks();
-    return works.map((w) => ({ slug: w.slug }));
+    const params = works.map((w) => ({ slug: w.slug }));
+    params.push({ slug: "_placeholder" });
+    return params;
   } catch {
-    return [];
+    return [{ slug: "_placeholder" }];
   }
 }
 

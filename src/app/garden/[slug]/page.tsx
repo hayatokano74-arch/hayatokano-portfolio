@@ -10,9 +10,12 @@ export const dynamicParams = false;
 export async function generateStaticParams() {
   try {
     const slugs = await getAllPageSlugs();
-    return slugs.map((slug) => ({ slug }));
+    const params = slugs.map((slug) => ({ slug }));
+    // フォールバック用プレースホルダー（.htaccessで未知のスラッグをここにリライト）
+    params.push({ slug: "_placeholder" });
+    return params;
   } catch {
-    return [];
+    return [{ slug: "_placeholder" }];
   }
 }
 

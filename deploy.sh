@@ -59,16 +59,23 @@ cd "$PROJECT_DIR"
 STATIC_EXPORT=true npx next build
 
 # フォールバックページを生成（CMS経由で追加された新しいスラッグ用）
+# _placeholder スラッグのHTMLを使う（generateStaticParamsで生成済み）
 echo ""
 echo "=== フォールバックページ生成 ==="
 for section in garden works me-no-hoshi text; do
   fallback_dir="out/${section}/_fallback"
   mkdir -p "$fallback_dir"
-  # 既存の[slug]ページのHTMLを1つコピー（クライアントJSが動けばよい）
-  src=$(find "out/${section}" -mindepth 2 -name "index.html" -not -path "*_fallback*" -not -path "*opengraph*" | head -1)
-  if [ -n "$src" ]; then
-    cp "$src" "$fallback_dir/index.html"
-    echo "  ${section}/_fallback/index.html ← $(basename $(dirname $src))"
+  # _placeholderがあればそれを使う（空のClient Componentシェル）
+  if [ -f "out/${section}/_placeholder/index.html" ]; then
+    cp "out/${section}/_placeholder/index.html" "$fallback_dir/index.html"
+    echo "  ${section}/_fallback/ ← _placeholder"
+  else
+    # なければ既存ページを使う（次善策）
+    src=$(find "out/${section}" -mindepth 2 -name "index.html" -not -path "*_fallback*" -not -path "*opengraph*" -not -path "*_placeholder*" | head -1)
+    if [ -n "$src" ]; then
+      cp "$src" "$fallback_dir/index.html"
+      echo "  ${section}/_fallback/ ← $(basename $(dirname $src))"
+    fi
   fi
 done
 
