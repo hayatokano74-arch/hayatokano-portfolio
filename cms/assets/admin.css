@@ -2313,9 +2313,15 @@ textarea.form-control.is-dragover {
   line-height: 1.7;
 }
 
-/* 段落（Enter）: 段落間に余白 */
+/* 段落（Enter）: 段落間に余白。Shift+Enter の改行（br）との視覚的差を明確にする */
 .rich-editor-container .ql-editor p {
-  margin-bottom: 0.35em;
+  margin-bottom: 0.8em;
+}
+
+/* 段落の区切りをさらに明示: 段落間に薄い点線 */
+.rich-editor-container .ql-editor p + p {
+  padding-top: 0.8em;
+  border-top: 1px dotted var(--border);
 }
 
 .rich-editor-container .ql-editor p:last-child {
