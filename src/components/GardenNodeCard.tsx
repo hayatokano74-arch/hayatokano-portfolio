@@ -47,22 +47,20 @@ function useLazyVisible(rootMargin = "200px") {
   return { ref, visible };
 }
 
-export function GardenNodeCard({ node, index }: { node: GardenNode; index: number }) {
-  const num = String(index).padStart(2, "0");
+export function GardenNodeCard({ node }: { node: GardenNode }) {
   const { ref, visible } = useLazyVisible();
 
   return (
     <article className="garden-entry" ref={ref}>
-      <div className="garden-entry-meta">
-        <span className="garden-entry-index">{num}</span>
-        <time className="garden-entry-date">{node.date}</time>
+      <time className="garden-entry-date">{node.date}</time>
+      <div className="garden-entry-content">
+        <Link href={`/garden/${encodeURIComponent(node.slug)}`} className="garden-entry-title-link action-link">
+          <h2 className="garden-entry-title">{node.title}</h2>
+        </Link>
+        {visible && node.contentHtml && (
+          <GardenBody html={node.contentHtml} className="garden-entry-body" />
+        )}
       </div>
-      <Link href={`/garden/${encodeURIComponent(node.slug)}`} className="garden-entry-title-link action-link">
-        <h2 className="garden-entry-title">{node.title}</h2>
-      </Link>
-      {visible && node.contentHtml && (
-        <GardenBody html={node.contentHtml} className="garden-entry-body" />
-      )}
     </article>
   );
 }

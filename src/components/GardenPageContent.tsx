@@ -97,8 +97,6 @@ export function GardenPageContent({ nodes }: { nodes: GardenNode[] }) {
           )}
           <GardenGrid
             groups={state.pageGroups}
-            totalNodes={state.filteredNodes.length}
-            prevNodeCount={state.prevNodeCount}
           />
         </div>
         {state.showArchive && (
