@@ -1,5 +1,9 @@
 /**
- * 目の星 — Markdownファイル読み込み・フォールバックデータ・キャッシュ付きエクスポート関数
+ * 目の星 — データ取得・フォールバック・キャッシュ付きエクスポート関数
+ *
+ * 優先順位:
+ *  1. PHP CMS API（https://hayatokano.com/_cms/api/me-no-hoshi.php）
+ *  2. content/me-no-hoshi/*.md のローカルファイル（CMS が空 / 未到達時のフォールバック）
  */
 import fs from "fs";
 import path from "path";
@@ -7,6 +11,7 @@ import matter from "gray-matter";
 import { cache } from "react";
 import type { MeNoHoshiPost, WpMeNoHoshiResponse } from "./types";
 import { normalizePost } from "./normalize";
+import { fetchCms, type CmsMeNoHoshi } from "@/lib/cms/client";
 
 const ME_NO_HOSHI_DIR = path.join(process.cwd(), "content/me-no-hoshi");
 
@@ -17,7 +22,6 @@ export type MeNoHoshiGridField = {
   visible: boolean;
 };
 
-/** グリッド設定のデフォルト値 */
 const defaultGridFields: MeNoHoshiGridField[] = [
   { key: "artist",    label: "ARTIST",    visible: true  },
   { key: "period",    label: "PERIOD",    visible: true  },
@@ -30,10 +34,9 @@ const defaultGridFields: MeNoHoshiGridField[] = [
   { key: "access",    label: "ACCESS",    visible: false },
 ];
 
-/** グリッド表示設定（固定値を返す） */
-export const getMeNoHoshiGridSettings = cache(async (): Promise<MeNoHoshiGridField[]> => {
-  return defaultGridFields;
-});
+export const getMeNoHoshiGridSettings = cache(
+  async (): Promise<MeNoHoshiGridField[]> => defaultGridFields,
+);
 
 /** API取得失敗時のフォールバックデータ */
 export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
@@ -56,10 +59,10 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
       },
     ],
     details: [
-      { key: "artist", label: "ARTIST", value: "架空 太郎" },
-      { key: "period", label: "PERIOD", value: "2024.05.01–2024.05.19" },
-      { key: "hours", label: "HOURS", value: "12:00–18:00" },
-      { key: "venue", label: "VENUE", value: "目の星（石巻）" },
+      { key: "artist",  label: "ARTIST", value: "架空 太郎" },
+      { key: "period",  label: "PERIOD", value: "2024.05.01–2024.05.19" },
+      { key: "hours",   label: "HOURS",  value: "12:00–18:00" },
+      { key: "venue",   label: "VENUE",  value: "目の星（石巻）" },
     ],
     bio: "",
     pastExhibitions: [],
@@ -88,31 +91,59 @@ export const meNoHoshiFallbackPosts: MeNoHoshiPost[] = [
   },
 ];
 
-/** Markdownファイルから目の星データを読み込む */
+/** CMS レスポンスを WpMeNoHoshiResponse 形式に変換して normalizePost に渡す */
+function cmsItemToPost(item: CmsMeNoHoshi): MeNoHoshiPost | null {
+  const d = item.data as Record<string, unknown>;
+  const wpLike: WpMeNoHoshiResponse = {
+    slug: item.slug,
+    title: item.title,
+    date: item.date,
+    year: item.year,
+    tags: item.tags,
+    excerpt: item.excerpt,
+    // data フィールドに格納されたすべての追加情報を展開
+    media: d.media as WpMeNoHoshiResponse["media"],
+    details: d.details as WpMeNoHoshiResponse["details"],
+    bio: typeof d.bio === "string" ? d.bio : undefined,
+    // body を statement として使用（インポート時に本文として保存済み）
+    statement: item.body || (typeof d.statement === "string" ? d.statement : undefined),
+    notice: typeof d.notice === "string" ? d.notice : undefined,
+    subtitle: typeof d.subtitle === "string" ? d.subtitle : undefined,
+    keyVisuals: d.keyVisuals as WpMeNoHoshiResponse["keyVisuals"],
+    heroCaption: typeof d.heroCaption === "string" ? d.heroCaption : undefined,
+    pastWorks: d.pastWorks as WpMeNoHoshiResponse["pastWorks"],
+    archiveNote: typeof d.archiveNote === "string" ? d.archiveNote : undefined,
+    archiveWorks: d.archiveWorks as WpMeNoHoshiResponse["archiveWorks"],
+    showKeyVisuals: typeof d.showKeyVisuals === "boolean" ? d.showKeyVisuals : undefined,
+    showPastWorks: typeof d.showPastWorks === "boolean" ? d.showPastWorks : undefined,
+    showArchiveWorks: typeof d.showArchiveWorks === "boolean" ? d.showArchiveWorks : undefined,
+    pastExhibitions: d.pastExhibitions as WpMeNoHoshiResponse["pastExhibitions"],
+    snsLinks: d.snsLinks as WpMeNoHoshiResponse["snsLinks"],
+  };
+  return normalizePost(wpLike);
+}
+
+/** ローカル MD ファイルから読み込む（フォールバック用） */
 function loadMeNoHoshiPosts(): MeNoHoshiPost[] | null {
   try {
-    const files = fs.readdirSync(ME_NO_HOSHI_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_"));
+    const files = fs
+      .readdirSync(ME_NO_HOSHI_DIR)
+      .filter((f) => f.endsWith(".md") && !f.startsWith("_"));
     if (files.length === 0) return null;
 
     const posts: MeNoHoshiPost[] = [];
     for (const file of files) {
       const raw = fs.readFileSync(path.join(ME_NO_HOSHI_DIR, file), "utf-8");
       const { data, content } = matter(raw);
-
-      /* Markdown本文（statement）をフロントマターにマージしてnormalizePostに渡す */
       const wpLike: WpMeNoHoshiResponse = {
         ...(data as WpMeNoHoshiResponse),
         statement: content.trim() || (data.statement as string | undefined),
         excerpt: content.trim() || (data.excerpt as string | undefined),
       };
-
       const post = normalizePost(wpLike);
       if (post) posts.push(post);
     }
-
     if (posts.length === 0) return null;
-
-    /* date降順（新しい順）でソート */
     posts.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
     return posts;
   } catch {
@@ -120,14 +151,37 @@ function loadMeNoHoshiPosts(): MeNoHoshiPost[] | null {
   }
 }
 
-/** 目の星 全件取得（React.cache でリクエスト単位の重複排除） */
+/** 目の星 全件取得
+ *  1. CMS API → 2. ローカル MD → 3. フォールバック
+ */
 export const getMeNoHoshiPosts = cache(async (): Promise<MeNoHoshiPost[]> => {
-  const posts = loadMeNoHoshiPosts();
-  return posts ?? meNoHoshiFallbackPosts;
+  // 1. CMS API
+  try {
+    const items = await fetchCms<CmsMeNoHoshi[]>("me-no-hoshi.php");
+    if (Array.isArray(items) && items.length > 0) {
+      const posts: MeNoHoshiPost[] = [];
+      for (const item of items) {
+        const p = cmsItemToPost(item);
+        if (p) posts.push(p);
+      }
+      if (posts.length > 0) return posts;
+    }
+  } catch {
+    // CMS 未到達時はフォールバックへ
+  }
+
+  // 2. ローカル MD ファイル
+  const local = loadMeNoHoshiPosts();
+  if (local) return local;
+
+  // 3. フォールバック
+  return meNoHoshiFallbackPosts;
 });
 
-/** slug 指定で1件取得（React.cache でリクエスト単位の重複排除） */
-export const getMeNoHoshiBySlug = cache(async (slug: string): Promise<MeNoHoshiPost | undefined> => {
-  const all = await getMeNoHoshiPosts();
-  return all.find((p) => p.slug === slug);
-});
+/** slug 指定で1件取得 */
+export const getMeNoHoshiBySlug = cache(
+  async (slug: string): Promise<MeNoHoshiPost | undefined> => {
+    const all = await getMeNoHoshiPosts();
+    return all.find((p) => p.slug === slug);
+  },
+);

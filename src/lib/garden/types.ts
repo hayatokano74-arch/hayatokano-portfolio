@@ -5,6 +5,8 @@ export interface GardenFrontmatter {
   title: string;
   date: string;
   tags?: string[];
+  /** CMS から生成した合成ファイルに付与するスラッグ（CMS slug を直接使用） */
+  slug?: string;
 }
 
 /** パース済みのGardenノード（MDファイルが存在する実ページ） */

@@ -1,0 +1,24 @@
+# hayatokano.com — Next.js 静的エクスポート用 .htaccess
+Options -Indexes
+RewriteEngine On
+
+# HTTPS リダイレクト
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# www なし正規化
+RewriteCond %{HTTP_HOST} ^www\.hayatokano\.com [NC]
+RewriteRule ^(.*)$ https://hayatokano.com/$1 [L,R=301]
+
+# trailingSlash 対応: /about → /about/ → /about/index.html
+# Next.js の output: 'export' + trailingSlash: true はディレクトリ構造で生成
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !\.
+RewriteRule ^(.+[^/])$ /$1/ [L,R=301]
+
+# ディレクトリのリクエストを index.html に
+DirectoryIndex index.html
+
+# 404 エラー
+ErrorDocument 404 /404.html

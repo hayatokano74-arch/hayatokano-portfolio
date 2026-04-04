@@ -113,7 +113,6 @@ function rehypeOptimizedImages(options?: OptimizedImagesOptions) {
 }
 import fs from "fs";
 import path from "path";
-import { unstable_cache, revalidateTag } from "next/cache";
 import { fetchAllGardenFiles, clearCache, type GardenFile } from "./cache";
 import type { GardenNode, GardenFrontmatter } from "./types";
 
@@ -169,8 +168,6 @@ export function clearAllGardenCaches(): void {
   // ノードキャッシュファイルも削除
   try { if (fs.existsSync(NODES_CACHE_PATH)) fs.unlinkSync(NODES_CACHE_PATH); } catch { /* ignore */ }
   try { if (fs.existsSync(NODES_TMP_CACHE_PATH)) fs.unlinkSync(NODES_TMP_CACHE_PATH); } catch { /* ignore */ }
-  // Next.js Data Cache（Vercel永続キャッシュ）も無効化
-  try { revalidateTag("garden"); } catch { /* Route Handler 以外では失敗するため無視 */ }
   console.log("[Garden] 全キャッシュをクリアしました");
 }
 
@@ -378,8 +375,12 @@ async function parseFile(
       ? rawDate.toISOString().slice(0, 10)
       : String(rawDate ?? "");
 
+  // CMS から生成した合成ファイルは fm.slug を直接使用。
+  // ローカルファイルは従来通り titleToSlug(title) を使用。
+  const slug = fm.slug ? fm.slug : titleToSlug(fm.title);
+
   return {
-    slug: titleToSlug(fm.title),
+    slug,
     title: fm.title,
     date: dateStr,
     tags: fm.tags ?? [],
@@ -390,53 +391,45 @@ async function parseFile(
   };
 }
 
-/**
- * Next.js Data Cache 経由でノードを取得する内部関数。
- * unstable_cache により Vercel のサーバーサイドキャッシュに永続化され、
- * コールドスタート後もキャッシュが有効になる。
- */
-const _fetchAllNodesCached = unstable_cache(
-  async (): Promise<GardenNode[]> => {
-    const files = await getGardenFiles();
-    if (files.length === 0) return [];
-    const existingSlugs = await getFileSlugs(files);
+/** 全 Garden ノードを構築する（内部処理） */
+async function buildAllNodes(): Promise<GardenNode[]> {
+  const files = await getGardenFiles();
+  if (files.length === 0) return [];
+  const existingSlugs = await getFileSlugs(files);
 
-    const nodes = await Promise.all(
-      files.map((file) => parseFile(file, existingSlugs)),
-    );
+  const nodes = await Promise.all(
+    files.map((file) => parseFile(file, existingSlugs)),
+  );
 
-    // 日付降順 → 同日ならファイル更新時刻が新しい方が上
-    nodes.sort((a, b) => {
-      if (a.date !== b.date) return a.date > b.date ? -1 : 1;
-      return b.mtime - a.mtime;
-    });
+  // 日付降順 → 同日ならファイル更新時刻が新しい方が上
+  nodes.sort((a, b) => {
+    if (a.date !== b.date) return a.date > b.date ? -1 : 1;
+    return b.mtime - a.mtime;
+  });
 
-    // 重複タイトルを除去（WP側で同じ投稿が複数存在する場合の対策）
-    const seen = new Set<string>();
-    return nodes.filter((n) => {
-      if (seen.has(n.title)) return false;
-      seen.add(n.title);
-      return true;
-    });
-  },
-  ["garden-nodes"],
-  { revalidate: 3600, tags: ["garden"] },
-);
+  // 重複タイトルを除去
+  const seen = new Set<string>();
+  return nodes.filter((n) => {
+    if (seen.has(n.title)) return false;
+    seen.add(n.title);
+    return true;
+  });
+}
 
-/** 全ノードを取得（MDファイルが存在するもののみ。日付降順） */
+/** 全ノードを取得（日付降順） */
 export async function getAllNodes(): Promise<GardenNode[]> {
-  /* 1. プロセス内メモリキャッシュ（同一リクエスト内の最速パス） */
+  /* 1. プロセス内メモリキャッシュ（同一ビルド内の最速パス） */
   if (_nodesCache) return _nodesCache;
 
-  /* 2. ビルド時ファイルキャッシュ（デプロイに含まれる場合の高速パス） */
+  /* 2. ビルド時ファイルキャッシュ（.garden-nodes-cache.json が存在する場合） */
   const fileCache = readNodesCache();
   if (fileCache) {
     _nodesCache = fileCache;
     return fileCache;
   }
 
-  /* 3. Next.js Data Cache 経由（Vercel で永続化、コールドスタート後も有効） */
-  const result = await _fetchAllNodesCached();
+  /* 3. ファイルから構築 */
+  const result = await buildAllNodes();
   _nodesCache = result;
   return result;
 }

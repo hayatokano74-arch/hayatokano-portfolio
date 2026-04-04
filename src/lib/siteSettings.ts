@@ -1,47 +1,20 @@
 import { cache } from "react";
-import { fetchWpApi } from "@/lib/wp/client";
 
-type WpSiteSettings = {
-  topHeroImageUrl?: string | null;
-  /** 1ページあたりの表示数（WP管理画面で設定可能） */
-  perPage?: number | null;
-};
-
-function asArray(values: Array<string | null | undefined>) {
-  return Array.from(
-    new Set(
-      values
-        .map((value) => (value ?? "").trim())
-        .filter((value) => value.length > 0),
-    ),
-  );
-}
-
-async function fetchWpTopHeroImageUrl() {
-  const data = await fetchWpApi<WpSiteSettings>("hayato/v1/site-settings");
-  return (data?.topHeroImageUrl ?? "").trim() || null;
-}
-
-/** デフォルトの1ページあたり表示数 */
+/** 1ページあたりのデフォルト表示数 */
 const DEFAULT_PER_PAGE = 12;
 
-/** WPのsite-settingsからperPageを取得（キャッシュ付き） */
-export const getPerPage = cache(async (): Promise<number> => {
-  const data = await fetchWpApi<WpSiteSettings>("hayato/v1/site-settings");
-  const value = data?.perPage;
-  if (typeof value === "number" && value > 0) return value;
-  return DEFAULT_PER_PAGE;
-});
+/** 1ページあたりの表示数を返す（定数） */
+export const getPerPage = cache(async (): Promise<number> => DEFAULT_PER_PAGE);
 
-export async function getTopHeroImageCandidates() {
-  const wpTopHeroImageUrl = await fetchWpTopHeroImageUrl();
-  return asArray([
-    wpTopHeroImageUrl,
+/** トップページ hero 画像の候補 URL リストを返す */
+export async function getTopHeroImageCandidates(): Promise<string[]> {
+  const candidates = [
     process.env.TOP_HERO_IMAGE_URL,
     process.env.NEXT_PUBLIC_TOP_HERO_IMAGE_URL,
     "/images/top-hero.jpg",
     "/images/top-hero.jpeg",
     "/images/top-hero.png",
     "/images/top-hero.webp",
-  ]);
+  ];
+  return [...new Set(candidates.filter((v): v is string => typeof v === "string" && v.trim().length > 0))];
 }
