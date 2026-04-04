@@ -9,7 +9,7 @@ export function titleToSlug(title: string): string {
   return title
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, "-")
+    .replace(/[\s.]+/g, "-")
     .replace(/[^\p{L}\p{N}\-]/gu, "")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
