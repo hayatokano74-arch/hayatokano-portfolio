@@ -46,6 +46,9 @@ define('GITHUB_DEPLOY_BRANCH', 'main');
 /** トリガーするワークフローファイル名 */
 define('GITHUB_WORKFLOW', 'deploy.yml');
 
+/** デプロイ受信 Webhook のシークレット（.env.php で設定） */
+define('DEPLOY_WEBHOOK_SECRET', defined('DEPLOY_WEBHOOK_SECRET_VALUE') ? DEPLOY_WEBHOOK_SECRET_VALUE : '');
+
 // ─── 画像設定 ────────────────────────────────────────────────
 /** アップロード最大サイズ（バイト）: 20MB */
 define('UPLOAD_MAX_BYTES', 20 * 1024 * 1024);

@@ -1,33 +1,24 @@
-name: ビルド検証
+name: ビルド＆デプロイ
 
-# トリガー
-# push to main: コード変更時にビルドが通ることを検証する
-# ※ Xserver は SSH 接続元 IP 制限があるため GitHub Actions からの rsync は不可。
-#   デプロイは手元で ./deploy.sh を実行する。
 on:
+  # CMS のデプロイボタンからトリガー
+  workflow_dispatch:
+  # main ブランチへの push でもビルド検証（デプロイはしない）
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  build:
-    name: 静的ビルド検証
+  build-and-deploy:
+    name: 静的ビルド＆デプロイ
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
-      # ────────────────────────────────────────────
-      # 1. コードを取得
-      # ────────────────────────────────────────────
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
 
-      # ────────────────────────────────────────────
-      # 2. Node.js セットアップ
-      # ────────────────────────────────────────────
       - name: Node.js をセットアップ
         uses: actions/setup-node@v4
         with:
@@ -37,14 +28,53 @@ jobs:
       - name: 依存関係をインストール
         run: npm ci
 
-      # ────────────────────────────────────────────
-      # 3. 静的サイトをビルド（ビルドが通ることだけ確認）
-      #    CMS_API_URL が未設定でも静的ビルドは完了する（フォールバック動作）
-      # ────────────────────────────────────────────
       - name: 静的サイトをビルド
         run: STATIC_EXPORT=true npx next build
         env:
           CMS_API_URL: ${{ secrets.CMS_API_URL }}
 
-      - name: ビルド完了
-        run: echo "✅ ビルド検証完了。デプロイは ./deploy.sh で実行してください。"
+      # ── workflow_dispatch の場合のみデプロイ ──
+      - name: デプロイ用 tar.gz を作成
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          # フロントエンド（out/）とCMS（cms/、DB・uploads・.env除外）をまとめる
+          tar czf deploy.tar.gz \
+            --exclude='cms/db/*.sqlite3' \
+            --exclude='cms/db/*.sqlite3-wal' \
+            --exclude='cms/db/*.sqlite3-shm' \
+            --exclude='cms/db/password.hash' \
+            --exclude='cms/uploads' \
+            --exclude='cms/.env.php' \
+            out/ cms/ deploy/.htaccess
+          echo "tar.gz サイズ: $(du -h deploy.tar.gz | cut -f1)"
+
+      - name: GitHub Release にアップロード
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-deploy
+          name: "自動デプロイ (${{ github.run_number }})"
+          body: "CMS からトリガーされた自動デプロイ"
+          files: deploy.tar.gz
+          make_latest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Xserver に展開を通知
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          HTTP_STATUS=$(curl -s -o /tmp/webhook-response.txt -w "%{http_code}" \
+            -X POST "${{ secrets.DEPLOY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_SECRET }}" \
+            -d '{"run_id": "${{ github.run_id }}", "run_number": "${{ github.run_number }}"}')
+          echo "Webhook response: $HTTP_STATUS"
+          cat /tmp/webhook-response.txt
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "::error::デプロイ展開に失敗しました (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+      - name: ビルド完了（push/PR）
+        if: github.event_name != 'workflow_dispatch'
+        run: echo "✅ ビルド検証完了"
