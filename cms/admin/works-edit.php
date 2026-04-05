@@ -41,16 +41,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tags      = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
         $tags_json = json_encode($tags, JSON_UNESCAPED_UNICODE);
 
-        // details: 動的キー・バリューペア
+        // details: キー・バリューペア（値が空のものは除外、順序を保持）
         $det_keys   = $_POST['det_key']   ?? [];
         $det_values = $_POST['det_value'] ?? [];
         $details = [];
+        $seen_keys = []; // 重複キー対策（同名は最後の値を使用）
         foreach ($det_keys as $i => $k) {
             $k = trim($k);
             $v = trim($det_values[$i] ?? '');
-            if ($k === '' && $v === '') continue; // 空行はスキップ
-            $details[$k ?: '_blank_' . $i] = $v;
+            if ($k === '' || $v === '') continue; // 空のキーまたは値はスキップ
+            $seen_keys[$k] = $v; // 同名キーは後の値で上書き
         }
+        $details = $seen_keys;
 
         // media: 動的画像リスト
         $med_ids     = $_POST['media_id']     ?? [];
@@ -168,7 +170,7 @@ if (empty($standard_fields)) {
             ['key' => 'Role', 'placeholder' => ''], ['key' => 'Collaborators', 'placeholder' => ''],
         ]],
         ['name' => '出版・寄稿', 'fields' => [
-            ['key' => 'Type', 'placeholder' => '例: Free Paper / Book / Magazine'],
+            ['key' => 'Publication Type', 'placeholder' => '例: Free Paper / Book / Magazine'],
             ['key' => 'Publisher', 'placeholder' => ''], ['key' => 'Publication', 'placeholder' => '雑誌名・メディア名'],
             ['key' => 'Issue', 'placeholder' => '例: No.3'], ['key' => 'Published', 'placeholder' => '例: 2025.06.15'],
             ['key' => 'Pages', 'placeholder' => ''], ['key' => 'Binding', 'placeholder' => '例: ソフトカバー'],

@@ -85,7 +85,7 @@ if (empty($categories)) {
             ['key' => 'Collaborators', 'placeholder' => ''],
         ]],
         ['name' => '出版・寄稿', 'fields' => [
-            ['key' => 'Type', 'placeholder' => '例: Free Paper / Book / Magazine'],
+            ['key' => 'Publication Type', 'placeholder' => '例: Free Paper / Book / Magazine'],
             ['key' => 'Publisher', 'placeholder' => ''],
             ['key' => 'Publication', 'placeholder' => '雑誌名・メディア名'],
             ['key' => 'Issue', 'placeholder' => '例: No.3'],
