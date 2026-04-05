@@ -22,10 +22,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   /* React.cache() により getMeNoHoshiPosts の重複リクエストを排除 */
+  if (slug === "_placeholder") return { title: "目の星" };
   const post = await getMeNoHoshiBySlug(slug);
-  if (!post) return {};
-  /* description は HTML タグを除去してプレーンテキストに */
-  const description = post.statement.replace(/<[^>]+>/g, "").trim();
+  if (!post) return { title: "目の星" };
+  const description = post.statement.replace(/<[^>]+>/g, "").trim().slice(0, 160);
+  const image = post.media[0]?.src;
+  const imageUrl = image?.startsWith("http") ? image : image ? `https://hayatokano.com${image}` : undefined;
   return {
     title: post.title,
     description,
@@ -34,8 +36,7 @@ export async function generateMetadata({
       title: post.title,
       description,
       url: `https://hayatokano.com/me-no-hoshi/${slug}`,
-      siteName: "Hayato Kano",
-      locale: "ja_JP",
+      ...(imageUrl ? { images: [{ url: imageUrl }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
