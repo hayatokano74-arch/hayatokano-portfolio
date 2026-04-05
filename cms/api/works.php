@@ -56,6 +56,18 @@ function handle_get(): never {
         json_ok(array_keys($all));
     }
 
+    // published切替
+    if (isset($_GET['toggle_publish'])) {
+        api_require_auth();
+        $pub_slug = $_GET['toggle_publish'];
+        $db = get_db();
+        $row = db_find_by_slug('works', $pub_slug);
+        if (!$row) json_not_found();
+        $new_pub = ($row['published'] ?? 1) ? 0 : 1;
+        $db->prepare("UPDATE works SET published = ?, updated_at = datetime('now') WHERE slug = ?")->execute([$new_pub, $pub_slug]);
+        json_ok(['slug' => $pub_slug, 'published' => $new_pub]);
+    }
+
     // pinned切替
     if (isset($_GET['toggle_pin'])) {
         api_require_auth();
@@ -68,7 +80,13 @@ function handle_get(): never {
         json_ok(['slug' => $pin_slug, 'pinned' => $new_pinned]);
     }
 
-    $rows = db_all('works', 'pinned DESC, date DESC, id DESC');
+    // フロント向け: 公開済みのみ（デフォルト）。CMS管理画面: ?all=1 で全件
+    $db = get_db();
+    if (isset($_GET['all'])) {
+        $rows = $db->query("SELECT * FROM works ORDER BY pinned DESC, date DESC, id DESC")->fetchAll();
+    } else {
+        $rows = $db->query("SELECT * FROM works WHERE published = 1 ORDER BY pinned DESC, date DESC, id DESC")->fetchAll();
+    }
     json_ok(array_map('decode_json_fields', $rows));
 }
 

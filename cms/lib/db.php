@@ -189,6 +189,14 @@ function get_migrations(): array {
                 value TEXT NOT NULL DEFAULT "{}"
             );
         ',
+
+        11 => /** 全コンテンツに published カラムを追加 */ '
+            ALTER TABLE works ADD COLUMN published INTEGER NOT NULL DEFAULT 1;
+            ALTER TABLE me_no_hoshi ADD COLUMN published INTEGER NOT NULL DEFAULT 1;
+            ALTER TABLE news ADD COLUMN published INTEGER NOT NULL DEFAULT 1;
+            ALTER TABLE garden ADD COLUMN published INTEGER NOT NULL DEFAULT 1;
+            ALTER TABLE texts ADD COLUMN published INTEGER NOT NULL DEFAULT 1;
+        ',
     ];
 }
 

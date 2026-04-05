@@ -39,6 +39,7 @@ $nav_items = [
     ['text',        'Text',            cms_url('/admin/text.php'),        'Tx'],
     ['about',       'About',           cms_url('/admin/about.php'),       'A'],
     ['media',       'メディア',         cms_url('/admin/media.php'),       'F'],
+    ['settings',    '設定',             cms_url('/admin/site-settings.php'), '⚙'],
 ];
 
 // CSRF トークン

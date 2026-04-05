@@ -30,6 +30,7 @@ ob_start();
       <tr>
         <th style="width:56px"></th>
         <th>タイトル</th>
+        <th style="width:50px">状態</th>
         <th>日付</th>
         <th>タグ</th>
         <th>更新</th>
@@ -68,7 +69,8 @@ ob_start();
         }
         $thumb_src = fix_broken_unicode_url($thumb_src);
       ?>
-      <tr class="is-clickable" data-href="<?= htmlspecialchars($edit_url, ENT_QUOTES) ?>">
+      <tr class="is-clickable" data-href="<?= htmlspecialchars($edit_url, ENT_QUOTES) ?>"
+          style="<?= ($row['published'] ?? 1) ? '' : 'opacity:0.4' ?>">
         <td>
           <?php if ($thumb_src): ?>
           <img src="<?= htmlspecialchars($thumb_src, ENT_QUOTES) ?>"
@@ -93,6 +95,14 @@ ob_start();
                      style="color:var(--text-3);cursor:pointer;border-bottom:1px dashed var(--border);"
             ><?= htmlspecialchars($row['slug'], ENT_QUOTES) ?></small>
         </td>
+        <td>
+          <button type="button" class="publish-toggle <?= ($row['published'] ?? 1) ? 'is-published' : '' ?>"
+                  data-slug="<?= htmlspecialchars($row['slug'], ENT_QUOTES) ?>"
+                  onclick="event.stopPropagation()"
+                  title="<?= ($row['published'] ?? 1) ? '非公開にする' : '公開する' ?>">
+            <span class="publish-dot"></span>
+          </button>
+        </td>
         <td class="text-muted"><?= htmlspecialchars($row['date'], ENT_QUOTES) ?></td>
         <td>
           <?php foreach (array_slice($tags, 0, 3) as $tag): ?>
@@ -116,6 +126,17 @@ ob_start();
 <?php endif; ?>
 
 <style>
+.publish-toggle {
+  all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+}
+.publish-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--text-3); transition: background 0.15s;
+}
+.publish-toggle.is-published .publish-dot { background: var(--success); }
+.publish-toggle:hover .publish-dot { opacity: 0.7; }
+
 .pin-toggle {
   all: unset; cursor: pointer; margin-left: 6px;
   display: inline-flex; align-items: center; justify-content: center;
@@ -132,6 +153,29 @@ ob_start();
 </style>
 
 <script>
+// 公開/非公開切替
+document.querySelectorAll('.publish-toggle').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const slug = btn.dataset.slug;
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    try {
+      const res = await fetch(`../api/works.php?toggle_publish=${encodeURIComponent(slug)}`, {
+        headers: { 'X-CSRF-Token': csrf },
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      btn.classList.toggle('is-published', !!data.published);
+      btn.title = data.published ? '非公開にする' : '公開する';
+      // 非公開の行を半透明に
+      const row = btn.closest('tr');
+      if (row) row.style.opacity = data.published ? '' : '0.4';
+      show_toast(data.published ? '公開しました' : '非公開にしました', 'success');
+    } catch (err) {
+      show_toast(err.message, 'error');
+    }
+  });
+});
+
 // ピン切替
 document.querySelectorAll('.pin-toggle').forEach(btn => {
   btn.addEventListener('click', async () => {
