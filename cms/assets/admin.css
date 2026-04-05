@@ -2651,22 +2651,14 @@ textarea.form-control.is-dragover {
 
 /* 段落（Enter）: 業界標準の1em（1行分の余白） */
 .rich-editor-container .ql-editor p {
-  margin-bottom: 0;
-  padding-bottom: 0.8em;
-}
-
-/* 段落間（Enter）: 余白 + 左線で視覚的に区切り */
-.rich-editor-container .ql-editor p + p {
-  margin-top: 0.4em;
-  padding-top: 0.8em;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 1.5em !important;
 }
 
 .rich-editor-container .ql-editor p:last-child {
-  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
-/* 段落内改行（Shift+Enter = <br>）は行間のみ、区切り線なし */
+/* Shift+Enter（<br>）は行間のみ。Enter（<p>）は上の1.5emで大きな隙間。 */
 
 .rich-editor-container .ql-editor.ql-blank::before {
   color: var(--text-3);
