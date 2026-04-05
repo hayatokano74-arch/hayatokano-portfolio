@@ -96,8 +96,13 @@ export function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
 
   const tags = (post.tags ?? []).map(normalizeTag).filter((tag): tag is string => Boolean(tag));
   const media = (post.media ?? [])
-    .filter((item) => !!item?.id && !!item?.src)
-    .map((item) => ({ ...item, src: fixBrokenUnicodeUrl(item.src), ...(item.poster ? { poster: fixBrokenUnicodeUrl(item.poster) } : {}) }));
+    .filter((item) => !!item?.src)
+    .map((item, i) => ({
+      ...item,
+      id: item.id?.trim() || `${slug}-media-${i + 1}`,
+      src: fixBrokenUnicodeUrl(item.src),
+      ...(item.poster ? { poster: fixBrokenUnicodeUrl(item.poster) } : {}),
+    }));
   if (media.length === 0) return null;
 
   const details = normalizeDetails(post.details);

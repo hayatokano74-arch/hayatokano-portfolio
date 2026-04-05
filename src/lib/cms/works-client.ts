@@ -41,9 +41,9 @@ function parseCmsWork(item: CmsWork): Work | null {
   const tags = (item.tags ?? []).map((t) => String(t).trim()).filter(Boolean);
   const mediaRaw = (item.data.media ?? []) as RawMedia[];
   const media = mediaRaw
-    .filter((m) => m?.id && m?.src)
-    .map((m) => ({
-      id: m.id!,
+    .filter((m) => m?.src)
+    .map((m, i) => ({
+      id: m.id?.trim() || `media-${i + 1}`,
       type: (m.type === "video" ? "video" : "image") as "image" | "video",
       src: fixBrokenUnicodeUrl(m.src!),
       alt: m.alt ?? "",
