@@ -80,9 +80,12 @@ ob_start();
         </td>
         <td>
           <span style="font-weight:500;color:var(--text);"><?= htmlspecialchars($row['title'] ?: '（無題）', ENT_QUOTES) ?></span>
-          <?php if ($row['pinned']): ?>
-          <span class="badge badge--accent" style="margin-left:6px;font-size:10px;">固定</span>
-          <?php endif; ?>
+          <button type="button" class="pin-toggle <?= $row['pinned'] ? 'is-pinned' : '' ?>"
+                  data-slug="<?= htmlspecialchars($row['slug'], ENT_QUOTES) ?>"
+                  onclick="event.stopPropagation()"
+                  title="<?= $row['pinned'] ? '固定解除' : 'トップに固定' ?>">
+            <?= $row['pinned'] ? '📌' : '📍' ?>
+          </button>
           <br><small class="slug-inline" data-slug="<?= htmlspecialchars($row['slug'], ENT_QUOTES) ?>"
                      title="クリックしてスラッグを編集"
                      style="color:var(--text-3);cursor:pointer;border-bottom:1px dashed var(--border);"
@@ -110,7 +113,37 @@ ob_start();
 </div>
 <?php endif; ?>
 
+<style>
+.pin-toggle {
+  all: unset; cursor: pointer; font-size: 12px; margin-left: 4px;
+  opacity: 0.3; transition: opacity 0.15s;
+}
+.pin-toggle.is-pinned { opacity: 1; }
+.pin-toggle:hover { opacity: 0.8; }
+</style>
+
 <script>
+// ピン切替
+document.querySelectorAll('.pin-toggle').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const slug = btn.dataset.slug;
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    try {
+      const res = await fetch(`../api/works.php?toggle_pin=${encodeURIComponent(slug)}`, {
+        headers: { 'X-CSRF-Token': csrf },
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      btn.classList.toggle('is-pinned', !!data.pinned);
+      btn.textContent = data.pinned ? '📌' : '📍';
+      btn.title = data.pinned ? '固定解除' : 'トップに固定';
+      show_toast(data.pinned ? '固定しました' : '固定解除しました', 'success');
+    } catch (err) {
+      show_toast(err.message, 'error');
+    }
+  });
+});
+
 // スラッグのインライン編集
 document.querySelectorAll('.slug-inline').forEach(el => {
   el.addEventListener('click', (e) => {

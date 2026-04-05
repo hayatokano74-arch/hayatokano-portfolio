@@ -1991,6 +1991,37 @@ textarea.form-control.is-dragover {
 }
 .det-row-remove:hover { color: var(--danger); }
 
+/* タグチップ */
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin-bottom: var(--s-2);
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  font-size: var(--font-xs);
+  font-weight: 500;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+
+.tag-chip__remove {
+  all: unset;
+  font-size: 10px;
+  color: var(--text-3);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.tag-chip__remove:hover { color: var(--danger); }
+
 .det-add-panel {
   margin-top: var(--s-3);
   padding: var(--s-4);

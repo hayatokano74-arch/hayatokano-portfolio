@@ -39,14 +39,36 @@ function handle_get(): never {
     $slug = $_GET['slug'] ?? '';
 
     if ($slug !== '') {
-        // 1件取得
         $row = db_find_by_slug('works', $slug);
         if (!$row) json_not_found('Works が見つかりません: ' . $slug);
         json_ok(decode_json_fields($row));
     }
 
-    // 全件取得
-    $rows = db_all('works', 'date DESC, id DESC');
+    // タグ一覧
+    if (isset($_GET['tags'])) {
+        $db = get_db();
+        $rows = $db->query("SELECT tags FROM works")->fetchAll();
+        $all = [];
+        foreach ($rows as $r) {
+            $tags = json_decode($r['tags'], true);
+            if (is_array($tags)) foreach ($tags as $t) $all[trim($t)] = true;
+        }
+        json_ok(array_keys($all));
+    }
+
+    // pinned切替
+    if (isset($_GET['toggle_pin'])) {
+        api_require_auth();
+        $pin_slug = $_GET['toggle_pin'];
+        $db = get_db();
+        $row = db_find_by_slug('works', $pin_slug);
+        if (!$row) json_not_found();
+        $new_pinned = $row['pinned'] ? 0 : 1;
+        $db->prepare("UPDATE works SET pinned = ?, updated_at = datetime('now') WHERE slug = ?")->execute([$new_pinned, $pin_slug]);
+        json_ok(['slug' => $pin_slug, 'pinned' => $new_pinned]);
+    }
+
+    $rows = db_all('works', 'pinned DESC, date DESC, id DESC');
     json_ok(array_map('decode_json_fields', $rows));
 }
 

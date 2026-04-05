@@ -272,9 +272,12 @@ ob_start();
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="tags">タグ（カンマ区切り）</label>
-        <input type="text" id="tags" name="tags" class="form-control" value="<?= $f_tags ?>"
-               placeholder="例: Exhibition, Photography, 2024">
+        <label class="form-label" for="tags-input">タグ</label>
+        <input type="hidden" id="tags" name="tags" value="<?= $f_tags ?>">
+        <div class="tag-chips" id="tag-chips"></div>
+        <input type="text" id="tags-input" class="form-control" list="tag-suggestions"
+               placeholder="タグを入力（Enterで追加）" autocomplete="off">
+        <datalist id="tag-suggestions"></datalist>
       </div>
 
       <div class="form-group">
@@ -595,6 +598,79 @@ document.addEventListener('DOMContentLoaded', () => {
   const tpl    = document.getElementById('tpl-media-row');
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+  // ── タグ入力（チップ + 候補） ──
+  {
+    const hiddenInput = document.getElementById('tags');
+    const chipsEl = document.getElementById('tag-chips');
+    const tagInput = document.getElementById('tags-input');
+    const datalist = document.getElementById('tag-suggestions');
+
+    let tags = hiddenInput.value ? hiddenInput.value.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+    function syncHidden() {
+      hiddenInput.value = tags.join(', ');
+    }
+
+    function renderChips() {
+      chipsEl.innerHTML = '';
+      tags.forEach((tag, i) => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+        chip.innerHTML = `${esc(tag)}<button type="button" class="tag-chip__remove" data-index="${i}">✕</button>`;
+        chipsEl.appendChild(chip);
+      });
+    }
+
+    chipsEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tag-chip__remove');
+      if (btn) {
+        tags.splice(parseInt(btn.dataset.index), 1);
+        syncHidden();
+        renderChips();
+      }
+    });
+
+    tagInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const val = tagInput.value.trim().replace(/,/g, '');
+        if (val && !tags.includes(val)) {
+          tags.push(val);
+          syncHidden();
+          renderChips();
+        }
+        tagInput.value = '';
+      }
+    });
+
+    // フォーカスアウトでも追加
+    tagInput.addEventListener('blur', () => {
+      const val = tagInput.value.trim().replace(/,/g, '');
+      if (val && !tags.includes(val)) {
+        tags.push(val);
+        syncHidden();
+        renderChips();
+      }
+      tagInput.value = '';
+    });
+
+    // 候補を取得
+    fetch('../api/works.php?tags=1')
+      .then(r => r.json())
+      .then(suggestions => {
+        if (Array.isArray(suggestions)) {
+          suggestions.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t;
+            datalist.appendChild(opt);
+          });
+        }
+      })
+      .catch(() => {});
+
+    renderChips();
+  }
 
   // ── 項目追加（カテゴリ選択 + 新規カテゴリ + 設定保存） ──
   {
