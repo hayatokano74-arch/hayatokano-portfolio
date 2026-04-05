@@ -602,6 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (libBtn && libModal) {
     libBtn.addEventListener('click', async () => {
       libModal.style.display = '';
+      requestAnimationFrame(() => libModal.classList.add('is-visible'));
       libGrid.innerHTML = '';
       libLoad.style.display = '';
 
@@ -632,8 +633,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    libClose.addEventListener('click', () => { libModal.style.display = 'none'; });
-    libModal.addEventListener('click', (e) => { if (e.target === libModal) libModal.style.display = 'none'; });
+    function closeLibrary() {
+      libModal.classList.remove('is-visible');
+      setTimeout(() => { libModal.style.display = 'none'; }, 200);
+    }
+    libClose.addEventListener('click', closeLibrary);
+    libModal.addEventListener('click', (e) => { if (e.target === libModal) closeLibrary(); });
   }
 
   // 削除ボタン
