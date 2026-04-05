@@ -2258,32 +2258,57 @@ textarea.form-control.is-dragover {
     transform: translateX(0);
   }
 
-  /* オーバーレイ表示 */
   .sidebar-overlay.is-visible {
     display: block;
   }
 
-  /* メインは全幅 */
   .main-wrap {
     margin-left: 0;
   }
 
-  /* メニュートグル表示 */
   .topbar__menu-toggle {
     display: flex;
   }
 
-  /* トップバーパディング縮小 */
   .topbar {
-    padding: 0 var(--s-4);
+    padding: 0 var(--s-3);
   }
 
-  /* メインコンテンツパディング縮小 */
+  .topbar__title {
+    font-size: var(--font-base);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* メインコンテンツ: 余白を縮小 */
   .main-content {
-    padding: var(--s-5) var(--s-4);
+    padding: var(--s-4) var(--s-3);
   }
 
-  /* グリッド1カラム化 */
+  /* ページヘッダー: タイトル縮小・縦積み */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-3);
+    margin-bottom: var(--s-5);
+  }
+
+  .page-header__title {
+    font-size: var(--font-lg);
+  }
+
+  /* アクションボタン: 横並び維持だがフォントを小さく */
+  .page-actions {
+    gap: var(--s-2);
+  }
+
+  .page-actions .btn {
+    font-size: var(--font-xs);
+    padding: var(--s-1) var(--s-3);
+  }
+
+  /* グリッド: 1カラム化 */
   .grid-2,
   .grid-3,
   .grid-4 {
@@ -2292,17 +2317,64 @@ textarea.form-control.is-dragover {
 
   .form-row,
   .form-row--2col,
-  .form-row--3col {
+  .form-row--3col,
+  .form-row--detail {
     grid-template-columns: 1fr;
   }
 
-  /* テーブルアクション縦積み */
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
+  /* テーブル: 不要な列を非表示 + フォント縮小 */
+  .table, .data-table {
+    font-size: var(--font-xs);
   }
 
-  /* モーダル全幅 */
+  .table th,
+  .table td {
+    padding: var(--s-2) var(--s-3);
+  }
+
+  /* 4列目以降（タグ・更新日）を非表示 */
+  .table th:nth-child(n+4),
+  .table td:nth-child(n+4) {
+    display: none;
+  }
+
+  /* セクション見出し */
+  .section-heading {
+    font-size: var(--font-base);
+  }
+
+  .form-section__title {
+    font-size: var(--font-base);
+  }
+
+  /* メディア行: 縦積み */
+  .dynamic-row--media {
+    flex-wrap: wrap;
+  }
+
+  .media-row-preview {
+    width: 80px;
+    height: 60px;
+  }
+
+  .media-row-fields {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* フォームアクション: 縦積み or 余白縮小 */
+  .form-actions {
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+
+  /* ダッシュボードのグリッド */
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--s-3);
+  }
+
+  /* モーダル: ボトムシート */
   .modal {
     max-width: 100%;
     border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -2317,19 +2389,43 @@ textarea.form-control.is-dragover {
   /* トースト */
   .toast-container {
     bottom: var(--s-4);
-    right: var(--s-4);
-    left: var(--s-4);
+    right: var(--s-3);
+    left: var(--s-3);
   }
 
   .toast {
     max-width: 100%;
     min-width: unset;
   }
+
+  /* 画像追加ボタン群 */
+  .media-add-actions {
+    flex-direction: column;
+  }
+
+  .media-add-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 @media (max-width: 480px) {
-  .topbar__title {
+  .main-content {
+    padding: var(--s-3) var(--s-2);
+  }
+
+  .page-header__title {
     font-size: var(--font-base);
+  }
+
+  /* テーブル: 3列目も非表示 */
+  .table th:nth-child(n+3),
+  .table td:nth-child(n+3) {
+    display: none;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
   }
 }
 
