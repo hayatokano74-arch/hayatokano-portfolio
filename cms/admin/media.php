@@ -23,6 +23,8 @@ ob_start();
           <option value="">すべてのセクション</option>
         </select>
       </div>
+      <input type="text" id="media-search" class="form-control form-control--sm"
+             placeholder="検索（ファイル名・スラッグ）" style="width:200px;">
       <span class="media-count" id="media-count">読み込み中…</span>
     </div>
     <div class="media-toolbar__right">
@@ -295,6 +297,8 @@ ob_start();
     show_skeletons(12);
     const params = new URLSearchParams({ limit: LIMIT, offset });
     if (section) params.set('section', section);
+    const q = searchInput?.value?.trim();
+    if (q) params.set('q', q);
 
     try {
       const res  = await fetch(`${API_BASE}?${params}`);
@@ -416,8 +420,14 @@ ob_start();
     if (state.offset + LIMIT < state.total) load(state.section, state.offset + LIMIT);
   });
 
-  // ─ フィルタ ─
+  // ─ フィルタ + 検索 ─
+  const searchInput = document.getElementById('media-search');
   filterSel.addEventListener('change', () => load(filterSel.value, 0));
+  let searchTimer = null;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => load(filterSel.value, 0), 300);
+  });
 
   // ─ URLコピー ─
   function copy_url(url) {

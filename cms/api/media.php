@@ -45,24 +45,39 @@ switch ($method) {
 function handle_get(): never {
     $db      = get_db();
     $section = $_GET['section'] ?? '';
+    $slug    = $_GET['slug']    ?? '';
+    $q       = $_GET['q']       ?? '';
     $limit   = max(1, min(200, (int)($_GET['limit']  ?? 60)));
     $offset  = max(0, (int)($_GET['offset'] ?? 0));
 
+    $where = [];
+    $params = [];
+
     if ($section !== '') {
-        $stmt = $db->prepare('SELECT * FROM media WHERE section = ? ORDER BY id DESC LIMIT ? OFFSET ?');
-        $stmt->execute([$section, $limit, $offset]);
-        $rows = $stmt->fetchAll();
-
-        $cnt_stmt = $db->prepare('SELECT COUNT(*) FROM media WHERE section = ?');
-        $cnt_stmt->execute([$section]);
-        $total = (int)$cnt_stmt->fetchColumn();
-    } else {
-        $stmt = $db->prepare('SELECT * FROM media ORDER BY id DESC LIMIT ? OFFSET ?');
-        $stmt->execute([$limit, $offset]);
-        $rows = $stmt->fetchAll();
-
-        $total = (int)$db->query('SELECT COUNT(*) FROM media')->fetchColumn();
+        $where[] = 'section = ?';
+        $params[] = $section;
     }
+    if ($slug !== '') {
+        $where[] = 'slug = ?';
+        $params[] = $slug;
+    }
+    if ($q !== '') {
+        $where[] = '(filename LIKE ? OR section LIKE ? OR slug LIKE ?)';
+        $like = '%' . $q . '%';
+        $params[] = $like;
+        $params[] = $like;
+        $params[] = $like;
+    }
+
+    $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+    $cnt_stmt = $db->prepare("SELECT COUNT(*) FROM media $where_sql");
+    $cnt_stmt->execute($params);
+    $total = (int)$cnt_stmt->fetchColumn();
+
+    $stmt = $db->prepare("SELECT * FROM media $where_sql ORDER BY id DESC LIMIT ? OFFSET ?");
+    $stmt->execute([...$params, $limit, $offset]);
+    $rows = $stmt->fetchAll();
 
     // セクション一覧も返す（フィルタUI用）
     $sections = $db->query(
