@@ -73,8 +73,17 @@ function handle_post(): never {
     $data  = encode_json_field($body['data']  ?? []);
     $media = encode_json_field($body['media'] ?? []);
 
-    // 既存レコードの確認
-    $existing = db_find_by_slug('works', $slug);
+    // スラッグ変更: _original_slug があればそれで既存レコードを特定
+    $original_slug = trim($body['_original_slug'] ?? '');
+    $existing = $original_slug ? db_find_by_slug('works', $original_slug) : db_find_by_slug('works', $slug);
+
+    // スラッグ変更のみ（他のフィールドなし）の場合
+    if ($original_slug && $existing && count($body) <= 2) {
+        $db->prepare("UPDATE works SET slug = ?, updated_at = datetime('now') WHERE slug = ?")
+           ->execute([$slug, $original_slug]);
+        $row = db_find_by_slug('works', $slug);
+        json_ok(decode_json_fields($row));
+    }
 
     if ($existing) {
         // UPDATE

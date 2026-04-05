@@ -82,7 +82,10 @@ ob_start();
           <?php if ($row['pinned']): ?>
           <span class="badge badge--accent" style="margin-left:6px;font-size:10px;">固定</span>
           <?php endif; ?>
-          <br><small class="text-muted"><?= htmlspecialchars($row['slug'], ENT_QUOTES) ?></small>
+          <br><small class="slug-inline" data-slug="<?= htmlspecialchars($row['slug'], ENT_QUOTES) ?>"
+                     title="クリックしてスラッグを編集"
+                     style="color:var(--text-3);cursor:pointer;border-bottom:1px dashed var(--border);"
+            ><?= htmlspecialchars($row['slug'], ENT_QUOTES) ?></small>
         </td>
         <td class="text-muted"><?= htmlspecialchars($row['date'], ENT_QUOTES) ?></td>
         <td>
@@ -105,6 +108,39 @@ ob_start();
   </table>
 </div>
 <?php endif; ?>
+
+<script>
+// スラッグのインライン編集
+document.querySelectorAll('.slug-inline').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.stopPropagation(); // 行クリック（編集ページ遷移）を防止
+    const oldSlug = el.dataset.slug;
+    const newSlug = prompt('スラッグを変更:', oldSlug);
+    if (!newSlug || newSlug === oldSlug) return;
+    const clean = newSlug.replace(/[^a-zA-Z0-9\-_]/g, '');
+    if (!clean) { alert('スラッグは英数字・ハイフン・アンダースコアのみです'); return; }
+
+    // API経由で更新
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    fetch('../api/works.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      body: JSON.stringify({ _original_slug: oldSlug, slug: clean }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) throw new Error(data.error);
+      el.textContent = clean;
+      el.dataset.slug = clean;
+      // 編集リンクも更新
+      const row = el.closest('tr');
+      if (row) row.dataset.href = row.dataset.href.replace(oldSlug, clean);
+      show_toast('スラッグを変更しました', 'success');
+    })
+    .catch(err => show_toast(err.message, 'error'));
+  });
+});
+</script>
 
 <?php
 $content = ob_get_clean();

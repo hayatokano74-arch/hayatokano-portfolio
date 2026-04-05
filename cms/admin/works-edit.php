@@ -86,11 +86,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$date)  $errors[] = '日付は必須です。';
 
         if (empty($errors)) {
-            $existing = db_find_by_slug('works', $slug);
+            $original_slug = trim($_POST['_original_slug'] ?? '');
+            $existing = $original_slug ? db_find_by_slug('works', $original_slug) : null;
+
             if ($existing) {
-                $stmt = $db->prepare("UPDATE works SET title=?, date=?, year=?, tags=?, excerpt=?, pinned=?, body=?, data=?, updated_at=datetime('now') WHERE slug=?");
-                $stmt->execute([$title, $date, $year, $tags_json, $excerpt, $pinned, $body, $data_json, $slug]);
+                // 既存レコードを更新（スラッグ変更にも対応）
+                $stmt = $db->prepare("UPDATE works SET slug=?, title=?, date=?, year=?, tags=?, excerpt=?, pinned=?, body=?, data=?, updated_at=datetime('now') WHERE slug=?");
+                $stmt->execute([$slug, $title, $date, $year, $tags_json, $excerpt, $pinned, $body, $data_json, $original_slug]);
             } else {
+                // 新規作成
                 $stmt = $db->prepare("INSERT INTO works (slug, title, date, year, tags, excerpt, pinned, body, data) VALUES (?,?,?,?,?,?,?,?,?)");
                 $stmt->execute([$slug, $title, $date, $year, $tags_json, $excerpt, $pinned, $body, $data_json]);
             }
@@ -205,6 +209,7 @@ ob_start();
 <form method="post" action="" class="edit-form" id="works-form">
   <input type="hidden" name="_csrf"   value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES) ?>">
   <input type="hidden" name="_action" value="save">
+  <input type="hidden" name="_original_slug" value="<?= htmlspecialchars($row['slug'] ?? '', ENT_QUOTES) ?>">
 
   <div class="form-grid">
 
@@ -217,8 +222,8 @@ ob_start();
           <input type="text" id="slug" name="slug" class="form-control"
                  value="<?= $f_slug ?>" pattern="[a-zA-Z0-9\-_]+"
                  title="英数字・ハイフン・アンダースコアのみ" required
-                 <?= !$is_new ? 'readonly' : '' ?>>
-          <?php if (!$is_new): ?><p class="form-hint">スラッグは変更できません。</p><?php endif; ?>
+                 >
+          <p class="form-hint">URLに使われます（例: w001 → /works/w001/）</p>
         </div>
         <div class="form-group">
           <label class="form-label" for="title">タイトル <span class="required">*</span></label>
