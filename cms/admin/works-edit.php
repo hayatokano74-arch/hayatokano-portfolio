@@ -345,11 +345,43 @@ ob_start();
       </details>
       <?php endif; ?>
 
-      <!-- カスタム項目追加 -->
-      <div id="det-custom-area">
-        <div id="det-custom-list-new"></div>
+      <!-- 項目追加UI -->
+      <div class="det-add-panel" id="det-add-panel" style="display:none;">
+        <div class="det-add-panel__row">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">追加先カテゴリ</label>
+            <select id="det-add-cat" class="form-control">
+              <?php foreach ($standard_fields as $i => $cat): ?>
+              <option value="<?= $i ?>"><?= htmlspecialchars($cat['name'], ENT_QUOTES) ?></option>
+              <?php endforeach; ?>
+              <option value="__new__">── 新しいカテゴリを作成 ──</option>
+            </select>
+          </div>
+          <div class="form-group" id="det-new-cat-group" style="flex:1;display:none;">
+            <label class="form-label">新カテゴリ名</label>
+            <input type="text" id="det-new-cat-name" class="form-control" placeholder="例: 映像・上映">
+          </div>
+        </div>
+        <div class="det-add-panel__row">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">項目名</label>
+            <input type="text" id="det-add-key" class="form-control" placeholder="例: Screening Date">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">プレースホルダー（任意）</label>
+            <input type="text" id="det-add-ph" class="form-control" placeholder="例: 2025.06.15">
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--s-2);">
+          <button type="button" class="btn btn-sm btn-primary" id="det-add-confirm">追加</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="det-add-cancel">キャンセル</button>
+          <label style="display:flex;align-items:center;gap:var(--s-2);margin-left:auto;font-size:var(--font-xs);color:var(--text-3);">
+            <input type="checkbox" id="det-add-save-setting" checked>
+            フィールド設定にも保存
+          </label>
+        </div>
       </div>
-      <button type="button" class="btn btn-sm btn-ghost" id="det-add-custom" style="margin-top:var(--s-2);">+ カスタム項目を追加</button>
+      <button type="button" class="btn btn-sm btn-ghost" id="det-add-custom" style="margin-top:var(--s-2);">+ 項目を追加</button>
     </div>
 
     <!-- ── 作品画像（media） ── -->
@@ -558,25 +590,120 @@ document.addEventListener('DOMContentLoaded', () => {
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-  // ── カスタム項目の追加・削除 ──
+  // ── 項目追加（カテゴリ選択 + 新規カテゴリ + 設定保存） ──
   {
-    const customList = document.getElementById('det-custom-list-new');
-    const addBtn = document.getElementById('det-add-custom');
+    const addBtn     = document.getElementById('det-add-custom');
+    const panel      = document.getElementById('det-add-panel');
+    const catSelect  = document.getElementById('det-add-cat');
+    const newCatGrp  = document.getElementById('det-new-cat-group');
+    const newCatName = document.getElementById('det-new-cat-name');
+    const keyInput   = document.getElementById('det-add-key');
+    const phInput    = document.getElementById('det-add-ph');
+    const confirmBtn = document.getElementById('det-add-confirm');
+    const cancelBtn  = document.getElementById('det-add-cancel');
+    const saveCheck  = document.getElementById('det-add-save-setting');
 
     addBtn.addEventListener('click', () => {
-      const row = document.createElement('div');
-      row.className = 'det-custom-row';
-      row.innerHTML = `
-        <input type="text" name="det_key[]" class="form-control" placeholder="項目名">
-        <input type="text" name="det_value[]" class="form-control" placeholder="内容">
-        <button type="button" class="det-row-remove" title="削除">✕</button>
-      `;
-      customList.appendChild(row);
+      panel.style.display = '';
+      addBtn.style.display = 'none';
+      keyInput.focus();
     });
 
+    cancelBtn.addEventListener('click', () => {
+      panel.style.display = 'none';
+      addBtn.style.display = '';
+    });
+
+    catSelect.addEventListener('change', () => {
+      newCatGrp.style.display = catSelect.value === '__new__' ? '' : 'none';
+    });
+
+    confirmBtn.addEventListener('click', async () => {
+      const key = keyInput.value.trim();
+      if (!key) { show_toast('項目名を入力してください', 'error'); return; }
+
+      const catIdx = catSelect.value;
+      let targetBody;
+
+      if (catIdx === '__new__') {
+        // 新しいカテゴリを作成
+        const catName = newCatName.value.trim();
+        if (!catName) { show_toast('カテゴリ名を入力してください', 'error'); return; }
+
+        const detailsSection = document.querySelector('.form-section:has(#det-add-panel)');
+        const newCat = document.createElement('details');
+        newCat.className = 'det-category';
+        newCat.open = true;
+        newCat.innerHTML = `
+          <summary class="det-category__summary"><span>${esc(catName)}</span></summary>
+          <div class="det-category__body"></div>
+        `;
+        // カスタム項目セクションの前に挿入
+        const customSection = detailsSection.querySelector('#det-add-panel');
+        customSection.parentNode.insertBefore(newCat, customSection);
+        targetBody = newCat.querySelector('.det-category__body');
+      } else {
+        // 既存カテゴリに追加
+        const allCats = document.querySelectorAll('.det-category');
+        const cat = allCats[parseInt(catIdx)];
+        if (cat) {
+          cat.open = true;
+          targetBody = cat.querySelector('.det-category__body');
+        }
+      }
+
+      if (targetBody) {
+        const field = document.createElement('div');
+        field.className = 'det-field';
+        field.innerHTML = `
+          <label class="det-field__label">${esc(key)}</label>
+          <input type="hidden" name="det_key[]" value="${esc(key)}">
+          <input type="text" name="det_value[]" class="form-control" placeholder="${esc(phInput.value.trim())}">
+        `;
+        targetBody.appendChild(field);
+      }
+
+      // フィールド設定にも保存（設定APIを叩く）
+      if (saveCheck.checked) {
+        try {
+          const settingsRes = await fetch('../api/settings.php?key=works_detail_fields');
+          const current = await settingsRes.json() || [];
+          const fields = Array.isArray(current) ? current : [];
+
+          if (catIdx === '__new__') {
+            fields.push({ name: newCatName.value.trim(), fields: [{ key, placeholder: phInput.value.trim() }] });
+          } else {
+            const idx = parseInt(catIdx);
+            if (fields[idx]) {
+              fields[idx].fields.push({ key, placeholder: phInput.value.trim() });
+            }
+          }
+
+          await fetch('../api/settings.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+            body: JSON.stringify({ key: 'works_detail_fields', value: fields }),
+          });
+          show_toast('項目を追加し、設定にも保存しました', 'success');
+        } catch {
+          show_toast('項目は追加しましたが、設定への保存に失敗しました', 'warning');
+        }
+      } else {
+        show_toast('項目を追加しました（この投稿のみ）', 'success');
+      }
+
+      // リセット
+      keyInput.value = '';
+      phInput.value = '';
+      newCatName.value = '';
+      panel.style.display = 'none';
+      addBtn.style.display = '';
+    });
+
+    // カスタム行の削除
     document.addEventListener('click', (e) => {
       if (e.target.closest('.det-row-remove')) {
-        e.target.closest('.det-custom-row').remove();
+        e.target.closest('.det-custom-row')?.remove();
       }
     });
   }
