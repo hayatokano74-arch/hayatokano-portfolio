@@ -340,6 +340,15 @@ ob_start();
       <div class="media-drop-zone" id="media-drop-zone">
         <p style="color:var(--text-3);font-size:var(--font-sm);">画像をドラッグ＆ドロップでも追加できます</p>
       </div>
+      <div class="media-upload-progress" id="media-progress" style="display:none;">
+        <div class="media-upload-progress__info">
+          <span id="progress-text">アップロード中…</span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="media-upload-progress__track">
+          <div class="media-upload-progress__fill" id="progress-fill"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ── 本文 ── -->
@@ -432,6 +441,21 @@ ob_start();
 .media-lib-item:hover { border-color:var(--accent); }
 .media-lib-item.is-selected { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-bg); }
 .media-lib-item img { width:100%; height:100%; object-fit:cover; display:block; }
+
+.media-upload-progress {
+  margin-top:var(--s-3); padding:var(--s-3) var(--s-4);
+  background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+}
+.media-upload-progress__info {
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:var(--font-sm); color:var(--text-2); margin-bottom:var(--s-2);
+}
+.media-upload-progress__track {
+  height:4px; background:var(--border); border-radius:2px; overflow:hidden;
+}
+.media-upload-progress__fill {
+  height:100%; background:var(--accent); width:0%; transition:width 0.2s ease;
+}
 </style>
 
 <script>
@@ -487,17 +511,72 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const progressEl   = document.getElementById('media-progress');
+  const progressText = document.getElementById('progress-text');
+  const progressPct  = document.getElementById('progress-percent');
+  const progressFill = document.getElementById('progress-fill');
+
+  function uploadWithProgress(file, section, fileSlug) {
+    return new Promise((resolve, reject) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('section', section);
+      if (fileSlug) fd.append('slug', fileSlug);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '../api/media.php');
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+      xhr.setRequestHeader('X-CSRF-Token', csrf);
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round(e.loaded / e.total * 100);
+          progressPct.textContent = pct + '%';
+          progressFill.style.width = pct + '%';
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300 && !data.error) {
+            resolve(data.data || data);
+          } else {
+            reject(new Error(data.error || 'アップロード失敗'));
+          }
+        } catch { reject(new Error('レスポンスの解析に失敗')); }
+      });
+      xhr.addEventListener('error', () => reject(new Error('通信エラー')));
+      xhr.send(fd);
+    });
+  }
+
   async function uploadFiles(files) {
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) continue;
+    const imageFiles = files.filter(f => f.type.startsWith('image/'));
+    if (!imageFiles.length) return;
+
+    progressEl.style.display = '';
+    let done = 0;
+
+    for (const file of imageFiles) {
+      progressText.textContent = `${done + 1} / ${imageFiles.length}: ${file.name}`;
+      progressPct.textContent = '0%';
+      progressFill.style.width = '0%';
+
       try {
-        const result = await upload_image_to_api(file, 'works', slug);
+        const result = await uploadWithProgress(file, 'works', slug);
         addMediaRow(result.url, '', result.width, result.height, 'media-' + Date.now());
         show_toast(file.name + ' をアップロードしました', 'success');
       } catch (err) {
         show_toast(file.name + ': ' + err.message, 'error');
       }
+      done++;
     }
+
+    progressText.textContent = `${done} 件のアップロード完了`;
+    progressPct.textContent = '100%';
+    progressFill.style.width = '100%';
+    setTimeout(() => { progressEl.style.display = 'none'; }, 2000);
   }
 
   // ── ドラッグ＆ドロップ ──
