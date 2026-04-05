@@ -49,7 +49,7 @@ function handle_get(): never {
     $offset  = max(0, (int)($_GET['offset'] ?? 0));
 
     if ($section !== '') {
-        $stmt = $db->prepare('SELECT * FROM media WHERE section = ? ORDER BY created_at DESC LIMIT ? OFFSET ?');
+        $stmt = $db->prepare('SELECT * FROM media WHERE section = ? ORDER BY id DESC LIMIT ? OFFSET ?');
         $stmt->execute([$section, $limit, $offset]);
         $rows = $stmt->fetchAll();
 
@@ -57,7 +57,7 @@ function handle_get(): never {
         $cnt_stmt->execute([$section]);
         $total = (int)$cnt_stmt->fetchColumn();
     } else {
-        $stmt = $db->prepare('SELECT * FROM media ORDER BY created_at DESC LIMIT ? OFFSET ?');
+        $stmt = $db->prepare('SELECT * FROM media ORDER BY id DESC LIMIT ? OFFSET ?');
         $stmt->execute([$limit, $offset]);
         $rows = $stmt->fetchAll();
 

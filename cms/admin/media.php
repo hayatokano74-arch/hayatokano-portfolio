@@ -73,34 +73,23 @@ ob_start();
 
 </div><!-- /.media-manager -->
 
-<!-- 画像詳細モーダル -->
-<div class="modal-backdrop" id="media-modal" style="display:none" aria-hidden="true">
-  <div class="modal media-detail-modal" role="dialog" aria-modal="true" aria-labelledby="media-modal-title">
-    <div class="modal__header">
-      <h3 class="modal__title" id="media-modal-title">画像詳細</h3>
-      <button class="modal__close" id="media-modal-close" aria-label="閉じる">✕</button>
+<!-- ライトボックス -->
+<div class="lightbox" id="media-modal" style="display:none">
+  <button class="lightbox__close" id="media-modal-close" aria-label="閉じる">✕</button>
+  <button class="lightbox__nav lightbox__nav--prev" id="lightbox-prev" aria-label="前の画像">‹</button>
+  <button class="lightbox__nav lightbox__nav--next" id="lightbox-next" aria-label="次の画像">›</button>
+  <div class="lightbox__main">
+    <img id="media-modal-img" src="" alt="" class="lightbox__img">
+  </div>
+  <div class="lightbox__bar">
+    <div class="lightbox__info">
+      <span id="modal-filename" style="font-weight:500;"></span>
+      <span id="modal-dims" style="color:var(--text-3);"></span>
+      <span id="modal-size" style="color:var(--text-3);"></span>
     </div>
-    <div class="modal__body">
-      <div class="media-modal__preview">
-        <img id="media-modal-img" src="" alt=""
-             style="max-width:100%;max-height:360px;object-fit:contain;display:block;margin:0 auto;border-radius:var(--radius)">
-      </div>
-      <table class="media-meta-table">
-        <tr>
-          <th>URL</th>
-          <td><code id="modal-url" style="word-break:break-all;font-size:var(--font-xs);color:var(--accent)"></code></td>
-        </tr>
-        <tr><th>ファイルサイズ</th><td id="modal-size"></td></tr>
-        <tr><th>幅×高さ</th><td id="modal-dims"></td></tr>
-        <tr><th>セクション</th><td id="modal-section"></td></tr>
-        <tr><th>投稿スラッグ</th><td id="modal-slug"></td></tr>
-        <tr><th>アップロード日時</th><td id="modal-date"></td></tr>
-      </table>
-    </div>
-    <div class="modal__footer">
-      <button class="btn btn-ghost" id="media-modal-close2">閉じる</button>
-      <button class="btn btn-ghost" id="modal-copy-btn">URLをコピー</button>
-      <button class="btn btn-danger" id="modal-delete-btn">削除</button>
+    <div class="lightbox__actions">
+      <button class="btn btn-sm btn-ghost" id="modal-copy-btn">URLをコピー</button>
+      <button class="btn btn-sm btn-danger" id="modal-delete-btn">削除</button>
     </div>
   </div>
 </div>
@@ -205,24 +194,48 @@ ob_start();
 }
 .media-pagination__info { font-size:var(--font-sm); color:var(--text-3); }
 
-/* モーダル */
-.media-detail-modal { width:min(680px, 95vw); }
-.media-modal__preview {
-  background:var(--bg); border-radius:var(--radius);
-  padding:var(--s-4); margin-bottom:var(--s-5);
+/* ライトボックス */
+.lightbox {
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(0,0,0,0.92);
+  display:flex; flex-direction:column;
 }
-.media-meta-table { width:100%; border-collapse:collapse; font-size:var(--font-sm); }
-.media-meta-table th,
-.media-meta-table td {
-  padding:var(--s-2) var(--s-3);
-  border-bottom:1px solid var(--border-subtle);
-  text-align:left;
+.lightbox__close {
+  position:absolute; top:var(--s-4); right:var(--s-4); z-index:10;
+  background:none; border:none; color:#fff; font-size:28px;
+  cursor:pointer; opacity:0.7; transition:opacity 0.15s;
+  width:40px; height:40px; display:flex; align-items:center; justify-content:center;
 }
-.media-meta-table th { width:120px; color:var(--text-3); font-weight:500; }
-.modal__footer {
-  display:flex; gap:var(--s-3); justify-content:flex-end;
-  padding-top:var(--s-4); border-top:1px solid var(--border-subtle); margin-top:var(--s-4);
+.lightbox__close:hover { opacity:1; }
+.lightbox__nav {
+  position:absolute; top:50%; transform:translateY(-50%); z-index:10;
+  background:none; border:none; color:#fff; font-size:48px;
+  cursor:pointer; opacity:0.5; transition:opacity 0.15s;
+  width:60px; height:80px; display:flex; align-items:center; justify-content:center;
 }
+.lightbox__nav:hover { opacity:1; }
+.lightbox__nav--prev { left:var(--s-3); }
+.lightbox__nav--next { right:var(--s-3); }
+.lightbox__nav:disabled { opacity:0.15; cursor:default; }
+.lightbox__main {
+  flex:1; display:flex; align-items:center; justify-content:center;
+  padding:var(--s-10) var(--s-12); min-height:0;
+}
+.lightbox__img {
+  max-width:100%; max-height:100%; object-fit:contain;
+  border-radius:var(--radius);
+}
+.lightbox__bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:var(--s-3) var(--s-6);
+  background:rgba(0,0,0,0.6);
+  color:#fff; font-size:var(--font-sm);
+  flex-shrink:0;
+}
+.lightbox__info { display:flex; gap:var(--s-4); align-items:center; }
+.lightbox__actions { display:flex; gap:var(--s-3); }
+.lightbox__actions .btn { color:#fff; border-color:rgba(255,255,255,0.3); }
+.lightbox__actions .btn:hover { border-color:#fff; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
 @media (max-width:600px) {
@@ -315,6 +328,7 @@ ob_start();
 
   // ─ グリッド描画 ─
   function render_grid(items) {
+    allItems = items;
     grid.querySelectorAll('.media-card').forEach(el => el.remove());
     emptyEl.style.display = items.length ? 'none' : '';
 
@@ -429,34 +443,52 @@ ob_start();
     });
   }
 
-  // ─ モーダル ─
+  // ─ ライトボックス ─
+  let allItems = []; // 現在表示中の全アイテム
+
   function open_modal(item) {
     currentItem = item;
-    const url = item_url(item);
-    document.getElementById('media-modal-img').src        = url;
-    document.getElementById('modal-url').textContent     = url;
-    document.getElementById('modal-size').textContent    = fmt_bytes(item.size_bytes);
-    document.getElementById('modal-dims').textContent    = item.width && item.height
-      ? `${item.width} × ${item.height} px` : '—';
-    document.getElementById('modal-section').textContent = item.section || '—';
-    document.getElementById('modal-slug').textContent    = item.slug    || '—';
-    document.getElementById('modal-date').textContent    = fmt_date(item.created_at);
+    update_lightbox();
     modal.style.display = '';
-    modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+  }
+
+  function update_lightbox() {
+    if (!currentItem) return;
+    const url = item_url(currentItem);
+    document.getElementById('media-modal-img').src = url;
+    document.getElementById('modal-filename').textContent = currentItem.filename || '';
+    document.getElementById('modal-dims').textContent = currentItem.width && currentItem.height
+      ? `${currentItem.width}×${currentItem.height}` : '';
+    document.getElementById('modal-size').textContent = fmt_bytes(currentItem.size_bytes);
+
+    const idx = allItems.indexOf(currentItem);
+    document.getElementById('lightbox-prev').disabled = idx <= 0;
+    document.getElementById('lightbox-next').disabled = idx < 0 || idx >= allItems.length - 1;
+  }
+
+  function navigate(dir) {
+    const idx = allItems.indexOf(currentItem);
+    const next = allItems[idx + dir];
+    if (next) { currentItem = next; update_lightbox(); }
   }
 
   function close_modal() {
     modal.style.display = 'none';
-    modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     currentItem = null;
   }
 
-  document.getElementById('media-modal-close').addEventListener('click',  close_modal);
-  document.getElementById('media-modal-close2').addEventListener('click', close_modal);
-  modal.addEventListener('click', e => { if (e.target === modal) close_modal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && currentItem) close_modal(); });
+  document.getElementById('media-modal-close').addEventListener('click', close_modal);
+  document.getElementById('lightbox-prev').addEventListener('click', () => navigate(-1));
+  document.getElementById('lightbox-next').addEventListener('click', () => navigate(1));
+  modal.addEventListener('click', e => { if (e.target === modal || e.target.classList.contains('lightbox__main')) close_modal(); });
+  document.addEventListener('keydown', e => {
+    if (!currentItem) return;
+    if (e.key === 'Escape') close_modal();
+    if (e.key === 'ArrowLeft')  navigate(-1);
+    if (e.key === 'ArrowRight') navigate(1);
+  });
 
   document.getElementById('modal-copy-btn').addEventListener('click', () => {
     if (currentItem) copy_url(item_url(currentItem));
@@ -464,7 +496,12 @@ ob_start();
   document.getElementById('modal-delete-btn').addEventListener('click', () => {
     if (!currentItem) return;
     const card = grid.querySelector(`[data-path="${CSS.escape(currentItem.path)}"]`);
+    const idx = allItems.indexOf(currentItem);
     delete_item(currentItem, card);
+    allItems.splice(idx, 1);
+    if (allItems.length === 0) { close_modal(); return; }
+    currentItem = allItems[Math.min(idx, allItems.length - 1)];
+    update_lightbox();
   });
 
   // ─ アップロード ─
