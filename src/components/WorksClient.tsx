@@ -156,50 +156,36 @@ function GridDetails({ details, gridSettings }: { details: unknown; gridSettings
 
 function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false, gridSettings }: { works: T[]; detailHref: (slug: string) => string; showDetails?: boolean; gridSettings?: MeNoHoshiGridField[] }) {
   return (
-    <div style={{ position: "relative", paddingBottom: "var(--space-14)" }}>
-      <div className="works-grid">
-        {works.map((w) => {
-          const lead = w.media[0];
-          const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
-          const thumbAlt = w.thumbnail?.alt ?? lead?.alt ?? w.title;
-          return (
-            <Link
-              key={w.slug}
-              href={detailHref(w.slug)}
-              prefetch={true}
-              className="work-grid-item"
-            >
-              <div className="work-grid-thumb">
-                <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} />
+    <div className="works-grid">
+      {works.map((w) => {
+        const lead = w.media[0];
+        const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
+        const thumbAlt = w.thumbnail?.alt ?? lead?.alt ?? w.title;
+        return (
+          <Link
+            key={w.slug}
+            href={detailHref(w.slug)}
+            prefetch={true}
+            className="work-grid-item"
+          >
+            <div className="work-grid-thumb">
+              <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} />
+            </div>
+            <div className="work-grid-info">
+              <span className="work-grid-title">{w.title}{w.pinned && <PinnedBadge />}</span>
+              <span className="work-grid-detail">
+                {w.year && <span>{w.year}</span>}
+              </span>
+            </div>
+            {showDetails && w.tags.length > 0 && (
+              <div className="work-grid-tags">
+                {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
               </div>
-              <div className="work-grid-info">
-                <span className="work-grid-title">{w.title}{w.pinned && <PinnedBadge />}</span>
-                <span className="work-grid-detail">
-                  {w.year && <span>{w.year}</span>}
-                </span>
-              </div>
-              {showDetails && w.tags.length > 0 && (
-                <div className="work-grid-tags">
-                  {w.tags.map((tag, i) => <span key={i}>{tag}</span>)}
-                </div>
-              )}
-              {showDetails && <GridDetails details={w.details} gridSettings={gridSettings} />}
-            </Link>
-          );
-        })}
-      </div>
-
-      <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: "var(--space-2)" }}>
-        <div
-          style={{
-            width: 16,
-            height: 16,
-            borderBottom: "1px solid var(--muted)",
-            borderRight: "1px solid var(--muted)",
-            transform: "rotate(45deg)",
-          }}
-        />
-      </div>
+            )}
+            {showDetails && <GridDetails details={w.details} gridSettings={gridSettings} />}
+          </Link>
+        );
+      })}
     </div>
   );
 }
