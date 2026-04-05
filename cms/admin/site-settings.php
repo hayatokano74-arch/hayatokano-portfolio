@@ -18,8 +18,11 @@ $setting_defs = [
     'social_instagram' => ['label' => 'Instagram URL', 'default' => '', 'type' => 'url'],
     'social_x'         => ['label' => 'X (Twitter) URL', 'default' => '', 'type' => 'url'],
     'social_website'   => ['label' => 'ウェブサイト URL', 'default' => 'https://hayatokano.com', 'type' => 'url'],
-    'works_per_page'   => ['label' => 'Works 1ページあたりの表示数', 'default' => '15', 'type' => 'number'],
-    'garden_per_page'  => ['label' => 'Garden 1ページあたりの表示数', 'default' => '15', 'type' => 'number'],
+    'works_per_page'      => ['label' => 'Works', 'default' => '6', 'type' => 'number'],
+    'me_no_hoshi_per_page'=> ['label' => '目の星', 'default' => '6', 'type' => 'number'],
+    'news_per_page'       => ['label' => 'News', 'default' => '10', 'type' => 'number'],
+    'garden_per_page'     => ['label' => 'Garden', 'default' => '15', 'type' => 'number'],
+    'text_per_page'       => ['label' => 'Text', 'default' => '10', 'type' => 'number'],
     'og_image'         => ['label' => 'OGP画像 URL', 'default' => '', 'type' => 'url'],
     'analytics_id'     => ['label' => 'Google Analytics ID', 'default' => '', 'type' => 'text', 'placeholder' => 'G-XXXXXXXXXX'],
 ];
@@ -94,8 +97,19 @@ ob_start();
   <!-- 表示設定 -->
   <div class="form-section form-section--full">
     <h3 class="form-section__title">表示設定</h3>
+    <p class="form-hint">各セクションの1ページあたりの表示件数です。</p>
+    <div class="form-row form-row--3col">
+      <?php foreach (['works_per_page', 'me_no_hoshi_per_page', 'news_per_page'] as $key): ?>
+      <div class="form-group">
+        <label class="form-label" for="<?= $key ?>"><?= $setting_defs[$key]['label'] ?></label>
+        <input type="number" id="<?= $key ?>" name="<?= $key ?>"
+               class="form-control" value="<?= htmlspecialchars($values[$key], ENT_QUOTES) ?>"
+               min="1" max="100">
+      </div>
+      <?php endforeach; ?>
+    </div>
     <div class="form-row form-row--2col">
-      <?php foreach (['works_per_page', 'garden_per_page'] as $key): ?>
+      <?php foreach (['garden_per_page', 'text_per_page'] as $key): ?>
       <div class="form-group">
         <label class="form-label" for="<?= $key ?>"><?= $setting_defs[$key]['label'] ?></label>
         <input type="number" id="<?= $key ?>" name="<?= $key ?>"

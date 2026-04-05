@@ -38,14 +38,24 @@ async function fetchGridSettings(): Promise<MeNoHoshiGridField[]> {
   }
 }
 
+async function fetchPerPage(key: string, fallback: number): Promise<number> {
+  try {
+    const res = await fetch(`${CMS_API}/settings.php?key=${key}`);
+    const val = await res.json();
+    const n = parseInt(val, 10);
+    return n > 0 ? n : fallback;
+  } catch { return fallback; }
+}
+
 export function MeNoHoshiPageClient() {
   const [posts, setPosts] = useState<MeNoHoshiPost[]>([]);
   const [gridFields, setGridFields] = useState<MeNoHoshiGridField[]>(fallbackGridFields);
+  const [perPage, setPerPage] = useState(6);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([fetchMeNoHoshiFromCms(), fetchGridSettings()])
-      .then(([p, g]) => { setPosts(p); setGridFields(g); })
+    Promise.all([fetchMeNoHoshiFromCms(), fetchGridSettings(), fetchPerPage('me_no_hoshi_per_page', 6)])
+      .then(([p, g, pp]) => { setPosts(p); setGridFields(g); setPerPage(pp); })
       .catch(() => setPosts([]))
       .finally(() => setLoading(false));
   }, []);
@@ -92,7 +102,7 @@ export function MeNoHoshiPageClient() {
         <FilterLayout groups={filterGroups}>
           <FilteredWorksList
             allWorks={posts}
-            perPage={15}
+            perPage={perPage}
             basePath="/me-no-hoshi"
             detailQuery=""
             gridSettings={gridFields}

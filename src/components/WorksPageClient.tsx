@@ -14,13 +14,25 @@ import { FilterProvider, FilterLayout } from "./FilterableContent";
 import { FilteredWorksList, FilteredCount } from "./FilteredWorksList";
 import { ViewModeProvider } from "./ViewModeContext";
 
+const CMS_API = "https://hayatokano.com/_cms/api";
+
+async function fetchPerPage(key: string, fallback: number): Promise<number> {
+  try {
+    const res = await fetch(`${CMS_API}/settings.php?key=${key}`);
+    const val = await res.json();
+    const n = parseInt(val, 10);
+    return n > 0 ? n : fallback;
+  } catch { return fallback; }
+}
+
 export function WorksPageClient() {
   const [works, setWorks] = useState<Work[]>([]);
+  const [perPage, setPerPage] = useState(6);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchWorksFromCms()
-      .then(setWorks)
+    Promise.all([fetchWorksFromCms(), fetchPerPage('works_per_page', 6)])
+      .then(([w, pp]) => { setWorks(w); setPerPage(pp); })
       .catch(() => setWorks([]))
       .finally(() => setLoading(false));
   }, []);
@@ -62,7 +74,7 @@ export function WorksPageClient() {
         <FilterLayout groups={filterGroups}>
           <FilteredWorksList
             allWorks={works}
-            perPage={15}
+            perPage={perPage}
             basePath="/works"
           />
         </FilterLayout>
