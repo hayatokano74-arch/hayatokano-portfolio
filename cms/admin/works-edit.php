@@ -276,7 +276,8 @@ ob_start();
       <p class="form-hint">先頭の画像がサムネイルになります。</p>
       <div id="media-list" class="dynamic-list">
         <?php foreach ($media as $i => $m): ?>
-        <div class="dynamic-row dynamic-row--media">
+        <div class="dynamic-row dynamic-row--media" draggable="true">
+          <span class="media-row-handle" title="ドラッグで並べ替え">⠿</span>
           <div class="media-row-preview">
             <?php
               $preview_src = '';
@@ -378,7 +379,8 @@ ob_start();
 </form>
 
 <template id="tpl-media-row">
-  <div class="dynamic-row dynamic-row--media">
+  <div class="dynamic-row dynamic-row--media" draggable="true">
+    <span class="media-row-handle" title="ドラッグで並べ替え">⠿</span>
     <div class="media-row-preview"></div>
     <div class="media-row-fields">
       <input type="hidden" name="media_id[]" value="">
@@ -465,6 +467,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const tpl    = document.getElementById('tpl-media-row');
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+  // ── メディア行の並べ替え（ドラッグ&ドロップ） ──
+  {
+    let dragged = null;
+    list.addEventListener('dragstart', (e) => {
+      const row = e.target.closest('.dynamic-row--media');
+      if (!row) return;
+      dragged = row;
+      row.style.opacity = '0.4';
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    list.addEventListener('dragend', () => {
+      if (dragged) dragged.style.opacity = '';
+      list.querySelectorAll('.dynamic-row--media').forEach(r => r.classList.remove('is-drag-over'));
+      dragged = null;
+    });
+    list.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const row = e.target.closest('.dynamic-row--media');
+      if (row && row !== dragged) {
+        list.querySelectorAll('.dynamic-row--media').forEach(r => r.classList.remove('is-drag-over'));
+        row.classList.add('is-drag-over');
+      }
+    });
+    list.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const target = e.target.closest('.dynamic-row--media');
+      if (!target || !dragged || target === dragged) return;
+      const rows = [...list.querySelectorAll('.dynamic-row--media')];
+      const fromIdx = rows.indexOf(dragged);
+      const toIdx = rows.indexOf(target);
+      if (fromIdx < toIdx) { target.after(dragged); } else { target.before(dragged); }
+      target.classList.remove('is-drag-over');
+    });
+  }
 
   // HTMLエスケープ
   function esc(s) {
