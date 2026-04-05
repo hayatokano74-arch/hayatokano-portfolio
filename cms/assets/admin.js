@@ -778,7 +778,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function init_rich_editors() {
   if (typeof Quill === 'undefined') return;
 
-  // Quill v1: Shift+Enter = <br>（改行）は標準で対応済み
+  // Quill初期化後にスタイルを直接注入（CSSの優先度問題を回避）
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `
+    .ql-editor p { margin-bottom: 1.5em !important; }
+    .ql-editor p:last-child { margin-bottom: 0 !important; }
+  `;
+  document.head.appendChild(styleEl);
 
   document.querySelectorAll('textarea[data-rich-editor]').forEach(textarea => {
     // hidden input を作成（フォーム送信用）
