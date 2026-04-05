@@ -587,6 +587,17 @@ ob_start();
       <button type="button" class="modal__close" id="media-lib-close">✕</button>
     </div>
     <div class="modal__body" style="overflow-y:auto;flex:1;">
+      <div style="padding:0 0 var(--s-3);display:flex;gap:var(--s-2);">
+        <input type="text" id="media-lib-search" class="form-control form-control--sm" placeholder="検索（ファイル名・スラッグ）" style="flex:1;">
+        <select id="media-lib-section" class="form-control form-control--sm" style="width:150px;">
+          <option value="">すべて</option>
+          <option value="works">works</option>
+          <option value="me-no-hoshi">me-no-hoshi</option>
+          <option value="garden">garden</option>
+          <option value="about">about</option>
+          <option value="news">news</option>
+        </select>
+      </div>
       <div class="media-lib-grid" id="media-lib-grid"></div>
       <div id="media-lib-loading" style="text-align:center;padding:var(--s-8);color:var(--text-3);">読み込み中…</div>
     </div>
@@ -1091,6 +1102,10 @@ document.addEventListener('DOMContentLoaded', () => {
     libNext.textContent = '次へ →';
     libPageInfo.style.cssText = 'font-size:var(--font-sm);color:var(--text-3);';
 
+    const libSearch = document.getElementById('media-lib-search');
+    const libSectionFilter = document.getElementById('media-lib-section');
+    let libSearchTimer = null;
+
     async function loadLibrary(offset) {
       libOffset = offset;
       libGrid.innerHTML = '';
@@ -1098,7 +1113,12 @@ document.addEventListener('DOMContentLoaded', () => {
       libLoad.textContent = '読み込み中…';
 
       try {
-        const res = await fetch(`../api/media.php?limit=${LIB_PER_PAGE}&offset=${offset}`);
+        const params = new URLSearchParams({ limit: LIB_PER_PAGE, offset });
+        const q = libSearch?.value?.trim();
+        if (q) params.set('q', q);
+        const sec = libSectionFilter?.value;
+        if (sec) params.set('section', sec);
+        const res = await fetch(`../api/media.php?${params}`);
         const data = await res.json();
         const items = data.items || [];
         libTotal = data.total || 0;
@@ -1152,6 +1172,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     libPrev.addEventListener('click', () => loadLibrary(Math.max(0, libOffset - LIB_PER_PAGE)));
     libNext.addEventListener('click', () => loadLibrary(libOffset + LIB_PER_PAGE));
+    if (libSearch) {
+      libSearch.addEventListener('input', () => {
+        clearTimeout(libSearchTimer);
+        libSearchTimer = setTimeout(() => loadLibrary(0), 300);
+      });
+    }
+    if (libSectionFilter) {
+      libSectionFilter.addEventListener('change', () => loadLibrary(0));
+    }
 
     function closeLibrary() {
       libModal.classList.remove('is-visible');
