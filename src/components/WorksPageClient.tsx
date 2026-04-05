@@ -32,7 +32,7 @@ export function WorksPageClient() {
 
   if (loading) {
     return (
-      <ViewModeProvider defaultView="list">
+      <ViewModeProvider storageKey="works-view" defaultView="list">
         <Header
           active="Works"
           title="Works"
@@ -45,7 +45,7 @@ export function WorksPageClient() {
   }
 
   return (
-    <ViewModeProvider defaultView="list">
+    <ViewModeProvider storageKey="works-view" defaultView="list">
       <FilterProvider
         initialSelected={{ tags: [] as string[], years: [] as string[] }}
         basePath="/works"

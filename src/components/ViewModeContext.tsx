@@ -11,27 +11,28 @@ type ViewModeContextValue = {
 
 const ViewModeContext = createContext<ViewModeContextValue | null>(null);
 
-const STORAGE_KEY = "works-view-mode";
-
-function readStored(fallback: ViewMode): ViewMode {
+function readStored(key: string, fallback: ViewMode): ViewMode {
   if (typeof window === "undefined") return fallback;
-  const v = localStorage.getItem(STORAGE_KEY);
+  const v = localStorage.getItem(key);
   return v === "grid" || v === "list" ? v : fallback;
 }
 
 export function ViewModeProvider({
+  storageKey,
   defaultView = "list",
   children,
 }: {
+  /** localStorage のキー（ページごとに独立させる） */
+  storageKey: string;
   defaultView?: ViewMode;
   children: ReactNode;
 }) {
-  const [view, setViewState] = useState<ViewMode>(() => readStored(defaultView));
+  const [view, setViewState] = useState<ViewMode>(() => readStored(storageKey, defaultView));
 
   const setView = useCallback((v: ViewMode) => {
     setViewState(v);
-    localStorage.setItem(STORAGE_KEY, v);
-  }, []);
+    localStorage.setItem(storageKey, v);
+  }, [storageKey]);
 
   return (
     <ViewModeContext.Provider value={{ view, setView }}>

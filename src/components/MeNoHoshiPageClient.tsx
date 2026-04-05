@@ -58,7 +58,7 @@ export function MeNoHoshiPageClient() {
 
   if (loading) {
     return (
-      <ViewModeProvider defaultView="grid">
+      <ViewModeProvider storageKey="menohoshi-view" defaultView="grid">
         <Header
           active="目の星"
           title="目の星 / Menohoshi"
@@ -73,7 +73,7 @@ export function MeNoHoshiPageClient() {
   }
 
   return (
-    <ViewModeProvider defaultView="grid">
+    <ViewModeProvider storageKey="menohoshi-view" defaultView="grid">
       <FilterProvider
         initialSelected={{ tags: [] as string[], years: [] as string[] }}
         basePath="/me-no-hoshi"
