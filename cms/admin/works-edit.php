@@ -600,25 +600,41 @@ document.addEventListener('DOMContentLoaded', () => {
   const libClose = document.getElementById('media-lib-close');
 
   if (libBtn && libModal) {
-    libBtn.addEventListener('click', async () => {
-      libModal.style.display = '';
-      requestAnimationFrame(() => libModal.classList.add('is-visible'));
+    const LIB_PER_PAGE = 60;
+    let libOffset = 0;
+    let libTotal = 0;
+    const libPrev = document.createElement('button');
+    const libNext = document.createElement('button');
+    const libPageInfo = document.createElement('span');
+    libPrev.className = 'btn btn-sm btn-ghost';
+    libNext.className = 'btn btn-sm btn-ghost';
+    libPrev.textContent = '← 前へ';
+    libNext.textContent = '次へ →';
+    libPageInfo.style.cssText = 'font-size:var(--font-sm);color:var(--text-3);';
+
+    async function loadLibrary(offset) {
+      libOffset = offset;
       libGrid.innerHTML = '';
       libLoad.style.display = '';
+      libLoad.textContent = '読み込み中…';
 
       try {
-        const res = await fetch('../api/media.php?limit=200');
+        const res = await fetch(`../api/media.php?limit=${LIB_PER_PAGE}&offset=${offset}`);
         const data = await res.json();
-        const items = data.items || data.data?.items || [];
+        const items = data.items || [];
+        libTotal = data.total || 0;
         libLoad.style.display = 'none';
 
         items.forEach(item => {
-          const url = (item.url || ('<?= UPLOAD_URL_PREFIX ?>' + item.path));
+          const fullUrl = '<?= UPLOAD_URL_PREFIX ?>' + item.path;
+          const dir = item.path.substring(0, item.path.lastIndexOf('/') + 1);
+          const thumbUrl = '<?= UPLOAD_URL_PREFIX ?>' + dir + 'thumb_' + item.filename + '.webp';
           const div = document.createElement('div');
           div.className = 'media-lib-item';
-          div.innerHTML = '<img src="' + url + '" alt="" loading="lazy">';
+          div.innerHTML = `<img src="${esc(thumbUrl)}" alt="" loading="lazy"
+            onerror="this.src='${esc(fullUrl)}'">`;
           div.addEventListener('click', () => {
-            addMediaRow(url, '', item.width || 0, item.height || 0, 'media-' + Date.now());
+            addMediaRow(fullUrl, '', item.width || 0, item.height || 0, 'media-' + Date.now());
             show_toast('画像を追加しました', 'success');
           });
           libGrid.appendChild(div);
@@ -628,10 +644,35 @@ document.addEventListener('DOMContentLoaded', () => {
           libLoad.style.display = '';
           libLoad.textContent = 'メディアがありません';
         }
-      } catch (err) {
+
+        // ページネーション更新
+        const page = Math.floor(offset / LIB_PER_PAGE) + 1;
+        const pages = Math.ceil(libTotal / LIB_PER_PAGE);
+        libPageInfo.textContent = `${page} / ${pages}（${libTotal}件）`;
+        libPrev.disabled = offset === 0;
+        libNext.disabled = offset + LIB_PER_PAGE >= libTotal;
+      } catch {
         libLoad.textContent = '読み込みに失敗しました';
       }
+    }
+
+    libBtn.addEventListener('click', () => {
+      libModal.style.display = '';
+      requestAnimationFrame(() => libModal.classList.add('is-visible'));
+      // ページネーションUIを追加
+      let pager = libModal.querySelector('.media-lib-pager');
+      if (!pager) {
+        pager = document.createElement('div');
+        pager.className = 'media-lib-pager';
+        pager.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:var(--s-4);padding:var(--s-3);';
+        pager.append(libPrev, libPageInfo, libNext);
+        libModal.querySelector('.modal__body').appendChild(pager);
+      }
+      loadLibrary(0);
     });
+
+    libPrev.addEventListener('click', () => loadLibrary(Math.max(0, libOffset - LIB_PER_PAGE)));
+    libNext.addEventListener('click', () => loadLibrary(libOffset + LIB_PER_PAGE));
 
     function closeLibrary() {
       libModal.classList.remove('is-visible');
