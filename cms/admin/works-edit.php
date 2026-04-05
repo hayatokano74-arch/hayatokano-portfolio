@@ -593,38 +593,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-  // ── フォーム送信前: DOMの並び順でdet_key/det_valueを再収集 ──
-  // 並べ替えやカスタム項目追加の結果をDOMの順序通りに送信する
-  document.getElementById('works-form').addEventListener('submit', () => {
-    const form = document.getElementById('works-form');
-
-    // 既存の det_key[]/det_value[] hidden input を全削除
-    form.querySelectorAll('input[name="det_key[]"], input[name="det_value[]"]').forEach(el => el.remove());
-
-    // 全カテゴリの全フィールドをDOMの順序で再収集
-    document.querySelectorAll('.det-field, .det-custom-row').forEach(field => {
-      let key = '', val = '';
-
-      if (field.classList.contains('det-field')) {
-        key = field.querySelector('.det-field__label')?.textContent?.trim() ?? '';
-        val = field.querySelector('input[type="text"]')?.value?.trim() ?? '';
-      } else if (field.classList.contains('det-custom-row')) {
-        const inputs = field.querySelectorAll('input.form-control');
-        key = inputs[0]?.value?.trim() ?? '';
-        val = inputs[1]?.value?.trim() ?? '';
-      }
-
-      if (!key) return; // キーがなければスキップ（値が空でもキーは保持）
-
-      const ki = document.createElement('input');
-      ki.type = 'hidden'; ki.name = 'det_key[]'; ki.value = key;
-      form.appendChild(ki);
-
-      const vi = document.createElement('input');
-      vi.type = 'hidden'; vi.name = 'det_value[]'; vi.value = val;
-      form.appendChild(vi);
-    });
-  });
+  // ── フォーム送信前: 並べ替え結果を反映 ──
+  // 標準フィールドの hidden input の value を、DOMの順序に合わせて更新する
+  // （hidden input は各 .det-field 内に既に存在するのでDOMの順序通りに送信される）
 
   // ── タグ入力（チップ + 候補） ──
   {
