@@ -805,9 +805,9 @@ button {
   line-height: var(--lh-relaxed);
   font-weight: 500;
 }
-/* 段落間（Enter）: 明確な余白 */
+/* 段落間（Enter）: 大きな余白で改行（Shift+Enter）と明確に区別 */
 .rich-body p {
-  margin: 0 0 1.8em;
+  margin: 0 0 2.4em;
 }
 .rich-body p:last-child {
   margin-bottom: 0;
@@ -3312,7 +3312,7 @@ img[loading="lazy"] {
 }
 
 .garden-entry-body p {
-  margin: 0 0 1.8em;
+  margin: 0 0 2.4em;
 }
 
 .garden-entry-body p:last-child {
@@ -3432,7 +3432,7 @@ img[loading="lazy"] {
 }
 
 .garden-detail-body p {
-  margin: 0 0 1.8em;
+  margin: 0 0 2.4em;
 }
 
 /* ── 画像シマーアニメーション ── */

@@ -44,18 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tags      = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
         $tags_json = json_encode($tags, JSON_UNESCAPED_UNICODE);
 
-        // details: キー・バリューペア（値が空のものは除外、順序を保持）
+        // details: 送信順を維持した連想配列（DOMの並び順で再収集済み）
         $det_keys   = $_POST['det_key']   ?? [];
         $det_values = $_POST['det_value'] ?? [];
         $details = [];
-        $seen_keys = []; // 重複キー対策（同名は最後の値を使用）
         foreach ($det_keys as $i => $k) {
             $k = trim($k);
+            if ($k === '') continue;
             $v = trim($det_values[$i] ?? '');
-            if ($k === '' || $v === '') continue; // 空のキーまたは値はスキップ
-            $seen_keys[$k] = $v; // 同名キーは後の値で上書き
+            if ($v !== '') $details[$k] = $v; // 値がある項目のみ保存
         }
-        $details = $seen_keys;
 
         // media: 動的画像リスト
         $med_ids     = $_POST['media_id']     ?? [];
@@ -594,6 +592,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const tpl    = document.getElementById('tpl-media-row');
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+  // ── フォーム送信前: DOMの並び順でdet_key/det_valueを再収集 ──
+  // 並べ替えやカスタム項目追加の結果をDOMの順序通りに送信する
+  document.getElementById('works-form').addEventListener('submit', () => {
+    const form = document.getElementById('works-form');
+
+    // 既存の det_key[]/det_value[] hidden input を全削除
+    form.querySelectorAll('input[name="det_key[]"], input[name="det_value[]"]').forEach(el => el.remove());
+
+    // 全カテゴリの全フィールドをDOMの順序で再収集
+    document.querySelectorAll('.det-field, .det-custom-row').forEach(field => {
+      let key = '', val = '';
+
+      if (field.classList.contains('det-field')) {
+        key = field.querySelector('.det-field__label')?.textContent?.trim() ?? '';
+        val = field.querySelector('input[type="text"]')?.value?.trim() ?? '';
+      } else if (field.classList.contains('det-custom-row')) {
+        const inputs = field.querySelectorAll('input.form-control');
+        key = inputs[0]?.value?.trim() ?? '';
+        val = inputs[1]?.value?.trim() ?? '';
+      }
+
+      if (!key) return; // キーがなければスキップ（値が空でもキーは保持）
+
+      const ki = document.createElement('input');
+      ki.type = 'hidden'; ki.name = 'det_key[]'; ki.value = key;
+      form.appendChild(ki);
+
+      const vi = document.createElement('input');
+      vi.type = 'hidden'; vi.name = 'det_value[]'; vi.value = val;
+      form.appendChild(vi);
+    });
+  });
 
   // ── タグ入力（チップ + 候補） ──
   {
