@@ -106,7 +106,16 @@ $slug_param   = $_GET['slug']   ?? '';
 
 if ($action_param === 'new') {
     $is_new = true;
-    $row = ['slug' => '', 'title' => '', 'date' => date('Y-m-d'), 'year' => date('Y'),
+    // 次の連番スラッグを自動生成（w001, w002, ...）
+    $max_num = 0;
+    $existing = $db->query("SELECT slug FROM works WHERE slug LIKE 'w%'")->fetchAll();
+    foreach ($existing as $e) {
+        if (preg_match('/^w(\d+)$/', $e['slug'], $m)) {
+            $max_num = max($max_num, (int)$m[1]);
+        }
+    }
+    $next_slug = 'w' . str_pad($max_num + 1, 3, '0', STR_PAD_LEFT);
+    $row = ['slug' => $next_slug, 'title' => '', 'date' => date('Y-m-d'), 'year' => date('Y'),
             'tags' => '[]', 'excerpt' => '', 'pinned' => 0, 'body' => '', 'data' => '{}'];
 } elseif ($slug_param) {
     $row = db_find_by_slug('works', $slug_param);

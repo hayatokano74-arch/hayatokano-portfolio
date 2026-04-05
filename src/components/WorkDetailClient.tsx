@@ -70,10 +70,7 @@ export function WorkDetailClient({
       if (match) {
         const slug = match[1];
         setCurrentSlug(slug);
-        const url = new URL(window.location.href);
-        const newImg = Math.max(1, Number(url.searchParams.get("img") ?? "1") || 1);
-        const newMode = url.searchParams.get("mode") === "index" ? "index" as const : "gallery" as const;
-        resetTo(newImg, newMode);
+        resetTo(1, "gallery");
       }
     };
     window.addEventListener("popstate", onPopState);
@@ -85,8 +82,8 @@ export function WorkDetailClient({
     setCurrentSlug(slug);
     resetTo(1, "gallery");
     setDetailOpen(false);
-    /* URLだけ更新（ページ遷移なし） */
-    window.history.pushState(null, "", `/works/${slug}?mode=gallery&img=1`);
+    /* URLだけ更新（ページ遷移なし、クリーンURL） */
+    window.history.pushState(null, "", `/works/${slug}/`);
   }, [resetTo, setDetailOpen]);
 
   return (
@@ -157,12 +154,12 @@ export function WorkDetailClient({
         onGallery={() => {
           setDetailOpen(false);
           setMode("gallery");
-          window.history.replaceState(null, "", `${pathname}?mode=gallery&img=${img}`);
+          /* URLはクリーンに保つ（状態はステートで管理） */
         }}
         onIndex={() => {
           setDetailOpen(false);
           setMode("index");
-          window.history.replaceState(null, "", `${pathname}?mode=index`);
+          /* URLはクリーンに保つ */
         }}
         onToggleInfo={() => setDetailOpen(!detailOpen)}
       />
