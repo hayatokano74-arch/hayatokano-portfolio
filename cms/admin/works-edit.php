@@ -313,6 +313,10 @@ ob_start();
             $val = $det_lower[strtolower($key)] ?? '';
           ?>
           <div class="det-field">
+            <div class="det-field__order">
+              <button type="button" class="det-move-up" title="上に移動">▲</button>
+              <button type="button" class="det-move-down" title="下に移動">▼</button>
+            </div>
             <label class="det-field__label"><?= htmlspecialchars($key, ENT_QUOTES) ?></label>
             <input type="hidden" name="det_key[]" value="<?= htmlspecialchars($key, ENT_QUOTES) ?>">
             <input type="text" name="det_value[]" class="form-control"
@@ -656,6 +660,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const field = document.createElement('div');
         field.className = 'det-field';
         field.innerHTML = `
+          <div class="det-field__order">
+            <button type="button" class="det-move-up" title="上に移動">▲</button>
+            <button type="button" class="det-move-down" title="下に移動">▼</button>
+          </div>
           <label class="det-field__label">${esc(key)}</label>
           <input type="hidden" name="det_key[]" value="${esc(key)}">
           <input type="text" name="det_value[]" class="form-control" placeholder="${esc(phInput.value.trim())}">
@@ -700,8 +708,20 @@ document.addEventListener('DOMContentLoaded', () => {
       addBtn.style.display = '';
     });
 
-    // カスタム行の削除
+    // フィールドの並べ替え + カスタム行の削除
     document.addEventListener('click', (e) => {
+      const up = e.target.closest('.det-move-up');
+      const down = e.target.closest('.det-move-down');
+      if (up) {
+        const field = up.closest('.det-field');
+        const prev = field.previousElementSibling;
+        if (prev && prev.classList.contains('det-field')) prev.before(field);
+      }
+      if (down) {
+        const field = down.closest('.det-field');
+        const next = field.nextElementSibling;
+        if (next && next.classList.contains('det-field')) next.after(field);
+      }
       if (e.target.closest('.det-row-remove')) {
         e.target.closest('.det-custom-row')?.remove();
       }

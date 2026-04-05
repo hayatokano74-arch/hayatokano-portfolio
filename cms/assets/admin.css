@@ -1940,10 +1940,34 @@ textarea.form-control.is-dragover {
 
 .det-field {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 24px 120px 1fr;
   gap: var(--s-3);
   align-items: center;
   padding: var(--s-1) 0;
+}
+
+.det-field__order {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.det-move-up,
+.det-move-down {
+  all: unset;
+  font-size: 8px;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 1px 3px;
+  text-align: center;
+  border-radius: 2px;
+  line-height: 1;
+  transition: color var(--transition);
+}
+
+.det-move-up:hover,
+.det-move-down:hover {
+  color: var(--accent);
 }
 
 .det-field__label {
@@ -1989,8 +2013,11 @@ textarea.form-control.is-dragover {
 
 @media (max-width: 768px) {
   .det-field {
-    grid-template-columns: 1fr;
+    grid-template-columns: 24px 1fr;
     gap: var(--s-1);
+  }
+  .det-field__label {
+    grid-column: 2;
   }
   .det-custom-row {
     grid-template-columns: 1fr 24px;
