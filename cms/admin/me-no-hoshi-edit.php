@@ -597,6 +597,38 @@ ob_start();
 
 </form>
 
+<!-- メディアライブラリモーダル -->
+<div class="modal-backdrop" id="mnh-media-library-modal" style="display:none">
+  <div class="modal" style="width:min(900px,95vw);max-height:85vh;display:flex;flex-direction:column;">
+    <div class="modal__header">
+      <h3 class="modal__title">メディアライブラリ</h3>
+      <button type="button" class="modal__close" id="mnh-media-lib-close">✕</button>
+    </div>
+    <div class="modal__body" style="overflow-y:auto;flex:1;">
+      <div style="padding:0 0 var(--s-3);display:flex;gap:var(--s-2);">
+        <input type="text" id="mnh-media-lib-search" class="form-control form-control--sm" placeholder="検索" style="flex:1;">
+        <select id="mnh-media-lib-section" class="form-control form-control--sm" style="width:150px;">
+          <option value="">すべて</option>
+          <option value="works">works</option>
+          <option value="me-no-hoshi" selected>me-no-hoshi</option>
+          <option value="garden">garden</option>
+          <option value="about">about</option>
+        </select>
+      </div>
+      <div class="media-lib-grid" id="mnh-media-lib-grid"></div>
+      <div id="mnh-media-lib-loading" style="text-align:center;padding:var(--s-8);color:var(--text-3);">読み込み中…</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.media-lib-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:var(--s-2); }
+.media-lib-item { aspect-ratio:1; overflow:hidden; border-radius:var(--radius); cursor:pointer; border:2px solid transparent; transition:border-color var(--transition); }
+.media-lib-item:hover { border-color:var(--accent); }
+.media-lib-item img { width:100%; height:100%; object-fit:cover; display:block; }
+.media-add-actions { display:flex; gap:var(--s-3); flex-wrap:wrap; margin-top:var(--s-3); }
+</style>
+
 <!-- 動的行テンプレート -->
 <template id="tpl-detail-row">
   <div class="dynamic-row">
@@ -787,6 +819,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── 画像アップロード + メディアライブラリ ──
   const mnhSlug = '<?= addslashes($row['slug'] ?? '') ?>';
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
 
   // ヘルパー: メディア行に画像URLを設定
   function setMediaSrc(list, url, width, height) {
@@ -813,7 +851,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file.type.startsWith('image/')) continue;
         try {
           const result = await upload_image_to_api(file, section, mnhSlug);
-          // 空行を追加してURLを設定
           document.getElementById(addBtnId)?.click();
           const list = document.getElementById(listId);
           setMediaSrc(list, result.url, result.width, result.height);
@@ -828,22 +865,110 @@ document.addEventListener('DOMContentLoaded', () => {
   setupUpload('mnh-media-upload', 'media-list', 'media-add', 'me-no-hoshi');
   setupUpload('mnh-kv-upload', 'kv-list', 'kv-add', 'me-no-hoshi');
 
-  // メディアライブラリ選択
-  function setupPick(btnId, listId, addBtnId) {
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
-    btn.addEventListener('click', async () => {
-      const url = prompt('メディアのURLを入力（メディアページからコピー）:');
-      if (!url) return;
-      document.getElementById(addBtnId)?.click();
-      const list = document.getElementById(listId);
-      setMediaSrc(list, url, 0, 0);
-      show_toast('画像を追加しました', 'success');
-    });
+  // メディアライブラリモーダル
+  const mnhLibModal = document.getElementById('mnh-media-library-modal');
+  const mnhLibGrid = document.getElementById('mnh-media-lib-grid');
+  const mnhLibLoad = document.getElementById('mnh-media-lib-loading');
+  const mnhLibClose = document.getElementById('mnh-media-lib-close');
+  const mnhLibSearch = document.getElementById('mnh-media-lib-search');
+  const mnhLibSection = document.getElementById('mnh-media-lib-section');
+  const LIB_PER_PAGE = 60;
+  let mnhLibOffset = 0;
+  let mnhLibTarget = null; // { listId, addBtnId }
+
+  const mnhLibPrev = document.createElement('button');
+  const mnhLibNext = document.createElement('button');
+  const mnhLibPageInfo = document.createElement('span');
+  mnhLibPrev.className = 'btn btn-sm btn-ghost';
+  mnhLibNext.className = 'btn btn-sm btn-ghost';
+  mnhLibPrev.textContent = '← 前へ';
+  mnhLibNext.textContent = '次へ →';
+  mnhLibPageInfo.style.cssText = 'font-size:var(--font-sm);color:var(--text-3);';
+
+  async function mnhLoadLibrary(offset) {
+    mnhLibOffset = offset;
+    mnhLibGrid.innerHTML = '';
+    mnhLibLoad.style.display = '';
+    mnhLibLoad.textContent = '読み込み中…';
+
+    const params = new URLSearchParams({ limit: LIB_PER_PAGE, offset });
+    const q = mnhLibSearch?.value?.trim();
+    if (q) params.set('q', q);
+    const sec = mnhLibSection?.value;
+    if (sec) params.set('section', sec);
+
+    try {
+      const res = await fetch(`../api/media.php?${params}`);
+      const data = await res.json();
+      const items = data.items || [];
+      const total = data.total || 0;
+      mnhLibLoad.style.display = 'none';
+
+      items.forEach(item => {
+        const fullUrl = '<?= UPLOAD_URL_PREFIX ?>' + item.path;
+        const dir = item.path.substring(0, item.path.lastIndexOf('/') + 1);
+        const thumbUrl = '<?= UPLOAD_URL_PREFIX ?>' + dir + 'thumb_' + item.filename + '.webp';
+        const div = document.createElement('div');
+        div.className = 'media-lib-item';
+        div.innerHTML = `<img src="${esc(thumbUrl)}" alt="" loading="lazy" onerror="this.src='${esc(fullUrl)}'">`;
+        div.addEventListener('click', () => {
+          if (mnhLibTarget) {
+            document.getElementById(mnhLibTarget.addBtnId)?.click();
+            const list = document.getElementById(mnhLibTarget.listId);
+            setMediaSrc(list, fullUrl, item.width || 0, item.height || 0);
+            show_toast('画像を追加しました', 'success');
+          }
+        });
+        mnhLibGrid.appendChild(div);
+      });
+
+      if (!items.length) {
+        mnhLibLoad.style.display = '';
+        mnhLibLoad.textContent = 'メディアがありません';
+      }
+
+      const page = Math.floor(offset / LIB_PER_PAGE) + 1;
+      const pages = Math.ceil(total / LIB_PER_PAGE);
+      mnhLibPageInfo.textContent = `${page} / ${pages}（${total}件）`;
+      mnhLibPrev.disabled = offset === 0;
+      mnhLibNext.disabled = offset + LIB_PER_PAGE >= total;
+    } catch {
+      mnhLibLoad.textContent = '読み込みに失敗しました';
+    }
   }
 
-  setupPick('mnh-media-pick', 'media-list', 'media-add');
-  setupPick('mnh-kv-pick', 'kv-list', 'kv-add');
+  // ページネーション追加
+  let mnhPager = mnhLibModal?.querySelector('.media-lib-pager');
+  if (!mnhPager && mnhLibModal) {
+    mnhPager = document.createElement('div');
+    mnhPager.className = 'media-lib-pager';
+    mnhPager.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:var(--s-4);padding:var(--s-3);';
+    mnhPager.append(mnhLibPrev, mnhLibPageInfo, mnhLibNext);
+    mnhLibModal.querySelector('.modal__body')?.appendChild(mnhPager);
+  }
+
+  mnhLibPrev.addEventListener('click', () => mnhLoadLibrary(Math.max(0, mnhLibOffset - LIB_PER_PAGE)));
+  mnhLibNext.addEventListener('click', () => mnhLoadLibrary(mnhLibOffset + LIB_PER_PAGE));
+  if (mnhLibSearch) mnhLibSearch.addEventListener('input', () => { clearTimeout(mnhLibSearch._t); mnhLibSearch._t = setTimeout(() => mnhLoadLibrary(0), 300); });
+  if (mnhLibSection) mnhLibSection.addEventListener('change', () => mnhLoadLibrary(0));
+
+  function openMnhLibrary(listId, addBtnId) {
+    mnhLibTarget = { listId, addBtnId };
+    mnhLibModal.style.display = '';
+    requestAnimationFrame(() => mnhLibModal.classList.add('is-visible'));
+    mnhLoadLibrary(0);
+  }
+
+  function closeMnhLibrary() {
+    mnhLibModal.classList.remove('is-visible');
+    setTimeout(() => { mnhLibModal.style.display = 'none'; }, 200);
+  }
+
+  if (mnhLibClose) mnhLibClose.addEventListener('click', closeMnhLibrary);
+  if (mnhLibModal) mnhLibModal.addEventListener('click', (e) => { if (e.target === mnhLibModal) closeMnhLibrary(); });
+
+  document.getElementById('mnh-media-pick')?.addEventListener('click', () => openMnhLibrary('media-list', 'media-add'));
+  document.getElementById('mnh-kv-pick')?.addEventListener('click', () => openMnhLibrary('kv-list', 'kv-add'));
 
   // 削除ボタン
   const delBtn = document.querySelector('[data-delete]');
