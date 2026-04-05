@@ -143,77 +143,76 @@ $data    = json_decode($row['data'] ?? '{}', true) ?? [];
 $details = $data['details'] ?? [];
 $media   = $data['media']   ?? [];
 
-// 詳細情報をカテゴリ別に整理
-$det_categories = [
-    '展示・イベント' => [
-        ['exhibition_type',   '形式',         '例: Solo Exhibition / Group Exhibition / Art Festival'],
-        ['exhibition_title',  '展覧会名',     '展覧会・芸術祭・フェア名（作品タイトルと異なる場合）'],
-        ['artist',            'アーティスト', ''],
-        ['artists',           '出展作家',     'グループ展の場合（カンマ区切り）'],
-        ['period',            '会期',         '例: 2023.04.08 - 2023.06.04'],
-        ['venue',             '会場',         '例: Glvanize gallery'],
-        ['address',           '住所',         ''],
-        ['access',            'アクセス',     '例: JR石巻駅より徒歩10分'],
-        ['hours',             '開場時間',     '例: 12:00 - 18:00'],
-        ['closed',            '休廊日',       '例: 月・火・水'],
-        ['admission',         '入場料',       '例: 無料'],
-        ['organizer',         '主催',         ''],
-        ['curator',           'キュレーター', ''],
-        ['supported_by',      '後援・協賛',   ''],
-    ],
-    'クライアント・コミッション' => [
-        ['client',            'クライアント', '企業名・団体名'],
-        ['project_type',      '案件種別',     '例: 撮影 / 映像制作 / デザイン / ディレクション'],
-        ['role',              '担当',         '例: 撮影 / ディレクション / 企画'],
-        ['collaborators',     '協働者',       ''],
-    ],
-    '出版・寄稿' => [
-        ['publisher',         '出版社',       ''],
-        ['publication_title', '掲載誌名',     '寄稿先の雑誌名・ウェブメディア名'],
-        ['isbn',              'ISBN',         ''],
-        ['pages',             'ページ数',     ''],
-        ['binding',           '製本',         '例: ソフトカバー / ハードカバー'],
-        ['price',             '価格',         '例: ¥3,000+tax'],
-        ['contribution_type', '寄稿種別',     '例: 写真 / テキスト / インタビュー / 書評'],
-    ],
-    '作品情報' => [
-        ['medium',            '素材・技法',   '例: Inkjet Print, Lenticular Lens'],
-        ['dimensions',        'サイズ',       '例: 1200 x 900 mm'],
-        ['edition',           'エディション', '例: 1/5 + AP'],
-        ['series',            'シリーズ名',   ''],
-        ['duration',          '上映時間',     '例: 12分30秒（映像作品の場合）'],
-        ['format',            'フォーマット', '例: 16mm / 4K / シングルチャンネル'],
-    ],
-    'クレジット' => [
-        ['credit_photo',      '写真',         ''],
-        ['credit_design',     'デザイン',     ''],
-        ['credit_text',       'テキスト',     ''],
-        ['credit_sound',      '音響',         ''],
-        ['credit_video',      '映像',         ''],
-        ['credit_translation','翻訳',         ''],
-        ['credit_cooperation','協力',         ''],
-    ],
-    '実績・その他' => [
-        ['award',             '受賞',         ''],
-        ['grant',             '助成',         '例: ○○財団助成金'],
-        ['residency',         'レジデンス',   '例: ○○アーティスト・イン・レジデンス（2024）'],
-        ['collection',        '所蔵',         '例: ○○美術館'],
-        ['url',               'ウェブサイト', 'https://...'],
-        ['related_url',       '関連リンク',   '記事・レビュー等のURL'],
-    ],
-];
+// 詳細フィールド設定をDBから読み込み（works-fields.phpで管理）
+$_field_stmt = $db->prepare('SELECT value FROM settings WHERE key = ?');
+$_field_stmt->execute(['works_detail_fields']);
+$_field_row = $_field_stmt->fetch();
+$standard_fields = $_field_row ? (json_decode($_field_row['value'], true) ?? []) : [];
 
-// 全フィールドのキーを収集
-$all_det_keys = [];
-foreach ($det_categories as $fields) {
-    foreach ($fields as [$key]) {
-        $all_det_keys[] = $key;
-    }
+// デフォルト（settingsが空の場合のみ使用）
+if (empty($standard_fields)) {
+    $standard_fields = [
+        ['name' => '展示・イベント', 'fields' => [
+            ['key' => 'Type', 'placeholder' => '例: Solo Exhibition / Group Exhibition'],
+            ['key' => 'Artist', 'placeholder' => ''], ['key' => 'Artists', 'placeholder' => 'グループ展の場合'],
+            ['key' => 'Period', 'placeholder' => '例: 2023.04.08 - 2023.06.04'],
+            ['key' => 'Venue', 'placeholder' => ''], ['key' => 'Address', 'placeholder' => ''],
+            ['key' => 'Access', 'placeholder' => ''], ['key' => 'Hours', 'placeholder' => '例: 12:00 - 18:00'],
+            ['key' => 'Closed', 'placeholder' => '例: 月・火・水'], ['key' => 'Admission', 'placeholder' => '例: 無料'],
+            ['key' => 'Organizer', 'placeholder' => ''], ['key' => 'Curator', 'placeholder' => ''],
+            ['key' => 'Supported by', 'placeholder' => ''],
+        ]],
+        ['name' => 'クライアント', 'fields' => [
+            ['key' => 'Client', 'placeholder' => '企業名・団体名'],
+            ['key' => 'Project Type', 'placeholder' => '例: 撮影 / 映像制作'],
+            ['key' => 'Role', 'placeholder' => ''], ['key' => 'Collaborators', 'placeholder' => ''],
+        ]],
+        ['name' => '出版・寄稿', 'fields' => [
+            ['key' => 'Type', 'placeholder' => '例: Free Paper / Book / Magazine'],
+            ['key' => 'Publisher', 'placeholder' => ''], ['key' => 'Publication', 'placeholder' => '雑誌名・メディア名'],
+            ['key' => 'Issue', 'placeholder' => '例: No.3'], ['key' => 'Published', 'placeholder' => '例: 2025.06.15'],
+            ['key' => 'Pages', 'placeholder' => ''], ['key' => 'Binding', 'placeholder' => '例: ソフトカバー'],
+            ['key' => 'Price', 'placeholder' => ''], ['key' => 'ISBN', 'placeholder' => ''],
+            ['key' => 'Contribution', 'placeholder' => '例: Photography / Text'],
+            ['key' => 'Base', 'placeholder' => '例: Sendai / Tokyo'],
+        ]],
+        ['name' => '作品', 'fields' => [
+            ['key' => 'Medium', 'placeholder' => '例: Inkjet Print'], ['key' => 'Dimensions', 'placeholder' => '例: 1200 x 900 mm'],
+            ['key' => 'Edition', 'placeholder' => '例: 1/5 + AP'], ['key' => 'Series', 'placeholder' => ''],
+            ['key' => 'Duration', 'placeholder' => '映像の場合'], ['key' => 'Format', 'placeholder' => '例: 16mm / 4K'],
+        ]],
+        ['name' => 'クレジット', 'fields' => [
+            ['key' => 'Photo', 'placeholder' => ''], ['key' => 'Design', 'placeholder' => ''],
+            ['key' => 'Text', 'placeholder' => ''], ['key' => 'Sound', 'placeholder' => ''],
+            ['key' => 'Video', 'placeholder' => ''], ['key' => 'Translation', 'placeholder' => ''],
+            ['key' => 'Cooperation', 'placeholder' => ''],
+        ]],
+        ['name' => '実績・リンク', 'fields' => [
+            ['key' => 'Award', 'placeholder' => ''], ['key' => 'Grant', 'placeholder' => '例: ○○財団助成金'],
+            ['key' => 'Residency', 'placeholder' => ''], ['key' => 'Collection', 'placeholder' => '例: ○○美術館'],
+            ['key' => 'URL', 'placeholder' => 'https://...'],
+        ]],
+    ];
 }
 
-$f_det = [];
-foreach ($all_det_keys as $key) {
-    $f_det[$key] = htmlspecialchars($details[$key] ?? '', ENT_QUOTES);
+// 既存データをキーでマッチング（大文字小文字無視）
+$det_lower = [];
+foreach ($details as $k => $v) {
+    $det_lower[strtolower($k)] = $v;
+}
+
+// 標準キー収集（カスタム項目判定用）
+$standard_keys_lower = [];
+foreach ($standard_fields as $cat) {
+    foreach ($cat['fields'] as $f) {
+        $standard_keys_lower[strtolower($f['key'])] = true;
+    }
+}
+$custom_details = [];
+foreach ($details as $k => $v) {
+    if (!isset($standard_keys_lower[strtolower($k)])) {
+        $custom_details[$k] = $v;
+    }
 }
 
 $page_title = $is_new ? 'Works 新規追加' : 'Works 編集: ' . ($row['title'] ?: $row['slug']);
@@ -371,25 +370,29 @@ ob_start();
         }
       ?>
 
-      <?php foreach ($standard_fields as $cat_label => $fields):
+      <?php foreach ($standard_fields as $cat):
+        $cat_name = $cat['name'] ?? '';
+        $cat_fields = $cat['fields'] ?? [];
         $has_value = false;
-        foreach ($fields as $key => $ph) {
-            if (!empty($det_lower[strtolower($key)])) { $has_value = true; break; }
+        foreach ($cat_fields as $f) {
+            if (!empty($det_lower[strtolower($f['key'])])) { $has_value = true; break; }
         }
       ?>
       <details class="det-category" <?= $has_value ? 'open' : '' ?>>
         <summary class="det-category__summary">
-          <span><?= $cat_label ?></span>
+          <span><?= htmlspecialchars($cat_name, ENT_QUOTES) ?></span>
           <?php if ($has_value): ?>
           <span class="det-category__badge">入力済み</span>
           <?php endif; ?>
         </summary>
         <div class="det-category__body">
-          <?php foreach ($fields as $key => $ph):
+          <?php foreach ($cat_fields as $f):
+            $key = $f['key'];
+            $ph  = $f['placeholder'] ?? '';
             $val = $det_lower[strtolower($key)] ?? '';
           ?>
           <div class="det-field">
-            <label class="det-field__label"><?= $key ?></label>
+            <label class="det-field__label"><?= htmlspecialchars($key, ENT_QUOTES) ?></label>
             <input type="hidden" name="det_key[]" value="<?= htmlspecialchars($key, ENT_QUOTES) ?>">
             <input type="text" name="det_value[]" class="form-control"
                    value="<?= htmlspecialchars($val, ENT_QUOTES) ?>"
