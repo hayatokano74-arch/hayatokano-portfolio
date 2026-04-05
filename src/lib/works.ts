@@ -77,7 +77,16 @@ function parseCmsWork(item: CmsWork): Work | null {
       }
     : undefined;
 
-  const d = (item.data.details ?? {}) as RawDetails;
+  /* details: 全キー・バリューをダイナミックに取得（空文字は除外） */
+  const rawDetails = item.data.details ?? {};
+  const details: Record<string, string | undefined> = {};
+  if (typeof rawDetails === "object" && !Array.isArray(rawDetails)) {
+    for (const [k, v] of Object.entries(rawDetails)) {
+      const val = String(v ?? "").trim();
+      if (val) details[k] = val;
+    }
+  }
+
   return {
     slug: item.slug,
     date: item.date,
@@ -96,41 +105,7 @@ function parseCmsWork(item: CmsWork): Work | null {
       }
       return {};
     })()),
-    details: {
-      exhibition_type: (d.exhibition_type ?? "").trim() || undefined,
-      exhibition_title: (d.exhibition_title ?? "").trim() || undefined,
-      artist: (d.artist ?? "").trim(),
-      period: (d.period ?? "").trim(),
-      venue: (d.venue ?? "").trim(),
-      address: (d.address ?? "").trim() || undefined,
-      access: (d.access ?? "").trim() || undefined,
-      hours: (d.hours ?? "").trim() || undefined,
-      closed: (d.closed ?? "").trim() || undefined,
-      admission: (d.admission ?? "").trim() || undefined,
-      organizer: (d.organizer ?? "").trim() || undefined,
-      curator: (d.curator ?? "").trim() || undefined,
-      artists: (d.artists ?? "").trim() || undefined,
-      supported_by: (d.supported_by ?? "").trim() || undefined,
-      url: (d.url ?? "").trim() || undefined,
-      medium: (d.medium ?? "").trim() || undefined,
-      dimensions: (d.dimensions ?? "").trim() || undefined,
-      edition: (d.edition ?? "").trim() || undefined,
-      series: (d.series ?? "").trim() || undefined,
-      publisher: (d.publisher ?? "").trim() || undefined,
-      pages: (d.pages ?? "").trim() || undefined,
-      binding: (d.binding ?? "").trim() || undefined,
-      price: (d.price ?? "").trim() || undefined,
-      credit_photo: (d.credit_photo ?? "").trim() || undefined,
-      credit_design: (d.credit_design ?? "").trim() || undefined,
-      credit_text: (d.credit_text ?? "").trim() || undefined,
-      credit_sound: (d.credit_sound ?? "").trim() || undefined,
-      credit_video: (d.credit_video ?? "").trim() || undefined,
-      credit_translation: (d.credit_translation ?? "").trim() || undefined,
-      credit_cooperation: (d.credit_cooperation ?? "").trim() || undefined,
-      award: (d.award ?? "").trim() || undefined,
-      collection: (d.collection ?? "").trim() || undefined,
-      bio: (d.bio ?? "").trim() || undefined,
-    },
+    details,
     media,
     ...(item.pinned ? { pinned: true } : {}),
   };

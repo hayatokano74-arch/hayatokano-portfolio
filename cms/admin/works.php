@@ -17,6 +17,7 @@ ob_start();
 ?>
 
 <div class="page-actions">
+  <a href="<?= cms_url('/admin/works-fields.php') ?>" class="btn btn-ghost btn-sm">⚙ フィールド設定</a>
   <a href="<?= cms_url('/admin/works-edit.php?action=new') ?>" class="btn btn-primary">+ 新規追加</a>
 </div>
 
