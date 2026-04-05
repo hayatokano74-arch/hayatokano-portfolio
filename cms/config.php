@@ -39,14 +39,14 @@ define('LOGIN_LOCKOUT_SECONDS', 300);
 // コード変更（CSS・レイアウト等）のデプロイはローカルで ./deploy.sh を実行する。
 
 // ─── 画像設定 ────────────────────────────────────────────────
-/** アップロード最大サイズ（バイト）: 20MB */
-define('UPLOAD_MAX_BYTES', 20 * 1024 * 1024);
+/** アップロード最大サイズ（バイト）: 制限なし（PHPのpost_max_sizeに準拠） */
+define('UPLOAD_MAX_BYTES', PHP_INT_MAX);
 
 /** 許可する MIME タイプ */
 define('ALLOWED_MIME_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
-/** WebP 変換先の最大長辺ピクセル（それ以上は縮小） */
-define('IMAGE_MAX_DIMENSION', 2560);
+/** 画像の最大長辺ピクセル: 制限なし（元のサイズを維持） */
+define('IMAGE_MAX_DIMENSION', PHP_INT_MAX);
 
 // ─── サイト設定 ────────────────────────────────────────────────
 define('SITE_NAME', 'Hayato Kano');
