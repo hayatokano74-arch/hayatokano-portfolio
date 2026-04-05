@@ -60,9 +60,10 @@ $js_ver  = @filemtime(CMS_ROOT . '/assets/admin.js')  ?: '1';
   <!-- CSRF トークン（JavaScript から参照） -->
   <meta name="csrf-token" content="<?= htmlspecialchars($csrf, ENT_QUOTES) ?>">
   <title><?= htmlspecialchars($page_title, ENT_QUOTES) ?> — Hayato Kano CMS</title>
-  <link rel="stylesheet" href="<?= htmlspecialchars($assets_url, ENT_QUOTES) ?>/admin.css?v=<?= $css_ver ?>">
-  <!-- Quill リッチエディタ -->
+  <!-- Quill リッチエディタ（admin.cssより先に読み込む） -->
   <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+  <!-- admin.css: Quillのデフォルトスタイルを上書きするため、後に読み込む -->
+  <link rel="stylesheet" href="<?= htmlspecialchars($assets_url, ENT_QUOTES) ?>/admin.css?v=<?= $css_ver ?>">
   <!-- ファビコン（テキスト SVG） -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%235b8ef0'/><text x='16' y='22' text-anchor='middle' font-family='system-ui' font-size='18' font-weight='700' fill='white'>H</text></svg>">
 </head>
