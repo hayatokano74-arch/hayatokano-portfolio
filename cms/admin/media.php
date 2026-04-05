@@ -334,12 +334,16 @@ ob_start();
 
     items.forEach(item => {
       const url  = item_url(item);
+      // サムネイル: thumb_ファイル名.webp があればそれを使う
+      const dir = item.path.substring(0, item.path.lastIndexOf('/') + 1);
+      const thumbUrl = URL_PREFIX + dir + 'thumb_' + item.filename + '.webp';
       const card = document.createElement('div');
       card.className    = 'media-card';
       card.dataset.path = item.path;
       card.innerHTML = `
         <div class="media-card__img-wrap">
-          <img class="media-card__img" data-src="${esc(url)}" alt="">
+          <img class="media-card__img" data-src="${esc(thumbUrl)}" data-full="${esc(url)}" alt=""
+               onerror="this.src=this.dataset.full">
         </div>
         <div class="media-card__info">
           <div class="media-card__section">${esc(item.section)}</div>
