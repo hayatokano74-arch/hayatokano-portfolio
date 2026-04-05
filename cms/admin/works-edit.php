@@ -41,28 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tags      = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
         $tags_json = json_encode($tags, JSON_UNESCAPED_UNICODE);
 
-        // details: 全カテゴリのフィールドを収集
-        $post_det_keys = [
-            // 展示・イベント
-            'exhibition_type', 'exhibition_title', 'artist', 'artists',
-            'period', 'venue', 'address', 'access', 'hours', 'closed',
-            'admission', 'organizer', 'curator', 'supported_by',
-            // クライアント・コミッション
-            'client', 'project_type', 'role', 'collaborators',
-            // 出版・寄稿
-            'publisher', 'publication_title', 'isbn', 'pages', 'binding', 'price', 'contribution_type',
-            // 作品情報
-            'medium', 'dimensions', 'edition', 'series', 'duration', 'format',
-            // クレジット
-            'credit_photo', 'credit_design', 'credit_text',
-            'credit_sound', 'credit_video', 'credit_translation', 'credit_cooperation',
-            // 実績・その他
-            'award', 'grant', 'residency', 'collection', 'url', 'related_url',
-        ];
+        // details: 動的キー・バリューペア
+        $det_keys   = $_POST['det_key']   ?? [];
+        $det_values = $_POST['det_value'] ?? [];
         $details = [];
-        foreach ($post_det_keys as $k) {
-            $v = trim($_POST["det_$k"] ?? '');
-            if ($v !== '') $details[$k] = $v;
+        foreach ($det_keys as $i => $k) {
+            $k = trim($k);
+            $v = trim($det_values[$i] ?? '');
+            if ($k === '' && $v === '') continue; // 空行はスキップ
+            $details[$k ?: '_blank_' . $i] = $v;
         }
 
         // media: 動的画像リスト
@@ -296,44 +283,49 @@ ob_start();
       </div>
     </div>
 
-    <!-- ── 詳細情報（カテゴリ別折りたたみ） ── -->
+    <!-- ── 詳細情報（動的キー・バリュー） ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">詳細情報</h3>
-      <p class="form-hint">必要なカテゴリを開いて入力してください。空の項目は表示されません。</p>
+      <p class="form-hint">項目名と内容のペアで自由に入力できます。テンプレートから一括追加も可能です。</p>
 
-      <?php foreach ($det_categories as $cat_label => $fields):
-        // このカテゴリに値が入っているか（入っていれば開いた状態にする）
-        $has_value = false;
-        foreach ($fields as [$key]) {
-            if (!empty($f_det[$key])) { $has_value = true; break; }
-        }
-      ?>
-      <details class="det-category" <?= $has_value ? 'open' : '' ?>>
-        <summary class="det-category__summary">
-          <span class="det-category__label"><?= $cat_label ?></span>
-          <?php if ($has_value): ?>
-          <span class="det-category__badge">入力済み</span>
-          <?php endif; ?>
-        </summary>
-        <div class="det-category__body">
-          <?php
-            $chunks = array_chunk($fields, 2);
-            foreach ($chunks as $pair):
-          ?>
-          <div class="form-row form-row--2col">
-            <?php foreach ($pair as [$key, $label, $ph]): ?>
-            <div class="form-group">
-              <label class="form-label" for="det_<?= $key ?>"><?= $label ?></label>
-              <input type="text" id="det_<?= $key ?>" name="det_<?= $key ?>"
-                     class="form-control" value="<?= $f_det[$key] ?>"
-                     placeholder="<?= htmlspecialchars($ph, ENT_QUOTES) ?>">
-            </div>
-            <?php endforeach; ?>
-          </div>
-          <?php endforeach; ?>
+      <div class="det-template-bar">
+        <span style="font-size:var(--font-xs);color:var(--text-3);">テンプレート:</span>
+        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="exhibition">展示</button>
+        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="publication">出版・寄稿</button>
+        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="client">クライアント</button>
+        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="screening">映像・上映</button>
+        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="award">受賞・助成</button>
+      </div>
+
+      <div class="det-list-header">
+        <span class="det-col-label">項目名</span>
+        <span class="det-col-value">内容</span>
+      </div>
+
+      <div id="det-list" class="det-list">
+        <?php
+          // 既存データを動的行として表示
+          if (!empty($details)):
+            foreach ($details as $key => $val):
+        ?>
+        <div class="det-row" draggable="false">
+          <span class="det-row-handle" title="ドラッグで並べ替え">⠿</span>
+          <input type="text" name="det_key[]" class="form-control det-input-key"
+                 value="<?= htmlspecialchars($key, ENT_QUOTES) ?>">
+          <input type="text" name="det_value[]" class="form-control det-input-value"
+                 value="<?= htmlspecialchars($val, ENT_QUOTES) ?>">
+          <button type="button" class="det-row-remove" title="削除">✕</button>
         </div>
-      </details>
-      <?php endforeach; ?>
+        <?php
+            endforeach;
+          endif;
+        ?>
+      </div>
+
+      <div class="det-actions">
+        <button type="button" class="btn btn-sm btn-ghost" id="det-add-row">+ 項目を追加</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="det-add-blank">+ 空白行を追加</button>
+      </div>
     </div>
 
     <!-- ── 作品画像（media） ── -->
@@ -541,6 +533,103 @@ document.addEventListener('DOMContentLoaded', () => {
   const tpl    = document.getElementById('tpl-media-row');
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+  // ── 詳細情報の動的行 ──
+  {
+    const detList = document.getElementById('det-list');
+    const detAddRow = document.getElementById('det-add-row');
+    const detAddBlank = document.getElementById('det-add-blank');
+
+    function addDetRow(key, value) {
+      const row = document.createElement('div');
+      row.className = 'det-row';
+      row.innerHTML = `
+        <span class="det-row-handle" title="ドラッグで並べ替え">⠿</span>
+        <input type="text" name="det_key[]" class="form-control det-input-key" value="${esc(key)}" placeholder="項目名">
+        <input type="text" name="det_value[]" class="form-control det-input-value" value="${esc(value)}" placeholder="内容">
+        <button type="button" class="det-row-remove" title="削除">✕</button>
+      `;
+      detList.appendChild(row);
+    }
+
+    detAddRow.addEventListener('click', () => addDetRow('', ''));
+    detAddBlank.addEventListener('click', () => addDetRow('', ''));
+
+    detList.addEventListener('click', (e) => {
+      if (e.target.closest('.det-row-remove')) {
+        e.target.closest('.det-row').remove();
+      }
+    });
+
+    // テンプレート定義
+    const templates = {
+      exhibition: [
+        ['Type', ''], ['Artist', ''], ['Period', ''], ['Venue', ''],
+        ['Address', ''], ['Hours', ''], ['Closed', ''], ['Admission', ''],
+        ['Organizer', ''], ['Curator', ''], ['Supported by', ''],
+      ],
+      publication: [
+        ['Type', ''], ['Publisher', ''], ['Issue', ''], ['Published', ''],
+        ['Pages', ''], ['Binding', ''], ['Price', ''], ['ISBN', ''],
+        ['Contribution', ''],
+      ],
+      client: [
+        ['Client', ''], ['Project Type', ''], ['Role', ''],
+        ['Collaborators', ''], ['URL', ''],
+      ],
+      screening: [
+        ['Type', ''], ['Festival', ''], ['Venue', ''],
+        ['Duration', ''], ['Format', ''], ['Screening Date', ''],
+      ],
+      award: [
+        ['Award', ''], ['Year', ''], ['Organization', ''],
+        ['Grant', ''], ['Residency', ''],
+      ],
+    };
+
+    document.querySelectorAll('.det-tpl-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tpl = templates[btn.dataset.tpl];
+        if (!tpl) return;
+        tpl.forEach(([k, v]) => addDetRow(k, v));
+        show_toast(`${btn.textContent} テンプレートを追加しました`, 'success');
+      });
+    });
+
+    // 並べ替え（ハンドルドラッグ）
+    let detDragged = null;
+    detList.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('.det-row-handle')) return;
+      const row = e.target.closest('.det-row');
+      if (row) row.draggable = true;
+    });
+    detList.addEventListener('dragstart', (e) => {
+      detDragged = e.target.closest('.det-row');
+      if (detDragged) detDragged.style.opacity = '0.4';
+    });
+    detList.addEventListener('dragend', () => {
+      if (detDragged) { detDragged.style.opacity = ''; detDragged.draggable = false; }
+      detList.querySelectorAll('.is-drag-over').forEach(r => r.classList.remove('is-drag-over'));
+      detDragged = null;
+    });
+    detList.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const row = e.target.closest('.det-row');
+      if (row && row !== detDragged) {
+        detList.querySelectorAll('.is-drag-over').forEach(r => r.classList.remove('is-drag-over'));
+        row.classList.add('is-drag-over');
+      }
+    });
+    detList.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const target = e.target.closest('.det-row');
+      if (!target || !detDragged || target === detDragged) return;
+      const rows = [...detList.querySelectorAll('.det-row')];
+      if (rows.indexOf(detDragged) < rows.indexOf(target)) target.after(detDragged);
+      else target.before(detDragged);
+      target.classList.remove('is-drag-over');
+    });
+  }
 
   // ── メディア行の並べ替え（ボタン式 + ハンドルドラッグ） ──
   {
