@@ -2,9 +2,12 @@
 /**
  * 画像アップロード処理
  *
- * 1. 元画像をリサイズして保存（原本保護）
- * 2. WebP版を横に生成（.jpg → .jpg.webp）
+ * 1. 元画像をそのまま保存（GDを通さず原本保護）
+ * 2. cwebp コマンドでWebP版を横に生成（.jpg → .jpg.webp）
  * 3. .htaccess でブラウザがWebP対応なら .webp を自動配信
+ *
+ * GDは画像情報取得（サイズ・MIME）のみに使用。
+ * 巨大ファイルでもメモリ不足にならない。
  */
 
 require_once dirname(__DIR__) . '/config.php';
@@ -23,18 +26,14 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
         throw new RuntimeException('アップロードエラー: ' . upload_error_message($file['error']));
     }
 
-    if ($file['size'] > UPLOAD_MAX_BYTES) {
-        throw new RuntimeException('ファイルサイズが大きすぎます（最大 ' . (UPLOAD_MAX_BYTES / 1024 / 1024) . 'MB）');
-    }
-
-    // MIME タイプを GD で確認
+    // MIME タイプを確認（GDのgetimagesizeは軽量でメモリ問題なし）
     $info = @getimagesize($file['tmp_name']);
     if (!$info || !in_array($info['mime'], ALLOWED_MIME_TYPES, true)) {
         throw new RuntimeException('許可されていない画像形式です');
     }
-    $mime = $info['mime'];
-    $orig_w = $info[0];
-    $orig_h = $info[1];
+    $mime   = $info['mime'];
+    $width  = $info[0];
+    $height = $info[1];
 
     // 保存ディレクトリを確保
     $dest_dir = UPLOAD_DIR . '/' . $section;
@@ -54,44 +53,21 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
     $dest_path   = $dest_dir . '/' . $filename;
     $public_path = '/' . $section . ($slug ? '/' . $slug : '') . '/' . $filename;
 
-    // GD で読み込み
-    $src = image_create_from_mime($file['tmp_name'], $mime);
-    if (!$src) throw new RuntimeException('画像の読み込みに失敗しました');
-
-    // リサイズ
-    [$new_w, $new_h] = calc_resize($orig_w, $orig_h, IMAGE_MAX_DIMENSION);
-    if ($new_w !== $orig_w || $new_h !== $orig_h) {
-        $dst = imagecreatetruecolor($new_w, $new_h);
-        imagealphablending($dst, false);
-        imagesavealpha($dst, true);
-        imagecopyresampled($dst, $src, 0, 0, 0, 0, $new_w, $new_h, $orig_w, $orig_h);
-        imagedestroy($src);
-        $src = $dst;
-    } else {
-        $new_w = $orig_w;
-        $new_h = $orig_h;
+    // 1. 元画像をそのまま移動（GDを通さない → メモリ問題なし）
+    if (!move_uploaded_file($file['tmp_name'], $dest_path)) {
+        throw new RuntimeException('ファイルの保存に失敗しました');
     }
 
-    // 1. 元画像を保存
-    $saved = match ($mime) {
-        'image/jpeg' => imagejpeg($src, $dest_path, 90),
-        'image/png'  => imagepng($src, $dest_path, 6),
-        'image/webp' => imagewebp($src, $dest_path, 85),
-        'image/gif'  => imagegif($src, $dest_path),
-        default      => imagejpeg($src, $dest_path, 90),
-    };
-    if (!$saved) {
-        imagedestroy($src);
-        throw new RuntimeException('画像の保存に失敗しました');
-    }
-
-    // 2. WebP版を横に生成（元画像が既にWebPの場合はスキップ）
+    // 2. WebP版を横に生成（cwebpコマンド使用、元画像がWebPの場合はスキップ）
     if ($mime !== 'image/webp') {
         $webp_path = $dest_path . '.webp';
-        imagewebp($src, $webp_path, 80);
+        $cmd = sprintf(
+            'cwebp -q 80 -quiet %s -o %s 2>/dev/null',
+            escapeshellarg($dest_path),
+            escapeshellarg($webp_path)
+        );
+        exec($cmd);
     }
-
-    imagedestroy($src);
 
     // DB にメディアレコードを保存
     $db = get_db();
@@ -103,8 +79,8 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
         $public_path,
         $section,
         $slug,
-        $new_w,
-        $new_h,
+        $width,
+        $height,
         filesize($dest_path),
         $mime,
     ]);
@@ -112,29 +88,9 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
     return [
         'path'   => $public_path,
         'url'    => UPLOAD_URL_PREFIX . $public_path,
-        'width'  => $new_w,
-        'height' => $new_h,
+        'width'  => $width,
+        'height' => $height,
     ];
-}
-
-/** MIME タイプに応じた GD リソースを生成 */
-function image_create_from_mime(string $path, string $mime): \GdImage|false {
-    return match ($mime) {
-        'image/jpeg' => imagecreatefromjpeg($path),
-        'image/png'  => imagecreatefrompng($path),
-        'image/webp' => imagecreatefromwebp($path),
-        'image/gif'  => imagecreatefromgif($path),
-        default      => false,
-    };
-}
-
-/** アスペクト比を保ちながら最大長辺を制限した新サイズを計算 */
-function calc_resize(int $w, int $h, int $max): array {
-    if ($w <= $max && $h <= $max) return [$w, $h];
-    if ($w >= $h) {
-        return [$max, (int)round($h * $max / $w)];
-    }
-    return [(int)round($w * $max / $h), $max];
 }
 
 function upload_error_message(int $code): string {
