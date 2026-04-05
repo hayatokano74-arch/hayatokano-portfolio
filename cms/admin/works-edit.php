@@ -75,7 +75,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
         }
 
-        $data_arr  = ['details' => $details, 'media' => $media];
+        // サムネイル（アイキャッチ）
+        $thumb_src = trim($_POST['thumbnail_src'] ?? '');
+        $thumb_data = [];
+        if ($thumb_src) {
+            $thumb_data = [
+                'src' => $thumb_src,
+                'alt' => '',
+                'width' => (int)($_POST['thumbnail_width'] ?? 0),
+                'height' => (int)($_POST['thumbnail_height'] ?? 0),
+            ];
+        }
+
+        $data_arr = ['details' => $details, 'media' => $media];
+        if ($thumb_data) $data_arr['thumbnail'] = $thumb_data;
         $data_json = json_encode($data_arr, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (!$slug)  $errors[] = 'スラッグは必須です。';
@@ -144,7 +157,8 @@ $f_tags   = htmlspecialchars(implode(', ', $tags_arr), ENT_QUOTES);
 
 $data    = json_decode($row['data'] ?? '{}', true) ?? [];
 $details = $data['details'] ?? [];
-$media   = $data['media']   ?? [];
+$media     = $data['media']     ?? [];
+$thumbnail = $data['thumbnail'] ?? [];
 
 // 詳細フィールド設定をDBから読み込み（works-fields.phpで管理）
 $_field_stmt = $db->prepare('SELECT value FROM settings WHERE key = ?');
@@ -387,10 +401,38 @@ ob_start();
       <button type="button" class="btn btn-sm btn-ghost" id="det-add-custom" style="margin-top:var(--s-2);">+ 項目を追加</button>
     </div>
 
+    <!-- ── アイキャッチ画像 ── -->
+    <div class="form-section form-section--full">
+      <h3 class="form-section__title">アイキャッチ画像</h3>
+      <p class="form-hint">一覧ページのサムネイルに使われます。未指定の場合は作品画像の1枚目が自動で使われます。</p>
+      <div style="display:flex;gap:var(--s-4);align-items:flex-start;">
+        <div id="thumb-preview" style="flex-shrink:0;">
+          <?php if (!empty($thumbnail['src'])): ?>
+          <img src="<?= htmlspecialchars(fix_broken_unicode_url($thumbnail['src']), ENT_QUOTES) ?>" alt=""
+               style="width:120px;height:80px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+          <?php else: ?>
+          <div style="width:120px;height:80px;background:var(--surface);border-radius:4px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:var(--font-xs);">自動</div>
+          <?php endif; ?>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:var(--s-2);">
+          <input type="text" name="thumbnail_src" id="thumbnail-src" class="form-control"
+                 value="<?= htmlspecialchars($thumbnail['src'] ?? '', ENT_QUOTES) ?>" placeholder="画像URLを入力 or アップロード">
+          <input type="hidden" name="thumbnail_width" id="thumbnail-width" value="<?= (int)($thumbnail['width'] ?? 0) ?>">
+          <input type="hidden" name="thumbnail_height" id="thumbnail-height" value="<?= (int)($thumbnail['height'] ?? 0) ?>">
+          <div style="display:flex;gap:var(--s-2);">
+            <label class="btn btn-sm btn-ghost">
+              <input type="file" id="thumb-upload-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+              アップロード
+            </label>
+            <button type="button" class="btn btn-sm btn-ghost" id="thumb-clear">クリア（自動に戻す）</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── 作品画像（media） ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">作品画像</h3>
-      <p class="form-hint">先頭の画像がサムネイルになります。</p>
       <div id="media-list" class="dynamic-list">
         <?php foreach ($media as $i => $m): ?>
         <div class="dynamic-row dynamic-row--media">
@@ -596,6 +638,43 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── フォーム送信前: 並べ替え結果を反映 ──
   // 標準フィールドの hidden input の value を、DOMの順序に合わせて更新する
   // （hidden input は各 .det-field 内に既に存在するのでDOMの順序通りに送信される）
+
+  // ── アイキャッチ画像 ──
+  {
+    const thumbInput = document.getElementById('thumbnail-src');
+    const thumbWidth = document.getElementById('thumbnail-width');
+    const thumbHeight = document.getElementById('thumbnail-height');
+    const thumbPreview = document.getElementById('thumb-preview');
+    const thumbUpload = document.getElementById('thumb-upload-input');
+    const thumbClear = document.getElementById('thumb-clear');
+
+    if (thumbUpload) {
+      thumbUpload.addEventListener('change', async function() {
+        const file = this.files?.[0];
+        if (!file) return;
+        this.value = '';
+        try {
+          const result = await upload_image_to_api(file, 'works', slug);
+          thumbInput.value = result.url;
+          thumbWidth.value = result.width;
+          thumbHeight.value = result.height;
+          thumbPreview.innerHTML = `<img src="${result.url}" alt="" style="width:120px;height:80px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">`;
+          show_toast('アイキャッチをアップロードしました', 'success');
+        } catch (err) {
+          show_toast(err.message, 'error');
+        }
+      });
+    }
+
+    if (thumbClear) {
+      thumbClear.addEventListener('click', () => {
+        thumbInput.value = '';
+        thumbWidth.value = '0';
+        thumbHeight.value = '0';
+        thumbPreview.innerHTML = '<div style="width:120px;height:80px;background:var(--surface);border-radius:4px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:var(--font-xs);">自動</div>';
+      });
+    }
+  }
 
   // ── タグ入力（チップ + 候補） ──
   {
