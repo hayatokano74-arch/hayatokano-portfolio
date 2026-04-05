@@ -1897,94 +1897,87 @@ textarea.form-control.is-dragover {
 }
 
 /* ── 詳細情報（動的キー・バリュー） ── */
-.det-template-bar {
+/* ── 詳細情報（カテゴリ折りたたみ + 固定フィールド） ── */
+.det-category {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: var(--s-2);
+  background: var(--card);
+}
+
+.det-category__summary {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
-  margin-bottom: var(--s-4);
-  flex-wrap: wrap;
-}
-
-.btn-xs {
-  font-size: var(--font-xs);
-  padding: 2px var(--s-2);
-}
-
-.det-list-header {
-  display: grid;
-  grid-template-columns: 24px 1fr 2fr 28px;
-  gap: var(--s-2);
-  padding: 0 0 var(--s-1);
-  font-size: var(--font-xs);
-  font-weight: 600;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.det-list-header .det-col-label { grid-column: 2; }
-.det-list-header .det-col-value { grid-column: 3; }
-
-.det-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.det-row {
-  display: grid;
-  grid-template-columns: 24px 1fr 2fr 28px;
-  gap: var(--s-2);
-  align-items: center;
-  padding: var(--s-1) 0;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.det-row:last-child { border-bottom: none; }
-
-.det-row.is-drag-over {
-  border-bottom-color: var(--accent);
-  box-shadow: 0 1px 0 var(--accent);
-}
-
-.det-row-handle {
-  font-size: 14px;
-  color: var(--text-3);
-  cursor: grab;
-  user-select: none;
-  text-align: center;
-}
-
-.det-input-key {
-  font-weight: 500;
-}
-
-.det-row-remove {
-  all: unset;
-  font-size: 13px;
-  color: var(--text-3);
+  justify-content: space-between;
+  padding: var(--s-3) var(--s-4);
   cursor: pointer;
-  text-align: center;
-  border-radius: var(--radius-sm);
+  user-select: none;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-2);
+  list-style: none;
   transition: color var(--transition);
 }
 
-.det-row-remove:hover { color: var(--danger); }
+.det-category__summary::-webkit-details-marker { display: none; }
+.det-category__summary::before {
+  content: '▸'; margin-right: var(--s-2); font-size: 10px;
+  transition: transform 0.15s ease;
+}
+.det-category[open] > .det-category__summary::before { transform: rotate(90deg); }
+.det-category__summary:hover { color: var(--text); }
 
-.det-actions {
-  display: flex;
-  gap: var(--s-2);
-  margin-top: var(--s-3);
+.det-category__badge {
+  font-size: var(--font-xs); font-weight: 500;
+  color: var(--accent); background: var(--accent-bg);
+  padding: 1px var(--s-2); border-radius: var(--radius-sm);
 }
 
+.det-category__body {
+  padding: var(--s-2) var(--s-4) var(--s-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.det-field {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--s-3);
+  align-items: center;
+  padding: var(--s-1) 0;
+}
+
+.det-field__label {
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.det-custom-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 28px;
+  gap: var(--s-2);
+  align-items: center;
+  padding: var(--s-1) 0;
+}
+
+.det-row-remove {
+  all: unset; font-size: 13px; color: var(--text-3);
+  cursor: pointer; text-align: center;
+  border-radius: var(--radius-sm); transition: color var(--transition);
+}
+.det-row-remove:hover { color: var(--danger); }
+
 @media (max-width: 768px) {
-  .det-row {
-    grid-template-columns: 20px 1fr 20px;
+  .det-field {
+    grid-template-columns: 1fr;
+    gap: var(--s-1);
   }
-  .det-input-value {
-    grid-column: 2;
+  .det-custom-row {
+    grid-template-columns: 1fr 24px;
   }
-  .det-list-header { display: none; }
+  .det-custom-row input:first-of-type {
+    grid-column: 1 / -2;
+  }
 }
 
 .media-row-order {

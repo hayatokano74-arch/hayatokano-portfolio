@@ -283,49 +283,149 @@ ob_start();
       </div>
     </div>
 
-    <!-- ── 詳細情報（動的キー・バリュー） ── -->
+    <!-- ── 詳細情報 ── -->
     <div class="form-section form-section--full">
       <h3 class="form-section__title">詳細情報</h3>
-      <p class="form-hint">項目名と内容のペアで自由に入力できます。テンプレートから一括追加も可能です。</p>
+      <p class="form-hint">必要な項目だけ入力してください。空の項目はサイトに表示されません。</p>
 
-      <div class="det-template-bar">
-        <span style="font-size:var(--font-xs);color:var(--text-3);">テンプレート:</span>
-        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="exhibition">展示</button>
-        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="publication">出版・寄稿</button>
-        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="client">クライアント</button>
-        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="screening">映像・上映</button>
-        <button type="button" class="btn btn-xs btn-ghost det-tpl-btn" data-tpl="award">受賞・助成</button>
-      </div>
+      <?php
+        // 標準項目の定義（カテゴリ別）
+        $standard_fields = [
+            '展示・イベント' => [
+                'Type'         => '例: Solo Exhibition / Group Exhibition / Art Festival',
+                'Artist'       => '',
+                'Artists'      => 'グループ展の場合（カンマ区切り）',
+                'Period'       => '例: 2023.04.08 - 2023.06.04',
+                'Venue'        => '',
+                'Address'      => '',
+                'Access'       => '',
+                'Hours'        => '例: 12:00 - 18:00',
+                'Closed'       => '例: 月・火・水',
+                'Admission'    => '例: 無料',
+                'Organizer'    => '',
+                'Curator'      => '',
+                'Supported by' => '',
+            ],
+            'クライアント' => [
+                'Client'       => '企業名・団体名',
+                'Project Type' => '例: 撮影 / 映像制作 / ディレクション',
+                'Role'         => '',
+                'Collaborators'=> '',
+            ],
+            '出版・寄稿' => [
+                'Publisher'    => '',
+                'Publication'  => '雑誌名・メディア名',
+                'Issue'        => '例: No.3 / Vol.12',
+                'Published'    => '例: 2025.06.15',
+                'Pages'        => '',
+                'Binding'      => '例: ソフトカバー',
+                'Price'        => '',
+                'ISBN'         => '',
+                'Contribution' => '例: Photography / Text / Interview',
+            ],
+            '作品' => [
+                'Medium'       => '例: Inkjet Print, Lenticular Lens',
+                'Dimensions'   => '例: 1200 x 900 mm',
+                'Edition'      => '例: 1/5 + AP',
+                'Series'       => '',
+                'Duration'     => '映像の場合（例: 12分30秒）',
+                'Format'       => '例: 16mm / 4K / シングルチャンネル',
+            ],
+            'クレジット' => [
+                'Photo'        => '',
+                'Design'       => '',
+                'Text'         => '',
+                'Sound'        => '',
+                'Video'        => '',
+                'Translation'  => '',
+                'Cooperation'  => '',
+            ],
+            '実績・リンク' => [
+                'Award'        => '',
+                'Grant'        => '例: ○○財団助成金',
+                'Residency'    => '',
+                'Collection'   => '例: ○○美術館',
+                'URL'          => 'https://...',
+                'Base'         => '例: Sendai / Tokyo',
+            ],
+        ];
 
-      <div class="det-list-header">
-        <span class="det-col-label">項目名</span>
-        <span class="det-col-value">内容</span>
-      </div>
+        // 既存データをキーの大文字小文字無視でマッチング
+        $det_lower = [];
+        foreach ($details as $k => $v) {
+            $det_lower[strtolower($k)] = $v;
+        }
 
-      <div id="det-list" class="det-list">
-        <?php
-          // 既存データを動的行として表示
-          if (!empty($details)):
-            foreach ($details as $key => $val):
-        ?>
-        <div class="det-row" draggable="false">
-          <span class="det-row-handle" title="ドラッグで並べ替え">⠿</span>
-          <input type="text" name="det_key[]" class="form-control det-input-key"
-                 value="<?= htmlspecialchars($key, ENT_QUOTES) ?>">
-          <input type="text" name="det_value[]" class="form-control det-input-value"
-                 value="<?= htmlspecialchars($val, ENT_QUOTES) ?>">
-          <button type="button" class="det-row-remove" title="削除">✕</button>
+        // 標準項目にない既存のカスタムキーを収集
+        $standard_keys_lower = [];
+        foreach ($standard_fields as $fields) {
+            foreach ($fields as $key => $ph) {
+                $standard_keys_lower[strtolower($key)] = true;
+            }
+        }
+        $custom_details = [];
+        foreach ($details as $k => $v) {
+            if (!isset($standard_keys_lower[strtolower($k)])) {
+                $custom_details[$k] = $v;
+            }
+        }
+      ?>
+
+      <?php foreach ($standard_fields as $cat_label => $fields):
+        $has_value = false;
+        foreach ($fields as $key => $ph) {
+            if (!empty($det_lower[strtolower($key)])) { $has_value = true; break; }
+        }
+      ?>
+      <details class="det-category" <?= $has_value ? 'open' : '' ?>>
+        <summary class="det-category__summary">
+          <span><?= $cat_label ?></span>
+          <?php if ($has_value): ?>
+          <span class="det-category__badge">入力済み</span>
+          <?php endif; ?>
+        </summary>
+        <div class="det-category__body">
+          <?php foreach ($fields as $key => $ph):
+            $val = $det_lower[strtolower($key)] ?? '';
+          ?>
+          <div class="det-field">
+            <label class="det-field__label"><?= $key ?></label>
+            <input type="hidden" name="det_key[]" value="<?= htmlspecialchars($key, ENT_QUOTES) ?>">
+            <input type="text" name="det_value[]" class="form-control"
+                   value="<?= htmlspecialchars($val, ENT_QUOTES) ?>"
+                   placeholder="<?= htmlspecialchars($ph, ENT_QUOTES) ?>">
+          </div>
+          <?php endforeach; ?>
         </div>
-        <?php
-            endforeach;
-          endif;
-        ?>
-      </div>
+      </details>
+      <?php endforeach; ?>
 
-      <div class="det-actions">
-        <button type="button" class="btn btn-sm btn-ghost" id="det-add-row">+ 項目を追加</button>
-        <button type="button" class="btn btn-sm btn-ghost" id="det-add-blank">+ 空白行を追加</button>
+      <!-- カスタム項目（標準にないもの） -->
+      <?php if (!empty($custom_details)): ?>
+      <details class="det-category" open>
+        <summary class="det-category__summary">
+          <span>カスタム項目</span>
+          <span class="det-category__badge"><?= count($custom_details) ?>件</span>
+        </summary>
+        <div class="det-category__body">
+          <div id="det-custom-list">
+          <?php foreach ($custom_details as $key => $val): ?>
+          <div class="det-custom-row">
+            <input type="text" name="det_key[]" class="form-control det-input-key" value="<?= htmlspecialchars($key, ENT_QUOTES) ?>" placeholder="項目名">
+            <input type="text" name="det_value[]" class="form-control" value="<?= htmlspecialchars($val, ENT_QUOTES) ?>" placeholder="内容">
+            <button type="button" class="det-row-remove" title="削除">✕</button>
+          </div>
+          <?php endforeach; ?>
+          </div>
+        </div>
+      </details>
+      <?php endif; ?>
+
+      <!-- カスタム項目追加 -->
+      <div id="det-custom-area">
+        <div id="det-custom-list-new"></div>
       </div>
+      <button type="button" class="btn btn-sm btn-ghost" id="det-add-custom" style="margin-top:var(--s-2);">+ カスタム項目を追加</button>
     </div>
 
     <!-- ── 作品画像（media） ── -->
@@ -534,100 +634,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-  // ── 詳細情報の動的行 ──
+  // ── カスタム項目の追加・削除 ──
   {
-    const detList = document.getElementById('det-list');
-    const detAddRow = document.getElementById('det-add-row');
-    const detAddBlank = document.getElementById('det-add-blank');
+    const customList = document.getElementById('det-custom-list-new');
+    const addBtn = document.getElementById('det-add-custom');
 
-    function addDetRow(key, value) {
+    addBtn.addEventListener('click', () => {
       const row = document.createElement('div');
-      row.className = 'det-row';
+      row.className = 'det-custom-row';
       row.innerHTML = `
-        <span class="det-row-handle" title="ドラッグで並べ替え">⠿</span>
-        <input type="text" name="det_key[]" class="form-control det-input-key" value="${esc(key)}" placeholder="項目名">
-        <input type="text" name="det_value[]" class="form-control det-input-value" value="${esc(value)}" placeholder="内容">
+        <input type="text" name="det_key[]" class="form-control" placeholder="項目名">
+        <input type="text" name="det_value[]" class="form-control" placeholder="内容">
         <button type="button" class="det-row-remove" title="削除">✕</button>
       `;
-      detList.appendChild(row);
-    }
+      customList.appendChild(row);
+    });
 
-    detAddRow.addEventListener('click', () => addDetRow('', ''));
-    detAddBlank.addEventListener('click', () => addDetRow('', ''));
-
-    detList.addEventListener('click', (e) => {
+    document.addEventListener('click', (e) => {
       if (e.target.closest('.det-row-remove')) {
-        e.target.closest('.det-row').remove();
+        e.target.closest('.det-custom-row').remove();
       }
-    });
-
-    // テンプレート定義
-    const templates = {
-      exhibition: [
-        ['Type', ''], ['Artist', ''], ['Period', ''], ['Venue', ''],
-        ['Address', ''], ['Hours', ''], ['Closed', ''], ['Admission', ''],
-        ['Organizer', ''], ['Curator', ''], ['Supported by', ''],
-      ],
-      publication: [
-        ['Type', ''], ['Publisher', ''], ['Issue', ''], ['Published', ''],
-        ['Pages', ''], ['Binding', ''], ['Price', ''], ['ISBN', ''],
-        ['Contribution', ''],
-      ],
-      client: [
-        ['Client', ''], ['Project Type', ''], ['Role', ''],
-        ['Collaborators', ''], ['URL', ''],
-      ],
-      screening: [
-        ['Type', ''], ['Festival', ''], ['Venue', ''],
-        ['Duration', ''], ['Format', ''], ['Screening Date', ''],
-      ],
-      award: [
-        ['Award', ''], ['Year', ''], ['Organization', ''],
-        ['Grant', ''], ['Residency', ''],
-      ],
-    };
-
-    document.querySelectorAll('.det-tpl-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tpl = templates[btn.dataset.tpl];
-        if (!tpl) return;
-        tpl.forEach(([k, v]) => addDetRow(k, v));
-        show_toast(`${btn.textContent} テンプレートを追加しました`, 'success');
-      });
-    });
-
-    // 並べ替え（ハンドルドラッグ）
-    let detDragged = null;
-    detList.addEventListener('mousedown', (e) => {
-      if (!e.target.closest('.det-row-handle')) return;
-      const row = e.target.closest('.det-row');
-      if (row) row.draggable = true;
-    });
-    detList.addEventListener('dragstart', (e) => {
-      detDragged = e.target.closest('.det-row');
-      if (detDragged) detDragged.style.opacity = '0.4';
-    });
-    detList.addEventListener('dragend', () => {
-      if (detDragged) { detDragged.style.opacity = ''; detDragged.draggable = false; }
-      detList.querySelectorAll('.is-drag-over').forEach(r => r.classList.remove('is-drag-over'));
-      detDragged = null;
-    });
-    detList.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      const row = e.target.closest('.det-row');
-      if (row && row !== detDragged) {
-        detList.querySelectorAll('.is-drag-over').forEach(r => r.classList.remove('is-drag-over'));
-        row.classList.add('is-drag-over');
-      }
-    });
-    detList.addEventListener('drop', (e) => {
-      e.preventDefault();
-      const target = e.target.closest('.det-row');
-      if (!target || !detDragged || target === detDragged) return;
-      const rows = [...detList.querySelectorAll('.det-row')];
-      if (rows.indexOf(detDragged) < rows.indexOf(target)) target.after(detDragged);
-      else target.before(detDragged);
-      target.classList.remove('is-drag-over');
     });
   }
 
