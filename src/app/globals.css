@@ -805,12 +805,14 @@ button {
   line-height: var(--lh-relaxed);
   font-weight: 500;
 }
+/* 段落間（Enter）: 明確な余白 */
 .rich-body p {
-  margin-bottom: 1em;
+  margin: 0 0 1.8em;
 }
 .rich-body p:last-child {
   margin-bottom: 0;
 }
+/* 改行（Shift+Enter = <br>）は行間のみ、段落ほどの余白は入らない */
 .rich-body strong {
   font-weight: 700;
 }
@@ -3310,7 +3312,7 @@ img[loading="lazy"] {
 }
 
 .garden-entry-body p {
-  margin: 0 0 var(--space-5);
+  margin: 0 0 1.8em;
 }
 
 .garden-entry-body p:last-child {
@@ -3430,7 +3432,7 @@ img[loading="lazy"] {
 }
 
 .garden-detail-body p {
-  margin: 0 0 var(--v-block);
+  margin: 0 0 1.8em;
 }
 
 /* ── 画像シマーアニメーション ── */
