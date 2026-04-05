@@ -1896,17 +1896,41 @@ textarea.form-control.is-dragover {
   box-shadow: 0 0 0 2px var(--accent-bg);
 }
 
+.media-row-order {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
 .media-row-handle {
-  font-size: 18px;
+  font-size: 16px;
   color: var(--text-3);
   cursor: grab;
   user-select: none;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
+  line-height: 1;
 }
 
 .media-row-handle:active { cursor: grabbing; }
+
+.media-move-up,
+.media-move-down {
+  all: unset;
+  font-size: 10px;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+  line-height: 1;
+}
+
+.media-move-up:hover,
+.media-move-down:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
 
 .media-row-preview {
   flex-shrink: 0;

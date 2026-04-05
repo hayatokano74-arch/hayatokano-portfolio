@@ -276,8 +276,12 @@ ob_start();
       <p class="form-hint">先頭の画像がサムネイルになります。</p>
       <div id="media-list" class="dynamic-list">
         <?php foreach ($media as $i => $m): ?>
-        <div class="dynamic-row dynamic-row--media" draggable="true">
-          <span class="media-row-handle" title="ドラッグで並べ替え">⠿</span>
+        <div class="dynamic-row dynamic-row--media">
+          <div class="media-row-order">
+            <button type="button" class="media-move-up" title="上に移動">▲</button>
+            <span class="media-row-handle" title="ドラッグで並べ替え">⠿</span>
+            <button type="button" class="media-move-down" title="下に移動">▼</button>
+          </div>
           <div class="media-row-preview">
             <?php
               $preview_src = '';
@@ -379,8 +383,12 @@ ob_start();
 </form>
 
 <template id="tpl-media-row">
-  <div class="dynamic-row dynamic-row--media" draggable="true">
-    <span class="media-row-handle" title="ドラッグで並べ替え">⠿</span>
+  <div class="dynamic-row dynamic-row--media">
+    <div class="media-row-order">
+      <button type="button" class="media-move-up" title="上に移動">▲</button>
+      <span class="media-row-handle" title="ドラッグで並べ替え">⠿</span>
+      <button type="button" class="media-move-down" title="下に移動">▼</button>
+    </div>
     <div class="media-row-preview"></div>
     <div class="media-row-fields">
       <input type="hidden" name="media_id[]" value="">
@@ -468,9 +476,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-  // ── メディア行の並べ替え（ドラッグ&ドロップ） ──
+  // ── メディア行の並べ替え（ボタン式 + ハンドルドラッグ） ──
   {
+    // 上下ボタンで移動
+    list.addEventListener('click', (e) => {
+      const upBtn = e.target.closest('.media-move-up');
+      const downBtn = e.target.closest('.media-move-down');
+      if (upBtn) {
+        const row = upBtn.closest('.dynamic-row--media');
+        const prev = row.previousElementSibling;
+        if (prev) prev.before(row);
+      }
+      if (downBtn) {
+        const row = downBtn.closest('.dynamic-row--media');
+        const next = row.nextElementSibling;
+        if (next) next.after(row);
+      }
+    });
+
+    // ハンドルからのドラッグ
     let dragged = null;
+    list.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('.media-row-handle')) return;
+      const row = e.target.closest('.dynamic-row--media');
+      if (row) row.setAttribute('draggable', 'true');
+    });
     list.addEventListener('dragstart', (e) => {
       const row = e.target.closest('.dynamic-row--media');
       if (!row) return;
@@ -479,16 +509,15 @@ document.addEventListener('DOMContentLoaded', () => {
       e.dataTransfer.effectAllowed = 'move';
     });
     list.addEventListener('dragend', () => {
-      if (dragged) dragged.style.opacity = '';
-      list.querySelectorAll('.dynamic-row--media').forEach(r => r.classList.remove('is-drag-over'));
+      if (dragged) { dragged.style.opacity = ''; dragged.removeAttribute('draggable'); }
+      list.querySelectorAll('.is-drag-over').forEach(r => r.classList.remove('is-drag-over'));
       dragged = null;
     });
     list.addEventListener('dragover', (e) => {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
       const row = e.target.closest('.dynamic-row--media');
       if (row && row !== dragged) {
-        list.querySelectorAll('.dynamic-row--media').forEach(r => r.classList.remove('is-drag-over'));
+        list.querySelectorAll('.is-drag-over').forEach(r => r.classList.remove('is-drag-over'));
         row.classList.add('is-drag-over');
       }
     });
@@ -497,9 +526,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const target = e.target.closest('.dynamic-row--media');
       if (!target || !dragged || target === dragged) return;
       const rows = [...list.querySelectorAll('.dynamic-row--media')];
-      const fromIdx = rows.indexOf(dragged);
-      const toIdx = rows.indexOf(target);
-      if (fromIdx < toIdx) { target.after(dragged); } else { target.before(dragged); }
+      if (rows.indexOf(dragged) < rows.indexOf(target)) target.after(dragged);
+      else target.before(dragged);
       target.classList.remove('is-drag-over');
     });
   }
