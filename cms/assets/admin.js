@@ -257,7 +257,8 @@ async function upload_image_to_api(file, section = 'misc', slug = '') {
   });
   const data = await res.json();
   if (!res.ok || data.error) throw new Error(data.error ?? 'アップロードに失敗しました');
-  return data.data; // { url, path, width, height }
+  // APIは直接 { url, path, width, height } または { data: { ... } } 形式
+  return data.data ?? data;
 }
 
 /**

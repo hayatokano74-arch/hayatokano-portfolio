@@ -405,7 +405,14 @@ ob_start();
         </div>
         <?php endforeach; ?>
       </div>
-      <button type="button" class="btn btn-sm btn-ghost" id="media-add">+ 画像を追加</button>
+      <div class="media-add-actions">
+        <label class="btn btn-sm btn-primary">
+          <input type="file" id="mnh-media-upload" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+          + ファイルをアップロード
+        </label>
+        <button type="button" class="btn btn-sm btn-ghost" id="mnh-media-pick">+ メディアから選択</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="media-add">+ 空の行を追加</button>
+      </div>
     </div>
 
     <!-- ── キービジュアル ── -->
@@ -458,7 +465,14 @@ ob_start();
         </div>
         <?php endforeach; ?>
       </div>
-      <button type="button" class="btn btn-sm btn-ghost" id="kv-add">+ キービジュアルを追加</button>
+      <div class="media-add-actions">
+        <label class="btn btn-sm btn-primary">
+          <input type="file" id="mnh-kv-upload" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+          + ファイルをアップロード
+        </label>
+        <button type="button" class="btn btn-sm btn-ghost" id="mnh-kv-pick">+ メディアから選択</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="kv-add">+ 空の行を追加</button>
+      </div>
     </div>
 
     <!-- ── 過去作品 ── -->
@@ -770,6 +784,66 @@ document.addEventListener('DOMContentLoaded', () => {
   init_dynamic_list('kv-list',      'kv-add',      'tpl-kv-row');
   init_dynamic_list('pw-list',      'pw-add',      'tpl-pw-row');
   init_dynamic_list('pe-list',      'pe-add',      'tpl-pe-row');
+
+  // ── 画像アップロード + メディアライブラリ ──
+  const mnhSlug = '<?= addslashes($row['slug'] ?? '') ?>';
+
+  // ヘルパー: メディア行に画像URLを設定
+  function setMediaSrc(list, url, width, height) {
+    const rows = list.querySelectorAll('.dynamic-row');
+    const last = rows[rows.length - 1];
+    if (last) {
+      const srcInput = last.querySelector('[name="media_src[]"], [name="kv_image_src[]"]');
+      if (srcInput) srcInput.value = url;
+      const wInput = last.querySelector('[name="media_width[]"], [name="kv_image_width[]"]');
+      if (wInput) wInput.value = width;
+      const hInput = last.querySelector('[name="media_height[]"], [name="kv_image_height[]"]');
+      if (hInput) hInput.value = height;
+    }
+  }
+
+  // メディアアップロード
+  function setupUpload(inputId, listId, addBtnId, section) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.addEventListener('change', async function() {
+      const files = Array.from(this.files || []);
+      this.value = '';
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        try {
+          const result = await upload_image_to_api(file, section, mnhSlug);
+          // 空行を追加してURLを設定
+          document.getElementById(addBtnId)?.click();
+          const list = document.getElementById(listId);
+          setMediaSrc(list, result.url, result.width, result.height);
+          show_toast(file.name + ' をアップロードしました', 'success');
+        } catch (err) {
+          show_toast(file.name + ': ' + err.message, 'error');
+        }
+      }
+    });
+  }
+
+  setupUpload('mnh-media-upload', 'media-list', 'media-add', 'me-no-hoshi');
+  setupUpload('mnh-kv-upload', 'kv-list', 'kv-add', 'me-no-hoshi');
+
+  // メディアライブラリ選択
+  function setupPick(btnId, listId, addBtnId) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      const url = prompt('メディアのURLを入力（メディアページからコピー）:');
+      if (!url) return;
+      document.getElementById(addBtnId)?.click();
+      const list = document.getElementById(listId);
+      setMediaSrc(list, url, 0, 0);
+      show_toast('画像を追加しました', 'success');
+    });
+  }
+
+  setupPick('mnh-media-pick', 'media-list', 'media-add');
+  setupPick('mnh-kv-pick', 'kv-list', 'kv-add');
 
   // 削除ボタン
   const delBtn = document.querySelector('[data-delete]');
