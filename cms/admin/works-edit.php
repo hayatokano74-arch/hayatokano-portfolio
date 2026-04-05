@@ -466,6 +466,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const slug   = '<?= addslashes($f_slug) ?>';
   const csrf   = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
+  // HTMLエスケープ
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
   // 行追加ヘルパー
   function addMediaRow(src, alt, width, height, id) {
     const clone = tpl.content.cloneNode(true);
