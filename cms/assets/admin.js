@@ -775,185 +775,96 @@ document.addEventListener('DOMContentLoaded', () => {
  * data-rich-editor 属性を持つ textarea を Quill エディタに変換する。
  * フォーム送信時に hidden input へ HTML を書き戻す。
  */
+/**
+ * TinyMCE リッチテキストエディタ初期化
+ * data-rich-editor 属性を持つ textarea を TinyMCE に変換する。
+ *
+ * Enter = 段落（<p>）、Shift+Enter = 改行（<br>）は TinyMCE の標準動作。
+ */
 function init_rich_editors() {
-  if (typeof Quill === 'undefined') return;
+  if (typeof tinymce === 'undefined') return;
 
-  // Quill初期化後にスタイルを直接注入
-  // Quill core CSS の .ql-editor p { margin:0; padding:0 } を確実に上書きする
-  if (!document.getElementById('quill-custom-style')) {
-    const s = document.createElement('style');
-    s.id = 'quill-custom-style';
-    s.textContent = [
-      '.ql-editor p { margin: 0 0 1.2em 0 !important; padding: 0 !important; }',
-      '.ql-editor p:last-child { margin-bottom: 0 !important; }',
-      '.ql-editor { line-height: 1.8 !important; }',
-    ].join('\n');
-    document.body.appendChild(s); // bodyの末尾 = 最高優先度
-  }
+  const targets = document.querySelectorAll('textarea[data-rich-editor]');
+  if (!targets.length) return;
 
-  document.querySelectorAll('textarea[data-rich-editor]').forEach(textarea => {
-    // hidden input を作成（フォーム送信用）
-    const hidden = document.createElement('input');
-    hidden.type = 'hidden';
-    hidden.name = textarea.name;
-    hidden.value = textarea.value;
-    textarea.parentNode.insertBefore(hidden, textarea);
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-    // エディタ用コンテナ
-    const container = document.createElement('div');
-    container.className = 'rich-editor-container';
-    textarea.parentNode.insertBefore(container, textarea);
-
-    // textarea を非表示
-    textarea.removeAttribute('name');
-    textarea.style.display = 'none';
-
-    // 画像アップロード用の隠しファイル入力
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
-    fileInput.style.display = 'none';
-    container.appendChild(fileInput);
-
-    // アップロード用メタ情報を取得
+  targets.forEach(textarea => {
     const uploadSection = textarea.dataset.mdUploadSection || 'misc';
     const uploadSlug = textarea.dataset.mdUploadSlug || '';
 
-    // Quill 初期化（標準ツールバー）
-    const quill = new Quill(container, {
-      theme: 'snow',
-      placeholder: textarea.placeholder || '本文を入力…',
-      modules: {
-        toolbar: {
-          container: [
-            [{ header: [1, 2, 3, 4, false] }],
-            ['bold', 'italic'],
-            ['blockquote'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'image'],
-            ['clean'],
-          ],
-          handlers: {
-            image: function() {
-              fileInput.click();
-            },
+    tinymce.init({
+      target: textarea,
+      height: 400,
+      menubar: false,
+      statusbar: false,
+      skin: 'oxide-dark',
+      content_css: 'dark',
+      plugins: 'lists link image',
+      toolbar: 'blocks | bold italic | blockquote bullist numlist | link image bracketlink | removeformat',
+      block_formats: 'Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4',
+      content_style: `
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-size: 14px;
+          line-height: 1.8;
+          color: #e8e8e8;
+          background: #1c1c1c;
+          padding: 16px;
+        }
+        p { margin: 0 0 1.5em; }
+        p:last-child { margin-bottom: 0; }
+        h2 { font-size: 1.3em; font-weight: 700; margin: 1.5em 0 0.5em; }
+        h3 { font-size: 1.1em; font-weight: 700; margin: 1.25em 0 0.5em; }
+        h4 { font-size: 1em; font-weight: 700; margin: 1.25em 0 0.5em; }
+        blockquote { border-left: 3px solid #333; padding-left: 16px; color: #999; margin: 1em 0; }
+        a { color: #5b8ef0; }
+        img { max-width: 100%; height: auto; border-radius: 4px; margin: 8px 0; }
+      `,
+
+      // 画像アップロード
+      images_upload_handler: (blobInfo) => {
+        return new Promise((resolve, reject) => {
+          const fd = new FormData();
+          fd.append('file', blobInfo.blob(), blobInfo.filename());
+          fd.append('section', uploadSection);
+          if (uploadSlug) fd.append('slug', uploadSlug);
+
+          fetch('../api/media.php', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': csrf },
+            body: fd,
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (data.error) throw new Error(data.error);
+            const result = data.data || data;
+            resolve(result.url);
+          })
+          .catch(err => reject(err.message));
+        });
+      },
+
+      // [[ブラケットリンク]]ボタン
+      setup: (editor) => {
+        editor.ui.registry.addButton('bracketlink', {
+          text: '[[ ]]',
+          tooltip: 'ブラケットリンク [[ページ名]]',
+          onAction: () => {
+            const selected = editor.selection.getContent({ format: 'text' });
+            if (selected) {
+              editor.insertContent(`[[${selected}]]`);
+            } else {
+              editor.insertContent('[[]]');
+              // カーソルを[[と]]の間に移動
+              const rng = editor.selection.getRng();
+              rng.setStart(rng.startContainer, rng.startOffset - 2);
+              rng.setEnd(rng.startContainer, rng.startOffset);
+              editor.selection.setRng(rng);
+            }
           },
-        },
+        });
       },
     });
-
-    // [[リンク]] ボタンをツールバー末尾に追加
-    // Quill snow テーマはツールバーを container の直前の兄弟要素として生成する
-    const toolbar = container.previousElementSibling?.classList.contains('ql-toolbar')
-      ? container.previousElementSibling
-      : container.querySelector('.ql-toolbar');
-    if (toolbar) {
-      const group = document.createElement('span');
-      group.className = 'ql-formats';
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'ql-bracket-link';
-      btn.title = 'ブラケットリンク [[ページ名]]';
-      btn.textContent = '[[ ]]';
-      btn.addEventListener('click', () => {
-        const range = quill.getSelection(true);
-        if (range.length > 0) {
-          const text = quill.getText(range.index, range.length);
-          quill.deleteText(range.index, range.length);
-          quill.insertText(range.index, `[[${text}]]`);
-          quill.setSelection(range.index + text.length + 4);
-        } else {
-          quill.insertText(range.index, '[[]]');
-          quill.setSelection(range.index + 2);
-        }
-      });
-      group.appendChild(btn);
-      toolbar.appendChild(group);
-    }
-
-    // ファイル選択時: CMS APIにアップロード → エディタに挿入
-    fileInput.addEventListener('change', async () => {
-      const file = fileInput.files?.[0];
-      if (!file) return;
-      fileInput.value = '';
-
-      // アップロード中の表示
-      const range = quill.getSelection(true);
-      quill.insertText(range.index, '画像をアップロード中…', { color: '#999' });
-      quill.setSelection(range.index + 11);
-
-      try {
-        const result = await upload_image_to_api(file, uploadSection, uploadSlug);
-        // プレースホルダーを削除
-        quill.deleteText(range.index, 11);
-        // 画像を挿入
-        quill.insertEmbed(range.index, 'image', result.url);
-        quill.setSelection(range.index + 1);
-        show_toast('画像を挿入しました', 'success');
-      } catch (err) {
-        // プレースホルダーを削除
-        quill.deleteText(range.index, 11);
-        show_toast(err.message || 'アップロードに失敗しました', 'error');
-      }
-    });
-
-    // ドラッグ＆ドロップで画像挿入
-    quill.root.addEventListener('drop', async (e) => {
-      const files = e.dataTransfer?.files;
-      if (!files?.length) return;
-      const file = files[0];
-      if (!file.type.startsWith('image/')) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const range = quill.getSelection(true);
-      quill.insertText(range.index, '画像をアップロード中…', { color: '#999' });
-
-      try {
-        const result = await upload_image_to_api(file, uploadSection, uploadSlug);
-        quill.deleteText(range.index, 11);
-        quill.insertEmbed(range.index, 'image', result.url);
-        quill.setSelection(range.index + 1);
-        show_toast('画像を挿入しました', 'success');
-      } catch (err) {
-        quill.deleteText(range.index, 11);
-        show_toast(err.message || 'アップロードに失敗しました', 'error');
-      }
-    });
-
-    // 既存コンテンツをセット（HTMLまたはプレーンテキスト）
-    const initial = hidden.value;
-    if (initial) {
-      if (initial.includes('<') && initial.includes('>')) {
-        quill.root.innerHTML = initial;
-      } else {
-        quill.root.innerHTML = initial
-          .split(/\n{2,}/)
-          .map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>')
-          .join('');
-      }
-    }
-
-    // 変更時に hidden input を更新
-    quill.on('text-change', () => {
-      const html = quill.root.innerHTML;
-      hidden.value = (html === '<p><br></p>' || html === '<p></p>') ? '' : html;
-    });
-
-    // フォーム送信前にも同期
-    const form = textarea.closest('form');
-    if (form) {
-      form.addEventListener('submit', () => {
-        const html = quill.root.innerHTML;
-        hidden.value = (html === '<p><br></p>' || html === '<p></p>') ? '' : html;
-      });
-    }
-
-    // 操作ヒントを追加
-    const hint = document.createElement('div');
-    hint.className = 'rich-editor-hint';
-    hint.innerHTML = '<span><kbd>Enter</kbd> 段落（余白あり）</span><span><kbd>Shift</kbd>+<kbd>Enter</kbd> 改行（余白なし）</span>';
-    container.appendChild(hint);
   });
 }
