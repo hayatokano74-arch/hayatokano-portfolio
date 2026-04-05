@@ -858,12 +858,12 @@ button {
 }
 
 .hide-scrollbar.is-scrolling {
-  scrollbar-color: var(--accent) transparent;
+  scrollbar-color: rgba(128, 128, 128, 0.25) transparent;
 }
 
-/* WebKit: 常に6px確保、スクロール中だけサム表示 */
+/* WebKit: 細いスクロールバー、スクロール中だけ薄く表示 */
 .hide-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .hide-scrollbar::-webkit-scrollbar-track {
@@ -872,11 +872,11 @@ button {
 
 .hide-scrollbar::-webkit-scrollbar-thumb {
   background: transparent;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 .hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
-  background: var(--accent);
+  background: rgba(128, 128, 128, 0.2);
 }
 
 .works-row > summary::-webkit-details-marker {
