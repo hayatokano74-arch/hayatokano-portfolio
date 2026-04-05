@@ -72,20 +72,18 @@ ob_start();
   </div>
 </section>
 
-<!-- デプロイセクション -->
-<section class="dashboard-section dashboard-section--deploy">
-  <h2 class="section-heading">デプロイ</h2>
+<!-- コンテンツ反映の説明 -->
+<section class="dashboard-section">
+  <h2 class="section-heading">コンテンツの反映</h2>
   <div class="deploy-panel">
     <div class="deploy-panel__info">
-      <p class="deploy-panel__desc">本番サイト（hayatokano.com）に変更を反映します。<br>GitHub Actions ワークフローをトリガーします。</p>
-      <div class="deploy-status deploy-status--idle" id="deploy-status-main">
-        <div class="deploy-status__dot" aria-hidden="true"></div>
-        <span class="deploy-status__text">スタンバイ</span>
-      </div>
+      <p class="deploy-panel__desc">
+        <strong>コンテンツの更新（Works・目の星・News・Garden等）は保存するだけで本番サイトに即反映されます。デプロイは不要です。</strong>
+      </p>
+      <p class="deploy-panel__desc" style="color:var(--text-3);margin-top:var(--s-2);">
+        デザインやレイアウトを変更した場合のみ、ローカルから <code>./deploy.sh</code> を実行してください。
+      </p>
     </div>
-    <button class="btn btn-deploy btn-deploy--large" id="deploy-btn-main" type="button">
-      本番にデプロイ
-    </button>
   </div>
 </section>
 
