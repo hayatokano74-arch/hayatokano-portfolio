@@ -778,13 +778,18 @@ document.addEventListener('DOMContentLoaded', () => {
 function init_rich_editors() {
   if (typeof Quill === 'undefined') return;
 
-  // Quill初期化後にスタイルを直接注入（CSSの優先度問題を回避）
-  const styleEl = document.createElement('style');
-  styleEl.textContent = `
-    .ql-editor p { margin-bottom: 1.5em !important; }
-    .ql-editor p:last-child { margin-bottom: 0 !important; }
-  `;
-  document.head.appendChild(styleEl);
+  // Quill初期化後にスタイルを直接注入
+  // Quill core CSS の .ql-editor p { margin:0; padding:0 } を確実に上書きする
+  if (!document.getElementById('quill-custom-style')) {
+    const s = document.createElement('style');
+    s.id = 'quill-custom-style';
+    s.textContent = [
+      '.ql-editor p { margin: 0 0 1.2em 0 !important; padding: 0 !important; }',
+      '.ql-editor p:last-child { margin-bottom: 0 !important; }',
+      '.ql-editor { line-height: 1.8 !important; }',
+    ].join('\n');
+    document.body.appendChild(s); // bodyの末尾 = 最高優先度
+  }
 
   document.querySelectorAll('textarea[data-rich-editor]').forEach(textarea => {
     // hidden input を作成（フォーム送信用）
