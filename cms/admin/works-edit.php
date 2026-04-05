@@ -34,7 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $date    = trim($_POST['date'] ?? '');
         $year    = trim($_POST['year'] ?? '');
         $excerpt = trim($_POST['excerpt'] ?? '');
-        $pinned  = isset($_POST['pinned']) ? 1 : 0;
+        // pinnedは一覧ページで管理（編集ページでは変更しない）
+        $original_slug_for_pin = trim($_POST['_original_slug'] ?? '');
+        $_existing_for_pin = $original_slug_for_pin ? db_find_by_slug('works', $original_slug_for_pin) : null;
+        $pinned = $_existing_for_pin ? (int)$_existing_for_pin['pinned'] : 0;
         $body    = trim($_POST['body'] ?? '');
 
         $tags_raw  = trim($_POST['tags'] ?? '');
@@ -261,13 +264,6 @@ ob_start();
         <div class="form-group">
           <label class="form-label" for="year">年</label>
           <input type="text" id="year" name="year" class="form-control" value="<?= $f_year ?>" placeholder="例: 2024">
-        </div>
-        <div class="form-group form-group--center">
-          <label class="form-label">固定表示</label>
-          <label class="toggle-label">
-            <input type="checkbox" name="pinned" <?= $f_pinned ? 'checked' : '' ?>>
-            <span>トップに固定</span>
-          </label>
         </div>
       </div>
 

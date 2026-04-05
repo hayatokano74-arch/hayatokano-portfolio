@@ -84,7 +84,9 @@ ob_start();
                   data-slug="<?= htmlspecialchars($row['slug'], ENT_QUOTES) ?>"
                   onclick="event.stopPropagation()"
                   title="<?= $row['pinned'] ? '固定解除' : 'トップに固定' ?>">
-            <?= $row['pinned'] ? '📌' : '📍' ?>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <path d="M9.5 2.5L13.5 6.5L10 10L11 14L7 10L3 11L6 7L2.5 3.5L6.5 7.5"/>
+            </svg>
           </button>
           <br><small class="slug-inline" data-slug="<?= htmlspecialchars($row['slug'], ENT_QUOTES) ?>"
                      title="クリックしてスラッグを編集"
@@ -115,11 +117,18 @@ ob_start();
 
 <style>
 .pin-toggle {
-  all: unset; cursor: pointer; font-size: 12px; margin-left: 4px;
-  opacity: 0.3; transition: opacity 0.15s;
+  all: unset; cursor: pointer; margin-left: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 4px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-3); font-size: 11px;
+  transition: all 0.15s ease; vertical-align: middle;
 }
-.pin-toggle.is-pinned { opacity: 1; }
-.pin-toggle:hover { opacity: 0.8; }
+.pin-toggle:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.pin-toggle.is-pinned {
+  border-color: var(--accent); color: var(--accent); background: var(--accent-bg);
+}
+.pin-toggle svg { width: 12px; height: 12px; }
 </style>
 
 <script>
@@ -135,7 +144,6 @@ document.querySelectorAll('.pin-toggle').forEach(btn => {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       btn.classList.toggle('is-pinned', !!data.pinned);
-      btn.textContent = data.pinned ? '📌' : '📍';
       btn.title = data.pinned ? '固定解除' : 'トップに固定';
       show_toast(data.pinned ? '固定しました' : '固定解除しました', 'success');
     } catch (err) {
