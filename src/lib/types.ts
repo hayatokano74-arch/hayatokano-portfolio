@@ -15,12 +15,13 @@ export type Work = {
   year: string;
   excerpt: string;
   details: {
-    /* 展示情報（基本） */
-    exhibition_type?: string;   /* 個展 / グループ展 / 芸術祭 / アートフェア / 企画展 / 上映 等 */
-    exhibition_title?: string;  /* 展覧会名（グループ展等では作品タイトルと別） */
-    artist: string;
-    period: string;
-    venue: string;
+    /* 展示・イベント */
+    exhibition_type?: string;
+    exhibition_title?: string;
+    artist?: string;
+    artists?: string;
+    period?: string;
+    venue?: string;
     address?: string;
     access?: string;
     hours?: string;
@@ -28,32 +29,45 @@ export type Work = {
     admission?: string;
     organizer?: string;
     curator?: string;
-    artists?: string;           /* 出展作家（グループ展の場合） */
-    supported_by?: string;      /* 主催・共催・後援・協賛・助成 */
-    url?: string;               /* 展覧会ウェブサイト */
+    supported_by?: string;
+    /* クライアント・コミッション */
+    client?: string;
+    project_type?: string;
+    role?: string;
+    collaborators?: string;
+    /* 出版・寄稿 */
+    publisher?: string;
+    publication_title?: string;
+    isbn?: string;
+    pages?: string;
+    binding?: string;
+    price?: string;
+    contribution_type?: string;
     /* 作品情報 */
     medium?: string;
     dimensions?: string;
     edition?: string;
     series?: string;
-    /* 出版情報 */
-    publisher?: string;
-    pages?: string;
-    binding?: string;
-    price?: string;
+    duration?: string;
+    format?: string;
     /* クレジット */
     credit_photo?: string;
     credit_design?: string;
-    credit_text?: string;       /* テキスト・文章 */
-    credit_sound?: string;      /* 音響（映像・インスタレーション） */
-    credit_video?: string;      /* 映像編集 */
-    credit_translation?: string; /* 翻訳 */
+    credit_text?: string;
+    credit_sound?: string;
+    credit_video?: string;
+    credit_translation?: string;
     credit_cooperation?: string;
-    /* 実績 */
-    award?: string;             /* 受賞 */
-    collection?: string;        /* 所蔵・収蔵（美術館等） */
-    /* その他 */
+    /* 実績・その他 */
+    award?: string;
+    grant?: string;
+    residency?: string;
+    collection?: string;
+    url?: string;
+    related_url?: string;
+    /* 後方互換 */
     bio?: string;
+    [key: string]: string | undefined;
   };
   thumbnail?: {
     src: string;

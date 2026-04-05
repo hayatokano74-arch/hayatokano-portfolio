@@ -41,19 +41,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tags      = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
         $tags_json = json_encode($tags, JSON_UNESCAPED_UNICODE);
 
-        // details: 全フィールド
-        $all_det_keys = [
-            'exhibition_type', 'exhibition_title', 'artist', 'period',
-            'venue', 'address', 'access', 'hours', 'closed', 'admission',
-            'organizer', 'curator', 'artists', 'supported_by', 'url',
-            'medium', 'dimensions', 'edition', 'series',
-            'publisher', 'pages', 'binding', 'price',
+        // details: 全カテゴリのフィールドを収集
+        $post_det_keys = [
+            // 展示・イベント
+            'exhibition_type', 'exhibition_title', 'artist', 'artists',
+            'period', 'venue', 'address', 'access', 'hours', 'closed',
+            'admission', 'organizer', 'curator', 'supported_by',
+            // クライアント・コミッション
+            'client', 'project_type', 'role', 'collaborators',
+            // 出版・寄稿
+            'publisher', 'publication_title', 'isbn', 'pages', 'binding', 'price', 'contribution_type',
+            // 作品情報
+            'medium', 'dimensions', 'edition', 'series', 'duration', 'format',
+            // クレジット
             'credit_photo', 'credit_design', 'credit_text',
             'credit_sound', 'credit_video', 'credit_translation', 'credit_cooperation',
-            'award', 'collection', 'bio',
+            // 実績・その他
+            'award', 'grant', 'residency', 'collection', 'url', 'related_url',
         ];
         $details = [];
-        foreach ($all_det_keys as $k) {
+        foreach ($post_det_keys as $k) {
             $v = trim($_POST["det_$k"] ?? '');
             if ($v !== '') $details[$k] = $v;
         }
@@ -149,49 +156,76 @@ $data    = json_decode($row['data'] ?? '{}', true) ?? [];
 $details = $data['details'] ?? [];
 $media   = $data['media']   ?? [];
 
-// 全detailsフィールドをエスケープ
-$det_fields = [
-    // 展示情報
-    ['exhibition_type',   '展示形式',     '例: Solo Exhibition, Group Exhibition'],
-    ['exhibition_title',  '展覧会名',     '例: Reborn-Art Festival 2019'],
-    ['artist',            'アーティスト', ''],
-    ['period',            '会期',         '例: 2023.04.08 - 2023.06.04'],
-    ['venue',             '会場名',       '例: Glvanize gallery'],
-    ['address',           '住所',         ''],
-    ['access',            'アクセス',     ''],
-    ['hours',             '開場時間',     '例: 12:00 - 18:00'],
-    ['closed',            '休廊日',       '例: 月・火・水'],
-    ['admission',         '入場料',       '例: 無料'],
-    ['organizer',         '主催',         ''],
-    ['curator',           'キュレーター', ''],
-    ['artists',           '出展作家',     'グループ展の場合'],
-    ['supported_by',      '後援・協賛',   ''],
-    ['url',               'ウェブサイト', 'https://...'],
-    // 作品情報
-    ['medium',            '素材・技法',   '例: Inkjet Print, Lenticular Lens'],
-    ['dimensions',        'サイズ',       '例: 1200 x 900 mm'],
-    ['edition',           'エディション', '例: 1/5'],
-    ['series',            'シリーズ名',   ''],
-    // 出版情報
-    ['publisher',         '出版社',       ''],
-    ['pages',             'ページ数',     ''],
-    ['binding',           '製本',         '例: ソフトカバー'],
-    ['price',             '価格',         ''],
-    // クレジット
-    ['credit_photo',      'C: 写真',      ''],
-    ['credit_design',     'C: デザイン',  ''],
-    ['credit_text',       'C: テキスト',  ''],
-    ['credit_sound',      'C: 音響',      ''],
-    ['credit_video',      'C: 映像',      ''],
-    ['credit_translation','C: 翻訳',      ''],
-    ['credit_cooperation','C: 協力',      ''],
-    // 実績
-    ['award',             '受賞',         ''],
-    ['collection',        '所蔵',         '例: ○○美術館'],
-    ['bio',               '略歴',         ''],
+// 詳細情報をカテゴリ別に整理
+$det_categories = [
+    '展示・イベント' => [
+        ['exhibition_type',   '形式',         '例: Solo Exhibition / Group Exhibition / Art Festival'],
+        ['exhibition_title',  '展覧会名',     '展覧会・芸術祭・フェア名（作品タイトルと異なる場合）'],
+        ['artist',            'アーティスト', ''],
+        ['artists',           '出展作家',     'グループ展の場合（カンマ区切り）'],
+        ['period',            '会期',         '例: 2023.04.08 - 2023.06.04'],
+        ['venue',             '会場',         '例: Glvanize gallery'],
+        ['address',           '住所',         ''],
+        ['access',            'アクセス',     '例: JR石巻駅より徒歩10分'],
+        ['hours',             '開場時間',     '例: 12:00 - 18:00'],
+        ['closed',            '休廊日',       '例: 月・火・水'],
+        ['admission',         '入場料',       '例: 無料'],
+        ['organizer',         '主催',         ''],
+        ['curator',           'キュレーター', ''],
+        ['supported_by',      '後援・協賛',   ''],
+    ],
+    'クライアント・コミッション' => [
+        ['client',            'クライアント', '企業名・団体名'],
+        ['project_type',      '案件種別',     '例: 撮影 / 映像制作 / デザイン / ディレクション'],
+        ['role',              '担当',         '例: 撮影 / ディレクション / 企画'],
+        ['collaborators',     '協働者',       ''],
+    ],
+    '出版・寄稿' => [
+        ['publisher',         '出版社',       ''],
+        ['publication_title', '掲載誌名',     '寄稿先の雑誌名・ウェブメディア名'],
+        ['isbn',              'ISBN',         ''],
+        ['pages',             'ページ数',     ''],
+        ['binding',           '製本',         '例: ソフトカバー / ハードカバー'],
+        ['price',             '価格',         '例: ¥3,000+tax'],
+        ['contribution_type', '寄稿種別',     '例: 写真 / テキスト / インタビュー / 書評'],
+    ],
+    '作品情報' => [
+        ['medium',            '素材・技法',   '例: Inkjet Print, Lenticular Lens'],
+        ['dimensions',        'サイズ',       '例: 1200 x 900 mm'],
+        ['edition',           'エディション', '例: 1/5 + AP'],
+        ['series',            'シリーズ名',   ''],
+        ['duration',          '上映時間',     '例: 12分30秒（映像作品の場合）'],
+        ['format',            'フォーマット', '例: 16mm / 4K / シングルチャンネル'],
+    ],
+    'クレジット' => [
+        ['credit_photo',      '写真',         ''],
+        ['credit_design',     'デザイン',     ''],
+        ['credit_text',       'テキスト',     ''],
+        ['credit_sound',      '音響',         ''],
+        ['credit_video',      '映像',         ''],
+        ['credit_translation','翻訳',         ''],
+        ['credit_cooperation','協力',         ''],
+    ],
+    '実績・その他' => [
+        ['award',             '受賞',         ''],
+        ['grant',             '助成',         '例: ○○財団助成金'],
+        ['residency',         'レジデンス',   '例: ○○アーティスト・イン・レジデンス（2024）'],
+        ['collection',        '所蔵',         '例: ○○美術館'],
+        ['url',               'ウェブサイト', 'https://...'],
+        ['related_url',       '関連リンク',   '記事・レビュー等のURL'],
+    ],
 ];
+
+// 全フィールドのキーを収集
+$all_det_keys = [];
+foreach ($det_categories as $fields) {
+    foreach ($fields as [$key]) {
+        $all_det_keys[] = $key;
+    }
+}
+
 $f_det = [];
-foreach ($det_fields as [$key, $label, $ph]) {
+foreach ($all_det_keys as $key) {
     $f_det[$key] = htmlspecialchars($details[$key] ?? '', ENT_QUOTES);
 }
 
@@ -262,25 +296,43 @@ ob_start();
       </div>
     </div>
 
-    <!-- ── 展示情報 ── -->
+    <!-- ── 詳細情報（カテゴリ別折りたたみ） ── -->
     <div class="form-section form-section--full">
-      <h3 class="form-section__title">展示情報</h3>
-      <p class="form-hint">値が空の項目は表示されません。必要な項目だけ入力してください。</p>
-      <?php
-        // 2列ずつ表示
-        $chunks = array_chunk($det_fields, 2);
-        foreach ($chunks as $pair):
+      <h3 class="form-section__title">詳細情報</h3>
+      <p class="form-hint">必要なカテゴリを開いて入力してください。空の項目は表示されません。</p>
+
+      <?php foreach ($det_categories as $cat_label => $fields):
+        // このカテゴリに値が入っているか（入っていれば開いた状態にする）
+        $has_value = false;
+        foreach ($fields as [$key]) {
+            if (!empty($f_det[$key])) { $has_value = true; break; }
+        }
       ?>
-      <div class="form-row form-row--2col">
-        <?php foreach ($pair as [$key, $label, $ph]): ?>
-        <div class="form-group">
-          <label class="form-label" for="det_<?= $key ?>"><?= $label ?></label>
-          <input type="text" id="det_<?= $key ?>" name="det_<?= $key ?>"
-                 class="form-control" value="<?= $f_det[$key] ?>"
-                 placeholder="<?= htmlspecialchars($ph, ENT_QUOTES) ?>">
+      <details class="det-category" <?= $has_value ? 'open' : '' ?>>
+        <summary class="det-category__summary">
+          <span class="det-category__label"><?= $cat_label ?></span>
+          <?php if ($has_value): ?>
+          <span class="det-category__badge">入力済み</span>
+          <?php endif; ?>
+        </summary>
+        <div class="det-category__body">
+          <?php
+            $chunks = array_chunk($fields, 2);
+            foreach ($chunks as $pair):
+          ?>
+          <div class="form-row form-row--2col">
+            <?php foreach ($pair as [$key, $label, $ph]): ?>
+            <div class="form-group">
+              <label class="form-label" for="det_<?= $key ?>"><?= $label ?></label>
+              <input type="text" id="det_<?= $key ?>" name="det_<?= $key ?>"
+                     class="form-control" value="<?= $f_det[$key] ?>"
+                     placeholder="<?= htmlspecialchars($ph, ENT_QUOTES) ?>">
+            </div>
+            <?php endforeach; ?>
+          </div>
+          <?php endforeach; ?>
         </div>
-        <?php endforeach; ?>
-      </div>
+      </details>
       <?php endforeach; ?>
     </div>
 
