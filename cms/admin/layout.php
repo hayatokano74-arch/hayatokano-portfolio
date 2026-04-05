@@ -62,7 +62,7 @@ $js_ver  = @filemtime(CMS_ROOT . '/assets/admin.js')  ?: '1';
   <title><?= htmlspecialchars($page_title, ENT_QUOTES) ?> — Hayato Kano CMS</title>
   <link rel="stylesheet" href="<?= htmlspecialchars($assets_url, ENT_QUOTES) ?>/admin.css?v=<?= $css_ver ?>">
   <!-- Quill リッチエディタ -->
-  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
   <!-- ファビコン（テキスト SVG） -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%235b8ef0'/><text x='16' y='22' text-anchor='middle' font-family='system-ui' font-size='18' font-weight='700' fill='white'>H</text></svg>">
 </head>
@@ -163,7 +163,7 @@ $js_ver  = @filemtime(CMS_ROOT . '/assets/admin.js')  ?: '1';
 <!-- トースト用コンテナ -->
 <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.js"></script>
 <script src="<?= htmlspecialchars($assets_url, ENT_QUOTES) ?>/admin.js?v=<?= $js_ver ?>"></script>
 </body>
 </html>

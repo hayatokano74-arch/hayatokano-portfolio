@@ -778,18 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function init_rich_editors() {
   if (typeof Quill === 'undefined') return;
 
-  // Shift+Enter用: <br>を正しく挿入するためのカスタムBlot
-  if (!Quill.__breakBlotRegistered) {
-    const BlockEmbed = Quill.import('blots/break');
-    class LineBreak extends BlockEmbed {
-      length() { return 1; }
-      value() { return '\n'; }
-    }
-    LineBreak.blotName = 'break';
-    LineBreak.tagName = 'BR';
-    Quill.register(LineBreak, true);
-    Quill.__breakBlotRegistered = true;
-  }
+  // Quill v1: Shift+Enter = <br>（改行）は標準で対応済み
 
   document.querySelectorAll('textarea[data-rich-editor]').forEach(textarea => {
     // hidden input を作成（フォーム送信用）
@@ -836,21 +825,6 @@ function init_rich_editors() {
           handlers: {
             image: function() {
               fileInput.click();
-            },
-          },
-        },
-        keyboard: {
-          bindings: {
-            // Shift+Enter → 改行（同じ段落内で改行、新しい段落を作らない）
-            linebreak: {
-              key: 13,
-              shiftKey: true,
-              handler: function(range) {
-                this.quill.insertEmbed(range.index, 'break', true, 'user');
-                this.quill.insertText(range.index + 1, '\n', 'user');
-                this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
-                return false;
-              },
             },
           },
         },
