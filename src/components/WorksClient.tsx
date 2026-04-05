@@ -25,7 +25,7 @@ export function WorksClient<T extends WorkLike>({
   works,
   view,
   basePath = "/works",
-  detailQuery = "?mode=gallery&img=1",
+  detailQuery = "",
   renderListDetail,
   excerptMaxLength = DEFAULT_EXCERPT_MAX_LENGTH,
   gridSettings,
