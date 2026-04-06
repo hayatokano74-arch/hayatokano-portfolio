@@ -54,7 +54,7 @@ export function MobileMenuOverlay({ isOpen, active }: MobileMenuOverlayProps) {
             </Link>
           </React.Fragment>
         ))}
-        <div style={{ marginTop: "var(--space-7)" }}>
+        <div style={{ marginTop: "auto", paddingTop: "var(--space-4)" }}>
           <ThemeDot />
         </div>
       </nav>

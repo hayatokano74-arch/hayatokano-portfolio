@@ -1131,8 +1131,9 @@ button {
 .mobile-overlay-nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
   height: 100%;
+  justify-content: center;
 }
 
 /* モバイルメニュー: 項目間の区切り線（トップページと統一） */
@@ -1170,6 +1171,9 @@ button {
 .mobile-overlay-nav > *:nth-child(10) { animation-delay: 0.40s; }
 .mobile-overlay-nav > *:nth-child(11) { animation-delay: 0.44s; }
 .mobile-overlay-nav > *:nth-child(12) { animation-delay: 0.48s; }
+.mobile-overlay-nav > *:nth-child(13) { animation-delay: 0.52s; }
+.mobile-overlay-nav > *:nth-child(14) { animation-delay: 0.56s; }
+.mobile-overlay-nav > *:nth-child(15) { animation-delay: 0.60s; }
 
 @media (prefers-reduced-motion: reduce) {
   .mobile-overlay-nav > * {
