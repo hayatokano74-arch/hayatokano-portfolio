@@ -1,12 +1,12 @@
 /* ナビゲーション項目（Header / TopHero で共有） */
-export type Section = "Works" | "Text" | "目の星" | "Time Line" | "Garden" | "News" | "About" | "Contact";
+export type Section = "Works" | "Text" | "目の星" | "Time Line" | "Garden" | "News" | "About" | "Photo Roll" | "Contact";
 
 export const NAV_ITEMS: { num: string; label: string; href: string; section: Section }[] = [
   { num: "01", label: "Works", href: "/works", section: "Works" },
-  // Text, Time Line はナビから一時非表示（ページは残存）
   { num: "02", label: "目の星", href: "/me-no-hoshi", section: "目の星" },
   { num: "03", label: "Garden", href: "/garden", section: "Garden" },
   { num: "04", label: "News", href: "/news", section: "News" },
   { num: "05", label: "About", href: "/about", section: "About" },
-  { num: "06", label: "Contact", href: "/contact", section: "Contact" },
+  { num: "06", label: "Photo Roll", href: "/photo-roll", section: "Photo Roll" },
+  { num: "07", label: "Contact", href: "/contact", section: "Contact" },
 ];

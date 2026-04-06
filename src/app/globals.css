@@ -3808,6 +3808,51 @@ img[loading="lazy"] {
   white-space: nowrap;
 }
 
+/* ═══ Photo Roll ═══ */
+
+.photo-roll-layout {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
+}
+
+.photo-roll-stream {
+  grid-column: 5 / span 4;
+  min-width: 0;
+}
+
+.photo-roll-entry {
+  margin-bottom: var(--space-11);
+}
+
+.photo-roll-entry:last-child {
+  margin-bottom: 0;
+}
+
+.photo-roll-date {
+  display: block;
+  font-size: var(--font-meta);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: var(--space-3);
+}
+
+.photo-roll-image-wrap {
+  width: 100%;
+}
+
+.photo-roll-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .photo-roll-stream {
+    grid-column: 1 / -1;
+  }
+}
+
 /* ═══ フィルターシステム ═══ */
 
 /* カテゴリ行: フィルターモード時 — 全機能を1本のバーに統合（col 1-12） */

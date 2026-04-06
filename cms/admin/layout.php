@@ -38,6 +38,7 @@ $nav_items = [
     ['garden',      'Garden',          cms_url('/admin/garden.php'),      'G'],
     ['text',        'Text',            cms_url('/admin/text.php'),        'Tx'],
     ['about',       'About',           cms_url('/admin/about.php'),       'A'],
+    ['photo-roll',  'Photo Roll',      cms_url('/admin/photo-roll.php'),  'P'],
     ['media',       'メディア',         cms_url('/admin/media.php'),       'F'],
     ['settings',    '設定',             cms_url('/admin/site-settings.php'), '⚙'],
 ];

@@ -190,7 +190,24 @@ function get_migrations(): array {
             );
         ',
 
-        11 => /** 全コンテンツに published カラムを追加 */ '
+        11 => /** Photo Roll */ '
+            CREATE TABLE IF NOT EXISTS photo_roll (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug       TEXT NOT NULL UNIQUE,
+                title      TEXT NOT NULL DEFAULT "",
+                date       TEXT NOT NULL DEFAULT "",
+                time       TEXT NOT NULL DEFAULT "",
+                src        TEXT NOT NULL DEFAULT "",
+                width      INTEGER NOT NULL DEFAULT 0,
+                height     INTEGER NOT NULL DEFAULT 0,
+                published  INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL DEFAULT "",
+                updated_at TEXT NOT NULL DEFAULT ""
+            );
+            CREATE INDEX IF NOT EXISTS idx_pr_date ON photo_roll(date DESC, time DESC);
+        ',
+
+        12 => /** 全コンテンツに published カラムを追加 */ '
             ALTER TABLE works ADD COLUMN published INTEGER NOT NULL DEFAULT 1;
             ALTER TABLE me_no_hoshi ADD COLUMN published INTEGER NOT NULL DEFAULT 1;
             ALTER TABLE news ADD COLUMN published INTEGER NOT NULL DEFAULT 1;
@@ -205,7 +222,7 @@ function get_migrations(): array {
 /** 許可テーブル名一覧 */
 const DB_ALLOWED_TABLES = [
     'works', 'me_no_hoshi', 'news', 'timeline',
-    'texts', 'about', 'garden', 'media', 'login_attempts', 'settings', 'schema_version',
+    'texts', 'about', 'garden', 'media', 'photo_roll', 'login_attempts', 'settings', 'schema_version',
 ];
 
 /**
