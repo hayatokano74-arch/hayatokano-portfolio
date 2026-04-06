@@ -48,13 +48,27 @@ function handle_post(): never {
 
     // 画像アップロード
     if (!empty($_FILES['file'])) {
+        // Exifから撮影日時を取得（アップロード前のtmpファイルから読む）
+        $taken = null;
+        $exif = @exif_read_data($_FILES['file']['tmp_name']);
+        if ($exif) {
+            $taken = $exif['DateTimeOriginal'] ?? $exif['DateTime'] ?? null;
+        }
+
         $result = upload_image($_FILES['file'], 'photo-roll', '');
 
-        $now = new DateTime();
-        $date = $now->format('Y-m-d');
-        $time = $now->format('H:i:s');
-        $title = $now->format('Y.m.d H:i');
-        $slug = $now->format('Ymd-His') . '-' . bin2hex(random_bytes(2));
+        if ($taken) {
+            // Exif日時: "2026:04:05 14:30:00" → DateTime
+            $dt = DateTime::createFromFormat('Y:m:d H:i:s', $taken);
+            if (!$dt) $dt = new DateTime(); // パース失敗時は現在時刻
+        } else {
+            $dt = new DateTime();
+        }
+
+        $date = $dt->format('Y-m-d');
+        $time = $dt->format('H:i:s');
+        $title = $dt->format('Y.m.d H:i');
+        $slug = $dt->format('Ymd-His') . '-' . bin2hex(random_bytes(2));
 
         $stmt = $db->prepare('INSERT INTO photo_roll (slug, title, date, time, src, width, height) VALUES (?,?,?,?,?,?,?)');
         $stmt->execute([$slug, $title, $date, $time, $result['url'], $result['width'], $result['height']]);
