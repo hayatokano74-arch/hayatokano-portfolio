@@ -58,17 +58,17 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
         throw new RuntimeException('ファイルの保存に失敗しました');
     }
 
-    // 2. 配信用WebP（長辺2560px、品質80）— Web表示に最適なサイズ
+    // 2. 配信用WebP（長辺2560px、品質80、Exif保持）
     if ($mime !== 'image/webp') {
         $webp_path = $dest_path . '.webp';
         $resize = max($width, $height) > 2560 ? '-resize 2560 0' : '';
-        exec(sprintf('cwebp -q 80 -quiet %s %s -o %s 2>/dev/null',
+        exec(sprintf('cwebp -q 80 -quiet -metadata exif %s %s -o %s 2>/dev/null',
             $resize, escapeshellarg($dest_path), escapeshellarg($webp_path)));
     }
 
-    // 3. サムネイル（長辺400px、品質60）— 管理画面グリッド表示用
+    // 3. サムネイル（長辺400px、品質60、Exif保持）
     $thumb_path = $dest_dir . '/thumb_' . $filename . '.webp';
-    exec(sprintf('cwebp -q 60 -quiet -resize 400 0 %s -o %s 2>/dev/null',
+    exec(sprintf('cwebp -q 60 -quiet -metadata exif -resize 400 0 %s -o %s 2>/dev/null',
         escapeshellarg($dest_path), escapeshellarg($thumb_path)));
 
     // DB にメディアレコードを保存

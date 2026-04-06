@@ -3845,6 +3845,7 @@ img[loading="lazy"] {
   width: 100%;
   height: auto;
   display: block;
+  image-orientation: from-image;
 }
 
 @media (max-width: 900px) {
