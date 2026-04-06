@@ -4,6 +4,8 @@ export const dynamic = 'force-static'
 
 import type { MetadataRoute } from "next";
 import { getAllNodes } from "@/lib/garden/reader";
+import { getWorks } from "@/lib/works";
+import { getMeNoHoshiPosts } from "@/lib/meNoHoshi";
 
 const BASE_URL = "https://hayatokano.com";
 
@@ -20,6 +22,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/garden`, changeFrequency: "daily", priority: 0.8 },
   ];
 
+  /* Works 個別ページ */
+  let worksPages: MetadataRoute.Sitemap = [];
+  try {
+    const works = await getWorks();
+    worksPages = works
+      .filter((w) => w.slug && w.slug !== "_placeholder")
+      .map((w) => ({
+        url: `${BASE_URL}/works/${w.slug}`,
+        changeFrequency: "monthly" as const,
+        priority: 0.8,
+      }));
+  } catch {
+    // WP接続不可の場合は空で続行
+  }
+
+  /* 目の星 個別ページ */
+  let meNoHoshiPages: MetadataRoute.Sitemap = [];
+  try {
+    const posts = await getMeNoHoshiPosts();
+    meNoHoshiPages = posts
+      .filter((p) => p.slug && p.slug !== "_placeholder")
+      .map((p) => ({
+        url: `${BASE_URL}/me-no-hoshi/${p.slug}`,
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      }));
+  } catch {
+    // WP接続不可の場合は空で続行
+  }
+
   /* Garden記事ページ */
   let gardenPages: MetadataRoute.Sitemap = [];
   try {
@@ -34,5 +66,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // ビルド時にDropbox接続不可の場合は空で続行
   }
 
-  return [...staticPages, ...gardenPages];
+  return [...staticPages, ...worksPages, ...meNoHoshiPages, ...gardenPages];
 }
