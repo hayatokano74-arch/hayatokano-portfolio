@@ -53,22 +53,35 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
     $dest_path   = $dest_dir . '/' . $filename;
     $public_path = '/' . $section . ($slug ? '/' . $slug : '') . '/' . $filename;
 
-    // 1. 元画像をそのまま移動（GDを通さない → メモリ問題なし）
+    // 1. 元画像を保存
     if (!move_uploaded_file($file['tmp_name'], $dest_path)) {
         throw new RuntimeException('ファイルの保存に失敗しました');
     }
 
-    // 2. 配信用WebP（長辺2560px、品質80、Exif保持）
+    // 1.5. Exif Orientationに基づいて自動回転（ImageMagick）
+    // 縦写真が横になる問題を根本解決
+    if ($mime === 'image/jpeg') {
+        exec(sprintf('convert %s -auto-orient %s 2>/dev/null',
+            escapeshellarg($dest_path), escapeshellarg($dest_path)));
+        // 回転後のサイズを再取得
+        $rotated = @getimagesize($dest_path);
+        if ($rotated) {
+            $width  = $rotated[0];
+            $height = $rotated[1];
+        }
+    }
+
+    // 2. 配信用WebP（長辺2560px、品質80）
     if ($mime !== 'image/webp') {
         $webp_path = $dest_path . '.webp';
         $resize = max($width, $height) > 2560 ? '-resize 2560 0' : '';
-        exec(sprintf('cwebp -q 80 -quiet -metadata exif %s %s -o %s 2>/dev/null',
+        exec(sprintf('cwebp -q 80 -quiet %s %s -o %s 2>/dev/null',
             $resize, escapeshellarg($dest_path), escapeshellarg($webp_path)));
     }
 
     // 3. サムネイル（長辺400px、品質60、Exif保持）
     $thumb_path = $dest_dir . '/thumb_' . $filename . '.webp';
-    exec(sprintf('cwebp -q 60 -quiet -metadata exif -resize 400 0 %s -o %s 2>/dev/null',
+    exec(sprintf('cwebp -q 60 -quiet -resize 400 0 %s -o %s 2>/dev/null',
         escapeshellarg($dest_path), escapeshellarg($thumb_path)));
 
     // DB にメディアレコードを保存
