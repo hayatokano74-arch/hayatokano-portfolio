@@ -5,8 +5,8 @@ export const NAV_ITEMS: { num: string; label: string; href: string; section: Sec
   { num: "01", label: "Works", href: "/works", section: "Works" },
   { num: "02", label: "目の星", href: "/me-no-hoshi", section: "目の星" },
   { num: "03", label: "Garden", href: "/garden", section: "Garden" },
-  { num: "04", label: "News", href: "/news", section: "News" },
-  { num: "05", label: "About", href: "/about", section: "About" },
-  { num: "06", label: "Photo Roll", href: "/photo-roll", section: "Photo Roll" },
+  { num: "04", label: "Photo Roll", href: "/photo-roll", section: "Photo Roll" },
+  { num: "05", label: "News", href: "/news", section: "News" },
+  { num: "06", label: "About", href: "/about", section: "About" },
   { num: "07", label: "Contact", href: "/contact", section: "Contact" },
 ];
