@@ -559,8 +559,18 @@ button {
   transition: color var(--duration-fast) ease;
 }
 
-.action-link:hover,
 .action-link:focus-visible {
+  color: var(--fg);
+}
+
+/* マウスのみホバー色変更（タッチ端末では貼り付かない） */
+@media (hover: hover) and (pointer: fine) {
+  .action-link:hover {
+    color: var(--fg);
+  }
+}
+
+.action-link:active {
   color: var(--fg);
 }
 
@@ -568,8 +578,17 @@ button {
   color: var(--muted) !important;
 }
 
-.action-link-muted:hover,
 .action-link-muted:focus-visible {
+  color: var(--fg) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action-link-muted:hover {
+    color: var(--fg) !important;
+  }
+}
+
+.action-link-muted:active {
   color: var(--fg) !important;
 }
 
@@ -1703,12 +1722,25 @@ button {
   list-style: none;
   padding: var(--space-1) 0;
   transition: background var(--duration-normal) ease, color var(--duration-normal) ease;
+  /* タッチ最適化: デフォルトのタップハイライトを除去・300ms遅延を除去 */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-/* 閉じた行: ホバーで背景反転 */
-.works-row:not([open]) > .works-list-summary:hover {
-  background: var(--fg);
-  color: var(--bg);
+/* 閉じた行: マウスのみホバーで背景反転（タッチ端末では貼り付かない） */
+@media (hover: hover) and (pointer: fine) {
+  .works-row:not([open]) > .works-list-summary:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .works-row:not([open]) > .works-list-summary:hover .works-list-summary-tags {
+    color: inherit;
+  }
+}
+
+/* タッチ端末: タップ瞬間の視覚フィードバック */
+.works-row:not([open]) > .works-list-summary:active {
+  background: color-mix(in srgb, var(--fg) 15%, transparent);
 }
 
 /* 開いた行: summary は反転を維持 */
@@ -1718,7 +1750,6 @@ button {
 }
 
 /* 反転時のタグ色を継承 */
-.works-row:not([open]) > .works-list-summary:hover .works-list-summary-tags,
 .works-row[open] > .works-list-summary .works-list-summary-tags {
   color: inherit;
 }
@@ -1937,6 +1968,29 @@ button {
   cursor: pointer;
   list-style: none;
   padding: var(--space-1) 0;
+  transition: background var(--duration-normal) ease, color var(--duration-normal) ease;
+  /* タッチ最適化 */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* 閉じた行: マウスのみホバーで背景反転 */
+@media (hover: hover) and (pointer: fine) {
+  .news-accord-item:not([open]) > .news-accord-summary:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+}
+
+/* タッチ端末: タップ瞬間の視覚フィードバック */
+.news-accord-item:not([open]) > .news-accord-summary:active {
+  background: color-mix(in srgb, var(--fg) 15%, transparent);
+}
+
+/* 開いた行: summary は反転を維持 */
+.news-accord-item[open] > .news-accord-summary {
+  background: var(--fg);
+  color: var(--bg);
 }
 
 .news-accord-summary::-webkit-details-marker {
