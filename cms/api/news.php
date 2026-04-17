@@ -12,6 +12,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -93,6 +94,7 @@ function handle_post(): never {
             $slug,
         ]);
         $row = db_find_by_slug('news', $slug);
+        revalidate_paths(['/news']);
         json_ok(decode_json_fields($row));
     } else {
         // INSERT
@@ -109,6 +111,7 @@ function handle_post(): never {
         ]);
         $id  = (int)$db->lastInsertId();
         $row = db_find_by_id('news', $id);
+        revalidate_paths(['/news']);
         json_ok(decode_json_fields($row), 201);
     }
 }

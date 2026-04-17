@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { MeNoHoshiPageClient } from "@/components/MeNoHoshiPageClient";
 import { getMeNoHoshiPosts } from "@/lib/meNoHoshi";
+import { getMeNoHoshiGridSettings } from "@/lib/me-no-hoshi/api";
+
+export const revalidate = 3600;
 
 const BASE_URL = "https://hayatokano.com";
 
@@ -11,7 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
     const latest = posts[0];
     const image = latest?.media[0]?.src;
     const imageUrl = image?.startsWith("http") ? image : image ? `${BASE_URL}${image}` : undefined;
-
     return {
       title: "目の星",
       openGraph: {
@@ -24,10 +26,14 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function MeNoHoshiPage() {
+export default async function MeNoHoshiPage() {
+  const [posts, gridSettings] = await Promise.all([
+    getMeNoHoshiPosts(),
+    getMeNoHoshiGridSettings(),
+  ]);
   return (
     <CanvasShell>
-      <MeNoHoshiPageClient />
+      <MeNoHoshiPageClient posts={posts} gridSettings={gridSettings} />
     </CanvasShell>
   );
 }
