@@ -1,31 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { fetchPhotoRoll, type PhotoRollItem } from "@/lib/cms/photo-roll-client";
+import Image from "next/image";
+import type { PhotoRollItem } from "@/lib/photo-roll";
 import { Header } from "./Header";
 
-export function PhotoRollPageClient() {
-  const [photos, setPhotos] = useState<PhotoRollItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchPhotoRoll()
-      .then(setPhotos)
-      .catch(() => setPhotos([]))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <Header
-        active="Photo Roll"
-        title="Photo Roll"
-        showTitleRow={false}
-        showCategoryRow={false}
-      />
-    );
-  }
-
+export function PhotoRollPageClient({ photos }: { photos: PhotoRollItem[] }) {
   return (
     <>
       <Header
@@ -40,12 +19,11 @@ export function PhotoRollPageClient() {
             <article key={photo.slug} className="photo-roll-entry">
               <time className="photo-roll-date">{photo.date} {photo.time?.slice(0, 5)}</time>
               <div className="photo-roll-image-wrap">
-                <img
+                <Image
                   src={photo.src}
                   alt={photo.title}
-                  width={photo.width || undefined}
-                  height={photo.height || undefined}
-                  loading="lazy"
+                  width={photo.width || 800}
+                  height={photo.height || 600}
                   className="photo-roll-image"
                 />
               </div>
