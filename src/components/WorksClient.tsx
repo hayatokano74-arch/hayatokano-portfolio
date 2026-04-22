@@ -338,7 +338,9 @@ function WorksList<T extends WorkLike>({
               {/* 本文(ディテール+抜粋+View All): モバイルで order: 3 */}
               <div className="works-list-body">
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
-                <RichBody html={truncateHtml(w.excerpt, excerptMaxLength)} className="works-list-excerpt" />
+                {/* リスト表示の抜粋は plain text で表示（<p>タグの行間問題を根本解決）
+                    excerpt が HTML の場合も stripHtml でタグを除去してから描画する */}
+                <RichBody html={truncateText(w.excerpt, excerptMaxLength)} className="works-list-excerpt" />
                 <div className="works-list-view">
                   <Link className="action-link" href={detailHref(w.slug)}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>

@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $year     = trim($_POST['year'] ?? '');
         $bio      = trim($_POST['bio'] ?? '');
         $body     = trim($_POST['body'] ?? '');
+        $excerpt  = trim($_POST['excerpt'] ?? '');
 
         $tags_raw  = trim($_POST['tags'] ?? '');
         $tags      = array_values(array_filter(array_map('trim', explode(',', $tags_raw))));
@@ -161,11 +162,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($errors)) {
             $existing = db_find_by_slug('me_no_hoshi', $slug);
             if ($existing) {
-                $stmt = $db->prepare("UPDATE me_no_hoshi SET title=?, date=?, year=?, tags=?, body=?, data=?, updated_at=datetime('now') WHERE slug=?");
-                $stmt->execute([$title, $date, $year, $tags_json, $body, $data_json, $slug]);
+                $stmt = $db->prepare("UPDATE me_no_hoshi SET title=?, date=?, year=?, tags=?, excerpt=?, body=?, data=?, updated_at=datetime('now') WHERE slug=?");
+                $stmt->execute([$title, $date, $year, $tags_json, $excerpt, $body, $data_json, $slug]);
             } else {
-                $stmt = $db->prepare("INSERT INTO me_no_hoshi (slug, title, date, year, tags, body, data) VALUES (?,?,?,?,?,?,?)");
-                $stmt->execute([$slug, $title, $date, $year, $tags_json, $body, $data_json]);
+                $stmt = $db->prepare("INSERT INTO me_no_hoshi (slug, title, date, year, tags, excerpt, body, data) VALUES (?,?,?,?,?,?,?,?)");
+                $stmt->execute([$slug, $title, $date, $year, $tags_json, $excerpt, $body, $data_json]);
             }
             header('Location: ' . cms_url('/admin/me-no-hoshi.php'));
             exit;
@@ -200,6 +201,7 @@ $f_title    = htmlspecialchars($row['title'] ?? '', ENT_QUOTES);
 $f_date     = htmlspecialchars($row['date'] ?? '', ENT_QUOTES);
 $f_year     = htmlspecialchars($row['year'] ?? '', ENT_QUOTES);
 $f_body     = htmlspecialchars($row['body'] ?? '', ENT_QUOTES);
+$f_excerpt  = htmlspecialchars($row['excerpt'] ?? '', ENT_QUOTES);
 
 $tags_decoded = json_decode($row['tags'] ?? '[]', true);
 $tags_arr     = is_array($tags_decoded) ? $tags_decoded : [];
@@ -260,6 +262,13 @@ ob_start();
       <div class="form-group">
         <label class="form-label" for="subtitle">サブタイトル</label>
         <input type="text" id="subtitle" name="subtitle" class="form-control" value="<?= $f_sub ?>" placeholder="副題・英題など">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="excerpt">抜粋（リスト表示用）</label>
+        <textarea id="excerpt" name="excerpt" class="form-control" rows="3"
+                  placeholder="一覧ページに表示する短い紹介文。空欄の場合はステートメントの冒頭が自動表示されます。"><?= $f_excerpt ?></textarea>
+        <p class="form-hint">HTMLタグ不要。プレーンテキストで入力してください。</p>
       </div>
 
       <div class="form-row form-row--2col">
