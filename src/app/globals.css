@@ -1863,7 +1863,16 @@ button {
 .works-list-excerpt {
   font-size: var(--font-body);
   line-height: var(--lh-relaxed);
-  white-space: pre-wrap;
+  /* pre-wrap は HTML抜粋には不要（<p>タグ間の改行が可視スペースになるため削除） */
+}
+
+/* リスト抜粋内の段落余白: 詳細ページ(2.4em)より狭く抑える */
+.works-list-excerpt p {
+  margin: 0 0 0.6em;
+}
+
+.works-list-excerpt p:last-child {
+  margin-bottom: 0;
 }
 
 .works-list-view {
