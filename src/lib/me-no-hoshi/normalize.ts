@@ -10,6 +10,11 @@ import type {
 } from "./types";
 import { fixBrokenUnicodeUrl, ensureHtml, normalizeTag } from "./utils";
 
+/** HTMLタグを除去してプレーンテキストに変換する */
+function stripTags(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/\r\n/g, "\n").trim();
+}
+
 /** キービジュアル配列の正規化 */
 export function normalizeKeyVisualList(items: WpMeNoHoshiResponse["keyVisuals"], slug: string) {
   return (items ?? [])
@@ -155,8 +160,10 @@ export function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     subtitle,
     tags,
     year: (post.year ?? "2025").trim(),
-    /* excerpt: WP の抜粋があればそれを使い、なければ statement から自動生成 */
-    excerpt: (post.excerpt ?? "").trim() || (post.statement ?? "").trim(),
+    /* excerpt: 明示的な抜粋があればそれを使い、なければ body を自動変換。
+       body が <p> タグ付き HTML でも plain text でも、タグを除去して統一する。
+       これにより CMS の保存形式（HTML/plain text）に関わらず一覧表示が崩れない。 */
+    excerpt: stripTags((post.excerpt ?? "").trim() || (post.statement ?? "").trim()),
     media,
     details,
     bio: ensureHtml(String(bioRaw ?? "").trim()),
