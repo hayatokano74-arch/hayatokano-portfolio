@@ -440,6 +440,8 @@ button {
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  /* タッチターゲット最小サイズ (WCAG 2.5.5: 44×44px) */
+  min-height: 44px;
 }
 
 /* ホバー: 非アクティブボタンのみ半透明背景で控えめに */
@@ -676,6 +678,7 @@ button {
 .work-grid-thumb {
   position: relative;
   overflow: hidden;
+  transition: box-shadow var(--duration-slow) ease;
 }
 
 .work-grid-item img {
@@ -686,6 +689,10 @@ button {
 .work-grid-item:hover img {
   opacity: 1;
   transform: scale(1.03);
+}
+
+.work-grid-item:hover .work-grid-thumb {
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--fg) 14%, transparent);
 }
 
 /* ピン留めバッジ（タイトル後のインラインピル） */
@@ -2405,6 +2412,43 @@ button.tl-photo-cell {
   color: var(--bg);
 }
 
+.contact-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 送信中スピナー */
+.contact-submit-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+@keyframes contact-spin {
+  to { transform: rotate(360deg); }
+}
+
+.contact-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: contact-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* エラーメッセージ */
+.contact-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-meta);
+  color: var(--color-error);
+  margin-top: calc(var(--space-2) * -1);
+}
+
 /* ── WorkDetailsTable ── */
 /* テーブル全体をグリッドコンテナにし、ラベル列を auto で最長ラベルに合わせる。
    各行は display: contents で親グリッドの列を共有し、
@@ -3041,6 +3085,26 @@ img[loading="lazy"] {
 @media (max-width: 1099px) {
   .work-grid-item {
     grid-column: span 6; /* 2枚/行 */
+  }
+}
+
+/* ═══ タブレット中間ブレークポイント（1024px: 大型タブレット） ═══ */
+@media (max-width: 1024px) {
+  :root {
+    /* デスクトップとモバイルの中間余白 */
+    --pad-x: clamp(var(--space-4), 3vw, var(--space-5));
+  }
+}
+
+/* ═══ タブレット小ブレークポイント（768px: ポートレートタブレット） ═══ */
+@media (max-width: 768px) and (min-width: 601px) {
+  .works-grid {
+    /* ポートレートタブレットでは2列グリッドを維持 */
+    grid-template-columns: repeat(4, 1fr);
+    row-gap: var(--space-5);
+  }
+  .work-grid-item {
+    grid-column: span 2; /* 2枚/行 */
   }
 }
 

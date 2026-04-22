@@ -84,13 +84,27 @@ export function ContactForm() {
       </div>
 
       {status === "error" && (
-        <p style={{ fontSize: "var(--font-meta)", color: "var(--muted)", marginTop: "var(--space-2)" }}>
+        <p className="contact-error" role="alert">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M8 5v3.5M8 10.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
           送信に失敗しました。時間をおいて再度お試しください。
         </p>
       )}
 
-      <button type="submit" className="contact-submit" disabled={status === "sending"}>
-        {status === "sending" ? "Sending..." : "Send"}
+      <button
+        type="submit"
+        className="contact-submit"
+        disabled={status === "sending"}
+        aria-busy={status === "sending"}
+      >
+        <span className="contact-submit-inner">
+          {status === "sending" && (
+            <span className="contact-spinner" aria-hidden="true" />
+          )}
+          {status === "sending" ? "Sending..." : "Send"}
+        </span>
       </button>
     </form>
   );
