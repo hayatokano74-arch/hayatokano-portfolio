@@ -55,24 +55,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($v !== '') $details[$k] = $v; // 値がある項目のみ保存
         }
 
-        // media: 動的画像リスト
+        // media: 動的メディアリスト（画像・動画）
         $med_ids     = $_POST['media_id']     ?? [];
         $med_srcs    = $_POST['media_src']    ?? [];
+        $med_types   = $_POST['media_type']   ?? [];
         $med_alts    = $_POST['media_alt']    ?? [];
+        $med_posters = $_POST['media_poster'] ?? [];
         $med_widths  = $_POST['media_width']  ?? [];
         $med_heights = $_POST['media_height'] ?? [];
         $media       = [];
         foreach ($med_srcs as $i => $src) {
-            $src = trim($src);
+            $src  = trim($src);
             if ($src === '') continue;
-            $media[] = [
+            $type = ($med_types[$i] ?? 'image') === 'video' ? 'video' : 'image';
+            $item = [
                 'id'     => trim($med_ids[$i] ?? ('media-' . ($i + 1))),
-                'type'   => 'image',
+                'type'   => $type,
                 'src'    => $src,
                 'alt'    => trim($med_alts[$i] ?? ''),
                 'width'  => (int)($med_widths[$i] ?? 0),
                 'height' => (int)($med_heights[$i] ?? 0),
             ];
+            if ($type === 'video') {
+                $poster = trim($med_posters[$i] ?? '');
+                $item['poster'] = $poster;
+            }
+            $media[] = $item;
         }
 
         // サムネイル（アイキャッチ）
@@ -460,18 +468,37 @@ ob_start();
             <?php endif; ?>
           </div>
           <div class="media-row-fields">
+            <?php $m_type = ($m['type'] ?? 'image') === 'video' ? 'video' : 'image'; ?>
             <input type="hidden" name="media_id[]" value="<?= htmlspecialchars($m['id'] ?? '', ENT_QUOTES) ?>">
+            <div class="form-row" style="margin-bottom:var(--s-2);">
+              <div class="form-group" style="flex:0 0 auto;">
+                <label class="form-label">タイプ</label>
+                <select name="media_type[]" class="form-control media-type-select" style="width:120px;">
+                  <option value="image"<?= $m_type === 'image' ? ' selected' : '' ?>>画像</option>
+                  <option value="video"<?= $m_type === 'video' ? ' selected' : '' ?>>動画</option>
+                </select>
+              </div>
+            </div>
             <div class="form-row form-row--2col">
               <div class="form-group">
-                <label class="form-label">画像 URL</label>
+                <label class="form-label media-src-label"><?= $m_type === 'video' ? '動画 URL (YouTube等)' : '画像 URL' ?></label>
                 <input type="text" name="media_src[]" class="form-control"
                        data-upload-section="works" data-upload-slug="<?= $f_slug ?>"
-                       value="<?= htmlspecialchars($m['src'] ?? '', ENT_QUOTES) ?>" placeholder="/uploads/...">
+                       value="<?= htmlspecialchars($m['src'] ?? '', ENT_QUOTES) ?>"
+                       placeholder="<?= $m_type === 'video' ? 'https://www.youtube.com/watch?v=...' : '/uploads/...' ?>">
               </div>
               <div class="form-group">
                 <label class="form-label">alt テキスト</label>
                 <input type="text" name="media_alt[]" class="form-control"
                        value="<?= htmlspecialchars($m['alt'] ?? '', ENT_QUOTES) ?>">
+              </div>
+            </div>
+            <div class="form-row media-poster-row" style="<?= $m_type === 'video' ? '' : 'display:none;' ?>">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">ポスター画像 URL（サムネイル。未入力ならYouTubeから自動取得）</label>
+                <input type="text" name="media_poster[]" class="form-control"
+                       value="<?= htmlspecialchars($m['poster'] ?? '', ENT_QUOTES) ?>"
+                       placeholder="/media/works/...">
               </div>
             </div>
             <div class="form-row form-row--2col">
@@ -551,15 +578,30 @@ ob_start();
     <div class="media-row-preview"></div>
     <div class="media-row-fields">
       <input type="hidden" name="media_id[]" value="">
+      <div class="form-row" style="margin-bottom:var(--s-2);">
+        <div class="form-group" style="flex:0 0 auto;">
+          <label class="form-label">タイプ</label>
+          <select name="media_type[]" class="form-control media-type-select" style="width:120px;">
+            <option value="image">画像</option>
+            <option value="video">動画</option>
+          </select>
+        </div>
+      </div>
       <div class="form-row form-row--2col">
         <div class="form-group">
-          <label class="form-label">画像 URL</label>
+          <label class="form-label media-src-label">画像 URL</label>
           <input type="text" name="media_src[]" class="form-control"
                  data-upload-section="works" data-upload-slug="" placeholder="/uploads/...">
         </div>
         <div class="form-group">
           <label class="form-label">alt テキスト</label>
           <input type="text" name="media_alt[]" class="form-control">
+        </div>
+      </div>
+      <div class="form-row media-poster-row" style="display:none;">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">ポスター画像 URL（サムネイル。未入力ならYouTubeから自動取得）</label>
+          <input type="text" name="media_poster[]" class="form-control" placeholder="/media/works/...">
         </div>
       </div>
       <div class="form-row form-row--2col">
@@ -949,6 +991,29 @@ document.addEventListener('DOMContentLoaded', () => {
       target.classList.remove('is-drag-over');
     });
   }
+
+  // メディアタイプ切替: ラベル・ポスター欄・プレースホルダーを更新
+  function applyMediaType(row, type) {
+    const srcLabel   = row.querySelector('.media-src-label');
+    const srcInput   = row.querySelector('[name="media_src[]"]');
+    const posterRow  = row.querySelector('.media-poster-row');
+    if (type === 'video') {
+      if (srcLabel)  srcLabel.textContent  = '動画 URL (YouTube等)';
+      if (srcInput)  srcInput.placeholder  = 'https://www.youtube.com/watch?v=...';
+      if (posterRow) posterRow.style.display = '';
+    } else {
+      if (srcLabel)  srcLabel.textContent  = '画像 URL';
+      if (srcInput)  srcInput.placeholder  = '/uploads/...';
+      if (posterRow) posterRow.style.display = 'none';
+    }
+  }
+
+  // 既存行・新規行共通: タイプセレクター変更イベント
+  list.addEventListener('change', (e) => {
+    const sel = e.target.closest('.media-type-select');
+    if (!sel) return;
+    applyMediaType(sel.closest('.dynamic-row'), sel.value);
+  });
 
   // HTMLエスケープ
   function esc(s) {

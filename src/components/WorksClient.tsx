@@ -160,7 +160,10 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false,
     <div className="works-grid">
       {works.map((w) => {
         const lead = w.media[0];
-        const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
+        const thumbSrc = w.thumbnail?.src
+          ?? (lead?.type === "video"
+            ? (lead.poster || youtubeThumbnail(lead.src))
+            : lead?.src);
         const thumbAlt = w.thumbnail?.alt ?? lead?.alt ?? w.title;
         return (
           <Link
@@ -194,6 +197,13 @@ function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false,
 /** HTMLタグを除去してプレーンテキストにする */
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
+}
+
+/** YouTube URL からサムネイル URL を生成（poster 未設定時のフォールバック） */
+function youtubeThumbnail(src?: string): string | undefined {
+  if (!src) return undefined;
+  const m = src.match(/[?&]v=([^&]+)/);
+  return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : undefined;
 }
 
 function truncateText(text: string, maxLength: number): string {
@@ -275,7 +285,10 @@ function WorksList<T extends WorkLike>({
         <div key={w.slug}>
           {(() => {
             const lead = w.media[0];
-            const thumbSrc = w.thumbnail?.src ?? (lead?.type === "video" ? lead.poster : lead?.src);
+            const thumbSrc = w.thumbnail?.src
+              ?? (lead?.type === "video"
+                ? (lead.poster || youtubeThumbnail(lead.src))
+                : lead?.src);
             const thumbAlt = w.thumbnail?.alt ?? lead?.alt ?? w.title;
             const isPortraitLead = (lead?.height ?? 0) > (lead?.width ?? 0);
             return (
