@@ -10,9 +10,16 @@ import type {
 } from "./types";
 import { fixBrokenUnicodeUrl, ensureHtml, normalizeTag } from "./utils";
 
-/** HTMLタグを除去してプレーンテキストに変換する */
+/** HTMLタグを除去してプレーンテキストに変換する
+ *  </p> を改行に変換してから除去することで、段落間の改行を保持する */
 function stripTags(html: string): string {
-  return html.replace(/<[^>]*>/g, "").replace(/\r\n/g, "\n").trim();
+  return html
+    .replace(/<\/p\s*>/gi, "\n")   /* </p> → 改行 */
+    .replace(/<br\s*\/?>/gi, "\n") /* <br> → 改行 */
+    .replace(/<[^>]*>/g, "")       /* 残タグを除去 */
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")    /* 3連続以上の改行は2つに圧縮 */
+    .trim();
 }
 
 /** キービジュアル配列の正規化 */

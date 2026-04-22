@@ -14,6 +14,10 @@ const CMS_API_BASE = (
 /**
  * CMS API からデータを取得する汎用ヘルパー。
  * 失敗時はスロー → 呼び出し元でキャッチしてローカルファイルフォールバック。
+ *
+ * レスポンス形式は2種類に対応:
+ *  - 生データ直接返し: [...] または {...}
+ *  - ラッパー形式: { success: true, data: ... }
  */
 export async function fetchCms<T>(path: string): Promise<T> {
   const url = `${CMS_API_BASE}/${path.replace(/^\//, "")}`;
@@ -24,11 +28,16 @@ export async function fetchCms<T>(path: string): Promise<T> {
   if (!res.ok) {
     throw new Error(`CMS API エラー: ${res.status} ${url}`);
   }
-  const json = (await res.json()) as { success: boolean; data: T };
-  if (!json.success) {
-    throw new Error(`CMS API レスポンスエラー: ${url}`);
+  const json = await res.json();
+  /* ラッパー形式 { success, data } の場合 */
+  if (json && typeof json === "object" && !Array.isArray(json) && "success" in json) {
+    if (!json.success) {
+      throw new Error(`CMS API レスポンスエラー: ${url}`);
+    }
+    return json.data as T;
   }
-  return json.data;
+  /* 生データ直接返し */
+  return json as T;
 }
 
 // ─── CMS レスポンス型定義 ─────────────────────────────────────

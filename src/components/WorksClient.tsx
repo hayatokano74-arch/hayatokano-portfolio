@@ -197,9 +197,12 @@ function stripHtml(html: string): string {
 }
 
 function truncateText(text: string, maxLength: number): string {
-  const plain = stripHtml(text).replace(/\r\n/g, "\n");
-  if (maxLength <= 0 || plain.length <= maxLength) return plain;
-  return plain.slice(0, maxLength) + "...";
+  const plain = stripHtml(text).replace(/\r\n/g, "\n").trim();
+  const truncated = maxLength <= 0 || plain.length <= maxLength
+    ? plain
+    : plain.slice(0, maxLength) + "...";
+  /* 段落区切り（\n\n+）→ <br>、それ以外の改行 → スペース として HTML 返却 */
+  return truncated.replace(/\n{2,}/g, "<br>").replace(/\n/g, " ");
 }
 
 /** HTMLを保持したまま、テキスト文字数で切り詰める */
