@@ -1121,7 +1121,7 @@ button {
   content: "";
   position: absolute;
   background: var(--icon-color, var(--fg));
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform var(--duration-slow) cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* 横線 */
@@ -1222,7 +1222,7 @@ button {
 }
 
 .mobile-nav-num {
-  font-size: 13px;
+  font-size: var(--font-meta);
   font-weight: 400;
   letter-spacing: 0.02em;
   opacity: 0.4;
@@ -1862,16 +1862,16 @@ button {
 /* View All ボタン: ピル型ボーダー */
 .works-list-excerpt {
   font-size: var(--font-body);
-  line-height: var(--lh-relaxed);
-  /* pre-wrap は HTML抜粋には不要（<p>タグ間の改行が可視スペースになるため削除） */
+  /* リスト表示では詩的な 2.0 より読みやすい 1.75 を使用 */
+  line-height: var(--lh-normal);
 }
 
-/* リスト抜粋内の段落余白: 詳細ページ(2.4em)より狭く抑える */
-.works-list-excerpt p {
-  margin: 0 0 0.6em;
+/* リスト抜粋内の段落余白: 二重クラスで特異度(0-2-1)を上げ .rich-body p(0-1-1)に確実に勝つ */
+.works-list-excerpt.rich-body p {
+  margin: 0 0 0.5em;
 }
 
-.works-list-excerpt p:last-child {
+.works-list-excerpt.rich-body p:last-child {
   margin-bottom: 0;
 }
 
@@ -3495,7 +3495,7 @@ img[loading="lazy"] {
   font-size: var(--font-body);
   color: var(--muted);
   border-radius: 4px;
-  transition: color 0.15s;
+  transition: color var(--duration-fast);
 }
 
 .garden-pagination-number:hover,
@@ -3726,7 +3726,7 @@ img[loading="lazy"] {
   border-radius: 4px;
   text-decoration: none;
   color: var(--fg);
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast);
 }
 
 .garden-linked-card-link:hover {
@@ -3795,7 +3795,7 @@ img[loading="lazy"] {
   border-radius: 4px;
   text-decoration: none;
   color: var(--muted);
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast);
 }
 
 .garden-twohop-card-link:hover {
@@ -3810,7 +3810,7 @@ img[loading="lazy"] {
 
 .garden-twohop-card-excerpt {
   margin: var(--space-1) 0 0;
-  font-size: 11px;
+  font-size: var(--font-meta);
   line-height: var(--lh-relaxed);
   color: var(--muted);
   display: -webkit-box;
@@ -3858,7 +3858,7 @@ img[loading="lazy"] {
   border: 1px solid var(--line);
   border-radius: 4px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast);
 }
 
 .garden-related-search::placeholder {
@@ -3880,7 +3880,7 @@ img[loading="lazy"] {
   border-radius: 4px;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast);
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -4469,8 +4469,8 @@ img[loading="lazy"] {
   }
 
   .works-list-excerpt {
-    font-size: 12px;
-    line-height: var(--lh-relaxed);
+    font-size: var(--font-meta);
+    line-height: var(--lh-normal);
     max-width: 100%;
   }
 
@@ -5006,7 +5006,7 @@ img[loading="lazy"] {
 
 /* 管理画面: ダッシュボードカードホバー */
 .admin-dashboard-card {
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition: box-shadow var(--duration-fast), border-color var(--duration-fast);
 }
 .admin-dashboard-card:hover {
   border-color: #c8c8c8 !important;

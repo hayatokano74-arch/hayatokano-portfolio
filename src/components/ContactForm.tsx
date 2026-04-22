@@ -32,6 +32,7 @@ export function ContactForm() {
   if (status === "sent") {
     return (
       <div
+        role="status"
         style={{
           fontSize: "var(--font-body)",
           lineHeight: "var(--lh-relaxed)",
