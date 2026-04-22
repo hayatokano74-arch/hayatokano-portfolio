@@ -11,27 +11,27 @@ if (file_exists(__DIR__ . '/.env.php')) {
 
 // ─── パス設定 ────────────────────────────────────────────────
 /** CMS ルートディレクトリ（絶対パス） */
-define('CMS_ROOT', __DIR__);
+if (!defined('CMS_ROOT')) define('CMS_ROOT', __DIR__);
 
 /** SQLite データベースファイルのパス */
-define('DB_PATH', CMS_ROOT . '/db/hayatokano.sqlite3');
+if (!defined('DB_PATH')) define('DB_PATH', CMS_ROOT . '/db/hayatokano.sqlite3');
 
 /** アップロードファイルの保存先（ローカル開発: cms/uploads/、Xserver: public_html/media/） */
-define('UPLOAD_DIR', defined('UPLOAD_DIR_OVERRIDE') ? UPLOAD_DIR_OVERRIDE : CMS_ROOT . '/uploads');
+if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', defined('UPLOAD_DIR_OVERRIDE') ? UPLOAD_DIR_OVERRIDE : CMS_ROOT . '/uploads');
 
 /** アップロードファイルの公開 URL プレフィックス */
-define('UPLOAD_URL_PREFIX', defined('UPLOAD_URL_OVERRIDE') ? UPLOAD_URL_OVERRIDE : '/_cms/uploads');
+if (!defined('UPLOAD_URL_PREFIX')) define('UPLOAD_URL_PREFIX', defined('UPLOAD_URL_OVERRIDE') ? UPLOAD_URL_OVERRIDE : '/_cms/uploads');
 
 // ─── 認証設定 ────────────────────────────────────────────────
 /** セッション名 */
-define('SESSION_NAME', 'hayatokano_cms');
+if (!defined('SESSION_NAME')) define('SESSION_NAME', 'hayatokano_cms');
 
-/** セッション有効期間（秒）: 14 日 */
-define('SESSION_LIFETIME', 60 * 60 * 24 * 14);
+/** セッション有効期間（秒）: 90 日 */
+if (!defined('SESSION_LIFETIME')) define('SESSION_LIFETIME', 60 * 60 * 24 * 90);
 
 /** ログイン失敗のレートリミット（X 回失敗で Y 秒ロック） */
-define('LOGIN_MAX_ATTEMPTS', 5);
-define('LOGIN_LOCKOUT_SECONDS', 300);
+if (!defined('LOGIN_MAX_ATTEMPTS')) define('LOGIN_MAX_ATTEMPTS', 5);
+if (!defined('LOGIN_LOCKOUT_SECONDS')) define('LOGIN_LOCKOUT_SECONDS', 300);
 
 // ─── デプロイ設定 ────────────────────────────────────────────
 // コンテンツはクライアントサイドで CMS API から取得するため、
@@ -40,14 +40,14 @@ define('LOGIN_LOCKOUT_SECONDS', 300);
 
 // ─── 画像設定 ────────────────────────────────────────────────
 /** アップロード最大サイズ（バイト）: 制限なし（PHPのpost_max_sizeに準拠） */
-define('UPLOAD_MAX_BYTES', PHP_INT_MAX);
+if (!defined('UPLOAD_MAX_BYTES')) define('UPLOAD_MAX_BYTES', PHP_INT_MAX);
 
 /** 許可する MIME タイプ */
-define('ALLOWED_MIME_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+if (!defined('ALLOWED_MIME_TYPES')) define('ALLOWED_MIME_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 /** 画像の最大長辺ピクセル: 制限なし（元のサイズを維持） */
-define('IMAGE_MAX_DIMENSION', PHP_INT_MAX);
+if (!defined('IMAGE_MAX_DIMENSION')) define('IMAGE_MAX_DIMENSION', PHP_INT_MAX);
 
 // ─── サイト設定 ────────────────────────────────────────────────
-define('SITE_NAME', 'Hayato Kano');
-define('SITE_URL', defined('SITE_URL_OVERRIDE') ? SITE_URL_OVERRIDE : 'https://hayatokano.com');
+if (!defined('SITE_NAME')) define('SITE_NAME', 'Hayato Kano');
+if (!defined('SITE_URL')) define('SITE_URL', defined('SITE_URL_OVERRIDE') ? SITE_URL_OVERRIDE : 'https://hayatokano.com');
