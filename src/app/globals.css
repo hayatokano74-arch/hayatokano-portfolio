@@ -440,8 +440,6 @@ button {
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
-  /* タッチターゲット最小サイズ (WCAG 2.5.5: 44×44px) */
-  min-height: 44px;
 }
 
 /* ホバー: 非アクティブボタンのみ半透明背景で控えめに */
