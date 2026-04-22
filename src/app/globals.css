@@ -356,7 +356,7 @@ button {
 
 /* 前後ナビ矢印 */
 .wdb-btn.wdb-nav-arrow {
-  font-size: 22px;
+  font-size: var(--font-brand);
   line-height: 1;
   padding-top: 0;
   padding-bottom: 0;
