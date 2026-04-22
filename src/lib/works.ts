@@ -13,32 +13,9 @@ import { cache } from "react";
 import type { Work } from "@/lib/types";
 import { works as fallbackWorks } from "@/lib/mock";
 import { fetchCms, type CmsWork, type CmsMediaItem } from "@/lib/cms/client";
+import { fixBrokenUnicodeUrl } from "@/lib/url-utils";
 
 const WORKS_DIR = path.join(process.cwd(), "content/works");
-
-const RE_UNICODE_TEST = /u[0-9a-fA-F]{4}/;
-const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
-
-/**
- * 壊れたUnicodeエスケープを復元
- */
-function fixBrokenUnicodeUrl(url: string): string {
-  if (!RE_UNICODE_TEST.test(url)) return url;
-  const decoded = url.replace(RE_UNICODE_REPLACE, (_match, hex) => {
-    const cp = parseInt(hex, 16);
-    if (cp >= 0x3000 && cp <= 0x9fff) return String.fromCodePoint(cp);
-    if (cp >= 0xf900 && cp <= 0xfaff) return String.fromCodePoint(cp);
-    if (cp >= 0xff00 && cp <= 0xffef) return String.fromCodePoint(cp);
-    return _match;
-  });
-  try {
-    const u = new URL(decoded);
-    u.pathname = u.pathname.split('/').map(s => encodeURIComponent(decodeURIComponent(s))).join('/');
-    return u.toString();
-  } catch {
-    return decoded;
-  }
-}
 
 type RawMedia = CmsMediaItem & { id?: string; src?: string };
 type RawDetails = Record<string, string | undefined>;

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef } from "react";
 import type { Work } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
+import { SIZES_INDEX_GRID } from "@/lib/image-sizes";
 
 /**
  * インデックスグリッド: サムネイル一覧
@@ -87,7 +88,8 @@ export function IndexGrid({
                   alt={image.alt}
                   fill
                   loading="lazy"
-                  sizes="(max-width: 720px) 100vw, (max-width: 1024px) 50vw, 320px"
+                  decoding="async"
+                  sizes={SIZES_INDEX_GRID}
                   placeholder="blur"
                   blurDataURL={blurDataURL(image.width, image.height)}
                   style={{ objectFit: "cover", objectPosition: "center" }}

@@ -1,36 +1,11 @@
 "use client";
 
-/**
- * About ページ（クライアントサイドデータ取得版）
- * CMS API から直接 About データを取得して表示する。
- */
-
-import { useEffect, useState } from "react";
+import Image from "next/image";
 import type { About } from "@/lib/about";
-import { fetchAboutFromCms } from "@/lib/cms/about-client";
 import { RichBody } from "@/components/RichBody";
 import { Header } from "./Header";
 
-export function AboutPageClient() {
-  const [about, setAbout] = useState<About | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchAboutFromCms()
-      .then(setAbout)
-      .catch(() => setAbout(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <>
-        <Header active="About" title="About" showTitleRow={false} showCategoryRow={false} />
-        <div style={{ minHeight: "50vh" }} />
-      </>
-    );
-  }
-
+export function AboutPageClient({ about }: { about: About | null }) {
   if (!about) {
     return (
       <>
@@ -65,7 +40,6 @@ export function AboutPageClient() {
             html={about.statement}
             style={{ marginBottom: "var(--v-page)" }}
           />
-
           {cvSections.map((section, si) => (
             <section
               key={si}
@@ -85,21 +59,17 @@ export function AboutPageClient() {
           ))}
         </div>
 
-        {/* 右カラム: 写真（縦一列）— クライアントサイドなので img タグを使用 */}
+        {/* 右カラム: 写真 */}
         <div className="about-photos">
           {about.photos.map((photo, idx) => (
-            <img
+            <Image
               key={idx}
               src={photo.src}
               alt="Hayato Kano"
-              width={photo.width}
-              height={photo.height}
-              loading={idx === 0 ? "eager" : "lazy"}
-              style={{
-                display: "block",
-                width: "100%",
-                height: "auto",
-              }}
+              width={photo.width || 1200}
+              height={photo.height || 1600}
+              priority={idx === 0}
+              style={{ display: "block", width: "100%", height: "auto" }}
             />
           ))}
         </div>

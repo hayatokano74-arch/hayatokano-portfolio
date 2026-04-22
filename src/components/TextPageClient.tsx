@@ -5,23 +5,18 @@
  * CMS API から直接 Text を取得して表示する。
  */
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { TextPost } from "@/lib/types";
 import { fetchTextsFromCms } from "@/lib/cms/text-client";
+import { useCmsData } from "@/hooks/useCmsData";
 import { buildCategoryMenu, parseCategory } from "@/lib/categories";
 import { Header } from "./Header";
 
-export function TextPageClient() {
-  const [texts, setTexts] = useState<TextPost[]>([]);
-  const [loading, setLoading] = useState(true);
+/** 空テキストリスト（初期値・フォールバック用） */
+const EMPTY_TEXTS: TextPost[] = [];
 
-  useEffect(() => {
-    fetchTextsFromCms()
-      .then(setTexts)
-      .catch(() => setTexts([]))
-      .finally(() => setLoading(false));
-  }, []);
+export function TextPageClient() {
+  const { data: texts, loading } = useCmsData(fetchTextsFromCms, EMPTY_TEXTS);
 
   /* 静的エクスポート: カテゴリフィルタはクライアントサイドで処理 */
   const activeCategory = parseCategory(undefined);

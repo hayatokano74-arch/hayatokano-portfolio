@@ -3,7 +3,9 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { MeNoHoshiDetailPageClient } from "@/components/MeNoHoshiDetailPageClient";
 import { getMeNoHoshiPosts, getMeNoHoshiBySlug } from "@/lib/meNoHoshi";
 
+export const revalidate = 3600;
 export const dynamicParams = false;
+
 export async function generateStaticParams() {
   try {
     const posts = await getMeNoHoshiPosts();
@@ -21,7 +23,6 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  /* React.cache() により getMeNoHoshiPosts の重複リクエストを排除 */
   if (slug === "_placeholder") return { title: "目の星" };
   const post = await getMeNoHoshiBySlug(slug);
   if (!post) return { title: "目の星" };
@@ -38,18 +39,20 @@ export async function generateMetadata({
       url: `https://hayatokano.com/me-no-hoshi/${slug}`,
       ...(imageUrl ? { images: [{ url: imageUrl }] } : {}),
     },
-    twitter: {
-      card: "summary_large_image",
-      title: post.title,
-      description,
-    },
+    twitter: { card: "summary_large_image", title: post.title, description },
   };
 }
 
-export default function MeNoHoshiDetailPage() {
+export default async function MeNoHoshiDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = slug === "_placeholder" ? null : await getMeNoHoshiBySlug(slug);
   return (
     <CanvasShell>
-      <MeNoHoshiDetailPageClient />
+      <MeNoHoshiDetailPageClient post={post ?? null} />
     </CanvasShell>
   );
 }

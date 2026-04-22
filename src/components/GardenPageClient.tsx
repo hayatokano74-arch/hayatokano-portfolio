@@ -5,22 +5,17 @@
  * CMS API から全ノードを取得し、GardenPageContent に渡す。
  */
 
-import { useEffect, useState } from "react";
 import type { GardenNode } from "@/lib/garden/types";
 import { fetchGardenFromCms } from "@/lib/cms/garden-client";
+import { useCmsData } from "@/hooks/useCmsData";
 import { GardenPageContent } from "./GardenPageContent";
 import { Header } from "./Header";
 
-export function GardenPageClient() {
-  const [nodes, setNodes] = useState<GardenNode[]>([]);
-  const [loading, setLoading] = useState(true);
+/** 空ノードリスト（初期値・フォールバック用） */
+const EMPTY_NODES: GardenNode[] = [];
 
-  useEffect(() => {
-    fetchGardenFromCms()
-      .then(setNodes)
-      .catch(() => setNodes([]))
-      .finally(() => setLoading(false));
-  }, []);
+export function GardenPageClient() {
+  const { data: nodes, loading } = useCmsData(fetchGardenFromCms, EMPTY_NODES);
 
   if (loading) {
     return (

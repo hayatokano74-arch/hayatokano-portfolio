@@ -18,7 +18,7 @@ const CMS_API_BASE = (
 export async function fetchCms<T>(path: string): Promise<T> {
   const url = `${CMS_API_BASE}/${path.replace(/^\//, "")}`;
   const res = await fetch(url, {
-    cache: "no-store",
+    next: { revalidate: 3600 },
     headers: { Accept: "application/json" },
   });
   if (!res.ok) {

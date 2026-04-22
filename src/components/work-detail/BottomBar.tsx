@@ -33,6 +33,8 @@ export function BottomBar({
         type="button"
         className={`wdb-cell wdb-btn ${!detailOpen && mode === "gallery" ? "is-active" : ""}`}
         onClick={onGallery}
+        aria-label="ギャラリー表示"
+        aria-pressed={!detailOpen && mode === "gallery"}
       >
         Gallery
       </button>
@@ -40,6 +42,8 @@ export function BottomBar({
         type="button"
         className={`wdb-cell wdb-btn ${!detailOpen && mode === "index" ? "is-active" : ""}`}
         onClick={onIndex}
+        aria-label="インデックス表示"
+        aria-pressed={!detailOpen && mode === "index"}
       >
         Index
       </button>
@@ -47,6 +51,8 @@ export function BottomBar({
         type="button"
         className={`wdb-cell wdb-btn ${detailOpen ? "is-active" : ""}`}
         onClick={onToggleInfo}
+        aria-label="作品情報を表示"
+        aria-pressed={detailOpen}
       >
         Info
       </button>

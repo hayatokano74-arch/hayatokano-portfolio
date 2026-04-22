@@ -5,6 +5,7 @@ import type { Work } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
 import { RichBody } from "@/components/RichBody";
 import type { MeNoHoshiGridField } from "@/lib/me-no-hoshi/api";
+import { SIZES_WORKS_GRID } from "@/lib/image-sizes";
 
 /** WorksClient が受け取れる最小型（details を柔軟に） */
 type WorkLike = Omit<Work, "details"> & { details: unknown };
@@ -58,10 +59,10 @@ function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; wi
       <div style={{ position: "relative", width: "100%", aspectRatio: "3 / 2", background: "var(--media-bg)" }}>
         <Image
           src={src}
-          alt={alt || ""}
+          alt={alt ?? ""}
           fill
           loading="lazy"
-          sizes="(max-width: 900px) 100vw, (max-width: 1400px) 33vw, 420px"
+          sizes={SIZES_WORKS_GRID}
           placeholder="blur"
           blurDataURL={blurDataURL(1280, 720)}
           style={{

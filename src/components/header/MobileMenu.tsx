@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import React from "react";
+import { usePathname } from "next/navigation";
 import { NAV_ITEMS, type Section } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 
@@ -37,6 +38,8 @@ type MobileMenuOverlayProps = {
  * モバイルフルスクリーンメニュー: ナビリンク一覧 + テーマ切替
  */
 export function MobileMenuOverlay({ isOpen, active }: MobileMenuOverlayProps) {
+  const pathname = usePathname();
+
   if (!isOpen) return null;
 
   return (
@@ -48,6 +51,7 @@ export function MobileMenuOverlay({ isOpen, active }: MobileMenuOverlayProps) {
             <Link
               href={href}
               className={`mobile-nav-item ${active === section ? "is-active" : ""}`}
+              aria-current={pathname === href ? "page" : undefined}
             >
               <span className="mobile-nav-num">{num}</span>
               <span className="mobile-nav-label">{label}</span>

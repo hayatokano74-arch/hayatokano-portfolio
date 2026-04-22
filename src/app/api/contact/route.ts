@@ -23,13 +23,19 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      console.error("WP contact error:", err);
+      /* 開発環境のみログ出力（本番では抑制） */
+      if (process.env.NODE_ENV !== "production") {
+        console.error("WP contact error:", err);
+      }
       return NextResponse.json({ error: "送信に失敗しました" }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("Contact API error:", err);
+    /* 開発環境のみログ出力（本番では抑制） */
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Contact API error:", err);
+    }
     return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
   }
 }
