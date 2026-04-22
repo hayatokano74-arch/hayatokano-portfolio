@@ -10,8 +10,8 @@ import type {
 } from "./types";
 import { fixBrokenUnicodeUrl, ensureHtml, normalizeTag } from "./utils";
 
-/** HTMLタグを除去してプレーンテキストに変換する
- *  </p> を改行に変換してから除去することで、段落間の改行を保持する */
+/** HTMLタグを除去してプレーンテキスト（改行付き）に変換する
+ *  </p><br> を改行に変換してから除去することで、段落間の改行を保持する */
 function stripTags(html: string): string {
   return html
     .replace(/<\/p\s*>/gi, "\n")   /* </p> → 改行 */
@@ -20,6 +20,14 @@ function stripTags(html: string): string {
     .replace(/\r\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")    /* 3連続以上の改行は2つに圧縮 */
     .trim();
+}
+
+/** プレーンテキストの改行を HTML の <br> に変換する
+ *  truncateHtml に渡す前に実行して、段落区切りを可視化する */
+function newlinesToHtml(text: string): string {
+  return text
+    .replace(/\n{2,}/g, "<br>") /* 段落区切り → <br> */
+    .replace(/\n/g, " ");       /* 行内改行 → スペース */
 }
 
 /** キービジュアル配列の正規化 */
@@ -170,7 +178,7 @@ export function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     /* excerpt: 明示的な抜粋があればそれを使い、なければ body を自動変換。
        body が <p> タグ付き HTML でも plain text でも、タグを除去して統一する。
        これにより CMS の保存形式（HTML/plain text）に関わらず一覧表示が崩れない。 */
-    excerpt: stripTags((post.excerpt ?? "").trim() || (post.statement ?? "").trim()),
+    excerpt: newlinesToHtml(stripTags((post.excerpt ?? "").trim() || (post.statement ?? "").trim())),
     media,
     details,
     bio: ensureHtml(String(bioRaw ?? "").trim()),

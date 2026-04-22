@@ -198,11 +198,8 @@ function stripHtml(html: string): string {
 
 function truncateText(text: string, maxLength: number): string {
   const plain = stripHtml(text).replace(/\r\n/g, "\n").trim();
-  const truncated = maxLength <= 0 || plain.length <= maxLength
-    ? plain
-    : plain.slice(0, maxLength) + "...";
-  /* 段落区切り（\n\n+）→ <br>、それ以外の改行 → スペース として HTML 返却 */
-  return truncated.replace(/\n{2,}/g, "<br>").replace(/\n/g, " ");
+  if (maxLength <= 0 || plain.length <= maxLength) return plain;
+  return plain.slice(0, maxLength) + "...";
 }
 
 /** HTMLを保持したまま、テキスト文字数で切り詰める */
@@ -341,9 +338,8 @@ function WorksList<T extends WorkLike>({
               {/* 本文(ディテール+抜粋+View All): モバイルで order: 3 */}
               <div className="works-list-body">
                 {renderListDetail ? <div className="works-list-detail-content" style={{ marginBottom: "var(--space-4)" }}>{renderListDetail(w)}</div> : null}
-                {/* リスト表示の抜粋は plain text で表示（<p>タグの行間問題を根本解決）
-                    excerpt が HTML の場合も stripHtml でタグを除去してから描画する */}
-                <RichBody html={truncateText(w.excerpt, excerptMaxLength)} className="works-list-excerpt" />
+                {/* リスト表示の抜粋: HTML書式（太字・見出し等）を保持して切り詰め */}
+                <RichBody html={truncateHtml(w.excerpt, excerptMaxLength)} className="works-list-excerpt" />
                 <div className="works-list-view">
                   <Link className="action-link" href={detailHref(w.slug)}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>

@@ -4469,7 +4469,7 @@ img[loading="lazy"] {
   }
 
   .works-list-excerpt {
-    font-size: var(--font-meta);
+    font-size: var(--font-body);
     line-height: var(--lh-normal);
     max-width: 100%;
   }
