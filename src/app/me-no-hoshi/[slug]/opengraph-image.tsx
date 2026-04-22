@@ -12,10 +12,14 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+const BASE_URL = "https://hayatokano.com";
+
 export default async function OgImage({ params }: Props) {
   const { slug } = await params;
   const post = await getMeNoHoshiBySlug(slug);
-  const imageUrl = post?.media[0]?.src ?? null;
+  const rawUrl = post?.media[0]?.src ?? null;
+  /* 相対URLは絶対URLに変換（OG画像生成では絶対URL必須） */
+  const imageUrl = rawUrl?.startsWith("http") ? rawUrl : rawUrl ? `${BASE_URL}${rawUrl}` : null;
   const title = post?.title ?? "目の星";
 
   return new ImageResponse(

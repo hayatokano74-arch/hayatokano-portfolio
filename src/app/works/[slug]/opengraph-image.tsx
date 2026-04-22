@@ -12,11 +12,15 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+const BASE_URL = "https://hayatokano.com";
+
 export default async function OgImage({ params }: Props) {
   const { slug } = await params;
   const work = await getWorkBySlug(slug);
   const lead = work?.media[0];
-  const imageUrl = lead?.type === "video" ? (lead.poster ?? null) : (lead?.src ?? null);
+  const rawUrl = lead?.type === "video" ? (lead.poster ?? null) : (lead?.src ?? null);
+  /* 相対URLは絶対URLに変換（OG画像生成では絶対URL必須） */
+  const imageUrl = rawUrl?.startsWith("http") ? rawUrl : rawUrl ? `${BASE_URL}${rawUrl}` : null;
   const title = work ? `${work.title} | ${work.year}` : "Works";
 
   return new ImageResponse(
