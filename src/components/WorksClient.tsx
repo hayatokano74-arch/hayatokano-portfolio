@@ -5,7 +5,7 @@ import type { Work } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
 import { RichBody } from "@/components/RichBody";
 import type { MeNoHoshiGridField } from "@/lib/me-no-hoshi/api";
-import { SIZES_WORKS_GRID } from "@/lib/image-sizes";
+import { SIZES_WORKS_GRID, SIZES_WORKS_LIST } from "@/lib/image-sizes";
 
 /** WorksClient が受け取れる最小型（details を柔軟に） */
 type WorkLike = Omit<Work, "details"> & { details: unknown };
@@ -339,6 +339,9 @@ function WorksList<T extends WorkLike>({
                       width={lead?.width ?? 1280}
                       height={lead?.height ?? 720}
                       loading="lazy"
+                      sizes={SIZES_WORKS_LIST}
+                      placeholder="blur"
+                      blurDataURL={blurDataURL(lead?.width ?? 1280, lead?.height ?? 720)}
                       className="list-media-img"
                       style={{
                         aspectRatio: `${lead?.width ?? 1280} / ${lead?.height ?? 720}`,

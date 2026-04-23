@@ -18,6 +18,12 @@ export const SIZES_WORKS_GRID = "(max-width: 900px) 100vw, (max-width: 1400px) 3
 export const SIZES_INDEX_GRID = "(max-width: 720px) 100vw, (max-width: 1024px) 50vw, 320px" as const;
 
 /**
+ * Works リスト表示（開閉パネル内）の画像用
+ * モバイル: フル幅 / デスクトップ: 約45vw（12カラム中5〜6カラム分）
+ */
+export const SIZES_WORKS_LIST = "(max-width: 900px) 100vw, 45vw" as const;
+
+/**
  * Garden 一覧・詳細の画像用
  * モバイル: フル幅 / デスクトップ: 920px固定
  */
