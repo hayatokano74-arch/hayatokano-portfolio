@@ -499,6 +499,41 @@ button {
   }
 }
 
+/* 動画サムネイルボタン */
+.gallery-video-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background: var(--media-bg);
+  overflow: hidden;
+}
+
+/* 再生ボタン（中央オーバーレイ） */
+.gallery-video-play-btn {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+  transition: background 160ms;
+}
+
+.gallery-video-thumb:hover .gallery-video-play-btn,
+.gallery-video-thumb:focus-visible .gallery-video-play-btn {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.gallery-video-play-btn svg {
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+}
+
 .work-detail-click-prev {
   position: absolute;
   left: 0;

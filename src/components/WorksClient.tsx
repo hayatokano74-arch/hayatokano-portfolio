@@ -202,7 +202,8 @@ function stripHtml(html: string): string {
 /** YouTube URL からサムネイル URL を生成（poster 未設定時のフォールバック） */
 function youtubeThumbnail(src?: string): string | undefined {
   if (!src) return undefined;
-  const m = src.match(/[?&]v=([^&]+)/);
+  /* getEmbedUrl と同じ正規表現で ID を抽出 */
+  const m = src.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/)|youtu\.be\/)([\w-]{11})/);
   return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : undefined;
 }
 
