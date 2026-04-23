@@ -6,6 +6,12 @@ import type { Work } from "@/lib/types";
 import { blurDataURL } from "@/lib/blur";
 import { SIZES_INDEX_GRID } from "@/lib/image-sizes";
 
+/** YouTube URL からサムネイル URL を生成 */
+function youtubeThumbnail(src: string): string | undefined {
+  const m = src.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/)|youtu\.be\/)([\w-]{11})/);
+  return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : undefined;
+}
+
 /**
  * インデックスグリッド: サムネイル一覧
  * - スクロール中クラス付与（CSSでスクロールバー表示）
@@ -53,7 +59,14 @@ export function IndexGrid({
     >
       {thumbs.map((image, idx) => {
         const n = idx + 1;
-        const isPortrait = image.height > image.width;
+        /* 動画: poster → YouTubeサムネ → undefined の優先順位 */
+        const thumbSrc = image.type === "video"
+          ? (image.poster || youtubeThumbnail(image.src))
+          : image.src;
+        /* 動画でwidth/heightが未設定の場合は16:9にフォールバック */
+        const w = image.width || (image.type === "video" ? 16 : 1);
+        const h = image.height || (image.type === "video" ? 9 : 1);
+        const isPortrait = h > w;
         return (
           <button
             type="button"
@@ -75,23 +88,24 @@ export function IndexGrid({
               style={{
                 position: "relative",
                 width: isPortrait
-                  ? `${Math.round((image.width / image.height) * 100)}%`
+                  ? `${Math.round((w / h) * 100)}%`
                   : "100%",
                 margin: "0 auto",
-                aspectRatio: `${image.width} / ${image.height}`,
+                aspectRatio: `${w} / ${h}`,
                 overflow: "hidden",
+                background: "var(--media-bg)",
               }}
             >
-              {(image.type === "video" ? image.poster : image.src) ? (
+              {thumbSrc ? (
                 <Image
-                  src={image.type === "video" ? (image.poster as string) : image.src}
+                  src={thumbSrc}
                   alt={image.alt}
                   fill
                   loading="lazy"
                   decoding="async"
                   sizes={SIZES_INDEX_GRID}
                   placeholder="blur"
-                  blurDataURL={blurDataURL(image.width, image.height)}
+                  blurDataURL={blurDataURL(w, h)}
                   style={{ objectFit: "cover", objectPosition: "center" }}
                 />
               ) : null}
