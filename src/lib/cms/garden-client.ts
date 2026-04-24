@@ -7,7 +7,8 @@
 
 import type { GardenNode } from "@/lib/garden/types";
 
-const CMS_API_BASE = "https://hayatokano.com/_cms/api";
+const CMS_API_BASE =
+  process.env.NEXT_PUBLIC_CMS_API_URL ?? "https://media.hayatokano.com/_cms/api";
 
 /** CMS API の Garden レスポンス1件 */
 interface CmsGardenItem {

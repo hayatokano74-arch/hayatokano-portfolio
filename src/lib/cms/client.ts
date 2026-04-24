@@ -8,7 +8,7 @@
  */
 
 const CMS_API_BASE = (
-  process.env.CMS_API_URL ?? "https://hayatokano.com/_cms/api"
+  process.env.CMS_API_URL ?? "https://media.hayatokano.com/_cms/api"
 ).replace(/\/$/, "");
 
 /**
