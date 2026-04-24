@@ -311,6 +311,7 @@ function WorksList<T extends WorkLike>({
                     width={32}
                     height={32}
                     loading="lazy"
+                    sizes="32px"
                     style={{ width: 32, height: 32, objectFit: "cover", display: "block", background: "var(--media-bg)" }}
                   />
                 ) : (

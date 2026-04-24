@@ -15,9 +15,16 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      // CMS メディア（Xserver: hayatokano.com/_cms/uploads/）
+      // CMS メディア（Xserver: media.hayatokano.com）
       { protocol: "https", hostname: cmsMediaHost, pathname: "/**" },
     ],
+    /* AVIF → WebP → JPEG の順で最適フォーマットを選択（AVIF は WebP 比 30〜50% 軽量） */
+    formats: ["image/avif", "image/webp"],
+    /* Vercel CDN でのキャッシュ期間: 30日（デフォルト 60秒を延長） */
+    minimumCacheTTL: 2592000,
+    /* よく使うブレークポイントに絞る（デフォルト16段階→7段階でキャッシュヒット率向上） */
+    deviceSizes: [640, 828, 1080, 1280, 1920],
+    imageSizes: [32, 64, 128, 256, 420],
     /* 静的エクスポートでは Next.js 画像最適化が使えないため unoptimized */
     ...(isStaticExport ? { unoptimized: true } : {}),
   },
