@@ -8,6 +8,7 @@
 import type { NewsItem } from "@/lib/types";
 import type { CmsNews } from "./client";
 import { fetchCmsClient } from "./use-cms";
+import { absoluteMediaSrc } from "@/lib/url-utils";
 
 /** CMS レスポンスを NewsItem 型に正規化 */
 function parseCmsNews(item: CmsNews): NewsItem | null {
@@ -21,7 +22,7 @@ function parseCmsNews(item: CmsNews): NewsItem | null {
     title,
     body: item.body,
     ...(img?.src
-      ? { image: { src: img.src, width: img.width ?? 800, height: img.height ?? 500 } }
+      ? { image: { src: absoluteMediaSrc(img.src), width: img.width ?? 800, height: img.height ?? 500 } }
       : {}),
   };
 }

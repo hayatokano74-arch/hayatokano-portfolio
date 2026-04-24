@@ -8,28 +8,7 @@
 import type { Work } from "@/lib/types";
 import type { CmsWork, CmsMediaItem } from "./client";
 import { fetchCmsClient } from "./use-cms";
-
-const RE_UNICODE_TEST = /u[0-9a-fA-F]{4}/;
-const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
-
-function fixBrokenUnicodeUrl(url: string): string {
-  if (!RE_UNICODE_TEST.test(url)) return url;
-  const decoded = url.replace(RE_UNICODE_REPLACE, (_match, hex) => {
-    const cp = parseInt(hex, 16);
-    if (cp >= 0x3000 && cp <= 0x9fff) return String.fromCodePoint(cp);
-    if (cp >= 0xf900 && cp <= 0xfaff) return String.fromCodePoint(cp);
-    if (cp >= 0xff00 && cp <= 0xffef) return String.fromCodePoint(cp);
-    return _match;
-  });
-  /* 日本語文字をURLエンコード（パス部分のみ） */
-  try {
-    const u = new URL(decoded);
-    u.pathname = u.pathname.split('/').map(s => encodeURIComponent(decodeURIComponent(s))).join('/');
-    return u.toString();
-  } catch {
-    return decoded;
-  }
-}
+import { fixBrokenUnicodeUrl, absoluteMediaSrc } from "@/lib/url-utils";
 
 type RawMedia = CmsMediaItem & { id?: string; src?: string };
 type RawDetails = Record<string, string | undefined>;
@@ -45,11 +24,11 @@ function parseCmsWork(item: CmsWork): Work | null {
     .map((m, i) => ({
       id: m.id?.trim() || `media-${i + 1}`,
       type: (m.type === "video" ? "video" : "image") as "image" | "video",
-      src: fixBrokenUnicodeUrl(m.src!),
+      src: absoluteMediaSrc(fixBrokenUnicodeUrl(m.src!)),
       alt: m.alt ?? "",
       width: m.width ?? 1280,
       height: m.height ?? 800,
-      ...(m.poster ? { poster: fixBrokenUnicodeUrl(m.poster) } : {}),
+      ...(m.poster ? { poster: absoluteMediaSrc(fixBrokenUnicodeUrl(m.poster)) } : {}),
     }));
 
   if (media.length === 0) return null;
@@ -59,7 +38,7 @@ function parseCmsWork(item: CmsWork): Work | null {
     | undefined;
   const thumbnail = thumb?.src
     ? {
-        src: fixBrokenUnicodeUrl(thumb.src),
+        src: absoluteMediaSrc(fixBrokenUnicodeUrl(thumb.src)),
         alt: thumb.alt ?? "",
         width: thumb.width ?? 1280,
         height: thumb.height ?? 800,

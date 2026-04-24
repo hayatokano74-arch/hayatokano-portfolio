@@ -13,7 +13,7 @@ import { cache } from "react";
 import type { Work } from "@/lib/types";
 import { works as fallbackWorks } from "@/lib/mock";
 import { fetchCms, type CmsWork, type CmsMediaItem } from "@/lib/cms/client";
-import { fixBrokenUnicodeUrl } from "@/lib/url-utils";
+import { fixBrokenUnicodeUrl, absoluteMediaSrc } from "@/lib/url-utils";
 
 const WORKS_DIR = path.join(process.cwd(), "content/works");
 
@@ -33,11 +33,11 @@ function parseCmsWork(item: CmsWork): Work | null {
     .map((m, i) => ({
       id: m.id?.trim() || `media-${i + 1}`,
       type: (m.type === "video" ? "video" : "image") as "image" | "video",
-      src: fixBrokenUnicodeUrl(m.src!),
+      src: absoluteMediaSrc(fixBrokenUnicodeUrl(m.src!)),
       alt: m.alt ?? "",
       width: m.width ?? 1280,
       height: m.height ?? 800,
-      ...(m.poster ? { poster: fixBrokenUnicodeUrl(m.poster) } : {}),
+      ...(m.poster ? { poster: absoluteMediaSrc(fixBrokenUnicodeUrl(m.poster)) } : {}),
     }));
 
   if (media.length === 0) return null;
@@ -47,7 +47,7 @@ function parseCmsWork(item: CmsWork): Work | null {
     | undefined;
   const thumbnail = thumb?.src
     ? {
-        src: fixBrokenUnicodeUrl(thumb.src),
+        src: absoluteMediaSrc(fixBrokenUnicodeUrl(thumb.src)),
         alt: thumb.alt ?? "",
         width: thumb.width ?? 1280,
         height: thumb.height ?? 800,
@@ -131,11 +131,11 @@ function parseLocalWork(
     .map((m, i) => ({
       id: m.id?.trim() || `media-${i + 1}`,
       type: (m.type === "video" ? "video" : "image") as "image" | "video",
-      src: fixBrokenUnicodeUrl(m.src!),
+      src: absoluteMediaSrc(fixBrokenUnicodeUrl(m.src!)),
       alt: m.alt ?? "",
       width: m.width ?? 1280,
       height: m.height ?? 800,
-      ...(m.poster ? { poster: fixBrokenUnicodeUrl(m.poster) } : {}),
+      ...(m.poster ? { poster: absoluteMediaSrc(fixBrokenUnicodeUrl(m.poster)) } : {}),
     }));
 
   if (media.length === 0) return null;
@@ -145,7 +145,7 @@ function parseLocalWork(
     | undefined;
   const thumbnail = thumb?.src
     ? {
-        src: fixBrokenUnicodeUrl(thumb.src),
+        src: absoluteMediaSrc(fixBrokenUnicodeUrl(thumb.src)),
         alt: thumb.alt ?? "",
         width: thumb.width ?? 1280,
         height: thumb.height ?? 800,

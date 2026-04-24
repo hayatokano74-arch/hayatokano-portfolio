@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
-// CMS メディアホスト（hayatokano.com/_cms/uploads/ から配信）
-const cmsMediaHost = process.env.CMS_MEDIA_HOST ?? "hayatokano.com";
+// CMS メディアホスト（media.hayatokano.com から配信）
+const cmsMediaHost = process.env.CMS_MEDIA_HOST ?? "media.hayatokano.com";
 
 const isStaticExport = process.env.STATIC_EXPORT === "true";
 

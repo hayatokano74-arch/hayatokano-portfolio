@@ -8,6 +8,7 @@
 import type { About } from "@/lib/about";
 import type { CmsAbout } from "./client";
 import { fetchCmsClient } from "./use-cms";
+import { absoluteMediaSrc } from "@/lib/url-utils";
 
 /** CMS API から About データを取得 */
 export async function fetchAboutFromCms(): Promise<About> {
@@ -27,7 +28,7 @@ export async function fetchAboutFromCms(): Promise<About> {
   )
     .filter((p) => p.src)
     .map((p) => ({
-      src: p.src,
+      src: absoluteMediaSrc(p.src),
       width: p.width ?? 640,
       height: p.height ?? 420,
     }));

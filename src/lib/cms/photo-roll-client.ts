@@ -1,6 +1,7 @@
 "use client";
 
 import { fetchCmsClient } from "./use-cms";
+import { absoluteMediaSrc } from "@/lib/url-utils";
 
 export interface PhotoRollItem {
   slug: string;
@@ -31,7 +32,7 @@ export async function fetchPhotoRoll(): Promise<PhotoRollItem[]> {
     title: item.title,
     date: item.date,
     time: item.time || "",
-    src: item.src,
+    src: absoluteMediaSrc(item.src),
     width: item.width || 0,
     height: item.height || 0,
   }));

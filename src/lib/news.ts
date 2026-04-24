@@ -12,6 +12,7 @@ import matter from "gray-matter";
 import type { NewsItem } from "@/lib/types";
 import { news as fallbackNews } from "@/lib/mock";
 import { fetchCms, type CmsNews } from "@/lib/cms/client";
+import { absoluteMediaSrc } from "@/lib/url-utils";
 
 const NEWS_DIR = path.join(process.cwd(), "content/news");
 
@@ -28,7 +29,7 @@ function parseCmsNews(item: CmsNews): NewsItem | null {
     title,
     body: item.body,
     ...(img?.src
-      ? { image: { src: img.src, width: img.width ?? 800, height: img.height ?? 500 } }
+      ? { image: { src: absoluteMediaSrc(img.src), width: img.width ?? 800, height: img.height ?? 500 } }
       : {}),
   };
 }

@@ -6,7 +6,7 @@
 const RE_HTML_TAG = /<[a-z][\s\S]*?>/i;
 
 /* URL処理は共通ユーティリティに委譲 */
-export { fixBrokenUnicodeUrl } from "@/lib/url-utils";
+export { fixBrokenUnicodeUrl, absoluteMediaSrc } from "@/lib/url-utils";
 
 /** HTMLタグがなければ改行をbrに変換、HTMLがあればそのまま返す */
 export function ensureHtml(text: string): string {

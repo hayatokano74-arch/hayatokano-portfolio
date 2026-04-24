@@ -18,6 +18,21 @@ const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
  *  - 0xF900–0xFAFF: CJK互換漢字
  *  - 0xFF00–0xFFEF: 全角英数・半角カタカナ等
  */
+/**
+ * CMS から返される相対パス（/media/...）を絶対 URL に変換する。
+ * NEXT_PUBLIC_CMS_MEDIA_HOST 環境変数で配信元を切り替え可能。
+ * 既に http(s):// で始まる URL はそのまま返す。
+ */
+export function absoluteMediaSrc(src: string): string {
+  if (!src || src.startsWith("http")) return src;
+  if (src.startsWith("/")) {
+    const host =
+      process.env.NEXT_PUBLIC_CMS_MEDIA_HOST ?? "media.hayatokano.com";
+    return `https://${host}${src}`;
+  }
+  return src;
+}
+
 export function fixBrokenUnicodeUrl(url: string): string {
   if (!RE_UNICODE_TEST.test(url)) return url;
   const decoded = url.replace(RE_UNICODE_REPLACE, (_match, hex) => {

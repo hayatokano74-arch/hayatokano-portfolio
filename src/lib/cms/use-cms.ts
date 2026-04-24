@@ -9,7 +9,8 @@
 
 import { useState, useEffect } from "react";
 
-const CMS_API_BASE = "https://hayatokano.com/_cms/api";
+const CMS_API_BASE =
+  process.env.NEXT_PUBLIC_CMS_API_URL ?? "https://media.hayatokano.com/_cms/api";
 
 /** CMS API レスポンスの共通形式 */
 interface CmsResponse<T> {

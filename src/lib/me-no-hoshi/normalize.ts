@@ -8,7 +8,7 @@ import type {
   MeNoHoshiDetailItem,
   WpMeNoHoshiResponse,
 } from "./types";
-import { fixBrokenUnicodeUrl, ensureHtml, normalizeTag } from "./utils";
+import { fixBrokenUnicodeUrl, absoluteMediaSrc, ensureHtml, normalizeTag } from "./utils";
 
 /** HTMLタグを除去してプレーンテキスト（改行付き）に変換する
  *  </p><br> を改行に変換してから除去することで、段落間の改行を保持する */
@@ -34,7 +34,7 @@ function newlinesToHtml(text: string): string {
 export function normalizeKeyVisualList(items: WpMeNoHoshiResponse["keyVisuals"], slug: string) {
   return (items ?? [])
     .map((item, index) => {
-      const src = fixBrokenUnicodeUrl((item.image?.src ?? "").trim());
+      const src = absoluteMediaSrc(fixBrokenUnicodeUrl((item.image?.src ?? "").trim()));
       if (!src) return null;
       return {
         id: item.id?.trim() || `${slug}-key-visual-${index + 1}`,
@@ -54,7 +54,7 @@ export function normalizeKeyVisualList(items: WpMeNoHoshiResponse["keyVisuals"],
 export function normalizeWorkList(items: WpMeNoHoshiResponse["archiveWorks"], slug: string, key: "past" | "archive") {
   return (items ?? [])
     .map((item, index) => {
-      const src = fixBrokenUnicodeUrl((item.image?.src ?? "").trim());
+      const src = absoluteMediaSrc(fixBrokenUnicodeUrl((item.image?.src ?? "").trim()));
       if (!src) return null;
       return {
         id: item.id?.trim() || `${slug}-${key}-${index + 1}`,
@@ -120,8 +120,8 @@ export function normalizePost(post: WpMeNoHoshiResponse): MeNoHoshiPost | null {
     .map((item, i) => ({
       ...item,
       id: item.id?.trim() || `${slug}-media-${i + 1}`,
-      src: fixBrokenUnicodeUrl(item.src),
-      ...(item.poster ? { poster: fixBrokenUnicodeUrl(item.poster) } : {}),
+      src: absoluteMediaSrc(fixBrokenUnicodeUrl(item.src)),
+      ...(item.poster ? { poster: absoluteMediaSrc(fixBrokenUnicodeUrl(item.poster)) } : {}),
     }));
   if (media.length === 0) return null;
 

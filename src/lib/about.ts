@@ -11,6 +11,7 @@ import path from "path";
 import matter from "gray-matter";
 import { about as fallbackAbout } from "@/lib/mock";
 import { fetchCms, type CmsAbout } from "@/lib/cms/client";
+import { absoluteMediaSrc } from "@/lib/url-utils";
 
 /** About の型 */
 export type About = {
@@ -33,7 +34,7 @@ function loadAboutFromLocal(): About | null {
       (data.photos ?? []) as { src: string; width: number; height: number }[]
     )
       .filter((p) => p.src)
-      .map((p) => ({ src: p.src, width: p.width ?? 640, height: p.height ?? 420 }));
+      .map((p) => ({ src: absoluteMediaSrc(p.src), width: p.width ?? 640, height: p.height ?? 420 }));
 
     const cv = ((data.cv ?? []) as { year: string; content: string }[])
       .filter((c) => c.content)
@@ -62,7 +63,7 @@ export async function getAbout(): Promise<About> {
         }[]
       )
         .filter((p) => p.src)
-        .map((p) => ({ src: p.src, width: p.width ?? 640, height: p.height ?? 420 }));
+        .map((p) => ({ src: absoluteMediaSrc(p.src), width: p.width ?? 640, height: p.height ?? 420 }));
 
       const cv = ((item.data.cv ?? []) as { year: string; content: string }[])
         .filter((c) => c.content)

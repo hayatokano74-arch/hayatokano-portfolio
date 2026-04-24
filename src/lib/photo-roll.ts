@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { fetchCms } from "@/lib/cms/client";
+import { absoluteMediaSrc } from "@/lib/url-utils";
 
 export type { PhotoRollItem } from "@/lib/cms/photo-roll-client";
 
@@ -25,7 +26,7 @@ export const getPhotoRoll = cache(async (): Promise<PhotoRollItem[]> => {
       title: item.title,
       date: item.date,
       time: item.time || "",
-      src: item.src,
+      src: absoluteMediaSrc(item.src),
       width: item.width || 0,
       height: item.height || 0,
     }));
