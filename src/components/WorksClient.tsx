@@ -52,7 +52,7 @@ export function WorksClient<T extends WorkLike>({
   );
 }
 
-function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; width?: number; height?: number }) {
+function ThumbRect({ src, alt, width, height, priority }: { src?: string; alt?: string; width?: number; height?: number; priority?: boolean }) {
   const isPortrait = (height ?? 0) > (width ?? 0);
   if (src) {
     return (
@@ -61,7 +61,8 @@ function ThumbRect({ src, alt, width, height }: { src?: string; alt?: string; wi
           src={src}
           alt={alt ?? ""}
           fill
-          loading="lazy"
+          priority={priority}
+          loading={priority ? undefined : "lazy"}
           sizes={SIZES_WORKS_GRID}
           placeholder="blur"
           blurDataURL={blurDataURL(1280, 720)}
@@ -158,22 +159,23 @@ function GridDetails({ details, gridSettings }: { details: unknown; gridSettings
 function WorksGrid<T extends WorkLike>({ works, detailHref, showDetails = false, gridSettings }: { works: T[]; detailHref: (slug: string) => string; showDetails?: boolean; gridSettings?: MeNoHoshiGridField[] }) {
   return (
     <div className="works-grid">
-      {works.map((w) => {
+      {works.map((w, idx) => {
         const lead = w.media[0];
         const thumbSrc = w.thumbnail?.src
           ?? (lead?.type === "video"
             ? (lead.poster || youtubeThumbnail(lead.src))
             : lead?.src);
         const thumbAlt = w.thumbnail?.alt ?? lead?.alt ?? w.title;
+        /* 先頭3枚はファーストビューに入るため preload、それ以降は lazy */
+        const isPriority = idx < 3;
         return (
           <Link
             key={w.slug}
             href={detailHref(w.slug)}
-            prefetch={true}
             className="work-grid-item"
           >
             <div className="work-grid-thumb">
-              <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} />
+              <ThumbRect src={thumbSrc} alt={thumbAlt} width={w.thumbnail?.width ?? lead?.width} height={w.thumbnail?.height ?? lead?.height} priority={isPriority} />
             </div>
             <div className="work-grid-info">
               <span className="work-grid-title">{w.title}{w.pinned && <PinnedBadge />}</span>
