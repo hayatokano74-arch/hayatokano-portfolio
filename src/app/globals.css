@@ -4053,20 +4053,21 @@ img[loading="lazy"] {
 }
 
 /* ── フィルターアイコン ── */
+/* ── Filter テキストボタン ── */
 .filter-search-trigger {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.3em;
   flex-shrink: 0;
-  width: var(--space-7);
-  height: var(--space-7);
   border: none;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  position: relative;
   transition: color var(--duration-fast) ease;
   padding: 0;
+  font-size: var(--font-meta);
+  letter-spacing: 0.06em;
+  line-height: 1;
 }
 
 .filter-search-trigger:hover {
@@ -4077,15 +4078,19 @@ img[loading="lazy"] {
   color: var(--fg);
 }
 
-/* フィルター選択数バッジ: アイコン右上のドット */
-.filter-badge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--fg);
+.filter-trigger-label {
+  display: flex;
+  align-items: center;
+  gap: 0.15em;
+}
+
+.filter-trigger-count {
+  color: inherit;
+}
+
+.filter-trigger-chevron {
+  font-size: 0.8em;
+  line-height: 1;
 }
 
 /* ── ドロップダウン + コンテンツレイアウト ── */

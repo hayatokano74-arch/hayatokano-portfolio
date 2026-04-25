@@ -5,7 +5,7 @@ import React, { Suspense } from "react";
 import { type Category } from "@/lib/categories";
 import { useFilterContext } from "@/components/FilterableContent";
 import { SearchInput, SearchPlaceholder } from "./SearchBar";
-import { FilterIcon } from "./icons";
+
 import { ViewToggleLinks } from "./ViewToggleLinks";
 
 type CategoryRowProps = {
@@ -74,8 +74,12 @@ function FilterModeBar({
           aria-expanded={filterOpen}
           aria-label="フィルターを開閉"
         >
-          <FilterIcon />
-          {filterCount > 0 && <span className="filter-badge" />}
+          <span className="filter-trigger-label">
+            Filter{filterCount > 0 && <span className="filter-trigger-count"> ({filterCount})</span>}
+          </span>
+          <span className="filter-trigger-chevron" aria-hidden="true">
+            {filterOpen ? "∧" : "∨"}
+          </span>
         </button>
 
         {showWorksToggle ? (
