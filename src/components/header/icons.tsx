@@ -46,9 +46,9 @@ export function ListIcon() {
  */
 export function ChevronIcon() {
   return (
-    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+    <svg width="12" height="7" viewBox="0 0 12 7" fill="none" aria-hidden="true">
       <polyline
-        points="1,1 5,5 9,1"
+        points="1,1 6,6 11,1"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"

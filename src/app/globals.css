@@ -4057,7 +4057,7 @@ img[loading="lazy"] {
 .filter-search-trigger {
   display: flex;
   align-items: center;
-  gap: 0.3em;
+  gap: 6px;
   flex-shrink: 0;
   border: none;
   background: transparent;
