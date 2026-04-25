@@ -39,6 +39,8 @@ export default async function OgImage({ params }: Props) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
+            width={1200}
+            height={630}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
             alt=""
           />

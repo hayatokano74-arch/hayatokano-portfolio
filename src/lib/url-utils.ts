@@ -22,13 +22,19 @@ const RE_UNICODE_REPLACE = /u([0-9a-fA-F]{4})/g;
  * CMS から返される相対パス（/media/...）を絶対 URL に変換する。
  * NEXT_PUBLIC_CMS_MEDIA_HOST 環境変数で配信元を切り替え可能。
  * 既に http(s):// で始まる URL はそのまま返す。
+ *
+ * PNG/JPG は CMS が自動生成した .webp を優先する。
+ * Vercel Image Optimization のソースサイズ上限（15MB）を回避するため、
+ * 90MB 級の PNG を直接フェッチさせず、1〜4MB の WebP を使わせる。
  */
 export function absoluteMediaSrc(src: string): string {
   if (!src || src.startsWith("http")) return src;
   if (src.startsWith("/")) {
     const host =
       process.env.NEXT_PUBLIC_CMS_MEDIA_HOST ?? "media.hayatokano.com";
-    return `https://${host}${src}`;
+    /* CMS アップロード済み画像は .png.webp / .jpg.webp が自動生成されている */
+    const webpPath = /\.(png|jpe?g|gif)$/i.test(src) ? src + ".webp" : src;
+    return `https://${host}${webpPath}`;
   }
   return src;
 }
