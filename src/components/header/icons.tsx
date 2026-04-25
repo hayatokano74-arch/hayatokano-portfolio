@@ -41,6 +41,24 @@ export function ListIcon() {
 }
 
 /**
+ * シェブロン（下向き）: フィルタートリガー用
+ * open 時は CSS の rotate(180deg) で上向きに反転する。
+ */
+export function ChevronIcon() {
+  return (
+    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+      <polyline
+        points="1,1 5,5 9,1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
  * 目の星ロゴ: 四芒星
  */
 export function MenohoshiLogo() {

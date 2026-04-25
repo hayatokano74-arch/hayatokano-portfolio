@@ -4089,8 +4089,12 @@ img[loading="lazy"] {
 }
 
 .filter-trigger-chevron {
-  font-size: 0.8em;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  transition: transform var(--duration-fast) ease;
+}
+.filter-trigger-chevron.is-open {
+  transform: rotate(180deg);
 }
 
 /* ── ドロップダウン + コンテンツレイアウト ── */

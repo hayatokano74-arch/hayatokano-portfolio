@@ -7,6 +7,7 @@ import { useFilterContext } from "@/components/FilterableContent";
 import { SearchInput, SearchPlaceholder } from "./SearchBar";
 
 import { ViewToggleLinks } from "./ViewToggleLinks";
+import { ChevronIcon } from "./icons";
 
 type CategoryRowProps = {
   showFilterButton: boolean;
@@ -77,8 +78,8 @@ function FilterModeBar({
           <span className="filter-trigger-label">
             Filter{filterCount > 0 && <span className="filter-trigger-count"> ({filterCount})</span>}
           </span>
-          <span className="filter-trigger-chevron" aria-hidden="true">
-            {filterOpen ? "∧" : "∨"}
+          <span className={`filter-trigger-chevron ${filterOpen ? "is-open" : ""}`} aria-hidden="true">
+            <ChevronIcon />
           </span>
         </button>
 
