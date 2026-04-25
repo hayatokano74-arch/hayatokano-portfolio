@@ -39,6 +39,36 @@ export function absoluteMediaSrc(src: string): string {
   return src;
 }
 
+/**
+ * グリッドサムネイル専用: CMS が自動生成した thumb_ ファイルを使用する。
+ *
+ * CMS は全アップロード時に thumb_{filename}.{ext}.webp を生成する（約 20–60KB）。
+ * フルサイズ WebP（1MB〜）の代わりにこれを使うことで Vercel の
+ * ソースフェッチ量を約 1/30 に削減できる。
+ *
+ * 変換例:
+ *   /media/works/w007/20260405102839_b246529d.jpg
+ *   → https://media.hayatokano.com/media/works/w007/thumb_20260405102839_b246529d.jpg.webp
+ *
+ * /media/ 以外の URL（外部 URL 等）は absoluteMediaSrc にフォールバック。
+ */
+export function thumbMediaSrc(src: string): string {
+  if (!src || src.startsWith("http")) return src;
+  if (src.startsWith("/media/")) {
+    const lastSlash = src.lastIndexOf("/");
+    const dir = src.substring(0, lastSlash + 1);
+    const filename = src.substring(lastSlash + 1);
+    /* すでに thumb_ または .webp の場合はそのまま absoluteMediaSrc に渡す */
+    if (filename.startsWith("thumb_") || filename.endsWith(".webp")) {
+      return absoluteMediaSrc(src);
+    }
+    const thumbPath = `${dir}thumb_${filename}.webp`;
+    return absoluteMediaSrc(thumbPath);
+  }
+  /* /media/ 以外はフルサイズ WebP にフォールバック */
+  return absoluteMediaSrc(src);
+}
+
 export function fixBrokenUnicodeUrl(url: string): string {
   if (!RE_UNICODE_TEST.test(url)) return url;
   const decoded = url.replace(RE_UNICODE_REPLACE, (_match, hex) => {

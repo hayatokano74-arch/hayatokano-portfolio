@@ -13,7 +13,7 @@ import { cache } from "react";
 import type { Work } from "@/lib/types";
 import { works as fallbackWorks } from "@/lib/mock";
 import { fetchCms, type CmsWork, type CmsMediaItem } from "@/lib/cms/client";
-import { fixBrokenUnicodeUrl, absoluteMediaSrc } from "@/lib/url-utils";
+import { fixBrokenUnicodeUrl, absoluteMediaSrc, thumbMediaSrc } from "@/lib/url-utils";
 
 const WORKS_DIR = path.join(process.cwd(), "content/works");
 
@@ -73,8 +73,16 @@ function parseCmsWork(item: CmsWork): Work | null {
     excerpt: item.excerpt || item.body,
     ...((() => {
       if (thumbnail) return { thumbnail };
-      const firstImg = media.find((m) => m.type === "image");
-      if (firstImg) return { thumbnail: { src: firstImg.src, alt: firstImg.alt, width: firstImg.width, height: firstImg.height } };
+      /* CMS の thumb_ ファイルをサムネイルに使用（フルサイズ WebP の 1/30 程度のサイズ） */
+      const firstRawImg = mediaRaw.find((m) => m?.src && m.type !== "video");
+      if (firstRawImg) {
+        return { thumbnail: {
+          src: thumbMediaSrc(fixBrokenUnicodeUrl(firstRawImg.src!)),
+          alt: firstRawImg.alt ?? "",
+          width: firstRawImg.width ?? 1280,
+          height: firstRawImg.height ?? 800,
+        }};
+      }
       const firstVideo = media.find((m) => m.type === "video" && m.src.includes("youtube"));
       if (firstVideo) {
         const match = firstVideo.src.match(/[?&]v=([^&]+)/);
