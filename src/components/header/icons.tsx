@@ -17,28 +17,25 @@ export function FilterIcon() {
 }
 
 /**
- * グリッド表示アイコン（4つの四角）
+ * グリッド表示アイコン（単一の□アウトライン — wild.as スタイル）
  */
 export function GridIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
-      <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
-      <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" />
-      <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
+      <rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
 
 /**
- * リスト表示アイコン（3本の横線）
+ * リスト表示アイコン（3本の細い横線 — wild.as スタイル）
  */
 export function ListIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor" />
-      <rect x="1" y="7" width="14" height="2" rx="0.5" fill="currentColor" />
-      <rect x="1" y="12" width="14" height="2" rx="0.5" fill="currentColor" />
+      <line x1="2" y1="4.5" x2="14" y2="4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="2" y1="8.5" x2="14" y2="8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="2" y1="12.5" x2="14" y2="12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
