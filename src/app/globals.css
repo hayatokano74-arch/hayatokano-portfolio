@@ -4065,8 +4065,8 @@ img[loading="lazy"] {
   cursor: pointer;
   transition: color var(--duration-fast) ease;
   padding: 0;
-  font-size: var(--font-meta);
-  letter-spacing: 0.06em;
+  font-size: var(--font-body);
+  letter-spacing: 0;
   line-height: 1;
 }
 
