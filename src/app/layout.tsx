@@ -5,6 +5,8 @@ import { ThemeScript } from "@/components/ThemeToggle";
 import { GridDebugOverlay } from "@/components/GridDebugOverlay";
 import { CustomScrollbar } from "@/components/CustomScrollbar";
 import { NavigationProgress } from "@/components/NavigationProgress";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 /* 和文: IBM Plex Sans JP（合理的・技術的） */
@@ -29,11 +31,9 @@ export const metadata: Metadata = {
     type: "website",
     siteName,
     locale: "ja_JP",
-    images: [{ url: "/images/top-hero.jpg", width: 1200, alt: siteName }],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/top-hero.jpg"],
   },
 };
 
@@ -46,8 +46,8 @@ export default function RootLayout({
     <html lang="ja" className={ibmPlexSansJP.variable} suppressHydrationWarning>
       <head>
         {/* 画像ドメインへの接続を事前確立（DNS + TCP + TLS で 100-300ms 短縮） */}
-        <link rel="preconnect" href="https://wp.hayatokano.com" />
-        <link rel="dns-prefetch" href="https://wp.hayatokano.com" />
+        <link rel="preconnect" href="https://media.hayatokano.com" />
+        <link rel="dns-prefetch" href="https://media.hayatokano.com" />
         <link rel="alternate" type="application/rss+xml" href="/feed.xml" title="Hayato Kano Garden" />
         <ThemeScript />
       </head>
@@ -61,6 +61,8 @@ export default function RootLayout({
         {children}
         <CustomScrollbar />
         <GridDebugOverlay />
+        <Analytics />
+        <SpeedInsights />
         {/* Service Worker + スクロールバー自動表示 */}
         <script
           dangerouslySetInnerHTML={{

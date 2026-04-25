@@ -5017,36 +5017,3 @@ img[loading="lazy"] {
   }
 
 }
-
-
-/* ═══ 管理画面 ═══ */
-@keyframes admin-toast-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-/* 管理画面: リストアイテムホバー */
-.admin-list-item {
-  transition: background 0.1s;
-  color: inherit;
-}
-.admin-list-item:hover {
-  background: #f8f8f8 !important;
-}
-
-/* 管理画面: リスト行ホバー */
-.admin-list-row {
-  transition: background 0.1s;
-}
-.admin-list-row:hover {
-  background: #fafaf9 !important;
-}
-
-/* 管理画面: ダッシュボードカードホバー */
-.admin-dashboard-card {
-  transition: box-shadow var(--duration-fast), border-color var(--duration-fast);
-}
-.admin-dashboard-card:hover {
-  border-color: #c8c8c8 !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
-}

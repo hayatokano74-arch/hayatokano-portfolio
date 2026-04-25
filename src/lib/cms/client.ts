@@ -22,7 +22,8 @@ const CMS_API_BASE = (
 export async function fetchCms<T>(path: string): Promise<T> {
   const url = `${CMS_API_BASE}/${path.replace(/^\//, "")}`;
   const res = await fetch(url, {
-    next: { revalidate: 3600 },
+    // ページISR（86400s）に合わせてフェッチキャッシュも延長
+    next: { revalidate: 86400 },
     headers: { Accept: "application/json" },
   });
   if (!res.ok) {

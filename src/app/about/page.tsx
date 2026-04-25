@@ -3,7 +3,8 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { AboutPageClient } from "@/components/AboutPageClient";
 import { getAbout } from "@/lib/about";
 
-export const revalidate = 3600;
+// 更新頻度が低いため24時間キャッシュ（手動revalidateで即時反映可能）
+export const revalidate = 86400;
 export const metadata: Metadata = { title: "About" };
 
 export default async function AboutPage() {

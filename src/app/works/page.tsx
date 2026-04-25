@@ -4,8 +4,8 @@ import { WorksPageClient } from "@/components/WorksPageClient";
 import { getWorks } from "@/lib/works";
 
 // CMS更新時に /api/revalidate を叩くことで即時反映
-// それ以外は1時間ごとに自動再生成
-export const revalidate = 3600;
+// 更新頻度が低いため24時間キャッシュ（手動revalidateで即時反映可能）
+export const revalidate = 86400;
 
 const BASE_URL = "https://hayatokano.com";
 

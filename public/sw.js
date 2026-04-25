@@ -1,13 +1,13 @@
 /**
- * Service Worker — WP 画像キャッシュ
+ * Service Worker — メディア画像キャッシュ
  *
- * wp.hayatokano.com からの全画像をキャッシュし、
+ * media.hayatokano.com からの全画像をキャッシュし、
  * 2回目以降の訪問で即座に表示する。
  * キャッシュ容量は最大 2000 件を上限とし、LRU で古い画像を削除する。
  */
 
-const CACHE_NAME = "wp-img-v2";
-const IMAGE_ORIGIN = "https://wp.hayatokano.com";
+const CACHE_NAME = "media-img-v1";
+const IMAGE_ORIGIN = "https://media.hayatokano.com";
 
 // インストール時: 即座にアクティベート
 self.addEventListener("install", () => {
@@ -20,7 +20,11 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key.startsWith("garden-img-") || (key.startsWith("wp-img-") && key !== CACHE_NAME))
+          .filter((key) =>
+            key.startsWith("garden-img-") ||
+            key.startsWith("wp-img-") ||
+            (key.startsWith("media-img-") && key !== CACHE_NAME)
+          )
           .map((key) => caches.delete(key)),
       ),
     ),
@@ -28,11 +32,11 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// フェッチ: wp.hayatokano.com の画像をキャッシュファースト
+// フェッチ: media.hayatokano.com の画像をキャッシュファースト
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // wp.hayatokano.com からの画像リクエストのみ対象
+  // media.hayatokano.com からの画像リクエストのみ対象
   if (url.origin !== IMAGE_ORIGIN) return;
 
   // 画像ファイル拡張子のみキャッシュ
