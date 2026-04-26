@@ -1,11 +1,26 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import type { PhotoRollItem } from "@/lib/photo-roll";
 import { blurDataURL } from "@/lib/blur";
 import { Header } from "./Header";
+import { GardenPagination } from "./GardenPagination";
+
+const PER_PAGE = 20;
 
 export function PhotoRollPageClient({ photos }: { photos: PhotoRollItem[] }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(photos.length / PER_PAGE);
+
+  const start = (currentPage - 1) * PER_PAGE;
+  const pagePhotos = photos.slice(start, start + PER_PAGE);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   return (
     <>
       <Header
@@ -16,7 +31,7 @@ export function PhotoRollPageClient({ photos }: { photos: PhotoRollItem[] }) {
       />
       <div className="photo-roll-layout">
         <div className="photo-roll-stream">
-          {photos.map((photo, idx) => (
+          {pagePhotos.map((photo, idx) => (
             <article key={photo.slug} className="photo-roll-entry">
               <time className="photo-roll-date">{photo.date} {photo.time?.slice(0, 5)}</time>
               <div className="photo-roll-image-wrap">
@@ -26,9 +41,7 @@ export function PhotoRollPageClient({ photos }: { photos: PhotoRollItem[] }) {
                   width={photo.width || 800}
                   height={photo.height || 600}
                   className="photo-roll-image"
-                  /* モバイルはほぼフル幅、デスクトップは最大 600px */
                   sizes="(max-width: 900px) 100vw, 600px"
-                  /* 最初の2枚は優先取得、それ以降は遅延読み込み */
                   priority={idx < 2}
                   loading={idx < 2 ? undefined : "lazy"}
                   placeholder="blur"
@@ -38,6 +51,17 @@ export function PhotoRollPageClient({ photos }: { photos: PhotoRollItem[] }) {
             </article>
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className="photo-roll-pagination-wrap">
+            <GardenPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageLabels={[]}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </div>
     </>
   );

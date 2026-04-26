@@ -4012,8 +4012,21 @@ img[loading="lazy"] {
   image-orientation: from-image;
 }
 
+/* フォトロール ページネーション: streamと同列（5〜8列）に中央配置 */
+.photo-roll-pagination-wrap {
+  grid-column: 5 / span 4;
+  min-width: 0;
+}
+
+.photo-roll-pagination-wrap .garden-pagination {
+  grid-column: unset;
+  margin-top: var(--space-11);
+  padding-top: var(--space-9);
+}
+
 @media (max-width: 900px) {
-  .photo-roll-stream {
+  .photo-roll-stream,
+  .photo-roll-pagination-wrap {
     grid-column: 1 / -1;
   }
 }
