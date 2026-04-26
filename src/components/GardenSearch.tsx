@@ -155,7 +155,7 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
           ref={inputRef}
           type="text"
           className="garden-search-input"
-          placeholder="ページを検索…"
+          placeholder="SEARCH:"
           value={query}
           onChange={(e) => handleInput(e.target.value)}
           onKeyDown={handleKeyDown}
