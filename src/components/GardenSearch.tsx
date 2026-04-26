@@ -137,20 +137,6 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
   return (
     <div className="garden-search-wrapper">
       <div className="garden-search">
-        <svg
-          className="garden-search-icon"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
         <input
           ref={inputRef}
           type="text"
@@ -213,23 +199,6 @@ export function GardenSearch({ search, onFullSearch, fullSearchIds }: GardenSear
         </div>
       )}
 
-      {/* 全文検索結果バー */}
-      {fullSearchIds !== null && (
-        <div className="garden-search-result-bar">
-          <span>
-            「{query}」の検索結果: {fullSearchIds.length} 件
-          </span>
-          <button
-            className="garden-search-result-clear"
-            onClick={() => {
-              handleInput("");
-              inputRef.current?.focus();
-            }}
-          >
-            クリア
-          </button>
-        </div>
-      )}
     </div>
   );
 }

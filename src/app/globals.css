@@ -3234,13 +3234,7 @@ img[loading="lazy"] {
 
 .garden-sidebar-search .garden-search-input {
   font-size: var(--font-meta);
-  padding: var(--space-1) 24px var(--space-1) 20px;
-}
-
-.garden-sidebar-search .garden-search-icon {
-  left: 4px;
-  width: 13px;
-  height: 13px;
+  padding: var(--space-1) 24px var(--space-1) 0;
 }
 
 /* 検索UI */
@@ -3254,16 +3248,9 @@ img[loading="lazy"] {
   align-items: center;
 }
 
-.garden-search-icon {
-  position: absolute;
-  left: 12px;
-  color: var(--muted);
-  pointer-events: none;
-}
-
 .garden-search-input {
   width: 100%;
-  padding: var(--space-2) 28px var(--space-2) 24px;
+  padding: var(--space-2) 28px var(--space-2) 0;
   font-size: var(--font-body);
   font-family: inherit;
   color: var(--fg);
