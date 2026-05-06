@@ -20,7 +20,7 @@ if (!defined('DB_PATH')) define('DB_PATH', CMS_ROOT . '/db/hayatokano.sqlite3');
 if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', defined('UPLOAD_DIR_OVERRIDE') ? UPLOAD_DIR_OVERRIDE : CMS_ROOT . '/uploads');
 
 /** アップロードファイルの公開 URL プレフィックス */
-if (!defined('UPLOAD_URL_PREFIX')) define('UPLOAD_URL_PREFIX', defined('UPLOAD_URL_OVERRIDE') ? UPLOAD_URL_OVERRIDE : '/_cms/uploads');
+if (!defined('UPLOAD_URL_PREFIX')) define('UPLOAD_URL_PREFIX', defined('UPLOAD_URL_OVERRIDE') ? UPLOAD_URL_OVERRIDE : 'https://media.hayatokano.com/_cms/uploads');
 
 // ─── 認証設定 ────────────────────────────────────────────────
 /** セッション名 */

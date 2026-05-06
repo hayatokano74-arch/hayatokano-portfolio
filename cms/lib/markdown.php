@@ -82,7 +82,12 @@ function convert_markdown_images(string $body): string {
         '/!\[([^\]]*)\]\(([^)]+)\)/',
         function ($m) {
             $alt = htmlspecialchars($m[1], ENT_QUOTES);
-            $src = htmlspecialchars($m[2], ENT_QUOTES);
+            $src = $m[2];
+            // 相対パス /_cms/uploads/ → 絶対URL（Vercelフロントから参照可能にする）
+            if (str_starts_with($src, '/_cms/uploads/')) {
+                $src = 'https://media.hayatokano.com' . $src;
+            }
+            $src = htmlspecialchars($src, ENT_QUOTES);
             return '<img src="' . $src . '" alt="' . $alt . '" '
                  . 'loading="lazy" style="max-width:100%;height:auto;display:block;'
                  . 'margin:var(--space-5,20px) 0;border-radius:4px;" '
