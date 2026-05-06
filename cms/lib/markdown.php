@@ -26,6 +26,8 @@ function markdown_to_html(string $body): string {
         $body = convert_markdown_images($body);
         // HTML内のブラケットリンクを変換
         $body = convert_bracket_links($body);
+        // HTML <img src> の相対パスを絶対URLに変換（TinyMCE が ../../media/ 形式で保存する場合の対処）
+        $body = fix_html_img_urls($body);
         return $body;
     }
 
@@ -92,6 +94,36 @@ function convert_markdown_images(string $body): string {
                  . 'loading="lazy" style="max-width:100%;height:auto;display:block;'
                  . 'margin:var(--space-5,20px) 0;border-radius:4px;" '
                  . 'class="garden-img loaded">';
+        },
+        $body
+    );
+}
+
+/** HTML内の<img src>相対パスを絶対URLに変換 */
+function fix_html_img_urls(string $body): string {
+    return preg_replace_callback(
+        '/<img\b([^>]*)>/i',
+        function ($m) {
+            $attrs = preg_replace_callback(
+                '/\bsrc=(["\'])([^"\']+)\1/i',
+                function ($a) {
+                    $quote = $a[1];
+                    $src   = $a[2];
+                    // 既に絶対URLならそのまま
+                    if (str_starts_with($src, 'http://') || str_starts_with($src, 'https://')) {
+                        return $a[0];
+                    }
+                    // ../../media/ または ../media/ → https://media.hayatokano.com/media/
+                    $src = preg_replace('|^(\.\./)+media/|', 'https://media.hayatokano.com/media/', $src);
+                    // /_cms/uploads/ → https://media.hayatokano.com/_cms/uploads/
+                    if (str_starts_with($src, '/_cms/uploads/')) {
+                        $src = 'https://media.hayatokano.com' . $src;
+                    }
+                    return 'src=' . $quote . htmlspecialchars($src, ENT_QUOTES) . $quote;
+                },
+                $m[1]
+            );
+            return '<img' . $attrs . '>';
         },
         $body
     );

@@ -11,6 +11,18 @@
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# ─── CMS のみデプロイ（./deploy.sh cms）───────────────────
+if [ "${1:-}" = "cms" ]; then
+  echo "=== CMS のみデプロイ ==="
+  rsync -avz \
+    --exclude="db/" \
+    --exclude="uploads/" \
+    --exclude=".env.php" \
+    "${PROJECT_DIR}/cms/" "xserver:~/hayatokano.com/public_html/_cms/"
+  echo "=== CMS デプロイ完了 ✓ ==="
+  exit 0
+fi
 REMOTE_USER_HOST="xserver"
 REMOTE_DIR="~/hayatokano.com/public_html"
 DB_PATH="_cms/db/hayatokano.sqlite3"
