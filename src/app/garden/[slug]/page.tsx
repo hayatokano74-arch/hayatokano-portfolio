@@ -5,8 +5,8 @@ import { getAllPageSlugs } from "@/lib/garden/reader";
 
 export const metadata: Metadata = { title: "Garden" };
 
-/* ビルド時に既知のスラッグのHTMLを事前生成（SEO用）。新規スラッグはSSRで対応 */
-export const dynamicParams = true;
+/* ビルド時に既知のスラッグのHTMLを事前生成（SEO用）。新規スラッグは.htaccessで_placeholderにリライト（他の[slug]ルートと同方式） */
+export const dynamicParams = false;
 export async function generateStaticParams() {
   try {
     const slugs = await getAllPageSlugs();
