@@ -334,7 +334,9 @@ button {
   min-width: 0;
   position: relative;
   z-index: 1001;
-  background: var(--bg);
+  background: var(--overlay-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
 }
 
 .wdb-back {
@@ -406,7 +408,9 @@ button {
   min-width: 0;
   position: relative;
   z-index: 1001;
-  background: var(--bg);
+  background: var(--overlay-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
 }
 
 .wdb-cell {
