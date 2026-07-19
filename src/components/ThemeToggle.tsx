@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 
 type Theme = "light" | "dark";
 
@@ -36,49 +35,7 @@ function setGlobalTheme(theme: Theme) {
   listeners.forEach((fn) => fn(theme));
 }
 
-/* フッター右端の小さなスイッチ */
-export function ThemeToggle({ forceShow = false }: { forceShow?: boolean } = {}) {
-  const pathname = usePathname();
-  const [theme, setTheme] = useState<Theme>("light");
-
-  useEffect(() => {
-    const t = initTheme();
-    setTheme(t);
-    const handler = (next: Theme) => setTheme(next);
-    listeners.add(handler);
-    return () => { listeners.delete(handler); };
-  }, []);
-
-  const toggle = useCallback(() => {
-    const next = theme === "light" ? "dark" : "light";
-    setGlobalTheme(next);
-  }, [theme]);
-
-  /* 固定表示（layout.tsx）ではトップページ非表示、メニュー内(forceShow)は常に表示 */
-  if (!forceShow && pathname === "/") return null;
-
-  const isDark = theme === "dark";
-
-  return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label={isDark ? "ライトモードに切り替え" : "ダークモードに切り替え"}
-      className="theme-switch"
-    >
-      {/* トラック */}
-      <span className="theme-switch-track">
-        {/* つまみ */}
-        <span
-          className="theme-switch-thumb"
-          style={{ transform: isDark ? "translateX(12px)" : "translateX(0)" }}
-        />
-      </span>
-    </button>
-  );
-}
-
-/* ヘッダー用のドット型テーマ切替 */
+/* ヘッダー用のテーマ切替スイッチ（トラック+つまみ） */
 export function ThemeDot({ className = "" }: { className?: string } = {}) {
   const [theme, setTheme] = useState<Theme>("light");
 
@@ -95,14 +52,18 @@ export function ThemeDot({ className = "" }: { className?: string } = {}) {
     setGlobalTheme(next);
   }, [theme]);
 
+  const isDark = theme === "dark";
+
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label={theme === "dark" ? "ライトモードに切り替え" : "ダークモードに切り替え"}
+      aria-label={isDark ? "ライトモードに切り替え" : "ダークモードに切り替え"}
       className={`theme-dot ${className}`.trim()}
     >
-      <span className="theme-dot-circle" />
+      <span className="theme-dot-track">
+        <span className={`theme-dot-thumb${isDark ? " is-dark" : ""}`} />
+      </span>
     </button>
   );
 }

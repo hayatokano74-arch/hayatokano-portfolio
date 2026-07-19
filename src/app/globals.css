@@ -179,58 +179,51 @@
   margin: 0;
   cursor: pointer;
 }
-.theme-dot-circle {
-  display: block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--fg);
-  transition: opacity var(--duration-normal) ease, background var(--duration-normal) ease;
-  opacity: 0.35;
-}
-.theme-dot:hover .theme-dot-circle {
-  opacity: 0.9;
-}
-
-/* テーマ切り替えスイッチ（モバイルメニュー内 / フォールバック） */
-.theme-switch {
-  border: 0;
-  background: transparent;
-  padding: 4px;
-  margin: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  opacity: 0.35;
-  transition: opacity var(--duration-normal) ease;
-}
-.theme-switch:hover {
-  opacity: 0.8;
-}
-.theme-switch-track {
+.theme-dot-track {
   display: block;
   width: 24px;
   height: 12px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--muted);
+  border: 1px solid var(--fg);
   background: transparent;
   position: relative;
+  opacity: 0.55;
+  transition: opacity var(--duration-normal) ease;
 }
-.theme-switch-thumb {
+.theme-dot-thumb {
   display: block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--muted);
+  background: var(--fg);
   position: absolute;
   top: 1px;
   left: 1px;
+  transform: translateX(0);
   transition: transform var(--duration-normal) ease;
 }
+.theme-dot-thumb.is-dark {
+  transform: translateX(12px);
+}
+.theme-dot:hover .theme-dot-track {
+  opacity: 1;
+}
 
-/* メニュー内テーマスイッチ: デスクトップでは非表示 */
-.theme-switch-in-menu {
-  display: none;
+/* モバイルはタップ対象として一回り大きく */
+@media (max-width: 900px) {
+  .theme-dot-track {
+    width: 32px;
+    height: 16px;
+  }
+  .theme-dot-thumb {
+    width: 12px;
+    height: 12px;
+    top: 2px;
+    left: 2px;
+  }
+  .theme-dot-thumb.is-dark {
+    transform: translateX(16px);
+  }
 }
 
 /* モバイルメニュー内のドット: ヘッダー用スタイルをリセット */
@@ -1357,7 +1350,10 @@ button {
 }
 
 /* ホバー時テーマドット白に */
-.top-page.has-hover .theme-dot-circle {
+.top-page.has-hover .theme-dot-track {
+  border-color: #fff !important;
+}
+.top-page.has-hover .theme-dot-thumb {
   background: #fff !important;
 }
 
@@ -4299,10 +4295,6 @@ img[loading="lazy"] {
   /* ── ヘッダー ── */
   .header-bar > .theme-dot {
     display: none;
-  }
-
-  .mobile-overlay .theme-switch-in-menu {
-    display: flex;
   }
 
   /* header-rootにz-indexを設定し、中のオーバーレイがページ本体の上に出るようにする */
