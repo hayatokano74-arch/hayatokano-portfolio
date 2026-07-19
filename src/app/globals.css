@@ -12,6 +12,7 @@
   --accent: #0066cc;
   --media-bg: #e2e2e2;
   --overlay-bg: rgba(236, 236, 236, 0.62); /* Infoオーバーレイ: すりガラス風半透明背景（ライト） */
+  --overlay-glass-bg: rgba(236, 236, 236, 0.46); /* Infoパネル本体: より透過率高めのすりガラス（ライト） */
 
   /* ── ベースライングリッド ──
      全ての垂直方向の寸法（余白・行高・コンポーネント高）は
@@ -116,6 +117,7 @@
   --accent: #4d9fff;
   --media-bg: #222;
   --overlay-bg: rgba(26, 26, 26, 0.62); /* Infoオーバーレイ: すりガラス風半透明背景（ダーク） */
+  --overlay-glass-bg: rgba(26, 26, 26, 0.46); /* Infoパネル本体: より透過率高めのすりガラス（ダーク） */
   --color-success: #6fcf97;
   --color-success-bg: #2ecc7133;
 }
@@ -1925,19 +1927,21 @@ button {
 }
 
 .works-list-view .action-link {
-  display: block;
-  width: 100%;
-  text-align: center;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  padding: var(--space-2) var(--space-5);
-  transition: background-color var(--duration-normal) ease, color var(--duration-normal) ease, border-color var(--duration-normal) ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-.works-list-view .action-link:hover {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
+.works-list-view-arrow {
+  transition: transform var(--duration-normal) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .works-list-view .action-link:hover .works-list-view-arrow {
+    transform: translateX(3px);
+  }
 }
 
 .works-list-media {
@@ -2564,9 +2568,9 @@ button.tl-photo-cell {
 .work-detail-overlay {
   position: fixed;
   inset: 0;
-  background: var(--overlay-bg);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  background: var(--overlay-glass-bg);
+  backdrop-filter: blur(36px) saturate(130%);
+  -webkit-backdrop-filter: blur(36px) saturate(130%);
   z-index: 1000;
   transform: translateX(100%);
   visibility: hidden;
@@ -2579,12 +2583,27 @@ button.tl-photo-cell {
   visibility: visible;
 }
 
+/* すりガラスの粒状感（フラットな単色に見えないよう微細なノイズを重ねる） */
+.work-detail-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 140px 140px;
+}
+
 /* スクロール可能なコンテンツ領域
    トップバー・ボトムバーは z-index でオーバーレイの上に表示されるため、
    上下の padding でバーの裏にコンテンツが隠れないようにする。
    バー高さはCSS変数（--wdb-top-bar-h / --wdb-bottom-bar-h）から参照し、
    セクション余白（--v-section）で呼吸感を確保する。 */
 .work-detail-overlay-scroll {
+  position: relative;
+  z-index: 1;
   overflow-y: auto;
   height: 100%;
   padding: var(--pad-y) var(--pad-x);
