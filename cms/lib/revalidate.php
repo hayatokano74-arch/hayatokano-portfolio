@@ -22,7 +22,10 @@ function revalidate_paths(array $paths): void {
     // シークレット未設定の場合はスキップ（ローカル開発環境）
     if ($secret === '') return;
 
-    $url  = rtrim($base, '/') . '/api/revalidate';
+    // Next.js側は trailingSlash: true のため /api/revalidate は /api/revalidate/ へ
+    // 308リダイレクトされる。末尾スラッシュを付けてリダイレクトを回避しつつ、
+    // 念のためリダイレクトが発生してもPOSTのまま追従するよう設定しておく。
+    $url  = rtrim($base, '/') . '/api/revalidate/';
     $body = json_encode(['paths' => $paths]);
 
     $ch = curl_init($url);
@@ -36,6 +39,9 @@ function revalidate_paths(array $paths): void {
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 5,
         CURLOPT_CONNECTTIMEOUT => 3,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_POSTREDIR      => 3, // 301/302/303でもPOSTメソッド・ボディを維持
+        CURLOPT_MAXREDIRS      => 3,
     ]);
     curl_exec($ch);
     curl_close($ch);
