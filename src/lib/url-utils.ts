@@ -80,10 +80,17 @@ export function thumbMediaSrc(src: string): string {
  */
 export function absolutizeBodyImages(html: string): string {
   if (!html) return html;
-  return html.replace(/src="((?:\.\.\/)*\/?media\/[^"]+)"/g, (_match, path: string) => {
-    const normalized = "/" + path.replace(/^(?:\.\.\/)*\/?/, "");
-    return `src="${absoluteMediaSrc(normalized)}"`;
-  });
+  return html.replace(/src="((?:\.\.\/)*\/?media\/[^"]+)"/g, (_match, path: string) =>
+    `src="${absoluteMediaSrc(normalizeMediaRelativePath(path))}"`,
+  );
+}
+
+/**
+ * 先頭の ../ の連続や欠けた / を取り除き、/media/... 形式のルート相対パスに正規化する。
+ * 例: "../../media/misc/foo.png" → "/media/misc/foo.png"
+ */
+export function normalizeMediaRelativePath(path: string): string {
+  return "/" + path.replace(/^(?:\.\.\/)*\/?/, "");
 }
 
 export function fixBrokenUnicodeUrl(url: string): string {
