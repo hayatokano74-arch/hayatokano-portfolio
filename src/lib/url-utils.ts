@@ -69,6 +69,23 @@ export function thumbMediaSrc(src: string): string {
   return absoluteMediaSrc(src);
 }
 
+/**
+ * リッチテキスト本文(HTML)内に埋め込まれた <img src="..."> を絶対URL化する。
+ *
+ * CMSサーバーの設定不備により、TinyMCEで本文に直接挿入した画像のsrcが
+ * 相対パス（/media/... や、TinyMCEの相対URL変換による ../../media/... 等）
+ * のまま保存されていたことがある。本番サイト(別オリジン)ではこれが正しく
+ * 解決できず画像が表示されないため、パスの先頭の ../ を除去してから
+ * absoluteMediaSrc で絶対URL化する。
+ */
+export function absolutizeBodyImages(html: string): string {
+  if (!html) return html;
+  return html.replace(/src="((?:\.\.\/)*\/?media\/[^"]+)"/g, (_match, path: string) => {
+    const normalized = "/" + path.replace(/^(?:\.\.\/)*\/?/, "");
+    return `src="${absoluteMediaSrc(normalized)}"`;
+  });
+}
+
 export function fixBrokenUnicodeUrl(url: string): string {
   if (!RE_UNICODE_TEST.test(url)) return url;
   const decoded = url.replace(RE_UNICODE_REPLACE, (_match, hex) => {

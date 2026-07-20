@@ -2,6 +2,7 @@
 
 import createDOMPurify from "dompurify";
 import { useState, useEffect } from "react";
+import { absolutizeBodyImages } from "@/lib/url-utils";
 
 /**
  * CMS の body（HTML）を安全にレンダリングする共通コンポーネント。
@@ -27,7 +28,7 @@ export function RichBody({
       return;
     }
     /* クライアントでのみ DOMPurify を実行 */
-    setSanitized(createDOMPurify(window).sanitize(html));
+    setSanitized(createDOMPurify(window).sanitize(absolutizeBodyImages(html)));
   }, [html]);
 
   if (!html) return null;
