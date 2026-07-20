@@ -15,6 +15,7 @@ $counts = [
     'news'        => db_count('news'),
     'garden'      => db_count('garden'),
     'texts'       => db_count('texts'),
+    'photo_roll'  => db_count('photo_roll'),
 ];
 
 // 最近更新された記事（各テーブルから updated_at 降順5件）
@@ -26,6 +27,7 @@ $recent_queries = [
     ['table' => 'news',        'label' => 'News',     'url' => cms_url('/admin/news-edit.php?slug=%s'),        'title_col' => 'title'],
     ['table' => 'garden',      'label' => 'Garden',   'url' => cms_url('/admin/garden-edit.php?slug=%s'),      'title_col' => 'title'],
     ['table' => 'texts',       'label' => 'Text',     'url' => cms_url('/admin/text-edit.php?slug=%s'),        'title_col' => 'title'],
+    ['table' => 'photo_roll',  'label' => 'Photo Roll', 'url' => cms_url('/admin/photo-roll.php'),             'title_col' => 'title'],
 ];
 
 $db = get_db();
@@ -52,6 +54,7 @@ $cards = [
     ['label' => 'News',     'count' => $counts['news'],        'key' => 'news',         'url' => cms_url('/admin/news.php'),        'color' => 'green'],
     ['label' => 'Garden',   'count' => $counts['garden'],      'key' => 'garden',       'url' => cms_url('/admin/garden.php'),      'color' => 'teal'],
     ['label' => 'Text',     'count' => $counts['texts'],       'key' => 'text',         'url' => cms_url('/admin/text.php'),        'color' => 'pink'],
+    ['label' => 'Photo Roll', 'count' => $counts['photo_roll'], 'key' => 'photo-roll',  'url' => cms_url('/admin/photo-roll.php'),  'color' => 'orange'],
 ];
 
 $page_title = 'ダッシュボード';
