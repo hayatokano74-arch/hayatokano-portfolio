@@ -1,7 +1,11 @@
 #!/bin/bash
-# deploy.sh — hayatokano.com を Xserver へ静的デプロイ
+# deploy.sh — CMS（PHP + SQLite）を Xserver へデプロイ
 # 使い方: ./deploy.sh
 # 前提: ssh xserver が ~/.ssh/config で設定済み
+#
+# フロントエンドはVercelに一本化済み（git push で自動デプロイ）。
+# Xserverへの静的書き出しは廃止した。ここでは media.hayatokano.com を
+# 配信しているCMS本体（PHP + SQLite）のみをデプロイする。
 #
 # 安全設計:
 #   - デプロイ前にサーバーDBを自動バックアップ（3世代保持）
@@ -11,28 +15,12 @@
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-# ─── CMS のみデプロイ（./deploy.sh cms）───────────────────
-if [ "${1:-}" = "cms" ]; then
-  echo "=== CMS のみデプロイ ==="
-  rsync -avz \
-    --exclude="db/" \
-    --exclude="uploads/" \
-    --exclude=".env.php" \
-    "${PROJECT_DIR}/cms/" "xserver:~/hayatokano.com/public_html/_cms/"
-  echo "=== CMS デプロイ完了 ✓ ==="
-  exit 0
-fi
 REMOTE_USER_HOST="xserver"
-REMOTE_DIR="~/hayatokano.com/public_html"
-DB_PATH="_cms/db/hayatokano.sqlite3"
-DB_FULL_PATH="\$HOME/hayatokano.com/public_html/_cms/db/hayatokano.sqlite3"
-BACKUP_DIR="\$HOME/hayatokano.com/backups"
+REMOTE_CMS_DIR="~/hayatokano.com/public_html/_cms"
 
 # ─── ステップ 0: デプロイ前DBバックアップ＋件数記録 ───
-echo "=== [0/4] デプロイ前: DBバックアップ＋件数チェック ==="
+echo "=== [0/2] デプロイ前: DBバックアップ＋件数チェック ==="
 
-# サーバー上でバックアップ作成（3世代保持）
 ssh "$REMOTE_USER_HOST" bash -s <<'REMOTE_BACKUP'
   DB="$HOME/hayatokano.com/public_html/_cms/db/hayatokano.sqlite3"
   BACKUP_DIR="$HOME/hayatokano.com/backups"
@@ -56,7 +44,6 @@ ssh "$REMOTE_USER_HOST" bash -s <<'REMOTE_BACKUP'
   ls -1t "$BACKUP_DIR"/hayatokano.sqlite3.bak-* 2>/dev/null | head -3
 REMOTE_BACKUP
 
-# デプロイ前の件数を記録
 BEFORE_COUNTS=$(ssh "$REMOTE_USER_HOST" "sqlite3 ~/hayatokano.com/public_html/_cms/db/hayatokano.sqlite3 \
   'SELECT \"works:\" || COUNT(*) FROM works; \
    SELECT \"news:\" || COUNT(*) FROM news; \
@@ -66,66 +53,17 @@ echo "デプロイ前件数:"
 echo "$BEFORE_COUNTS"
 
 echo ""
-echo "=== [1/4] 静的ビルド ==="
-cd "$PROJECT_DIR"
-STATIC_EXPORT=true npx next build
-
-# フォールバックページを生成（CMS経由で追加された新しいスラッグ用）
-# _placeholder スラッグのHTMLを使う（generateStaticParamsで生成済み）
-echo ""
-echo "=== フォールバックページ生成 ==="
-for section in garden works me-no-hoshi text; do
-  fallback_dir="out/${section}/_fallback"
-  mkdir -p "$fallback_dir"
-  # _placeholderがあればそれを使う（空のClient Componentシェル）
-  if [ -f "out/${section}/_placeholder/index.html" ]; then
-    cp "out/${section}/_placeholder/index.html" "$fallback_dir/index.html"
-    echo "  ${section}/_fallback/ ← _placeholder"
-  else
-    # なければ既存ページを使う（次善策）
-    src=$(find "out/${section}" -mindepth 2 -name "index.html" -not -path "*_fallback*" -not -path "*opengraph*" -not -path "*_placeholder*" | head -1)
-    if [ -n "$src" ]; then
-      cp "$src" "$fallback_dir/index.html"
-      echo "  ${section}/_fallback/ ← $(basename $(dirname $src))"
-    fi
-  fi
-done
-
-echo ""
-echo "=== [2/4] フロントエンド → Xserver ==="
-rsync -avz --delete \
-  --exclude="wp/" \
-  --exclude="wp-*" \
-  --exclude="kiwamarisou.hayatokano.com/" \
-  --exclude="media.hayatokano.com/" \
-  --exclude="media/" \
-  --exclude="uploads/" \
-  --exclude=".htaccess" \
-  --exclude="*.php" \
-  --exclude="license.txt" \
-  --exclude="readme.html" \
-  --exclude="default_page.png" \
-  --exclude="_cms/" \
-  out/ "${REMOTE_USER_HOST}:${REMOTE_DIR}/"
-
-echo ""
-echo "=== [3/4] .htaccess を配置 ==="
-rsync -avz \
-  deploy/.htaccess \
-  "${REMOTE_USER_HOST}:${REMOTE_DIR}/.htaccess"
-
-echo ""
-echo "=== [4/4] PHP CMS → Xserver ==="
+echo "=== [1/2] CMS → Xserver ==="
 # db/ uploads/ .env.php はサーバーに絶対に送信しない
 rsync -avz \
   --exclude="db/" \
   --exclude="uploads/" \
   --exclude=".env.php" \
-  cms/ "${REMOTE_USER_HOST}:${REMOTE_DIR}/_cms/"
+  "${PROJECT_DIR}/cms/" "${REMOTE_USER_HOST}:${REMOTE_CMS_DIR}/"
 
 # ─── デプロイ後: DB件数検証 ───
 echo ""
-echo "=== デプロイ後DBチェック ==="
+echo "=== [2/2] デプロイ後DBチェック ==="
 AFTER_COUNTS=$(ssh "$REMOTE_USER_HOST" "sqlite3 ~/hayatokano.com/public_html/_cms/db/hayatokano.sqlite3 \
   'SELECT \"works:\" || COUNT(*) FROM works; \
    SELECT \"news:\" || COUNT(*) FROM news; \
@@ -140,7 +78,6 @@ if [ "$BEFORE_COUNTS" != "$AFTER_COUNTS" ]; then
   echo "BEFORE: $BEFORE_COUNTS"
   echo "AFTER:  $AFTER_COUNTS"
 
-  # 最新バックアップからロールバック
   ssh "$REMOTE_USER_HOST" bash -s <<'REMOTE_ROLLBACK'
     BACKUP_DIR="$HOME/hayatokano.com/backups"
     DB="$HOME/hayatokano.com/public_html/_cms/db/hayatokano.sqlite3"
@@ -163,5 +100,4 @@ fi
 echo ""
 echo "=== デプロイ完了 ✓ ==="
 echo "  DB件数: 変化なし"
-echo "  本番: https://hayatokano.com"
-echo "  CMS:  https://hayatokano.com/_cms/"
+echo "  CMS: https://media.hayatokano.com/_cms/"

@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: 静的ビルド検証
+    name: ビルド検証
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -25,7 +25,7 @@ jobs:
       - name: 依存関係をインストール
         run: npm ci
 
-      - name: 静的サイトをビルド
-        run: STATIC_EXPORT=true npx next build
+      - name: ビルド（Vercel本番ビルドと同じ設定）
+        run: npx next build
         env:
           CMS_API_URL: ${{ secrets.CMS_API_URL }}
