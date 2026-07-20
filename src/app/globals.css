@@ -2568,14 +2568,17 @@ button.tl-photo-cell {
   backdrop-filter: blur(36px) saturate(130%);
   -webkit-backdrop-filter: blur(36px) saturate(130%);
   z-index: 1000;
-  transform: translateX(100%);
+  opacity: 0;
+  transform: scale(0.98);
   visibility: hidden;
   transition:
+    opacity 420ms cubic-bezier(0.16, 1, 0.3, 1),
     transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
     visibility 420ms;
 }
 .work-detail-overlay.is-open {
-  transform: translateX(0);
+  opacity: 1;
+  transform: scale(1);
   visibility: visible;
 }
 
