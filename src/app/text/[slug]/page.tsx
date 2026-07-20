@@ -3,7 +3,7 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { TextDetailPageClient } from "@/components/TextDetailPageClient";
 import { getTexts, getTextBySlug } from "@/lib/text";
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 export async function generateStaticParams() {
   try {
     const texts = await getTexts();

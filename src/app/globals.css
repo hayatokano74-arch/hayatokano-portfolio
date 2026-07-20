@@ -12,7 +12,7 @@
   --accent: #0066cc;
   --media-bg: #e2e2e2;
   --overlay-bg: rgba(236, 236, 236, 0.62); /* Infoオーバーレイ: すりガラス風半透明背景（ライト） */
-  --overlay-glass-bg: rgba(236, 236, 236, 0.46); /* Infoパネル本体: より透過率高めのすりガラス（ライト） */
+  --overlay-glass-bg: rgba(236, 236, 236, 0.74); /* Infoパネル本体: すりガラス（ライト）。下地の写真の濃淡が透けすぎないよう不透明度を確保 */
 
   /* ── ベースライングリッド ──
      全ての垂直方向の寸法（余白・行高・コンポーネント高）は
@@ -117,7 +117,7 @@
   --accent: #4d9fff;
   --media-bg: #222;
   --overlay-bg: rgba(26, 26, 26, 0.62); /* Infoオーバーレイ: すりガラス風半透明背景（ダーク） */
-  --overlay-glass-bg: rgba(26, 26, 26, 0.46); /* Infoパネル本体: より透過率高めのすりガラス（ダーク） */
+  --overlay-glass-bg: rgba(26, 26, 26, 0.74); /* Infoパネル本体: すりガラス（ダーク）。下地の写真の濃淡が透けすぎないよう不透明度を確保 */
   --color-success: #6fcf97;
   --color-success-bg: #2ecc7133;
 }
@@ -2565,8 +2565,8 @@ button.tl-photo-cell {
   position: fixed;
   inset: 0;
   background: var(--overlay-glass-bg);
-  backdrop-filter: blur(36px) saturate(130%);
-  -webkit-backdrop-filter: blur(36px) saturate(130%);
+  backdrop-filter: blur(48px) saturate(110%) contrast(70%) brightness(1.05);
+  -webkit-backdrop-filter: blur(48px) saturate(110%) contrast(70%) brightness(1.05);
   z-index: 1000;
   opacity: 0;
   transform: scale(0.98);

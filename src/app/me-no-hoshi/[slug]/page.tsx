@@ -4,7 +4,7 @@ import { MeNoHoshiDetailPageClient } from "@/components/MeNoHoshiDetailPageClien
 import { getMeNoHoshiPosts, getMeNoHoshiBySlug } from "@/lib/meNoHoshi";
 
 export const revalidate = 3600;
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   try {

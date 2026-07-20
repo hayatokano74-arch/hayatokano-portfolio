@@ -4,7 +4,7 @@ import { getTexts, getTextBySlug } from "@/lib/text";
 import { notFound } from "next/navigation";
 import { TextToc } from "@/components/TextToc";
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 export async function generateStaticParams() {
   try {
     const texts = await getTexts();

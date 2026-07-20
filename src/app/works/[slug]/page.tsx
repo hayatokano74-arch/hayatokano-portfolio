@@ -5,8 +5,8 @@ import { getWorks, getWorkBySlug } from "@/lib/works";
 
 const BASE_URL = "https://hayatokano.com";
 
-/* ビルド時に既知のスラッグのHTMLを生成（SEO用） */
-export const dynamicParams = false;
+/* ビルド時に既知のスラッグのHTMLを生成（SEO用）。dynamicParams=trueなので未知のスラッグも404にならずオンデマンド描画される */
+export const dynamicParams = true;
 export async function generateStaticParams() {
   try {
     const works = await getWorks();
