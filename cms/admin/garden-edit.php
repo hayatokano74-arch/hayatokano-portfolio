@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $slug  = preg_replace('/[^a-zA-Z0-9\-_]/', '', trim($_POST['slug'] ?? ''));
         $date  = trim($_POST['date'] ?? '');
         $title = trim($_POST['title'] ?? '');
-        $type  = in_array($_POST['type'] ?? '', ['text', 'photo']) ? $_POST['type'] : 'text';
         $body  = trim($_POST['body'] ?? '');
 
         // タイトルが空なら日付をタイトルにする
@@ -50,11 +49,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($errors)) {
             $existing = db_find_by_slug('garden', $slug);
             if ($existing) {
-                $stmt = $db->prepare("UPDATE garden SET date=?, title=?, type=?, tags=?, body=?, updated_at=datetime('now') WHERE slug=?");
-                $stmt->execute([$date, $title, $type, $tags_json, $body, $slug]);
+                $stmt = $db->prepare("UPDATE garden SET date=?, title=?, tags=?, body=?, updated_at=datetime('now') WHERE slug=?");
+                $stmt->execute([$date, $title, $tags_json, $body, $slug]);
             } else {
-                $stmt = $db->prepare("INSERT INTO garden (slug, date, title, type, tags, body) VALUES (?,?,?,?,?,?)");
-                $stmt->execute([$slug, $date, $title, $type, $tags_json, $body]);
+                $stmt = $db->prepare("INSERT INTO garden (slug, date, title, tags, body) VALUES (?,?,?,?,?)");
+                $stmt->execute([$slug, $date, $title, $tags_json, $body]);
             }
             header('Location: ' . cms_url('/admin/garden.php'));
             exit;
@@ -69,12 +68,12 @@ $slug_param   = $_GET['slug']   ?? '';
 if ($action_param === 'new') {
     $is_new = true;
     $today  = date('Y-m-d');
-    $row = ['slug' => $today, 'date' => $today, 'title' => '', 'type' => 'text', 'tags' => '[]', 'body' => ''];
+    $row = ['slug' => $today, 'date' => $today, 'title' => '', 'tags' => '[]', 'body' => ''];
 } elseif ($slug_param) {
     $row = db_find_by_slug('garden', $slug_param);
     if (!$row) {
         $errors[] = '指定された Garden エントリが見つかりません。';
-        $row = ['slug' => $slug_param, 'date' => '', 'title' => '', 'type' => 'text', 'tags' => '[]', 'body' => ''];
+        $row = ['slug' => $slug_param, 'date' => '', 'title' => '', 'tags' => '[]', 'body' => ''];
     }
 } else {
     header('Location: ' . cms_url('/admin/garden.php'));
@@ -84,7 +83,6 @@ if ($action_param === 'new') {
 $f_slug  = htmlspecialchars($row['slug'] ?? '', ENT_QUOTES);
 $f_date  = htmlspecialchars($row['date'] ?? '', ENT_QUOTES);
 $f_title = htmlspecialchars($row['title'] ?? '', ENT_QUOTES);
-$f_type  = $row['type'] ?? 'text';
 $f_body  = htmlspecialchars($row['body'] ?? '', ENT_QUOTES);
 
 $tags_decoded = json_decode($row['tags'] ?? '[]', true);
@@ -108,9 +106,9 @@ ob_start();
 
   <div class="form-grid">
 
-    <!-- ── ヘッダー行: 日付 + 種類 ── -->
+    <!-- ── ヘッダー行: 日付 + スラッグ ── -->
     <div class="form-section form-section--full">
-      <div class="form-row form-row--3col" style="align-items:flex-end;">
+      <div class="form-row form-row--2col">
         <div class="form-group">
           <label class="form-label" for="date">日付 <span class="required">*</span></label>
           <input type="date" id="date" name="date" class="form-control" value="<?= $f_date ?>" required>
@@ -121,19 +119,6 @@ ob_start();
                  value="<?= $f_slug ?>" pattern="[a-zA-Z0-9\-_]+" required
                  <?= !$is_new ? 'readonly' : '' ?>>
           <?php if (!$is_new): ?><p class="form-hint">変更不可</p><?php endif; ?>
-        </div>
-        <div class="form-group">
-          <label class="form-label">種類</label>
-          <div style="display:flex;gap:var(--s-4);align-items:center;padding-top:var(--s-2);">
-            <label style="display:flex;align-items:center;gap:var(--s-2);cursor:pointer;">
-              <input type="radio" name="type" value="text"  <?= $f_type !== 'photo' ? 'checked' : '' ?>>
-              <span>テキスト</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:var(--s-2);cursor:pointer;">
-              <input type="radio" name="type" value="photo" <?= $f_type === 'photo' ? 'checked' : '' ?>>
-              <span>写真</span>
-            </label>
-          </div>
         </div>
       </div>
     </div>

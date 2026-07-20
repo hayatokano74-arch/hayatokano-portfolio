@@ -20,11 +20,11 @@ if ($search !== '') {
     $stmt->execute(['%' . $search . '%', '%' . $search . '%']);
     $total = (int)$stmt->fetchColumn();
 
-    $stmt = $db->prepare("SELECT id, slug, date, title, type, body, updated_at FROM garden WHERE title LIKE ? OR body LIKE ? ORDER BY date DESC LIMIT ? OFFSET ?");
+    $stmt = $db->prepare("SELECT id, slug, date, title, body, updated_at FROM garden WHERE title LIKE ? OR body LIKE ? ORDER BY date DESC LIMIT ? OFFSET ?");
     $stmt->execute(['%' . $search . '%', '%' . $search . '%', $per_page, $offset]);
 } else {
     $total = db_count('garden');
-    $stmt  = $db->prepare("SELECT id, slug, date, title, type, body, updated_at FROM garden ORDER BY date DESC LIMIT ? OFFSET ?");
+    $stmt  = $db->prepare("SELECT id, slug, date, title, body, updated_at FROM garden ORDER BY date DESC LIMIT ? OFFSET ?");
     $stmt->execute([$per_page, $offset]);
 }
 
@@ -62,7 +62,6 @@ ob_start();
       <tr>
         <th style="width:110px;">日付</th>
         <th>内容</th>
-        <th style="width:70px;">種類</th>
         <th style="width:110px;">更新</th>
         <th style="width:56px;"></th>
       </tr>
@@ -81,11 +80,6 @@ ob_start();
           <br>
           <?php endif; ?>
           <span class="text-muted" style="font-size:var(--font-sm);"><?= htmlspecialchars($preview, ENT_QUOTES) ?></span>
-        </td>
-        <td>
-          <span class="badge badge--<?= $row['type'] === 'photo' ? 'accent' : 'default' ?>">
-            <?= $row['type'] === 'photo' ? '写真' : 'テキスト' ?>
-          </span>
         </td>
         <td class="text-muted" data-rel-time="<?= htmlspecialchars($row['updated_at'], ENT_QUOTES) ?>">
           <?= htmlspecialchars($row['updated_at'], ENT_QUOTES) ?>
