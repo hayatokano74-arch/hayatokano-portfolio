@@ -13,6 +13,7 @@ require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
 require_once dirname(__DIR__) . '/lib/upload.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method !== 'GET') api_require_auth();
@@ -74,6 +75,7 @@ function handle_post(): never {
         $stmt->execute([$slug, $title, $date, $time, $result['url'], $result['width'], $result['height']]);
 
         $row = db_find_by_slug('photo_roll', $slug);
+        revalidate_paths(['/photo-roll']);
         json_ok($row, 201);
     }
 
@@ -111,6 +113,7 @@ function handle_post(): never {
     }
 
     $row = db_find_by_slug('photo_roll', $slug);
+    revalidate_paths(['/photo-roll']);
     json_ok($row);
 }
 
@@ -122,5 +125,6 @@ function handle_delete(): never {
     if (!$row) json_not_found();
 
     get_db()->prepare('DELETE FROM photo_roll WHERE slug = ?')->execute([$slug]);
+    revalidate_paths(['/photo-roll']);
     json_ok(['deleted' => $slug]);
 }
