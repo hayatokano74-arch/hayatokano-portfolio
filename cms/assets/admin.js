@@ -427,92 +427,6 @@ async function _do_url_upload(file, inputEl, btn, options) {
 }
 
 /**
- * Markdown テキストエリアの上部にアップロードツールバーを追加する
- * textarea[data-md-upload-section] に自動適用される
- *
- * @param {HTMLTextAreaElement} textareaEl
- * @param {Object}              options
- * @param {string}              options.section
- * @param {string}              [options.slug]
- */
-function init_markdown_upload_toolbar(textareaEl, options = {}) {
-  if (!textareaEl || textareaEl.dataset.mdToolbarInited) return;
-  textareaEl.dataset.mdToolbarInited = '1';
-
-  const toolbar = document.createElement('div');
-  toolbar.className = 'md-toolbar';
-
-  const btn = document.createElement('button');
-  btn.type      = 'button';
-  btn.className = 'btn btn-sm btn-ghost md-toolbar__btn';
-  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>画像を挿入';
-
-  const fileInput = document.createElement('input');
-  fileInput.type     = 'file';
-  fileInput.accept   = 'image/jpeg,image/png,image/webp,image/gif';
-  fileInput.multiple = true;
-  fileInput.style.display = 'none';
-
-  toolbar.appendChild(btn);
-  toolbar.appendChild(fileInput);
-
-  btn.addEventListener('click', () => fileInput.click());
-
-  const _md_upload_files = async (files) => {
-    btn.disabled    = true;
-    btn.textContent = 'アップロード中…';
-    for (const file of files) {
-      try {
-        const result = await upload_image_to_api(file, options.section ?? 'misc', options.slug ?? '');
-        insert_at_cursor(textareaEl, `\n![](${result.url})\n`);
-        show_toast('画像を挿入しました', 'success');
-      } catch (err) {
-        show_toast(err.message, 'error');
-      }
-    }
-    btn.disabled  = false;
-    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>画像を挿入';
-    fileInput.value = '';
-  };
-
-  fileInput.addEventListener('change', async () => {
-    const files = Array.from(fileInput.files ?? []);
-    if (files.length) await _md_upload_files(files);
-  });
-
-  // テキストエリアへの直接ドロップで画像挿入
-  textareaEl.addEventListener('dragover', (e) => {
-    if (Array.from(e.dataTransfer?.items ?? []).some(i => i.type.startsWith('image/'))) {
-      e.preventDefault();
-      textareaEl.classList.add('is-dragover');
-    }
-  });
-  textareaEl.addEventListener('dragleave', () => textareaEl.classList.remove('is-dragover'));
-  textareaEl.addEventListener('drop', async (e) => {
-    const files = Array.from(e.dataTransfer?.files ?? []).filter(f => f.type.startsWith('image/'));
-    if (!files.length) return;
-    e.preventDefault();
-    textareaEl.classList.remove('is-dragover');
-    await _md_upload_files(files);
-  });
-
-  textareaEl.parentElement.insertBefore(toolbar, textareaEl);
-}
-
-/**
- * テキストエリアのカーソル位置にテキストを挿入する
- * @param {HTMLTextAreaElement} el
- * @param {string}              text
- */
-function insert_at_cursor(el, text) {
-  const start = el.selectionStart ?? el.value.length;
-  const end   = el.selectionEnd   ?? el.value.length;
-  el.value = el.value.substring(0, start) + text + el.value.substring(end);
-  el.selectionStart = el.selectionEnd = start + text.length;
-  el.focus();
-}
-
-/**
  * 指定コンテナ内の [data-upload-section] 入力欄と
  * [data-md-upload-section] テキストエリアを一括初期化する
  * 動的に追加された行（テンプレートのクローン）にも適用可能
@@ -523,12 +437,6 @@ function init_upload_fields(root = document) {
     init_url_upload_btn(input, {
       section: input.dataset.uploadSection,
       slug:    input.dataset.uploadSlug ?? '',
-    });
-  });
-  root.querySelectorAll('textarea[data-md-upload-section]').forEach(ta => {
-    init_markdown_upload_toolbar(ta, {
-      section: ta.dataset.mdUploadSection,
-      slug:    ta.dataset.mdUploadSlug ?? '',
     });
   });
 }
@@ -796,13 +704,15 @@ function init_rich_editors() {
 
     tinymce.init({
       target: textarea,
-      height: 400,
+      min_height: 320,
+      max_height: 900,
+      autoresize_bottom_margin: 24,
       menubar: false,
       statusbar: false,
       skin: 'oxide-dark',
       content_css: 'dark',
-      plugins: 'lists link image',
-      toolbar: 'blocks | bold italic | blockquote bullist numlist | link image bracketlink | removeformat',
+      plugins: 'lists link image autoresize',
+      toolbar: 'blocks | bold italic | blockquote bullist numlist | link multiimage bracketlink | removeformat',
       block_formats: 'Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4',
       content_style: `
         body {
@@ -846,8 +756,32 @@ function init_rich_editors() {
         });
       },
 
-      // [[ブラケットリンク]]ボタン
+      // 画像挿入ボタン（複数選択可、選択した順に本文へ挿入）
       setup: (editor) => {
+        editor.ui.registry.addButton('multiimage', {
+          icon: 'image',
+          tooltip: '画像を挿入（複数選択可）',
+          onAction: () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/jpeg,image/png,image/webp,image/gif';
+            input.multiple = true;
+            input.addEventListener('change', async () => {
+              const files = Array.from(input.files ?? []);
+              if (!files.length) return;
+              for (const file of files) {
+                try {
+                  const result = await upload_image_to_api(file, uploadSection, uploadSlug);
+                  editor.insertContent(`<img src="${result.url}" width="${result.width}" height="${result.height}" alt="">`);
+                } catch (err) {
+                  show_toast(`${file.name}: ${err.message}`, 'error');
+                }
+              }
+            });
+            input.click();
+          },
+        });
+
         editor.ui.registry.addButton('bracketlink', {
           text: '[[ ]]',
           tooltip: 'ブラケットリンク [[ページ名]]',
