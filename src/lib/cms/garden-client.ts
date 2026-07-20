@@ -9,6 +9,15 @@ import type { GardenNode } from "@/lib/garden/types";
 
 const CMS_API_BASE =
   process.env.NEXT_PUBLIC_CMS_API_URL ?? "https://media.hayatokano.com/_cms/api";
+const CMS_ORIGIN = new URL(CMS_API_BASE).origin;
+
+/**
+ * 過去にインポートされたエントリは画像srcが相対パス(/media/...)のまま保存されており、
+ * hayatokano.com上で描画すると存在しないパスとして404になる。CMSオリジンを補って絶対URL化する。
+ */
+function absolutizeMediaSrc(html: string): string {
+  return html.replace(/src="\/media\//g, `src="${CMS_ORIGIN}/media/`);
+}
 
 /** CMS API の Garden レスポンス1件 */
 interface CmsGardenItem {
@@ -51,7 +60,7 @@ export async function fetchGardenFromCms(): Promise<GardenNode[]> {
     title: item.title,
     date: item.date,
     tags: item.tags ?? [],
-    contentHtml: item.body,
+    contentHtml: absolutizeMediaSrc(item.body),
     excerpt: makeExcerpt(item.body),
     mtime: new Date(item.updated_at || item.created_at).getTime(),
     readingTime: estimateReadingTime(item.body),
