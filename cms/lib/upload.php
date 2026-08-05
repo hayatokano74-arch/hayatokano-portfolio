@@ -13,6 +13,10 @@
 require_once dirname(__DIR__) . '/config.php';
 require_once __DIR__ . '/db.php';
 
+/** レスポンシブ配信用の中間ブレークポイント（px、長辺基準）
+ *  フロント側 src/lib/image-loader.ts の BREAKPOINTS と値を一致させること。 */
+const RESPONSIVE_BREAKPOINTS = [640, 1080, 1920];
+
 /**
  * アップロードされた画像を処理して保存する
  *
@@ -77,6 +81,19 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
         $resize = max($width, $height) > 2560 ? '-resize 2560 0' : '';
         exec(sprintf('cwebp -q 80 -quiet %s %s -o %s 2>/dev/null',
             $resize, escapeshellarg($dest_path), escapeshellarg($webp_path)));
+    }
+
+    // 2.5. レスポンシブ用の中間サイズ（w640_ / w1080_ / w1920_、品質80）
+    // フロントの image-loader.ts が画面幅に応じてこれらを選択する。
+    // Vercel の画像最適化（従量課金）に頼らず、アップロード時に一度だけ生成する。
+    // 全ブレークポイントを必ず生成する（フロント側は存在チェック不要）。
+    // 元画像がブレークポイントより小さい場合は原寸のまま書き出す（アップスケール防止）。
+    foreach (RESPONSIVE_BREAKPOINTS as $bp) {
+        $target = min($bp, max($width, $height));
+        $resize = $target < max($width, $height) ? "-resize $target 0" : '';
+        $bp_path = $dest_dir . '/w' . $bp . '_' . $filename . '.webp';
+        exec(sprintf('cwebp -q 80 -quiet %s %s -o %s 2>/dev/null',
+            $resize, escapeshellarg($dest_path), escapeshellarg($bp_path)));
     }
 
     // 3. サムネイル（長辺400px、品質60、Exif保持）

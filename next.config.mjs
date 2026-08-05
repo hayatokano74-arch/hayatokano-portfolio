@@ -12,11 +12,14 @@ const nextConfig = {
       // CMS メディア（Xserver: media.hayatokano.com）
       { protocol: "https", hostname: cmsMediaHost, pathname: "/**" },
     ],
-    /* CMS が既に WebP へ変換済みのため Vercel Image Optimization は使わず直接配信する。
-     * 原寸画像（7000px超）を AVIF/WebP × 複数解像度へ再変換すると Vercel の最適化枠を
-     * 急速に消費し、未キャッシュ画像が 402 (OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED) で
-     * 表示されなくなる事象が発生したため無効化。 */
-    unoptimized: true,
+    /* Vercel Image Optimization（従量課金）は使わず、CMSがアップロード時に
+     * 事前生成したレスポンシブ用WebP（w640_/w1080_/w1920_、長辺2560px上限）を
+     * カスタムローダーで選択して直接配信する。詳細: src/lib/image-loader.ts */
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
+    /* カスタムローダーに渡される width 候補。CMS側の生成ブレークポイントと一致させる */
+    deviceSizes: [640, 1080, 1920, 2560],
+    imageSizes: [32, 64, 128, 256, 420],
   },
 };
 
