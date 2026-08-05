@@ -12,13 +12,11 @@ const nextConfig = {
       // CMS メディア（Xserver: media.hayatokano.com）
       { protocol: "https", hostname: cmsMediaHost, pathname: "/**" },
     ],
-    /* AVIF → WebP → JPEG の順で最適フォーマットを選択（AVIF は WebP 比 30〜50% 軽量） */
-    formats: ["image/avif", "image/webp"],
-    /* Vercel CDN でのキャッシュ期間: 30日（デフォルト 60秒を延長） */
-    minimumCacheTTL: 2592000,
-    /* よく使うブレークポイントに絞る（デフォルト16段階→7段階でキャッシュヒット率向上） */
-    deviceSizes: [640, 828, 1080, 1280, 1920],
-    imageSizes: [32, 64, 128, 256, 420],
+    /* CMS が既に WebP へ変換済みのため Vercel Image Optimization は使わず直接配信する。
+     * 原寸画像（7000px超）を AVIF/WebP × 複数解像度へ再変換すると Vercel の最適化枠を
+     * 急速に消費し、未キャッシュ画像が 402 (OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED) で
+     * 表示されなくなる事象が発生したため無効化。 */
+    unoptimized: true,
   },
 };
 
