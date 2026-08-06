@@ -88,10 +88,13 @@ function upload_image(array $file, string $section = 'misc', string $slug = ''):
     // Vercel の画像最適化（従量課金）に頼らず、アップロード時に一度だけ生成する。
     // 全ブレークポイントを必ず生成する（フロント側は存在チェック不要）。
     // 元画像がブレークポイントより小さい場合は原寸のまま書き出す（アップスケール防止）。
+    // フロントが参照する実際の配信ファイル名（absoluteMediaSrc()と同じ規則）に合わせる:
+    // jpg/png/gif は {filename}.webp、元々webpなら {filename} のまま（二重拡張子にしない）。
+    $display_suffix = $mime !== 'image/webp' ? '.webp' : '';
     foreach (RESPONSIVE_BREAKPOINTS as $bp) {
         $target = min($bp, max($width, $height));
         $resize = $target < max($width, $height) ? "-resize $target 0" : '';
-        $bp_path = $dest_dir . '/w' . $bp . '_' . $filename . '.webp';
+        $bp_path = $dest_dir . '/w' . $bp . '_' . $filename . $display_suffix;
         exec(sprintf('cwebp -q 80 -quiet %s %s -o %s 2>/dev/null',
             $resize, escapeshellarg($dest_path), escapeshellarg($bp_path)));
     }

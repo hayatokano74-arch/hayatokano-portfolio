@@ -38,8 +38,15 @@ find "$TARGET_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png
     dir=$(dirname "$src")
     base=$(basename "$src")
 
+    # フロントが参照する実際のファイル名に合わせる:
+    # jpg/png/jpeg は {base}.webp、元々webpなら {base} のまま（二重拡張子にしない）
+    suffix=".webp"
+    case "$base" in
+        *.webp|*.WEBP) suffix="" ;;
+    esac
+
     for bp in "${BREAKPOINTS[@]}"; do
-        out="$dir/w${bp}_${base}.webp"
+        out="$dir/w${bp}_${base}${suffix}"
         if [ -f "$out" ]; then
             SKIPPED=$((SKIPPED + 1))
             continue
