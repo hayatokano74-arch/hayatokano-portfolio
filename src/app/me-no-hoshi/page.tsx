@@ -4,8 +4,9 @@ import { MeNoHoshiPageClient } from "@/components/MeNoHoshiPageClient";
 import { getMeNoHoshiPosts } from "@/lib/meNoHoshi";
 import { getMeNoHoshiGridSettings } from "@/lib/me-no-hoshi/api";
 
-// 更新頻度が低いため24時間キャッシュ（手動revalidateで即時反映可能）
-export const revalidate = 86400;
+// CMS更新時に /api/revalidate を叩くことで即時反映（メイン経路）
+// 1時間キャッシュはWebhook失敗時の保険
+export const revalidate = 3600;
 
 const BASE_URL = "https://hayatokano.com";
 

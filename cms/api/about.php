@@ -10,6 +10,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -78,6 +79,7 @@ function handle_put(): never {
     }
 
     $row = db_find_by_id('about', 1);
+    revalidate_paths(['/about']);
     json_ok(decode_json_fields($row));
 }
 

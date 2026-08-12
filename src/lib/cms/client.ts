@@ -22,8 +22,11 @@ const CMS_API_BASE = (
 export async function fetchCms<T>(path: string): Promise<T> {
   const url = `${CMS_API_BASE}/${path.replace(/^\//, "")}`;
   const res = await fetch(url, {
-    // ページISR（86400s）に合わせてフェッチキャッシュも延長
-    next: { revalidate: 86400 },
+    // 通常はCMS保存時のオンデマンド再検証（revalidatePath）で即座に反映される。
+    // この1時間は、そのWebhookが何らかの理由で失敗した場合の保険（最悪でも
+    // 1時間で自動的に最新化される。以前は24時間だったため、Webhook失敗時の
+    // 影響が長時間残っていた）。
+    next: { revalidate: 3600 },
     headers: { Accept: "application/json" },
   });
   if (!res.ok) {

@@ -10,6 +10,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -42,6 +43,7 @@ if ($method === 'GET') {
     $db = get_db();
     $stmt = $db->prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
     $stmt->execute([$key, $value]);
+    revalidate_paths(['/']);
 
     json_ok(['saved' => $key]);
 } else {

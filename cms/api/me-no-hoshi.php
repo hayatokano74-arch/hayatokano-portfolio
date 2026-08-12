@@ -101,7 +101,7 @@ function handle_post(): never {
             $slug,
         ]);
         $row = db_find_by_slug('me_no_hoshi', $slug);
-        revalidate_paths(['/me-no-hoshi', "/me-no-hoshi/{$slug}"]);
+        revalidate_paths(['/', '/me-no-hoshi', "/me-no-hoshi/{$slug}"]);
         json_ok(decode_json_fields($row));
     } else {
         // INSERT
@@ -121,7 +121,7 @@ function handle_post(): never {
         ]);
         $id  = (int)$db->lastInsertId();
         $row = db_find_by_id('me_no_hoshi', $id);
-        revalidate_paths(['/me-no-hoshi', "/me-no-hoshi/{$slug}"]);
+        revalidate_paths(['/', '/me-no-hoshi', "/me-no-hoshi/{$slug}"]);
         json_ok(decode_json_fields($row), 201);
     }
 }
@@ -135,6 +135,7 @@ function handle_delete(): never {
     if (!$row) json_not_found('目の星が見つかりません: ' . $slug);
 
     get_db()->prepare('DELETE FROM me_no_hoshi WHERE slug = ?')->execute([$slug]);
+    revalidate_paths(['/', '/me-no-hoshi', "/me-no-hoshi/{$slug}"]);
     json_ok(['deleted' => $slug]);
 }
 

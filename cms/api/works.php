@@ -66,6 +66,7 @@ function handle_get(): never {
         if (!$row) json_not_found();
         $new_pub = ($row['published'] ?? 1) ? 0 : 1;
         $db->prepare("UPDATE works SET published = ?, updated_at = datetime('now') WHERE slug = ?")->execute([$new_pub, $pub_slug]);
+        revalidate_paths(['/', '/works', "/works/{$pub_slug}"]);
         json_ok(['slug' => $pub_slug, 'published' => $new_pub]);
     }
 
@@ -78,6 +79,7 @@ function handle_get(): never {
         if (!$row) json_not_found();
         $new_pinned = $row['pinned'] ? 0 : 1;
         $db->prepare("UPDATE works SET pinned = ?, updated_at = datetime('now') WHERE slug = ?")->execute([$new_pinned, $pin_slug]);
+        revalidate_paths(['/', '/works', "/works/{$pin_slug}"]);
         json_ok(['slug' => $pin_slug, 'pinned' => $new_pinned]);
     }
 
@@ -123,6 +125,7 @@ function handle_post(): never {
         $db->prepare("UPDATE works SET slug = ?, updated_at = datetime('now') WHERE slug = ?")
            ->execute([$slug, $original_slug]);
         $row = db_find_by_slug('works', $slug);
+        revalidate_paths(['/', '/works', "/works/{$slug}", "/works/{$original_slug}"]);
         json_ok(decode_json_fields($row));
     }
 
@@ -153,7 +156,7 @@ function handle_post(): never {
             $slug,
         ]);
         $row = db_find_by_slug('works', $slug);
-        revalidate_paths(['/works', "/works/{$slug}"]);
+        revalidate_paths(['/', '/works', "/works/{$slug}"]);
         json_ok(decode_json_fields($row));
     } else {
         // INSERT
@@ -174,7 +177,7 @@ function handle_post(): never {
         ]);
         $id  = (int)$db->lastInsertId();
         $row = db_find_by_id('works', $id);
-        revalidate_paths(['/works', "/works/{$slug}"]);
+        revalidate_paths(['/', '/works', "/works/{$slug}"]);
         json_ok(decode_json_fields($row), 201);
     }
 }
@@ -188,6 +191,7 @@ function handle_delete(): never {
     if (!$row) json_not_found('Works が見つかりません: ' . $slug);
 
     get_db()->prepare('DELETE FROM works WHERE slug = ?')->execute([$slug]);
+    revalidate_paths(['/', '/works', "/works/{$slug}"]);
     json_ok(['deleted' => $slug]);
 }
 

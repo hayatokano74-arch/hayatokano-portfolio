@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 require_auth();
 
@@ -24,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $del_slug = trim($_POST['slug'] ?? '');
             if ($del_slug) {
                 $db->prepare("DELETE FROM works WHERE slug = ?")->execute([$del_slug]);
+                revalidate_paths(['/', '/works', "/works/{$del_slug}"]);
             }
             header('Location: ' . cms_url('/admin/works.php'));
             exit;
@@ -111,10 +113,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // 既存レコードを更新（スラッグ変更にも対応）
                 $stmt = $db->prepare("UPDATE works SET slug=?, title=?, date=?, year=?, tags=?, excerpt=?, pinned=?, body=?, data=?, updated_at=datetime('now') WHERE slug=?");
                 $stmt->execute([$slug, $title, $date, $year, $tags_json, $excerpt, $pinned, $body, $data_json, $original_slug]);
+                // スラッグを変更した場合は旧パスも再検証（残らないように）
+                $paths = ['/', '/works', "/works/{$slug}"];
+                if ($original_slug !== $slug) $paths[] = "/works/{$original_slug}";
+                revalidate_paths($paths);
             } else {
                 // 新規作成
                 $stmt = $db->prepare("INSERT INTO works (slug, title, date, year, tags, excerpt, pinned, body, data) VALUES (?,?,?,?,?,?,?,?,?)");
                 $stmt->execute([$slug, $title, $date, $year, $tags_json, $excerpt, $pinned, $body, $data_json]);
+                revalidate_paths(['/', '/works', "/works/{$slug}"]);
             }
             header('Location: ' . cms_url('/admin/works.php'));
             exit;

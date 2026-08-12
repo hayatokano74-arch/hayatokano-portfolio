@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 require_auth();
 
@@ -24,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $del_slug = trim($_POST['slug'] ?? '');
             if ($del_slug) {
                 $db->prepare("DELETE FROM texts WHERE slug = ?")->execute([$del_slug]);
+                revalidate_paths(['/text', "/text/{$del_slug}"]);
             }
             header('Location: ' . cms_url('/admin/text.php'));
             exit;
@@ -58,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("INSERT INTO texts (slug, title, date, year, categories, body, data) VALUES (?,?,?,?,?,?,?)");
                 $stmt->execute([$slug, $title, $date, $year, $cats_json, $body, $data_json]);
             }
+            revalidate_paths(['/text', "/text/{$slug}"]);
             header('Location: ' . cms_url('/admin/text.php'));
             exit;
         }

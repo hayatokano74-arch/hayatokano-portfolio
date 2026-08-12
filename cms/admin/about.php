@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 require_auth();
 
@@ -47,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data_json = json_encode(['photos' => $photos, 'cv' => $cv], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $stmt = $db->prepare("UPDATE about SET body=?, data=?, updated_at=datetime('now') WHERE id=1");
         $stmt->execute([$body, $data_json]);
+        revalidate_paths(['/about']);
         $notice = '保存しました。';
     }
 }

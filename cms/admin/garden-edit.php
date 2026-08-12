@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 require_auth();
 
@@ -24,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $del_slug = trim($_POST['slug'] ?? '');
             if ($del_slug) {
                 $db->prepare("DELETE FROM garden WHERE slug = ?")->execute([$del_slug]);
+                revalidate_paths(['/', '/garden', "/garden/{$del_slug}"]);
             }
             header('Location: ' . cms_url('/admin/garden.php'));
             exit;
@@ -55,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("INSERT INTO garden (slug, date, title, tags, body) VALUES (?,?,?,?,?)");
                 $stmt->execute([$slug, $date, $title, $tags_json, $body]);
             }
+            revalidate_paths(['/', '/garden', "/garden/{$slug}"]);
             header('Location: ' . cms_url('/admin/garden.php'));
             exit;
         }

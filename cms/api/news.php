@@ -125,6 +125,7 @@ function handle_delete(): never {
     if (!$row) json_not_found('News が見つかりません: ' . $slug);
 
     get_db()->prepare('DELETE FROM news WHERE slug = ?')->execute([$slug]);
+    revalidate_paths(['/news']);
     json_ok(['deleted' => $slug]);
 }
 

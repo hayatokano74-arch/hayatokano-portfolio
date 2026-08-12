@@ -3,9 +3,9 @@ import { CanvasShell } from "@/components/CanvasShell";
 import { WorksPageClient } from "@/components/WorksPageClient";
 import { getWorks } from "@/lib/works";
 
-// CMS更新時に /api/revalidate を叩くことで即時反映
-// 更新頻度が低いため24時間キャッシュ（手動revalidateで即時反映可能）
-export const revalidate = 86400;
+// CMS更新時に /api/revalidate を叩くことで即時反映（メイン経路）
+// 1時間キャッシュはWebhook失敗時の保険（以前は24時間で影響が長引いていた）
+export const revalidate = 3600;
 
 const BASE_URL = "https://hayatokano.com";
 

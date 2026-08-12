@@ -16,6 +16,7 @@ require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
 require_once dirname(__DIR__) . '/lib/markdown.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -143,6 +144,7 @@ function handle_post(): never {
             $slug,
         ]);
         $row = db_find_by_slug('garden', $slug);
+        revalidate_paths(['/', '/garden', "/garden/{$slug}"]);
         json_ok(decode_json_fields($row));
     } else {
         // INSERT
@@ -160,6 +162,7 @@ function handle_post(): never {
         ]);
         $id  = (int)$db->lastInsertId();
         $row = db_find_by_id('garden', $id);
+        revalidate_paths(['/', '/garden', "/garden/{$slug}"]);
         json_ok(decode_json_fields($row), 201);
     }
 }
@@ -173,6 +176,7 @@ function handle_delete(): never {
     if (!$row) json_not_found('Garden が見つかりません: ' . $slug);
 
     get_db()->prepare('DELETE FROM garden WHERE slug = ?')->execute([$slug]);
+    revalidate_paths(['/', '/garden', "/garden/{$slug}"]);
     json_ok(['deleted' => $slug]);
 }
 

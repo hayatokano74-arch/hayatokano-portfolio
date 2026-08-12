@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 require_auth();
 
@@ -37,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
             $stmt->execute([$key, json_encode($val, JSON_UNESCAPED_UNICODE)]);
         }
+        // サイト全体の表示件数・メタ情報に影響するため主要ページをまとめて再検証
+        revalidate_paths(['/', '/works', '/me-no-hoshi', '/news', '/garden', '/text', '/about']);
         header('Location: ' . cms_url('/admin/site-settings.php?saved=1'));
         exit;
     }

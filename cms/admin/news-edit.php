@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/auth.php';
 require_once dirname(__DIR__) . '/lib/response.php';
+require_once dirname(__DIR__) . '/lib/revalidate.php';
 
 require_auth();
 
@@ -24,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $del_slug = trim($_POST['slug'] ?? '');
             if ($del_slug) {
                 $db->prepare("DELETE FROM news WHERE slug = ?")->execute([$del_slug]);
+                revalidate_paths(['/news']);
             }
             header('Location: ' . cms_url('/admin/news.php'));
             exit;
@@ -58,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("INSERT INTO news (slug, title, date, body, data) VALUES (?,?,?,?,?)");
                 $stmt->execute([$slug, $title, $date, $body, $data_json]);
             }
+            revalidate_paths(['/news']);
             header('Location: ' . cms_url('/admin/news.php'));
             exit;
         }
