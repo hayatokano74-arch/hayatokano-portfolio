@@ -55,6 +55,7 @@ export type CmsWork = {
   tags: string[];
   excerpt: string;
   pinned: number;
+  select_works_published?: number;
   data: {
     media?: CmsMediaItem[];
     details?: Record<string, string>;

@@ -93,6 +93,7 @@ function parseCmsWork(item: CmsWork): Work | null {
     details,
     media,
     ...(item.pinned ? { pinned: true } : {}),
+    ...(item.select_works_published !== undefined ? { selectWorksPublished: !!item.select_works_published } : {}),
   };
 }
 
@@ -247,3 +248,28 @@ export const getWorkBySlug = cache(
     return all.find((w) => w.slug === slug);
   },
 );
+
+/**
+ * Select Works（/select-works）向け取得
+ *
+ * select_works_published=1 かつ "Client" タグを持つ作品のみ。
+ * 通常の Works 一覧（getWorks）の published とは独立して判定されるため、
+ * Works側で非公開の作品でも Select Works には表示できる。
+ * CMS未到達時はフォールバックせず空配列を返す（ローカルMDにはこの区分が無いため）。
+ */
+export const getSelectWorks = cache(async (): Promise<Work[]> => {
+  try {
+    const items = await fetchCms<CmsWork[]>("works.php?select_works=1");
+    if (!Array.isArray(items)) return [];
+    const works: Work[] = [];
+    for (const item of items) {
+      const w = parseCmsWork(item);
+      if (w) works.push(w);
+    }
+    const pinned = works.filter((w) => w.pinned);
+    const rest = works.filter((w) => !w.pinned);
+    return [...pinned, ...rest];
+  } catch {
+    return [];
+  }
+});

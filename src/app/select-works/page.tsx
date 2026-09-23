@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CanvasShell } from "@/components/CanvasShell";
 import { SelectWorksPageClient } from "@/components/SelectWorksPageClient";
-import { getWorks } from "@/lib/works";
+import { getSelectWorks } from "@/lib/works";
 
 // CMS更新時に /api/revalidate を叩くことで即時反映（メイン経路）
 export const revalidate = 3600;
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function SelectWorksPage() {
-  const works = (await getWorks()).filter((w) => w.tags.includes("Client"));
+  const works = await getSelectWorks();
   return (
     <CanvasShell>
       <SelectWorksPageClient works={works} />

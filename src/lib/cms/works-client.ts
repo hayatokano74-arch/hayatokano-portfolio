@@ -84,12 +84,29 @@ function parseCmsWork(item: CmsWork): Work | null {
     details,
     media,
     ...(item.pinned ? { pinned: true } : {}),
+    ...(item.select_works_published !== undefined ? { selectWorksPublished: !!item.select_works_published } : {}),
   };
 }
 
 /** CMS API から全 Works を取得 */
 export async function fetchWorksFromCms(): Promise<Work[]> {
   const items = await fetchCmsClient<CmsWork[]>("works.php");
+  const works: Work[] = [];
+  for (const item of items) {
+    const w = parseCmsWork(item);
+    if (w) works.push(w);
+  }
+  const pinned = works.filter((w) => w.pinned);
+  const rest = works.filter((w) => !w.pinned);
+  return [...pinned, ...rest];
+}
+
+/**
+ * Select Works（/select-works）向け取得: select_works_published=1 かつ "Client" タグの作品のみ。
+ * Works一覧の published とは独立（Works非公開でも Select Works には出せる）。
+ */
+export async function fetchSelectWorksFromCms(): Promise<Work[]> {
+  const items = await fetchCmsClient<CmsWork[]>("works.php?select_works=1");
   const works: Work[] = [];
   for (const item of items) {
     const w = parseCmsWork(item);

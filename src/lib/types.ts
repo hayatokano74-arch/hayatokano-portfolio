@@ -85,6 +85,8 @@ export type Work = {
     poster?: string;
   }[];
   pinned?: boolean;
+  /** Select Works（/select-works）向けの公開設定。Works一覧の公開設定とは独立 */
+  selectWorksPublished?: boolean;
 };
 
 export type TextPost = {

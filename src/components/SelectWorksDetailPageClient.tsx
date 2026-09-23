@@ -2,12 +2,12 @@
 
 /**
  * Select Works 詳細ページ（非公開）
- * URLのslugに基づいてCMS APIから作品データを取得し、"Client" タグの作品のみに絞り込む。
+ * URLのslugに基づいてCMS APIから select_works_published=1 かつ "Client" タグの作品を取得する。
  */
 
 import { useEffect, useState } from "react";
 import type { Work } from "@/lib/types";
-import { fetchWorksFromCms } from "@/lib/cms/works-client";
+import { fetchSelectWorksFromCms } from "@/lib/cms/works-client";
 import { SELECT_WORKS_NAV_ITEMS } from "@/lib/nav";
 import { Header } from "./Header";
 import { WorkDetailClient } from "./WorkDetailClient";
@@ -24,8 +24,8 @@ export function SelectWorksDetailPageClient() {
 
   useEffect(() => {
     setSlug(slugFromPath());
-    fetchWorksFromCms()
-      .then((works) => setAllWorks(works.filter((w) => w.tags.includes("Client"))))
+    fetchSelectWorksFromCms()
+      .then(setAllWorks)
       .catch(() => setAllWorks([]))
       .finally(() => setLoading(false));
   }, []);

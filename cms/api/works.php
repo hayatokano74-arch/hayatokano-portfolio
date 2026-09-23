@@ -70,6 +70,19 @@ function handle_get(): never {
         json_ok(['slug' => $pub_slug, 'published' => $new_pub]);
     }
 
+    // select_works_published切替（Select Worksページ向けの公開設定、published とは独立）
+    if (isset($_GET['toggle_select_works_publish'])) {
+        api_require_auth();
+        $sw_slug = $_GET['toggle_select_works_publish'];
+        $db = get_db();
+        $row = db_find_by_slug('works', $sw_slug);
+        if (!$row) json_not_found();
+        $new_sw_pub = ($row['select_works_published'] ?? 1) ? 0 : 1;
+        $db->prepare("UPDATE works SET select_works_published = ?, updated_at = datetime('now') WHERE slug = ?")->execute([$new_sw_pub, $sw_slug]);
+        revalidate_paths(['/select-works', "/select-works/{$sw_slug}"]);
+        json_ok(['slug' => $sw_slug, 'select_works_published' => $new_sw_pub]);
+    }
+
     // pinned切替
     if (isset($_GET['toggle_pin'])) {
         api_require_auth();
@@ -81,6 +94,20 @@ function handle_get(): never {
         $db->prepare("UPDATE works SET pinned = ?, updated_at = datetime('now') WHERE slug = ?")->execute([$new_pinned, $pin_slug]);
         revalidate_paths(['/', '/works', "/works/{$pin_slug}"]);
         json_ok(['slug' => $pin_slug, 'pinned' => $new_pinned]);
+    }
+
+    // Select Works向け: select_works_published=1 かつ Client タグを持つ作品のみ。
+    // Works側の published とは独立（Works非公開でもSelect Worksには出せる）。
+    // 通常の published=1 フィルタは通さないが、select_works_published=1 の絞り込みは必ずかけるため
+    // 非公開Worksが無条件で露出することはない。
+    if (isset($_GET['select_works'])) {
+        $db = get_db();
+        $rows = $db->query("SELECT * FROM works WHERE select_works_published = 1 ORDER BY pinned DESC, date DESC, id DESC")->fetchAll();
+        $rows = array_values(array_filter($rows, function ($r) {
+            $tags = json_decode($r['tags'] ?? '[]', true) ?? [];
+            return in_array('Client', $tags, true);
+        }));
+        json_ok(array_map('decode_json_fields', $rows));
     }
 
     // フロント向け: 公開済みのみ（デフォルト）。CMS管理画面: ?all=1 で全件

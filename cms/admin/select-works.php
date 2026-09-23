@@ -10,7 +10,7 @@ require_once dirname(__DIR__) . '/lib/response.php';
 require_auth();
 
 $db = get_db();
-$all_rows = $db->query("SELECT id, slug, title, date, tags, pinned, published, data, updated_at FROM works ORDER BY pinned DESC, date DESC")->fetchAll();
+$all_rows = $db->query("SELECT id, slug, title, date, tags, pinned, published, select_works_published, data, updated_at FROM works ORDER BY pinned DESC, date DESC")->fetchAll();
 
 // "Client" タグを持つ作品だけに絞り込む（タグはJSON配列で保存されている）
 $rows = array_values(array_filter($all_rows, function ($row) {
@@ -26,6 +26,7 @@ ob_start();
 <p class="text-muted" style="margin: -8px 0 16px;">
   Works のうち <span class="badge badge--sm">Client</span> タグが付いた作品のみを表示しています。
   フロントの非公開ページ <code>/select-works</code>（メニュー非表示・リンクを知る人のみ閲覧可）に反映されます。
+  公開設定は通常の Works とは独立しています（Works で非公開でも Select Works では公開、という組み合わせが可能です）。
 </p>
 
 <div class="page-actions">
@@ -42,7 +43,8 @@ ob_start();
       <tr>
         <th style="width:56px"></th>
         <th>タイトル</th>
-        <th style="width:50px">状態</th>
+        <th style="width:110px">Select Works</th>
+        <th style="width:70px">Works</th>
         <th>日付</th>
         <th>タグ</th>
         <th>更新</th>
@@ -80,7 +82,7 @@ ob_start();
         $thumb_src = fix_broken_unicode_url($thumb_src);
       ?>
       <tr class="is-clickable" data-href="<?= htmlspecialchars($edit_url, ENT_QUOTES) ?>"
-          style="<?= ($row['published'] ?? 1) ? '' : 'opacity:0.4' ?>">
+          style="<?= ($row['select_works_published'] ?? 1) ? '' : 'opacity:0.4' ?>">
         <td>
           <?php if ($thumb_src): ?>
           <img src="<?= htmlspecialchars($thumb_src, ENT_QUOTES) ?>"
@@ -95,10 +97,18 @@ ob_start();
           <br><small class="text-muted"><?= htmlspecialchars($row['slug'], ENT_QUOTES) ?></small>
         </td>
         <td>
-          <button type="button" class="publish-toggle <?= ($row['published'] ?? 1) ? 'is-published' : '' ?>"
+          <button type="button" class="publish-toggle select-works-publish-toggle <?= ($row['select_works_published'] ?? 1) ? 'is-published' : '' ?>"
                   data-slug="<?= htmlspecialchars($row['slug'], ENT_QUOTES) ?>"
                   onclick="event.stopPropagation()"
-                  title="<?= ($row['published'] ?? 1) ? '非公開にする' : '公開する' ?>">
+                  title="<?= ($row['select_works_published'] ?? 1) ? 'Select Worksで非公開にする' : 'Select Worksで公開する' ?>">
+            <span class="publish-dot"></span>
+          </button>
+        </td>
+        <td>
+          <button type="button" class="publish-toggle works-publish-toggle <?= ($row['published'] ?? 1) ? 'is-published' : '' ?>"
+                  data-slug="<?= htmlspecialchars($row['slug'], ENT_QUOTES) ?>"
+                  onclick="event.stopPropagation()"
+                  title="<?= ($row['published'] ?? 1) ? 'Worksで非公開にする' : 'Worksで公開する' ?>">
             <span class="publish-dot"></span>
           </button>
         </td>
@@ -135,7 +145,30 @@ ob_start();
 </style>
 
 <script>
-document.querySelectorAll('.publish-toggle').forEach(btn => {
+// Select Works側の公開/非公開（行の透明化・一覧への反映もこちらに連動）
+document.querySelectorAll('.select-works-publish-toggle').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const slug = btn.dataset.slug;
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    try {
+      const res = await fetch(`../api/works.php?toggle_select_works_publish=${encodeURIComponent(slug)}`, {
+        headers: { 'X-CSRF-Token': csrf },
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      btn.classList.toggle('is-published', !!data.select_works_published);
+      btn.title = data.select_works_published ? 'Select Worksで非公開にする' : 'Select Worksで公開する';
+      const row = btn.closest('tr');
+      if (row) row.style.opacity = data.select_works_published ? '' : '0.4';
+      show_toast(data.select_works_published ? 'Select Worksで公開しました' : 'Select Worksで非公開にしました', 'success');
+    } catch (err) {
+      show_toast(err.message, 'error');
+    }
+  });
+});
+
+// Works側の公開/非公開（通常のWorks一覧への反映。Select Worksの表示状態には影響しない）
+document.querySelectorAll('.works-publish-toggle').forEach(btn => {
   btn.addEventListener('click', async () => {
     const slug = btn.dataset.slug;
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
@@ -146,10 +179,8 @@ document.querySelectorAll('.publish-toggle').forEach(btn => {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       btn.classList.toggle('is-published', !!data.published);
-      btn.title = data.published ? '非公開にする' : '公開する';
-      const row = btn.closest('tr');
-      if (row) row.style.opacity = data.published ? '' : '0.4';
-      show_toast(data.published ? '公開しました' : '非公開にしました', 'success');
+      btn.title = data.published ? 'Worksで非公開にする' : 'Worksで公開する';
+      show_toast(data.published ? 'Worksで公開しました' : 'Worksで非公開にしました', 'success');
     } catch (err) {
       show_toast(err.message, 'error');
     }
