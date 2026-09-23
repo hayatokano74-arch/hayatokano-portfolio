@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/post/"],
+      disallow: ["/api/", "/post/", "/select-works"],
     },
     sitemap: "https://hayatokano.com/sitemap.xml",
   };

@@ -51,7 +51,7 @@ export function FilteredWorksList<T extends WorkLike>({
 }: {
   allWorks: T[];
   perPage: number;
-  basePath?: "/works" | "/me-no-hoshi";
+  basePath?: "/works" | "/me-no-hoshi" | "/select-works";
   detailQuery?: string;
   gridSettings?: MeNoHoshiGridField[];
 }) {
@@ -100,7 +100,7 @@ export function FilteredWorksList<T extends WorkLike>({
   };
 
   /* リスト詳細レンダリング（Works用: WorkDetailsTable） */
-  const renderListDetail = basePath === "/works"
+  const renderListDetail = basePath === "/works" || basePath === "/select-works"
     ? (work: T) => <WorkDetailsTable details={(work as unknown as Work).details} />
     : basePath === "/me-no-hoshi"
       ? (work: T) => <MeNoHoshiListDetails details={work.details as { key: string; label: string; value: string }[]} gridSettings={gridSettings} />
@@ -167,7 +167,7 @@ export function FilteredCount<T extends WorkLike>({
   basePath = "/works",
 }: {
   allWorks: T[];
-  basePath?: "/works" | "/me-no-hoshi";
+  basePath?: "/works" | "/me-no-hoshi" | "/select-works";
 }) {
   const { selected, searchQuery } = useFilterContext();
   const selectedTags = selected.tags ?? [];

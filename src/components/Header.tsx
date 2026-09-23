@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { useRef, useLayoutEffect } from "react";
 import { type Category } from "@/lib/categories";
-import { type Section } from "@/lib/nav";
+import { type Section, NAV_ITEMS } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 import { DesktopNav } from "@/components/header/DesktopNav";
@@ -26,6 +26,7 @@ export function Header({
   categoryHrefs,
   titleRight,
   showFilterButton = false,
+  navItems = NAV_ITEMS,
 }: {
   active: Section;
   title: HeaderTitle;
@@ -39,6 +40,7 @@ export function Header({
   categoryHrefs?: Partial<Record<Category, string>>;
   titleRight?: React.ReactNode;
   showFilterButton?: boolean;
+  navItems?: typeof NAV_ITEMS;
 }) {
   const { isOpen: mobileMenuOpen, toggle: toggleMobileMenu } = useMobileMenu();
 
@@ -94,11 +96,11 @@ export function Header({
         <ThemeDot />
 
         {/* デスクトップナビ */}
-        <DesktopNav active={active} />
+        <DesktopNav active={active} navItems={navItems} />
       </div>
 
       {/* ── モバイルフルスクリーンメニュー ── */}
-      <MobileMenuOverlay isOpen={mobileMenuOpen} active={active} />
+      <MobileMenuOverlay isOpen={mobileMenuOpen} active={active} navItems={navItems} />
 
       {/* ── タイトル行（12カラムグリッド） ── */}
       {showTitleRow || titleRight ? (

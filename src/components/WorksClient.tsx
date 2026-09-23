@@ -33,7 +33,7 @@ export function WorksClient<T extends WorkLike>({
 }: {
   works: T[];
   view: "grid" | "list";
-  basePath?: "/works" | "/me-no-hoshi";
+  basePath?: "/works" | "/me-no-hoshi" | "/select-works";
   detailQuery?: string;
   renderListDetail?: (work: T) => ReactNode;
   /** リスト表示でのExcerpt最大文字数。0で無制限 */

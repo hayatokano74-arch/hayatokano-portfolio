@@ -32,12 +32,13 @@ export function MobileMenuButton({ isOpen, onToggle }: MobileMenuButtonProps) {
 type MobileMenuOverlayProps = {
   isOpen: boolean;
   active: Section;
+  navItems?: typeof NAV_ITEMS;
 };
 
 /**
  * モバイルフルスクリーンメニュー: ナビリンク一覧 + テーマ切替
  */
-export function MobileMenuOverlay({ isOpen, active }: MobileMenuOverlayProps) {
+export function MobileMenuOverlay({ isOpen, active, navItems = NAV_ITEMS }: MobileMenuOverlayProps) {
   const pathname = usePathname();
 
   if (!isOpen) return null;
@@ -45,7 +46,7 @@ export function MobileMenuOverlay({ isOpen, active }: MobileMenuOverlayProps) {
   return (
     <div className="mobile-overlay">
       <nav id="mobile-main-menu" className="mobile-overlay-nav">
-        {NAV_ITEMS.map(({ num, label, href, section }, i) => (
+        {navItems.map(({ num, label, href, section }, i) => (
           <React.Fragment key={section}>
             {i > 0 && <div className="mobile-nav-line" />}
             <Link

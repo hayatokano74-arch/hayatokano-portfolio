@@ -144,8 +144,11 @@ if ($action_param === 'new') {
         }
     }
     $next_slug = 'w' . str_pad($max_num + 1, 3, '0', STR_PAD_LEFT);
+    // ?tags=Photography,Client のように新規作成時にタグを事前入力できる（Select Works一覧からの新規追加用）
+    $prefill_tags_raw = trim($_GET['tags'] ?? '');
+    $prefill_tags = array_values(array_filter(array_map('trim', explode(',', $prefill_tags_raw))));
     $row = ['slug' => $next_slug, 'title' => '', 'date' => date('Y-m-d'), 'year' => date('Y'),
-            'tags' => '[]', 'excerpt' => '', 'pinned' => 0, 'body' => '', 'data' => '{}'];
+            'tags' => json_encode($prefill_tags, JSON_UNESCAPED_UNICODE), 'excerpt' => '', 'pinned' => 0, 'body' => '', 'data' => '{}'];
 } elseif ($slug_param) {
     $row = db_find_by_slug('works', $slug_param);
     if (!$row) {

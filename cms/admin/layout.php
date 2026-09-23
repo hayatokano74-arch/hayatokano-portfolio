@@ -33,6 +33,7 @@ $content     ??= '';
 $nav_items = [
     ['dashboard',   'ダッシュボード',  cms_url('/'),                      'D'],
     ['works',       'Works',           cms_url('/admin/works.php'),       'W'],
+    ['select-works', 'Select Works',   cms_url('/admin/select-works.php'), 'S'],
     ['me-no-hoshi', '目の星',           cms_url('/admin/me-no-hoshi.php'), 'M'],
     ['news',        'News',            cms_url('/admin/news.php'),        'N'],
     ['garden',      'Garden',          cms_url('/admin/garden.php'),      'G'],

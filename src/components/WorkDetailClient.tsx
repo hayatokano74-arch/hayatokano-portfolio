@@ -15,17 +15,19 @@ export function WorkDetailClient({
   work: initialWork,
   allWorks,
   initialSlug,
+  basePath = "/works",
 }: {
   work: Work;
   allWorks: Work[];
   initialSlug: string;
+  basePath?: string;
 }) {
   /* 現在表示中の作品（クライアント側で切替） */
   const [currentSlug, setCurrentSlug] = useState(initialSlug);
   const work = allWorks.find((w) => w.slug === currentSlug) ?? initialWork;
 
   const stageRef = useRef<HTMLDivElement>(null);
-  const pathname = `/works/${work.slug}`;
+  const pathname = `${basePath}/${work.slug}`;
 
   /* 前後の作品を計算 */
   const currentWorkIndex = Math.max(
@@ -66,7 +68,9 @@ export function WorkDetailClient({
   /* ブラウザバック/フォワードでslugを復元 */
   useEffect(() => {
     const onPopState = () => {
-      const match = window.location.pathname.match(/^\/works\/([^/]+)/);
+      const match = window.location.pathname.match(
+        new RegExp(`^${basePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/([^/]+)`),
+      );
       if (match) {
         const slug = match[1];
         setCurrentSlug(slug);
@@ -75,7 +79,7 @@ export function WorkDetailClient({
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [resetTo]);
+  }, [resetTo, basePath]);
 
   /* 作品間ナビゲーション（ページ遷移なし、クライアント側で切替） */
   const navigateToWork = useCallback((slug: string) => {
@@ -83,8 +87,8 @@ export function WorkDetailClient({
     resetTo(1, "gallery");
     setDetailOpen(false);
     /* URLだけ更新（ページ遷移なし、クリーンURL） */
-    window.history.pushState(null, "", `/works/${slug}/`);
-  }, [resetTo, setDetailOpen]);
+    window.history.pushState(null, "", `${basePath}/${slug}/`);
+  }, [resetTo, setDetailOpen, basePath]);
 
   return (
     <div
@@ -97,7 +101,7 @@ export function WorkDetailClient({
     >
       {/* トップバー: 枠線区切りの横並び */}
       <div className="work-detail-top-bar">
-        <Link href="/works" className="wdb-cell wdb-btn wdb-back">
+        <Link href={basePath} className="wdb-cell wdb-btn wdb-back">
           <span aria-hidden="true" className="wdb-back-icon">
             <svg width="10" height="14" viewBox="0 0 12 18" fill="none">
               <path d="M9 2.5L3 9L9 15.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
