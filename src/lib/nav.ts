@@ -18,3 +18,11 @@ export const SELECT_WORKS_NAV_ITEMS: { num: string; label: string; href: string;
     ...item,
     num: String(i + 1).padStart(2, "0"),
   }));
+
+/**
+ * /select-works を訪問した記録（sessionStorage）。
+ * このタブでセットされている間は、他ページに移動しても Header が
+ * SELECT_WORKS_NAV_ITEMS を使い続ける（目の星・Garden・Photo Rollを出さない）。
+ * タブを閉じれば自動的に解除される。
+ */
+export const SELECT_WORKS_VISITED_KEY = "select-works-visited";

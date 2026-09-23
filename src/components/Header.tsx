@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import React, { useRef, useLayoutEffect } from "react";
+import React, { useRef, useLayoutEffect, useState, useEffect } from "react";
 import { type Category } from "@/lib/categories";
-import { type Section, NAV_ITEMS } from "@/lib/nav";
+import { type Section, NAV_ITEMS, SELECT_WORKS_NAV_ITEMS, SELECT_WORKS_VISITED_KEY } from "@/lib/nav";
 import { ThemeDot } from "@/components/ThemeToggle";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 import { DesktopNav } from "@/components/header/DesktopNav";
@@ -26,7 +26,7 @@ export function Header({
   categoryHrefs,
   titleRight,
   showFilterButton = false,
-  navItems = NAV_ITEMS,
+  navItems: navItemsProp,
 }: {
   active: Section;
   title: HeaderTitle;
@@ -43,6 +43,26 @@ export function Header({
   navItems?: typeof NAV_ITEMS;
 }) {
   const { isOpen: mobileMenuOpen, toggle: toggleMobileMenu } = useMobileMenu();
+
+  /* ナビ項目の決定:
+   *  - navItemsProp が明示的に渡された場合（/select-works配下）はそれを使い、
+   *    このタブでは以後も絞り込みメニューを使うよう記録する
+   *  - 渡されなかった場合（通常ページ）は、過去に /select-works を訪問済みなら
+   *    そのタブ内では引き続き絞り込みメニューを使う（メニューが「増えない」ようにする）
+   */
+  const [navItems, setNavItems] = useState<typeof NAV_ITEMS>(navItemsProp ?? NAV_ITEMS);
+  useEffect(() => {
+    if (navItemsProp) {
+      setNavItems(navItemsProp);
+      try { sessionStorage.setItem(SELECT_WORKS_VISITED_KEY, "1"); } catch {}
+      return;
+    }
+    try {
+      setNavItems(sessionStorage.getItem(SELECT_WORKS_VISITED_KEY) === "1" ? SELECT_WORKS_NAV_ITEMS : NAV_ITEMS);
+    } catch {
+      setNavItems(NAV_ITEMS);
+    }
+  }, [navItemsProp]);
 
   /* タイトルが折り返す場合のみフォントサイズを縮小（最小24px） */
   const titleRef = useRef<HTMLHeadingElement>(null);
