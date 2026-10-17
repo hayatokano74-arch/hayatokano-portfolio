@@ -2563,45 +2563,29 @@ button.tl-photo-cell {
   overscroll-behavior: contain;
 }
 
-/* 1画面目: トップバー・ステージ・ボトムバーでビューポートを満たす
-   （ボトムバーはこのブロックの外に置き、詳細スクロール中は上端に固定する） */
+/* 1画面目: トップバー・ステージ・ボトムバーでビューポートを満たす */
 .work-detail-first {
-  height: calc(100% - var(--wdb-bar-h, 40px));
+  height: 100%;
 }
 
-.work-detail-scroll > .work-detail-bottom-bar {
-  position: sticky;
-  top: 0;
-  bottom: 0;
-}
-
-/* 詳細: 帯の下の独立セクション。短くても帯を除く1画面ぶんを確保する。
-   2カラム（左: メタ 1/span 4、右: 本文 6/-1）。上寄せ＋広い余白 */
+/* 詳細が短くても1画面ぶんを確保し、独立したセクションとして見せる */
 .work-detail-section {
-  min-height: calc(100% - var(--wdb-bar-h, 40px));
+  min-height: 100%;
   box-sizing: border-box;
-  padding: calc(var(--v-section) * 2) 0 calc(var(--v-section) * 3);
-  scroll-margin-top: var(--wdb-bar-h, 40px);
+  padding: calc(var(--v-section) * 2) var(--pad-x) calc(var(--v-section) * 2);
 }
 
-.work-detail-section-grid {
+.work-detail-overlay-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--grid-gutter);
-  align-items: start;
 }
 
-.work-detail-section-meta {
-  grid-column: 1 / span 4;
-  grid-row: 1;
+/* コンテンツ: 中央6列（列4-9）に配置 */
+.work-detail-overlay-content {
+  grid-column: 4 / span 6;
   min-width: 0;
-}
-
-.work-detail-section-body {
-  grid-column: 6 / -1;
-  grid-row: 1;
-  min-width: 0;
-  max-width: 44em;
+  margin-top: var(--space-4);
 }
 
 /* ── スケルトンローディングアニメーション ── */
@@ -4802,16 +4786,12 @@ img[loading="lazy"] {
     padding: var(--space-2) var(--space-3);
   }
 
-  .work-detail-section-grid {
-    grid-template-columns: 1fr;
-    row-gap: var(--space-8, 32px);
+  .work-detail-overlay-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 
-  .work-detail-section-meta,
-  .work-detail-section-body {
+  .work-detail-overlay-content {
     grid-column: 1 / -1;
-    grid-row: auto;
-    max-width: none;
   }
 
 

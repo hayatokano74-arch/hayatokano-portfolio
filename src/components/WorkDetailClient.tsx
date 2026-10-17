@@ -96,7 +96,7 @@ export function WorkDetailClient({
         className="work-detail-first"
         style={{
           display: "grid",
-          gridTemplateRows: "auto minmax(0, 1fr)",
+          gridTemplateRows: "auto minmax(0, 1fr) auto",
         }}
       >
       {/* トップバー: 枠線区切りの横並び */}
@@ -145,9 +145,7 @@ export function WorkDetailClient({
         )}
       </div>
 
-      </div>
-
-      {/* ボトムバー: 詳細をスクロールしている間は画面上端に固定される */}
+      {/* ボトムバー（この帯の下に詳細セクションが続く） */}
       <BottomBar
         work={work}
         mode={mode}
@@ -166,6 +164,7 @@ export function WorkDetailClient({
         }}
         onToggleInfo={scrollToDetail}
       />
+      </div>
 
       {/* 詳細: 帯の下に配置し、スクロールで閲覧 */}
       <DetailSection work={work} detailRef={detailRef} />
