@@ -2568,9 +2568,11 @@ button.tl-photo-cell {
   height: 100%;
 }
 
+/* 詳細が短くても1画面ぶんを確保し、独立したセクションとして見せる */
 .work-detail-section {
-  min-height: 80%;
-  padding: var(--v-section) var(--pad-x) calc(var(--v-section) * 2);
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: calc(var(--v-section) * 2) var(--pad-x) calc(var(--v-section) * 2);
 }
 
 .work-detail-overlay-grid {
