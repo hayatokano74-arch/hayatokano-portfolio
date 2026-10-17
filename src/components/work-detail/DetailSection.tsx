@@ -6,7 +6,7 @@ import { RichBody } from "@/components/RichBody";
 import { WorkDetailsTable } from "@/components/WorkDetailsTable";
 
 /**
- * 作品詳細セクション: ボトムバーの下に配置（タグ、説明文、詳細テーブル、お問い合わせリンク）
+ * 作品詳細セクション: ボトムバーの下に配置（左: タグ・詳細テーブル・お問い合わせリンク / 右: 説明文）
  */
 export function DetailSection({
   work,
@@ -17,8 +17,13 @@ export function DetailSection({
 }) {
   return (
     <section ref={detailRef} className="work-detail-section" aria-label="作品情報">
-      <div className="work-detail-overlay-grid">
-        <div className="work-detail-overlay-content">
+      <div className="work-detail-section-grid">
+        {/* 本文（右カラム。モバイルでは先頭に表示） */}
+        <div className="work-detail-section-body">
+          <RichBody html={work.excerpt} />
+        </div>
+        {/* メタ情報（左カラム）: タグ・詳細テーブル */}
+        <div className="work-detail-section-meta">
           {work.tags.length > 0 && (
             <div style={{ color: "var(--muted)", fontSize: "var(--font-body)" }}>
               {work.tags.map((tag, idx) => (
@@ -28,11 +33,9 @@ export function DetailSection({
               ))}
             </div>
           )}
-          <RichBody html={work.excerpt} style={{ marginTop: "var(--v-heading)" }} />
           <div style={{ marginTop: "var(--v-heading)" }}>
             <WorkDetailsTable details={work.details} />
           </div>
-          {/* Contact 導線 */}
           <div style={{ marginTop: "var(--v-section)" }}>
             <Link
               href="/contact"
