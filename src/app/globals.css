@@ -2557,20 +2557,57 @@ button.tl-photo-cell {
   padding-top: 0;
 }
 
-/* ── Works 詳細: 帯の下の詳細セクション（スクロールで閲覧） ── */
-.work-detail-scroll {
+/* ── Works 詳細オーバーレイ: 12カラムグリッド ── */
+/* htmlのスクロールバーはJS側で非表示にするため、オーバーレイは
+   システムのオーバーレイスクロールバーを使用（スペースを取らない） */
+/* Infoオーバーレイ: コンテンツのみスライド（バーは外に固定） */
+.work-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-glass-bg);
+  backdrop-filter: blur(120px) saturate(100%) contrast(45%) brightness(1.15);
+  -webkit-backdrop-filter: blur(120px) saturate(100%) contrast(45%) brightness(1.15);
+  z-index: 1000;
+  opacity: 0;
+  transform: scale(0.98);
+  visibility: hidden;
+  transition:
+    opacity 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 420ms;
+}
+.work-detail-overlay.is-open {
+  opacity: 1;
+  transform: scale(1);
+  visibility: visible;
+}
+
+/* すりガラスの粒状感（フラットな単色に見えないよう微細なノイズを重ねる） */
+.work-detail-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 140px 140px;
+}
+
+/* スクロール可能なコンテンツ領域
+   トップバー・ボトムバーは z-index でオーバーレイの上に表示されるため、
+   上下の padding でバーの裏にコンテンツが隠れないようにする。
+   バー高さはCSS変数（--wdb-top-bar-h / --wdb-bottom-bar-h）から参照し、
+   セクション余白（--v-section）で呼吸感を確保する。 */
+.work-detail-overlay-scroll {
+  position: relative;
+  z-index: 1;
   overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-/* 1画面目: トップバー・ステージ・ボトムバーでビューポートを満たす */
-.work-detail-first {
   height: 100%;
-}
-
-.work-detail-section {
-  min-height: 80%;
-  padding: var(--v-section) var(--pad-x) calc(var(--v-section) * 2);
+  padding: var(--pad-y) var(--pad-x);
+  padding-top: calc(var(--wdb-top-bar-h) + var(--v-section));
+  padding-bottom: calc(var(--wdb-bottom-bar-h) + var(--v-section));
 }
 
 .work-detail-overlay-grid {
@@ -4792,6 +4829,14 @@ img[loading="lazy"] {
     grid-column: 1 / -1;
   }
 
+  /* モバイル: .wdb-cell の padding が --space-2 に縮小、
+     ボトムバーはタイトル行が折り返して2行分になる */
+  .work-detail-overlay-scroll {
+    --wdb-top-bar-h: calc(var(--space-2) * 2 + var(--font-meta) + 2px);
+    --wdb-bottom-bar-h: calc((var(--space-2) * 2 + var(--font-body) + 1px) * 2);
+    padding-top: calc(var(--wdb-top-bar-h) + var(--v-section));
+    padding-bottom: calc(var(--wdb-bottom-bar-h) + var(--v-section));
+  }
 
   /* ── 目の星 ── */
   .me-no-hoshi-detail {

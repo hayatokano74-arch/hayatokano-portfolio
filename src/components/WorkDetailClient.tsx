@@ -5,10 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Work } from "@/lib/types";
 import { useGalleryNav } from "@/hooks/useGalleryNav";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
-import { useDetailScroll } from "@/hooks/useDetailScroll";
+import { useDetailOverlay } from "@/hooks/useDetailOverlay";
 import { GalleryStage } from "@/components/work-detail/GalleryStage";
 import { IndexGrid } from "@/components/work-detail/IndexGrid";
-import { DetailSection } from "@/components/work-detail/DetailSection";
+import { InfoOverlay } from "@/components/work-detail/InfoOverlay";
 import { BottomBar } from "@/components/work-detail/BottomBar";
 
 export function WorkDetailClient({
@@ -52,8 +52,8 @@ export function WorkDetailClient({
     initialImg: 1,
   });
 
-  /* 詳細セクションへのスクロール */
-  const { detailOpen, scrollRef, detailRef, scrollToDetail, scrollToTop } = useDetailScroll();
+  /* Infoオーバーレイ */
+  const { detailOpen, setDetailOpen, overlayRef } = useDetailOverlay();
 
   /* スワイプジェスチャー（モバイル対応） */
   const onSwipeLeft = useCallback(() => goToImage(nextImage), [goToImage, nextImage]);
@@ -85,20 +85,20 @@ export function WorkDetailClient({
   const navigateToWork = useCallback((slug: string) => {
     setCurrentSlug(slug);
     resetTo(1, "gallery");
-    scrollToTop(false);
+    setDetailOpen(false);
     /* URLだけ更新（ページ遷移なし、クリーンURL） */
     window.history.pushState(null, "", `${basePath}/${slug}/`);
-  }, [resetTo, scrollToTop, basePath]);
+  }, [resetTo, setDetailOpen, basePath]);
 
   return (
-    <div ref={scrollRef} className="work-detail-shell work-detail-scroll">
-      <div
-        className="work-detail-first"
-        style={{
-          display: "grid",
-          gridTemplateRows: "auto minmax(0, 1fr) auto",
-        }}
-      >
+    <div
+      className="work-detail-shell"
+      style={{
+        height: "100%",
+        display: "grid",
+        gridTemplateRows: "auto minmax(0, 1fr) auto",
+      }}
+    >
       {/* トップバー: 枠線区切りの横並び */}
       <div className="work-detail-top-bar">
         <Link href={basePath} className="wdb-cell wdb-btn wdb-back">
@@ -145,7 +145,10 @@ export function WorkDetailClient({
         )}
       </div>
 
-      {/* ボトムバー（この帯の下に詳細セクションが続く） */}
+      {/* Infoオーバーレイ（コンテンツのみスライド、バーは含まない） */}
+      <InfoOverlay work={work} detailOpen={detailOpen} overlayRef={overlayRef} />
+
+      {/* ボトムバー: 常時固定表示（オーバーレイの上に配置） */}
       <BottomBar
         work={work}
         mode={mode}
@@ -153,21 +156,17 @@ export function WorkDetailClient({
         detailOpen={detailOpen}
         pathname={pathname}
         onGallery={() => {
-          scrollToTop();
+          setDetailOpen(false);
           setMode("gallery");
           /* URLはクリーンに保つ（状態はステートで管理） */
         }}
         onIndex={() => {
-          scrollToTop();
+          setDetailOpen(false);
           setMode("index");
           /* URLはクリーンに保つ */
         }}
-        onToggleInfo={scrollToDetail}
+        onToggleInfo={() => setDetailOpen(!detailOpen)}
       />
-      </div>
-
-      {/* 詳細: 帯の下に配置し、スクロールで閲覧 */}
-      <DetailSection work={work} detailRef={detailRef} />
     </div>
   );
 }
